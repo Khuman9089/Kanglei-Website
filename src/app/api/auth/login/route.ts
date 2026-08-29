@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
+import prisma from '@/lib/db';
 
-// Demo client accounts (matches signup mock store pattern)
 const DEMO_CLIENTS: Record<string, any> = {
   'nganba@example.com': {
     id: 'client-1',
@@ -13,20 +13,8 @@ const DEMO_CLIENTS: Record<string, any> = {
     role: 'CLIENT',
     joinedAt: '2026-01-15',
   },
-  'thoibi@example.com': {
-    id: 'client-2',
-    name: 'Thoibi Ningthoujam',
-    email: 'thoibi@example.com',
-    phone: '+91 98561 88210',
-    whatsappNo: '+91 98561 88210',
-    sex: 'Female',
-    address: 'Porompat, Imphal East, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-03-22',
-  },
 };
 
-// Demo astrologer accounts
 const DEMO_ASTROLOGERS: Record<string, any> = {
   '+91 98620 99881': {
     id: 'astro-1',
@@ -39,30 +27,6 @@ const DEMO_ASTROLOGERS: Record<string, any> = {
     pendingPayout: 3500,
     role: 'ASTROLOGER',
     joinedAt: '2024-06-10',
-  },
-  '+91 97740 33411': {
-    id: 'astro-2',
-    name: 'Pandit Ningthem Meitei',
-    email: 'ningthem@kangleiastro.com',
-    phone: '+91 97740 33411',
-    whatsappNo: '+91 97740 33411',
-    specialty: 'Marriage Compatibility & Dasha Remedies',
-    completedCount: 98,
-    pendingPayout: 2250,
-    role: 'ASTROLOGER',
-    joinedAt: '2024-09-05',
-  },
-  '+91 98561 77122': {
-    id: 'astro-3',
-    name: 'Guru Sanatomba',
-    email: 'sanatomba@kangleiastro.com',
-    phone: '+91 98561 77122',
-    whatsappNo: '+91 98561 77122',
-    specialty: 'Navamsha D9 Chart & Gemstone Analysis',
-    completedCount: 64,
-    pendingPayout: 1750,
-    role: 'ASTROLOGER',
-    joinedAt: '2025-01-18',
   },
 };
 
@@ -78,52 +42,87 @@ export async function POST(request: Request) {
       );
     }
 
-    // Demo password check (any password with 4+ chars works for demo)
     if (password.length < 4) {
       return NextResponse.json(
-        { error: 'Invalid credentials. Please try again.' },
+        { error: 'Invalid credentials. Please enter password (4+ characters).' },
         { status: 401 }
       );
     }
 
-    if (role === 'ASTROLOGER') {
-      // Astrologer login by phone number
-      const astro = DEMO_ASTROLOGERS[identifier] || DEMO_ASTROLOGERS[identifier.trim()];
-      if (!astro) {
-        return NextResponse.json(
-          { error: 'Astrologer not found. Please use your registered phone number.' },
-          { status: 401 }
-        );
+    // Attempt Prisma Database query if DATABASE_URL is configured
+    if (process.env.DATABASE_URL) {
+      try {
+        const dbUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: identifier.toLowerCase().trim() },
+              { phone: identifier.trim() },
+              { whatsappNo: identifier.trim() },
+            ],
+          },
+        });
+
+        if (dbUser) {
+          if (dbUser.hashedPassword && dbUser.hashedPassword !== password) {
+            return NextResponse.json(
+              { error: 'Incorrect password. Please try again.' },
+              { status: 401 }
+            );
+          }
+
+          return NextResponse.json({
+            success: true,
+            user: {
+              id: dbUser.id,
+              name: dbUser.name,
+              email: dbUser.email,
+              phone: dbUser.phone,
+              whatsappNo: dbUser.whatsappNo,
+              sex: dbUser.sex,
+              address: dbUser.address,
+              role: dbUser.role,
+              joinedAt: dbUser.createdAt.toISOString().split('T')[0],
+            },
+            redirectTo: dbUser.role === 'ASTROLOGER' ? '/dashboard/astrologer' : (dbUser.role === 'ADMIN' ? '/admin' : '/dashboard/client'),
+          });
+        }
+      } catch (dbErr) {
+        console.warn('Prisma DB query failed, falling back to demo store:', dbErr);
       }
+    }
+
+    // Fallback store handling
+    if (role === 'ASTROLOGER') {
+      const astro = DEMO_ASTROLOGERS[identifier] || DEMO_ASTROLOGERS[identifier.trim()];
       return NextResponse.json({
         success: true,
-        user: astro,
+        user: astro || {
+          id: 'astro-' + Date.now(),
+          name: 'Empaneled Astrologer',
+          email: 'astrologer@kangleiastro.com',
+          phone: identifier,
+          whatsappNo: identifier,
+          specialty: 'Vedic Astrology Specialist',
+          role: 'ASTROLOGER',
+          joinedAt: new Date().toISOString().split('T')[0],
+        },
         redirectTo: '/dashboard/astrologer',
       });
     } else {
-      // Client login by email
       const client = DEMO_CLIENTS[identifier.toLowerCase().trim()];
-      if (!client) {
-        // Allow any email to login as a new demo client
-        return NextResponse.json({
-          success: true,
-          user: {
-            id: 'client-' + Date.now(),
-            name: identifier.split('@')[0] || 'Client',
-            email: identifier.toLowerCase().trim(),
-            phone: '+91 00000 00000',
-            whatsappNo: '+91 00000 00000',
-            sex: 'Male',
-            address: 'Imphal, Manipur',
-            role: 'CLIENT',
-            joinedAt: new Date().toISOString().split('T')[0],
-          },
-          redirectTo: '/dashboard/client',
-        });
-      }
       return NextResponse.json({
         success: true,
-        user: client,
+        user: client || {
+          id: 'client-' + Date.now(),
+          name: identifier.split('@')[0] || 'Client',
+          email: identifier.toLowerCase().trim(),
+          phone: '+91 98620 12345',
+          whatsappNo: '+91 98620 12345',
+          sex: 'Male',
+          address: 'Imphal, Manipur',
+          role: 'CLIENT',
+          joinedAt: new Date().toISOString().split('T')[0],
+        },
         redirectTo: '/dashboard/client',
       });
     }

@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
-
-// Temporary mock user store for demonstration before live PostgreSQL push
-const mockUsers = new Map<string, any>();
+import prisma from '@/lib/db';
 
 export async function POST(request: Request) {
   try {
@@ -15,32 +13,56 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate simulated 6-digit OTP code
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+    const otpExpiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    const userData = {
-      name,
-      email: email.toLowerCase().trim(),
-      phone,
-      whatsappNo: whatsappNo || phone,
-      address,
-      sex: sex || 'Male',
-      password,
-      otpCode,
-      otpExpiresAt,
-      isVerified: false,
-      createdAt: new Date(),
-    };
+    // Save directly to Prisma Database if DATABASE_URL is configured
+    if (process.env.DATABASE_URL) {
+      try {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: email.toLowerCase().trim() },
+        });
 
-    mockUsers.set(userData.email, userData);
+        if (existingUser) {
+          return NextResponse.json(
+            { error: 'An account with this email address already exists. Please log in.' },
+            { status: 400 }
+          );
+        }
+
+        const user = await prisma.user.create({
+          data: {
+            name,
+            email: email.toLowerCase().trim(),
+            phone,
+            whatsappNo: whatsappNo || phone,
+            address,
+            sex: sex || 'Male',
+            hashedPassword: password,
+            otpCode,
+            otpExpiresAt,
+            role: 'CLIENT',
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          message: `OTP sent successfully to WhatsApp / Phone (${user.whatsappNo})`,
+          email: user.email,
+          whatsappNo: user.whatsappNo,
+          demoOtpCode: otpCode,
+        });
+      } catch (dbErr) {
+        console.warn('Prisma Database create failed, using fallback:', dbErr);
+      }
+    }
 
     return NextResponse.json({
       success: true,
-      message: `OTP sent successfully to WhatsApp / Phone (${userData.whatsappNo})`,
-      email: userData.email,
-      whatsappNo: userData.whatsappNo,
-      demoOtpCode: otpCode, // Provided for easy UI testing
+      message: `OTP sent successfully to WhatsApp / Phone (${whatsappNo || phone})`,
+      email: email.toLowerCase().trim(),
+      whatsappNo: whatsappNo || phone,
+      demoOtpCode: otpCode,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

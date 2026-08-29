@@ -44,6 +44,7 @@ model User {
 
 enum UserRole {
   CLIENT
+  ASTROLOGER
   ADMIN
 }
 
