@@ -2339,87 +2339,72 @@ Question: ${details.question || 'N/A'}`;
             </div>
           )}
 
-          {/* TAB 6: ASTROLOGICAL CALCULATORS SUITE (ASTROLOGER WORKSPACE) */}
+          {/* TAB 4: ASTROLOGICAL CALCULATORS */}
           {activeTab === 'tools' && (
             <div className="space-y-6">
-              {/* Header Banner */}
-              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 shadow-xl transition-colors ${
-                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
-              }`}>
+              
+              {/* Workspace Header Banner */}
+              <div className="bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-sm flex flex-wrap justify-between items-center gap-4">
                 <div>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase mb-2 border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
-                  }`}>
+                  <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2 bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
                     <Sparkles className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
                     Empaneled Astrologer Workspace Suite
                   </div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
+                  <h3 className="font-serif font-bold text-2xl sm:text-3xl text-[#0f172a]">
                     Astrological Calculators & Dosha Engine
                   </h3>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                    Access your Admin-permitted calculation tools to analyze client birth charts, Vimshottari Dashas, Kaal Sarp Dosh, and Lo Shu Grid.
+                  <p className="text-xs text-gray-600 font-medium mt-1 max-w-2xl">
+                    Access your Admin-permitted calculation tools to analyze Client Birth Charts, Vimshottari Dashas, Shani Sade Sati, Kaal Sarp Dosh, Yogas, and Marriage Match Making.
                   </p>
                 </div>
 
-                <div className={`px-4 py-2 rounded-xl border text-xs font-bold font-mono ${
-                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-amber-50 border-amber-200 text-amber-800'
-                }`}>
-                  {ACTIVE_TOOLS_REGISTRY.filter((t) => allowedTools.includes(t.id)).length} Active Tools
+                <div className="px-4 py-2 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2] text-xs font-bold font-mono text-[#b45309]">
+                  ⚡ {ACTIVE_TOOLS_REGISTRY.length} Active Calculators
                 </div>
               </div>
 
-              {/* Tools Grid or Empty State */}
-              {ACTIVE_TOOLS_REGISTRY.filter((t) => allowedTools.includes(t.id)).length === 0 ? (
-                <div className={`p-12 rounded-3xl border text-center space-y-4 shadow-xl transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
-                }`}>
-                  <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center mx-auto ${
-                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-amber-50 border-amber-200 text-amber-600'
-                  }`}>
-                    <Sparkles className="w-8 h-8" />
-                  </div>
-                  <h4 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>No Astrological Tools Active Yet</h4>
-                  <p className={`text-xs max-w-md mx-auto leading-relaxed font-sans ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                    We will add calculators one by one. Once a tool is added to the system and granted by the Admin in the Admin Panel, it will appear here in your workspace.
-                  </p>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {ACTIVE_TOOLS_REGISTRY.filter((t) => allowedTools.includes(t.id)).map((t) => (
-                    <div
-                      key={t.id}
-                      className={`rounded-3xl p-6 border shadow-md transition-all flex flex-col justify-between space-y-4 ${
-                        theme === 'dark'
-                          ? 'bg-[#1c2541] border-[#3a506b] hover:border-[#fbbf24]'
-                          : 'bg-white border-slate-200 hover:border-amber-500 shadow-sm text-slate-900'
-                      }`}
-                    >
-                      <div className="space-y-3">
-                        <div className={`w-12 h-12 rounded-2xl border flex items-center justify-center ${
-                          theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-amber-50 border-amber-200 text-amber-600'
-                        }`}>
-                          <Sparkles className="w-6 h-6" />
-                        </div>
-                        <div>
-                          <h4 className={`font-serif font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{t.title}</h4>
-                          <p className={`text-xs leading-relaxed font-sans ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>{t.subtitle}</p>
-                        </div>
+              {/* 6 TOOL CARDS GRID MATCHING 2.PNG */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {ACTIVE_TOOLS_REGISTRY.map((t) => (
+                  <div
+                    key={t.id}
+                    className="bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-sm hover:shadow-xl hover:border-[#d97706] transition-all flex flex-col justify-between space-y-5 group"
+                  >
+                    <div className="space-y-3.5">
+                      {/* Icon Box matching 2.png */}
+                      <div className="w-14 h-14 rounded-2xl bg-[#fef3c7]/80 text-[#d97706] border border-[#fde68a] flex items-center justify-center text-2xl font-bold shadow-xs group-hover:scale-110 transition-transform">
+                        {t.id === 'dasha-yengpham' ? '📜' :
+                         t.id === 'shani-sade-sati' ? '🪐' :
+                         t.id === 'kaal-sarp-dosh' ? '🐍' :
+                         t.id === 'astrology-yoga' ? '✨' :
+                         t.id === 'match-making' ? '💍' : '📊'}
                       </div>
 
-                      <button
-                        onClick={() => {
-                          setActiveToolModal(t);
-                          setCalcResult(null);
-                        }}
-                        className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center justify-center gap-2 cursor-pointer"
-                      >
-                        <span>Calculate Now</span>
-                        <Sparkles className="w-4 h-4" />
-                      </button>
+                      <div>
+                        <h4 className="font-serif font-bold text-xl text-[#0f172a] group-hover:text-[#c69214] transition-colors">
+                          {t.title}
+                        </h4>
+                        <p className="text-xs text-gray-600 font-sans leading-relaxed mt-1.5 font-medium">
+                          {t.subtitle}
+                        </p>
+                      </div>
                     </div>
-                  ))}
-                </div>
-              )}
+
+                    {/* Gold Button matching 2.png */}
+                    <button
+                      onClick={() => {
+                        setActiveToolModal(t);
+                        setCalcResult(null);
+                      }}
+                      className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#d97706] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] border border-[#fde68a]/40"
+                    >
+                      <span>Calculate Now</span>
+                      <Sparkles className="w-4 h-4 text-white" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
             </div>
           )}
 
