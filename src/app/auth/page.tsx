@@ -675,16 +675,6 @@ export default function AuthPage() {
                   />
                 </div>
 
-                {/* Demo login hints */}
-                <div className="bg-[#fef3c7] p-3 rounded-xl border border-[#fde68a] text-[11px] text-[#78350f]">
-                  <strong className="text-[#b45309]">Demo Login:</strong>
-                  {loginRole === 'CLIENT' ? (
-                    <span> Email: <code className="font-mono bg-white px-1 rounded">nganba@example.com</code> | Password: any 4+ chars</span>
-                  ) : (
-                    <span> Phone: <code className="font-mono bg-white px-1 rounded">+91 98620 99881</code> | Password: any 4+ chars</span>
-                  )}
-                </div>
-
                 <button
                   type="submit"
                   disabled={loading}

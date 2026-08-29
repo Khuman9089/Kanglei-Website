@@ -409,15 +409,26 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     setAuthError('');
     const customPwd = typeof window !== 'undefined' ? localStorage.getItem('kanglei_admin_password') : null;
-    const validPasswords = ['admin123', 'kanglei2026', 'admin@kanglei', 'admin'];
-    if (customPwd) validPasswords.push(customPwd);
-
-    if (validPasswords.includes(adminPasswordInput.trim())) {
-      localStorage.setItem('kanglei_admin_authed', 'true');
-      setIsAuthenticated(true);
-      setAdminPasswordInput('');
+    
+    // If Admin updated password, ONLY accept their custom password!
+    // Initial default initial password before first update is 'kanglei@Admin2026!' or 'admin123'
+    const inputPwd = adminPasswordInput.trim();
+    if (customPwd) {
+      if (inputPwd === customPwd) {
+        localStorage.setItem('kanglei_admin_authed', 'true');
+        setIsAuthenticated(true);
+        setAdminPasswordInput('');
+      } else {
+        setAuthError('❌ Access Denied: Incorrect Admin Master Password!');
+      }
     } else {
-      setAuthError('❌ Incorrect Admin Password. Please try again.');
+      if (inputPwd === 'kanglei@Admin2026!' || inputPwd === 'admin123' || inputPwd === 'admin') {
+        localStorage.setItem('kanglei_admin_authed', 'true');
+        setIsAuthenticated(true);
+        setAdminPasswordInput('');
+      } else {
+        setAuthError('❌ Access Denied: Incorrect Admin Master Password!');
+      }
     }
   };
 

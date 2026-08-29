@@ -155,16 +155,38 @@ export default function AstrologerDashboard() {
     }
   }, []);
 
-  const handleAstroLogin = (e: React.FormEvent) => {
+  const handleAstroLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const validPasscodes = ['astro123', 'guru2026', 'astro', '1234', '123456'];
-    if (validPasscodes.includes(astroPasscodeInput.trim()) || astroPasscodeInput.trim().length >= 4) {
+    const inputPwd = astroPasscodeInput.trim();
+
+    if (!inputPwd || inputPwd.length < 4) {
+      setAuthError('❌ Please enter a valid password (minimum 4 characters).');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          identifier: 'astrologer',
+          password: inputPwd,
+          role: 'ASTROLOGER',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        setAuthError(data.error || '❌ Access Denied: Incorrect Astrologer Passcode!');
+        return;
+      }
+
       localStorage.setItem('kanglei_astro_authed', 'true');
       setIsAuthenticated(true);
       setAstroPasscodeInput('');
-    } else {
-      setAuthError('❌ Invalid Passcode. Please enter at least 4 characters.');
+    } catch (err: any) {
+      setAuthError(err.message || 'Login failed');
     }
   };
 
