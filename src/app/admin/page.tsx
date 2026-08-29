@@ -358,6 +358,85 @@ interface CustomerReview {
   createdAt: string;
 }
 
+interface ClientUser {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  whatsappNo: string;
+  sex: 'Male' | 'Female' | 'Other';
+  address: string;
+  role: 'CLIENT';
+  joinedAt: string;
+  totalOrders: number;
+  totalSpent: number;
+  savedKundlisCount: number;
+  status: 'ACTIVE' | 'VERIFIED' | 'SUSPENDED';
+}
+
+const INITIAL_CLIENT_BASE: ClientUser[] = [
+  {
+    id: 'client-1',
+    name: 'Nganba Meitei',
+    email: 'nganba@example.com',
+    phone: '+91 98620 12345',
+    whatsappNo: '+91 98620 12345',
+    sex: 'Male',
+    address: 'Uripok, Imphal West, Manipur',
+    role: 'CLIENT',
+    joinedAt: '2026-01-15',
+    totalOrders: 3,
+    totalSpent: 1497,
+    savedKundlisCount: 4,
+    status: 'VERIFIED',
+  },
+  {
+    id: 'client-2',
+    name: 'Thoibi Ningthoujam',
+    email: 'thoibi.n@gmail.com',
+    phone: '+91 97740 98765',
+    whatsappNo: '+91 97740 98765',
+    sex: 'Female',
+    address: 'Thoubal Mayai Leikai, Manipur',
+    role: 'CLIENT',
+    joinedAt: '2026-02-02',
+    totalOrders: 2,
+    totalSpent: 998,
+    savedKundlisCount: 2,
+    status: 'VERIFIED',
+  },
+  {
+    id: 'client-3',
+    name: 'Ibomcha Singh',
+    email: 'ibomcha.singh@yahoo.com',
+    phone: '+91 98561 22334',
+    whatsappNo: '+91 98561 22334',
+    sex: 'Male',
+    address: 'Bishnupur Bazar, Manipur',
+    role: 'CLIENT',
+    joinedAt: '2026-02-14',
+    totalOrders: 1,
+    totalSpent: 499,
+    savedKundlisCount: 1,
+    status: 'ACTIVE',
+  },
+  {
+    id: 'client-4',
+    name: 'Yaiphabi Devi',
+    email: 'yaiphabi.devi@outlook.com',
+    phone: '+91 88374 11223',
+    whatsappNo: '+91 88374 11223',
+    sex: 'Female',
+    address: 'Porompat, Imphal East, Manipur',
+    role: 'CLIENT',
+    joinedAt: '2026-02-20',
+    totalOrders: 4,
+    totalSpent: 2496,
+    savedKundlisCount: 5,
+    status: 'VERIFIED',
+  },
+];
+
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
@@ -449,6 +528,47 @@ export default function AdminDashboardPage() {
   const [showCategoryManagerModal, setShowCategoryManagerModal] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState('');
   const [showInlineNewCategory, setShowInlineNewCategory] = useState(false);
+  
+  // Client Base Management State
+  const [clientBase, setClientBase] = useState<ClientUser[]>(INITIAL_CLIENT_BASE);
+  const [clientSearchTerm, setClientSearchTerm] = useState('');
+  const [inspectingClient, setInspectingClient] = useState<ClientUser | null>(null);
+  const [showAddClientModal, setShowAddClientModal] = useState(false);
+  const [newClientForm, setNewClientForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    whatsappNo: '',
+    sex: 'Male' as 'Male' | 'Female' | 'Other',
+    address: 'Imphal West, Manipur',
+  });
+
+  const handleRegisterNewClient = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newClientForm.name.trim() || !newClientForm.email.trim()) return;
+
+    const newClient: ClientUser = {
+      id: `client-${Date.now()}`,
+      name: newClientForm.name,
+      email: newClientForm.email.toLowerCase().trim(),
+      phone: newClientForm.phone || '+91 98620 00000',
+      whatsappNo: newClientForm.whatsappNo || newClientForm.phone || '+91 98620 00000',
+      sex: newClientForm.sex,
+      address: newClientForm.address,
+      role: 'CLIENT',
+      joinedAt: new Date().toISOString().split('T')[0],
+      totalOrders: 0,
+      totalSpent: 0,
+      savedKundlisCount: 1,
+      status: 'VERIFIED',
+    };
+
+    setClientBase([newClient, ...clientBase]);
+    setSaveAlert(`✅ New Client "${newClient.name}" registered & verified in database!`);
+    setShowAddClientModal(false);
+    setNewClientForm({ name: '', email: '', phone: '', whatsappNo: '', sex: 'Male', address: 'Imphal West, Manipur' });
+    setTimeout(() => setSaveAlert(''), 3500);
+  };
   // Theme State (Dark / Light) - Default to Light as requested
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
@@ -1943,6 +2063,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
                     {astrologers.length}
+                  </span>
+                </button>
+
+                {/* 👥 CLIENT BASE DIRECTORY TAB */}
+                <button
+                  onClick={() => setActiveTab('clients')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'clients'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Users className="w-4 h-4 text-sky-400" />
+                    <span>Client Base Directory</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
+                  }`}>
+                    {clientBase.length} Users
                   </span>
                 </button>
 
@@ -3862,6 +4002,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 <div className="font-extrabold text-sm flex items-center gap-2">
                                   <span>{astro.name}</span>
                                 </div>
+                                <span className="text-xs font-mono font-bold text-sky-500 dark:text-sky-400 block">
+                                  @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                                </span>
                                 <a
                                   href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
                                   target="_blank"
@@ -4454,6 +4597,291 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       })}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: CLIENT BASE / USER DIRECTORY */}
+          {activeTab === 'clients' && (
+            <div className="space-y-6">
+              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-2xl border border-[#3a506b]/40">
+                <div>
+                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4] flex items-center gap-2">
+                    <Users className="w-6 h-6 text-[#fbbf24]" />
+                    <span>Client Base & Customer Directory</span>
+                  </h3>
+                  <p className="text-xs text-[#5c7a99]">Manage registered client accounts, view consultation history, saved birth charts, & contact details</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setShowAddClientModal(true)}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Register New Client Account</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* KPI STATS ROW */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
+                  <span className="text-[10px] font-bold text-[#e0a96d] uppercase tracking-wider block">Total Registered Clients</span>
+                  <div className="font-mono font-extrabold text-2xl text-[#fbbf24]">{clientBase.length}</div>
+                  <span className="text-[10px] text-gray-400 block">Verified user accounts</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
+                  <span className="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">Consultations Booked</span>
+                  <div className="font-mono font-extrabold text-2xl text-purple-300">{clientBase.reduce((s, c) => s + c.totalOrders, 0)}</div>
+                  <span className="text-[10px] text-gray-400 block">Lifetime Kuthi consultations</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
+                  <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider block">Total Client Revenue</span>
+                  <div className="font-mono font-extrabold text-2xl text-green-400">₹{clientBase.reduce((s, c) => s + c.totalSpent, 0).toLocaleString()}</div>
+                  <span className="text-[10px] text-gray-400 block">Consultation fees paid</span>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
+                  <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider block">Saved Birth Kundli Charts</span>
+                  <div className="font-mono font-extrabold text-2xl text-sky-300">{clientBase.reduce((s, c) => s + c.savedKundlisCount, 0)}</div>
+                  <span className="text-[10px] text-gray-400 block">Calculated & stored charts</span>
+                </div>
+              </div>
+
+              {/* SEARCH & FILTER BAR */}
+              <div className="bg-[#1c2541] p-4 rounded-2xl border border-[#3a506b] flex flex-wrap gap-4 items-center justify-between">
+                <div className="relative flex-1 min-w-[260px]">
+                  <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+                  <input
+                    type="text"
+                    placeholder="Search client by name, email, phone, or location..."
+                    value={clientSearchTerm}
+                    onChange={(e) => setClientSearchTerm(e.target.value)}
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs focus:border-[#d97706] focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              {/* REGISTER NEW CLIENT FORM MODAL */}
+              {showAddClientModal && (
+                <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] space-y-4 text-xs">
+                  <div className="flex justify-between items-center border-b border-[#3a506b] pb-2">
+                    <h4 className="font-bold text-[#fbbf24] text-sm flex items-center gap-2">
+                      <Users className="w-4 h-4 text-[#d97706]" />
+                      Register & Create Client User Record
+                    </h4>
+                    <button type="button" onClick={() => setShowAddClientModal(false)} className="text-gray-400 hover:text-white p-1">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <form onSubmit={handleRegisterNewClient} className="space-y-3 font-sans">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Client Full Name *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Full Name"
+                          value={newClientForm.name}
+                          onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
+                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Email Address *</label>
+                        <input
+                          type="email"
+                          required
+                          placeholder="client@example.com"
+                          value={newClientForm.email}
+                          onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })}
+                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-sky-300 font-mono text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Phone / WhatsApp *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="+91 98620 00000"
+                          value={newClientForm.phone}
+                          onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value, whatsappNo: e.target.value })}
+                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-[#fbbf24] font-mono font-bold text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Gender / Sex</label>
+                        <select
+                          value={newClientForm.sex}
+                          onChange={(e) => setNewClientForm({ ...newClientForm, sex: e.target.value as any })}
+                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white text-xs"
+                        >
+                          <option value="Male">Male</option>
+                          <option value="Female">Female</option>
+                          <option value="Other">Other</option>
+                        </select>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Address / Location</label>
+                        <input
+                          type="text"
+                          placeholder="City, District, State"
+                          value={newClientForm.address}
+                          onChange={(e) => setNewClientForm({ ...newClientForm, address: e.target.value })}
+                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white text-xs"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2 border-t border-[#3a506b]/40">
+                      <button type="button" onClick={() => setShowAddClientModal(false)} className="px-4 py-2 rounded-xl bg-[#1c2541] text-gray-300 font-bold cursor-pointer">Cancel</button>
+                      <button type="submit" className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold cursor-pointer">Save Client Account →</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* CLIENT BASE TABLE */}
+              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-xl overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase tracking-wider">
+                        <th className="p-4">Client Name</th>
+                        <th className="p-4">Contact Info (Email & Phone)</th>
+                        <th className="p-4">Gender & Location</th>
+                        <th className="p-4 text-center">Orders & Spent</th>
+                        <th className="p-4 text-center">Saved Kundlis</th>
+                        <th className="p-4 text-center">Joined Date</th>
+                        <th className="p-4 text-right">Admin Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#3a506b]/50 text-white">
+                      {clientBase
+                        .filter(
+                          (c) =>
+                            c.name.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
+                            c.email.toLowerCase().includes(clientSearchTerm.toLowerCase()) ||
+                            c.phone.includes(clientSearchTerm) ||
+                            c.address.toLowerCase().includes(clientSearchTerm.toLowerCase())
+                        )
+                        .map((client) => (
+                          <tr key={client.id} className="hover:bg-[#0b132b]/40 transition-colors">
+                            <td className="p-4">
+                              <div className="flex items-center gap-3">
+                                <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#b45309] to-[#d97706] text-white font-bold flex items-center justify-center text-sm shadow-xs">
+                                  {client.name.charAt(0)}
+                                </div>
+                                <div>
+                                  <div className="font-extrabold text-sm text-white">{client.name}</div>
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-extrabold border border-emerald-500/30">
+                                    {client.status}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="p-4">
+                              <div className="text-gray-200 font-medium">{client.email}</div>
+                              <a
+                                href={`https://wa.me/${client.whatsappNo.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[11px] text-green-400 font-mono font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
+                              >
+                                <MessageSquare className="w-3 h-3" />
+                                <span>{client.phone}</span>
+                              </a>
+                            </td>
+                            <td className="p-4">
+                              <span className="text-amber-300 font-semibold">{client.sex}</span>
+                              <div className="text-[11px] text-gray-400 truncate max-w-[180px]">{client.address}</div>
+                            </td>
+                            <td className="p-4 text-center">
+                              <div className="font-bold text-white">{client.totalOrders} Orders</div>
+                              <div className="font-mono text-green-400 font-extrabold">₹{client.totalSpent.toLocaleString()}</div>
+                            </td>
+                            <td className="p-4 text-center">
+                              <span className="px-2.5 py-1 rounded-full bg-sky-500/20 text-sky-300 border border-sky-500/30 font-bold font-mono">
+                                📜 {client.savedKundlisCount} Charts
+                              </span>
+                            </td>
+                            <td className="p-4 text-center font-mono text-gray-400">
+                              {client.joinedAt}
+                            </td>
+                            <td className="p-4 text-right">
+                              <button
+                                onClick={() => setInspectingClient(client)}
+                                className="px-3 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs inline-flex items-center gap-1 transition-colors cursor-pointer"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span>Inspect Profile</span>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* INSPECT CLIENT PROFILE MODAL */}
+          {inspectingClient && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
+              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-2xl max-w-lg w-full p-6 space-y-4 text-white text-xs">
+                <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-[#d97706] text-white flex items-center justify-center font-bold text-base">
+                      {inspectingClient.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h4 className="font-serif font-bold text-lg text-[#fbbf24]">{inspectingClient.name}</h4>
+                      <span className="text-gray-400 text-xs">{inspectingClient.email}</span>
+                    </div>
+                  </div>
+                  <button onClick={() => setInspectingClient(null)} className="text-gray-400 hover:text-white p-1 cursor-pointer">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 font-sans">
+                  <div className="grid grid-cols-2 gap-3 bg-[#0b132b] p-3 rounded-xl border border-[#3a506b]">
+                    <div>
+                      <span className="text-gray-400 block text-[10px] uppercase font-bold">WhatsApp Contact</span>
+                      <span className="font-mono text-green-400 font-bold">{inspectingClient.phone}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 block text-[10px] uppercase font-bold">Gender & Address</span>
+                      <span className="text-amber-300 font-bold">{inspectingClient.sex} · {inspectingClient.address}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 block text-[10px] uppercase font-bold">Consultations Placed</span>
+                      <span className="font-bold text-white">{inspectingClient.totalOrders} Orders (₹{inspectingClient.totalSpent})</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-400 block text-[10px] uppercase font-bold">Account Registration Date</span>
+                      <span className="font-mono text-gray-300">{inspectingClient.joinedAt}</span>
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex justify-between items-center">
+                    <a
+                      href={`https://wa.me/${inspectingClient.whatsappNo.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${inspectingClient.name}, this is KangleiAstro Customer Support.`)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-xs inline-flex items-center gap-1.5"
+                    >
+                      <MessageSquare className="w-4 h-4" />
+                      <span>Contact Client on WhatsApp</span>
+                    </a>
+                    <button
+                      onClick={() => setInspectingClient(null)}
+                      className="px-4 py-2 rounded-xl bg-gray-700 text-gray-200 font-bold text-xs cursor-pointer"
+                    >
+                      Close
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
