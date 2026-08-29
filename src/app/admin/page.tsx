@@ -618,12 +618,13 @@ export default function AdminDashboardPage() {
     setNewClientForm({ name: '', email: '', phone: '', whatsappNo: '', sex: 'Male', address: 'Imphal West, Manipur' });
     setTimeout(() => setSaveAlert(''), 3500);
   };
-  // Theme State (Dark / Light) - Default to Light as requested
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  // Theme State (Dark / Light) - Default to Dark for high-contrast celestial UI
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   useEffect(() => {
     const saved = localStorage.getItem('admin_theme') as 'dark' | 'light';
     if (saved) setTheme(saved);
+    else setTheme('dark');
   }, []);
 
   const toggleTheme = () => {
@@ -3981,7 +3982,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               )}
 
               {/* ASTROLOGER ACCOUNTS MANAGEMENT TABLE */}
-              <div className="rounded-3xl border border-[#3a506b] overflow-hidden shadow-2xl bg-[#0b132b]">
+              <div className={`rounded-3xl border overflow-hidden shadow-2xl transition-colors ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-300 shadow-lg'
+              }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-sans">
                     <thead>
@@ -3994,23 +3997,29 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-right">Admin Account Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50 text-white">
+                    <tbody className={`divide-y ${
+                      theme === 'dark' ? 'divide-[#3a506b]/50 text-white' : 'divide-slate-200 text-slate-900'
+                    }`}>
                       {astrologers.map((astro) => {
                         const isOnHold = astro.status === 'ON_HOLD';
 
                         return (
                           <tr key={astro.id} className={`transition-colors ${
                             isOnHold 
-                              ? 'bg-amber-950/50 border-l-4 border-l-amber-500' 
-                              : 'hover:bg-[#1c2541] odd:bg-[#0b132b] even:bg-[#0f172a]/60'
+                              ? (theme === 'dark' ? 'bg-amber-950/50 border-l-4 border-l-amber-500' : 'bg-amber-100/80 border-l-4 border-l-amber-600')
+                              : (theme === 'dark' ? 'hover:bg-[#1c2541] odd:bg-[#0b132b] even:bg-[#0f172a]/60' : 'hover:bg-amber-50/80 odd:bg-white even:bg-slate-50')
                           }`}>
                             {/* 1. Guru Name & Handle */}
                             <td className="p-4">
-                              <div className="font-serif font-extrabold text-base text-white">
+                              <div className={`font-serif font-extrabold text-base ${
+                                theme === 'dark' ? 'text-white' : 'text-slate-900'
+                              }`}>
                                 {astro.name}
                               </div>
                               <div className="inline-block mt-1">
-                                <span className="text-xs font-mono font-extrabold text-sky-300 bg-sky-950 border border-sky-400/60 px-2.5 py-0.5 rounded-md shadow-xs">
+                                <span className={`text-xs font-mono font-extrabold px-2.5 py-0.5 rounded-md shadow-xs border ${
+                                  theme === 'dark' ? 'text-sky-300 bg-sky-950 border-sky-400/60' : 'text-sky-900 bg-sky-100 border-sky-400'
+                                }`}>
                                   @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
                                 </span>
                               </div>
@@ -4018,10 +4027,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                             {/* 2. Specialty & Manipur Location */}
                             <td className="p-4">
-                              <span className="text-xs font-extrabold block text-[#fbbf24]">
+                              <span className={`text-xs font-extrabold block ${
+                                theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'
+                              }`}>
                                 {astro.specialty}
                               </span>
-                              <div className="text-xs text-white font-bold mt-1 inline-flex items-center gap-1 bg-slate-800 px-2.5 py-1 rounded-md border border-slate-600 shadow-xs">
+                              <div className={`text-xs font-bold mt-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border shadow-xs ${
+                                theme === 'dark' ? 'text-white bg-slate-800 border-slate-600' : 'text-slate-900 bg-slate-200 border-slate-400'
+                              }`}>
                                 📍 {astro.address || 'Imphal West, Manipur'}
                               </div>
                             </td>
@@ -4032,17 +4045,23 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-emerald-300 bg-emerald-950 hover:bg-emerald-900 border border-emerald-400 px-3 py-1 rounded-lg font-mono font-extrabold hover:underline inline-flex items-center gap-1.5 shadow-sm transition-all"
+                                className={`text-xs px-3 py-1 rounded-lg font-mono font-extrabold hover:underline inline-flex items-center gap-1.5 shadow-sm transition-all border ${
+                                  theme === 'dark' ? 'text-emerald-300 bg-emerald-950 hover:bg-emerald-900 border-emerald-400' : 'text-emerald-900 bg-emerald-100 hover:bg-emerald-200 border-emerald-500'
+                                }`}
                               >
-                                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                                <MessageSquare className="w-3.5 h-3.5" />
                                 <span>{astro.whatsappNo}</span>
                               </a>
-                              <span className="text-xs text-slate-200 font-mono font-bold block mt-1">📞 {astro.phone}</span>
+                              <span className={`text-xs font-mono font-bold block mt-1 ${
+                                theme === 'dark' ? 'text-slate-200' : 'text-slate-800'
+                              }`}>📞 {astro.phone}</span>
                             </td>
 
                             {/* 4. Experience Years */}
                             <td className="p-4 text-center font-mono font-bold">
-                              <span className="px-3 py-1.5 rounded-full bg-amber-500/25 text-amber-200 border border-amber-400 font-extrabold text-xs shadow-sm">
+                              <span className={`px-3 py-1.5 rounded-full font-extrabold text-xs shadow-sm border ${
+                                theme === 'dark' ? 'bg-amber-500/25 text-amber-200 border-amber-400' : 'bg-amber-100 text-amber-900 border-amber-400'
+                              }`}>
                                 {astro.experienceYears || 15} Yrs Exp
                               </span>
                             </td>
@@ -4050,11 +4069,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             {/* 5. Account Status Pill */}
                             <td className="p-4 text-center">
                               {isOnHold ? (
-                                <span className="px-3.5 py-1.5 rounded-full bg-amber-500/30 text-amber-200 text-xs font-extrabold border border-amber-400 shadow-sm inline-flex items-center gap-1">
+                                <span className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold shadow-sm border inline-flex items-center gap-1 ${
+                                  theme === 'dark' ? 'bg-amber-500/30 text-amber-200 border-amber-400' : 'bg-amber-100 text-amber-900 border-amber-500'
+                                }`}>
                                   🟡 ON HOLD (Suspended)
                                 </span>
                               ) : (
-                                <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/30 text-emerald-200 text-xs font-extrabold border border-emerald-400 shadow-sm inline-flex items-center gap-1">
+                                <span className={`px-3.5 py-1.5 rounded-full text-xs font-extrabold shadow-sm border inline-flex items-center gap-1 ${
+                                  theme === 'dark' ? 'bg-emerald-500/30 text-emerald-200 border-emerald-400' : 'bg-emerald-100 text-emerald-900 border-emerald-500'
+                                }`}>
                                   🟢 ACTIVE & ONLINE
                                 </span>
                               )}
