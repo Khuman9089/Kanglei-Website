@@ -113,16 +113,23 @@ export default function AuthPage() {
         role: 'CLIENT',
         memberSince: 'Today',
       };
+
       if (typeof window !== 'undefined') {
         localStorage.removeItem('kanglei_logged_out');
         localStorage.setItem('kanglei_user', JSON.stringify(sessionUser));
+
+        // Save into local registered users array for persistent client login
+        const existingUsers = JSON.parse(localStorage.getItem('kanglei_registered_users') || '[]');
+        const updatedUsers = [...existingUsers.filter((u: any) => u.email !== sessionUser.email), sessionUser];
+        localStorage.setItem('kanglei_registered_users', JSON.stringify(updatedUsers));
+
         window.dispatchEvent(new Event('user-login-change'));
       }
 
-      setSuccessMsg('Account verified successfully! Redirecting to Dashboard...');
+      setSuccessMsg('Account verified & signed up successfully! Redirecting to Client Dashboard...');
       setTimeout(() => {
         window.location.href = '/dashboard/client';
-      }, 1500);
+      }, 1200);
     } catch (err: any) {
       setLoading(false);
       setErrorMsg(err.message || 'Verification failed');
@@ -153,24 +160,39 @@ export default function AuthPage() {
         return;
       }
 
+      // Check registered users in localStorage if available
+      let foundUser = data.user;
+      if (typeof window !== 'undefined' && loginRole === 'CLIENT') {
+        const existingUsers = JSON.parse(localStorage.getItem('kanglei_registered_users') || '[]');
+        const matched = existingUsers.find((u: any) => u.email.toLowerCase() === loginIdentifier.toLowerCase().trim());
+        if (matched) {
+          foundUser = matched;
+        }
+      }
+
       const sessionUser = {
-        name: data.user?.name || loginIdentifier.split('@')[0] || 'Nganba Meitei',
-        email: data.user?.email || (loginIdentifier.includes('@') ? loginIdentifier : 'nganba@example.com'),
-        phone: data.user?.phone || (!loginIdentifier.includes('@') ? loginIdentifier : '+91 98620 12345'),
-        whatsappNo: data.user?.whatsappNo || (!loginIdentifier.includes('@') ? loginIdentifier : '+91 98620 12345'),
-        address: data.user?.address || 'Uripok, Imphal West, Manipur, 795001',
-        sex: data.user?.sex || 'Male',
+        name: foundUser?.name || loginIdentifier.split('@')[0] || 'Nganba Meitei',
+        email: foundUser?.email || (loginIdentifier.includes('@') ? loginIdentifier : 'nganba@example.com'),
+        phone: foundUser?.phone || (!loginIdentifier.includes('@') ? loginIdentifier : '+91 98620 12345'),
+        whatsappNo: foundUser?.whatsappNo || (!loginIdentifier.includes('@') ? loginIdentifier : '+91 98620 12345'),
+        address: foundUser?.address || 'Uripok, Imphal West, Manipur, 795001',
+        sex: foundUser?.sex || 'Male',
         role: loginRole,
-        memberSince: data.user?.memberSince || 'Today',
+        memberSince: foundUser?.memberSince || 'Today',
       };
 
       if (typeof window !== 'undefined') {
         localStorage.removeItem('kanglei_logged_out');
         localStorage.setItem('kanglei_user', JSON.stringify(sessionUser));
+
+        if (loginRole === 'ASTROLOGER') {
+          localStorage.setItem('kanglei_astro_authed', 'true');
+        }
+
         window.dispatchEvent(new Event('user-login-change'));
       }
 
-      setSuccessMsg(`Logged in as ${sessionUser.name}! Redirecting to ${loginRole === 'ASTROLOGER' ? 'Astrologer' : 'Client'} Dashboard...`);
+      setSuccessMsg(`Logged in successfully! Redirecting to ${loginRole === 'ASTROLOGER' ? 'Astrologer' : 'Client'} Dashboard...`);
       setTimeout(() => {
         window.location.href = data.redirectTo || (loginRole === 'ASTROLOGER' ? '/dashboard/astrologer' : '/dashboard/client');
       }, 1200);

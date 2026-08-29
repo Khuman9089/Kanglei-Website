@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Moon, LayoutDashboard, FileText, Users, Settings, 
   Search, Bell, CheckCircle2, XCircle, ArrowUpRight, 
-  ArrowDownLeft, MessageSquare, ShieldCheck, TrendingUp, 
+  ArrowDownLeft, MessageSquare, ShieldCheck, Lock, TrendingUp, 
   BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   Wallet, RefreshCw, Send, UploadCloud, Upload, User, Phone, Mail, MapPin, Paperclip,
@@ -141,6 +141,39 @@ interface WalletTransaction {
 }
 
 export default function AstrologerDashboard() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [astroPasscodeInput, setAstroPasscodeInput] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isAuthed = localStorage.getItem('kanglei_astro_authed') === 'true';
+      const savedUser = localStorage.getItem('kanglei_user');
+      if (isAuthed || (savedUser && JSON.parse(savedUser).role === 'ASTROLOGER')) {
+        setIsAuthenticated(true);
+      }
+    }
+  }, []);
+
+  const handleAstroLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    const validPasscodes = ['astro123', 'guru2026', 'astro', '1234', '123456'];
+    if (validPasscodes.includes(astroPasscodeInput.trim()) || astroPasscodeInput.trim().length >= 4) {
+      localStorage.setItem('kanglei_astro_authed', 'true');
+      setIsAuthenticated(true);
+      setAstroPasscodeInput('');
+    } else {
+      setAuthError('❌ Invalid Passcode. Please enter at least 4 characters.');
+    }
+  };
+
+  const handleAstroLogout = () => {
+    localStorage.removeItem('kanglei_astro_authed');
+    localStorage.removeItem('kanglei_user');
+    setIsAuthenticated(false);
+  };
+
   const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'wallet' | 'tools' | 'schedule' | 'profile' | 'astro_products' | 'astro_orders'>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [saveAlert, setSaveAlert] = useState('');
@@ -705,6 +738,71 @@ Question: ${details.question || 'N/A'}`;
     o.serviceType.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  // ASTROLOGER PASSCODE AUTHENTICATION GATE
+  if (!isAuthenticated) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center p-4 font-sans transition-colors ${
+        theme === 'dark' ? 'bg-[#0b132b] text-white' : 'bg-[#faf8f5] text-slate-900'
+      }`}>
+        <div className="w-full max-w-md bg-white dark:bg-[#1c2541] rounded-3xl border border-amber-300 dark:border-[#3a506b] shadow-2xl p-8 space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+          
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-[#0b132b] border border-amber-300 dark:border-[#fbbf24]/40 text-[#d97706] flex items-center justify-center mx-auto shadow-md">
+              <Sparkles className="w-8 h-8 text-[#d97706]" />
+            </div>
+            <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 text-[11px] font-extrabold uppercase tracking-wider inline-block">
+              ✦ Empaneled Vedic Guru Clearance
+            </span>
+            <h2 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">
+              Astrologer Access Portal
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-gray-400">
+              Please enter your registered astrologer passcode to access assigned Kuthi consultations & 19 calculators.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-xs font-bold text-center">
+              {authError}
+            </div>
+          )}
+
+          <form onSubmit={handleAstroLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-gray-300 mb-1.5">
+                Astrologer Passcode <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                required
+                autoFocus
+                placeholder="Enter passcode (e.g. astro123)"
+                value={astroPasscodeInput}
+                onChange={(e) => setAstroPasscodeInput(e.target.value)}
+                className="w-full h-12 px-4 rounded-xl border border-slate-300 dark:border-[#3a506b] bg-slate-50 dark:bg-[#0b132b] text-slate-900 dark:text-white font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Unlock Astrologer Dashboard</span>
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-slate-100 dark:border-[#3a506b]/40 text-center">
+            <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium">
+              Demo Passcode: <code className="bg-amber-100 text-amber-900 dark:bg-[#0b132b] dark:text-[#fbbf24] px-2 py-0.5 rounded font-mono font-bold">astro123</code>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen font-sans flex flex-col md:flex-row transition-colors duration-300 ${
       theme === 'dark' ? 'bg-[#0b132b] text-[#faf8f4]' : 'bg-[#faf8f5] text-[#0f172a]'
@@ -940,9 +1038,9 @@ Question: ${details.question || 'N/A'}`;
             }`} />
           </div>
 
-          <Link
-            href="/auth"
-            className={`w-full py-2 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-colors ${
+          <button
+            onClick={handleAstroLogout}
+            className={`w-full py-2 rounded-xl border font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer ${
               theme === 'dark'
                 ? 'bg-[#1e293b] text-gray-300 border-[#3a506b] hover:bg-red-900/30 hover:border-red-500/50 hover:text-red-300'
                 : 'bg-slate-200 text-slate-800 border-slate-300 hover:bg-red-50 hover:text-red-700 hover:border-red-300'
@@ -950,7 +1048,7 @@ Question: ${details.question || 'N/A'}`;
           >
             <LogOut className="w-3.5 h-3.5" />
             <span>Logout Portal</span>
-          </Link>
+          </button>
         </div>
       </aside>
 

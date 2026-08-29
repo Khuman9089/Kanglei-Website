@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { 
   Moon, LayoutDashboard, FileText, QrCode, Users, Settings, 
   Search, Bell, Plus, CheckCircle2, XCircle, ArrowUpRight, 
-  ArrowDownRight, MessageSquare, ExternalLink, ShieldCheck, 
+  ArrowDownRight, MessageSquare, ExternalLink, ShieldCheck, Lock,
   TrendingUp, BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, UserCheck, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon
@@ -357,6 +357,37 @@ interface CustomerReview {
 }
 
 export default function AdminDashboardPage() {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [authError, setAuthError] = useState('');
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isAuthed = localStorage.getItem('kanglei_admin_authed') === 'true';
+      if (isAuthed) {
+        setIsAuthenticated(true);
+      }
+    }
+  }, []);
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthError('');
+    const validPasswords = ['admin123', 'kanglei2026', 'admin@kanglei', 'admin'];
+    if (validPasswords.includes(adminPasswordInput.trim())) {
+      localStorage.setItem('kanglei_admin_authed', 'true');
+      setIsAuthenticated(true);
+      setAdminPasswordInput('');
+    } else {
+      setAuthError('❌ Access Denied: Incorrect Admin Security Password!');
+    }
+  };
+
+  const handleAdminLogout = () => {
+    localStorage.removeItem('kanglei_admin_authed');
+    setIsAuthenticated(false);
+  };
+
   const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
   const [orders, setOrders] = useState<KuthiOrder[]>(INITIAL_KUTHI_ORDERS);
   const [astrologers, setAstrologers] = useState<Astrologer[]>(EMPANELED_ASTROLOGERS);
@@ -1570,6 +1601,71 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       (o.assignedAstrologerName && o.assignedAstrologerName.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
+  // ADMIN PASSWORD AUTHENTICATION GATE
+  if (!isAuthenticated) {
+    return (
+      <div className={`min-h-screen flex items-center justify-center p-4 font-sans transition-colors ${
+        theme === 'dark' ? 'bg-[#0b132b] text-white' : 'bg-[#faf8f5] text-slate-900'
+      }`}>
+        <div className="w-full max-w-md bg-white dark:bg-[#1c2541] rounded-3xl border border-amber-300 dark:border-[#3a506b] shadow-2xl p-8 space-y-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+          
+          <div className="text-center space-y-3">
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-[#0b132b] border border-amber-300 dark:border-[#fbbf24]/40 text-[#d97706] flex items-center justify-center mx-auto shadow-md">
+              <Lock className="w-8 h-8 text-[#d97706]" />
+            </div>
+            <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 text-[11px] font-extrabold uppercase tracking-wider inline-block">
+              🛡️ Restricted Security Clearance
+            </span>
+            <h2 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">
+              Admin Security Portal
+            </h2>
+            <p className="text-xs text-slate-600 dark:text-gray-400">
+              Please enter your administrator password to unlock the KangleiAstro admin control panel.
+            </p>
+          </div>
+
+          {authError && (
+            <div className="p-3.5 rounded-xl bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-300 text-xs font-bold text-center">
+              {authError}
+            </div>
+          )}
+
+          <form onSubmit={handleAdminLogin} className="space-y-4">
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-gray-300 mb-1.5">
+                Admin Password <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="password"
+                required
+                autoFocus
+                placeholder="Enter admin password (e.g. admin123)"
+                value={adminPasswordInput}
+                onChange={(e) => setAdminPasswordInput(e.target.value)}
+                className="w-full h-12 px-4 rounded-xl border border-slate-300 dark:border-[#3a506b] bg-slate-50 dark:bg-[#0b132b] text-slate-900 dark:text-white font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none"
+              />
+            </div>
+
+            <button
+              type="submit"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Authenticate & Unlock Admin Panel</span>
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-slate-100 dark:border-[#3a506b]/40 text-center">
+            <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium">
+              Demo Admin Password: <code className="bg-amber-100 text-amber-900 dark:bg-[#0b132b] dark:text-[#fbbf24] px-2 py-0.5 rounded font-mono font-bold">admin123</code>
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`min-h-screen flex font-sans antialiased transition-colors duration-300 ${
       theme === 'dark' ? 'bg-[#0b132b] text-[#faf8f4]' : 'bg-[#f8fafc] text-slate-900'
@@ -1960,8 +2056,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
             <button
-              onClick={() => (window.location.href = '/')}
-              className="text-gray-400 hover:text-red-400 transition-colors p-1.5"
+              onClick={handleAdminLogout}
+              className="text-gray-400 hover:text-red-400 transition-colors p-1.5 cursor-pointer"
+              title="Lock Admin Panel & Log Out"
             >
               <LogOut className="w-4 h-4" />
             </button>
