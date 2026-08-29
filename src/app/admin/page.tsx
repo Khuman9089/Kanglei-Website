@@ -22,6 +22,7 @@ interface Astrologer {
   address?: string;
   experienceYears?: number;
   password?: string;
+  status?: 'ACTIVE' | 'ON_HOLD' | 'SUSPENDED';
   completedCount: number;
   pendingPayout: number;
   totalEarnings?: number;
@@ -30,6 +31,8 @@ interface Astrologer {
   payoutRequestedAmount?: number;
   lastPayoutUtr?: string;
   lastPayoutDate?: string;
+  allowedTools?: string[];
+  showOnHome?: boolean;
 }
 
 interface ManagedService {
@@ -528,7 +531,42 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
+
+  const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
+    const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
+    setAstrologers((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: nextStatus } : a))
+    );
+    try {
+      await fetch('/api/astrologers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'UPDATE_STATUS', id, status: nextStatus }),
+      });
+      setSaveAlert(`Astrologer account marked as ${nextStatus === 'ON_HOLD' ? 'ON HOLD (Suspended)' : 'ACTIVE'}.`);
+      setTimeout(() => setSaveAlert(''), 3000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteAstrologerAccount = async (id: string, name: string) => {
+    if (!confirm(`⚠️ Are you sure you want to PERMANENTLY DELETE the astrologer profile for "${name}"?\n\nThis will remove their portal login and profile from the website.`)) return;
+
+    setAstrologers((prev) => prev.filter((a) => a.id !== id));
+    try {
+      await fetch('/api/astrologers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'DELETE_ASTROLOGER', id }),
+      });
+      setSaveAlert(`✅ Astrologer profile for ${name} deleted successfully.`);
+      setTimeout(() => setSaveAlert(''), 3000);
+    } catch (err) {
+      console.error(err);
+    }
+  };
   const [orders, setOrders] = useState<KuthiOrder[]>(INITIAL_KUTHI_ORDERS);
   const [astrologers, setAstrologers] = useState<Astrologer[]>(EMPANELED_ASTROLOGERS);
   const [services, setServices] = useState<ManagedService[]>(INITIAL_SERVICES);
@@ -2060,6 +2098,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </button>
             </div>
 
+                {/* 1. Astrologer Accounts & Profiles */}
                 <button
                   onClick={() => setActiveTab('astrologers')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -2069,17 +2108,41 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <Award className="w-4 h-4" />
-                    <span>Empaneled Astrologers</span>
+                    <Award className="w-4 h-4 text-[#fbbf24]" />
+                    <span>Astrologer Accounts</span>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
-                    {astrologers.length}
+                    {astrologers.length} Gurus
                   </span>
                 </button>
 
-                {/* 👥 CLIENT BASE DIRECTORY TAB */}
+                {/* 2. Astrologer Wallets & Payouts */}
+                <button
+                  onClick={() => setActiveTab('astro_payouts')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_payouts'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <DollarSign className="w-4 h-4 text-green-500" />
+                    <span>Astrologer Payouts & Wallets</span>
+                  </div>
+                  {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-900 text-[10px] font-extrabold animate-pulse">
+                      ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-700 text-[10px] font-extrabold border border-green-500/30">
+                      Settled
+                    </span>
+                  )}
+                </button>
+
+                {/* 3. 👥 CLIENT BASE DIRECTORY TAB */}
                 <button
                   onClick={() => setActiveTab('clients')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -2099,7 +2162,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </span>
                 </button>
 
-                {/* Dedicated Separate Tab: Astrologer Service Payout Rate Card & Commission Split */}
+                {/* 4. Astrologer Service Payout Rate Card */}
                 <button
                   onClick={() => setActiveTab('astro_rates')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -2109,11 +2172,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <DollarSign className="w-4 h-4 text-green-500" />
-                    <span>Service Payout Rate Card</span>
+                    <Tag className="w-4 h-4 text-amber-500" />
+                    <span>Service Rate Card Matrix</span>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-green-100 text-green-800 border-green-300'
+                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
                     {services.length} Rates
                   </span>
@@ -3811,17 +3874,17 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
           )}
 
-          {/* TAB 5: EMPANELED ASTROLOGERS DIRECTORY & PAYOUTS */}
+          {/* TAB 5A: EMPANELED ASTROLOGER ACCOUNTS & PROFILES */}
           {activeTab === 'astrologers' && (
             <div className="bg-[#1c2541] rounded-2xl border border-[#3a506b]/40 shadow-md p-6 space-y-6">
-              <div className="flex justify-between items-center pb-4 border-b border-[#3a506b]/40">
+              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#3a506b]/40 gap-4">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Empaneled Astrologers & Commission Payouts</h3>
-                  <p className="text-xs text-[#5c7a99] font-sans">Manage Vedic Astrologers, view Kuthi Yengba order assignments, and process commission payouts (₹250 per Kuthi)</p>
+                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Empaneled Astrologer Accounts & Profiles</h3>
+                  <p className="text-xs text-[#5c7a99] font-sans">Manage registered Astrologers, edit profiles, hold/suspend access, or delete accounts</p>
                 </div>
                 <button
                   onClick={() => setEditingAstrologer({ name: '', specialty: 'Vedic Horoscope Specialist', whatsappNo: '', pendingPayout: 0, completedCount: 0 })}
-                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-bold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5"
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-md cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>+ Register New Astrologer</span>
@@ -3831,7 +3894,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* ASTROLOGER REGISTRATION / EDIT MODAL */}
               {editingAstrologer && (
                 <form onSubmit={handleSaveAstrologer} className="p-5 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-3 font-sans text-xs">
-                  <h4 className="font-bold text-[#fbbf24] text-sm">Register / Edit Empaneled Astrologer & Portal Password</h4>
+                  <h4 className="font-bold text-[#fbbf24] text-sm">Register / Edit Empaneled Astrologer Account & Password</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Full Name *</label>
@@ -3912,223 +3975,126 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                   <div className="flex justify-end gap-2 pt-1 border-t border-[#3a506b]/40">
                     <button type="button" onClick={() => setEditingAstrologer(null)} className="px-4 py-2 rounded-xl bg-[#1c2541] text-gray-300 font-bold cursor-pointer">Cancel</button>
-                    <button type="submit" className="px-6 py-2 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold cursor-pointer">Save Astrologer Account & Password →</button>
+                    <button type="submit" className="px-6 py-2 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold cursor-pointer">Save Astrologer Account →</button>
                   </div>
                 </form>
               )}
 
-              {/* ASTROLOGER WALLET BALANCES & PENDING PAYOUTS WORKSPACE TABLE */}
-              <div className={`rounded-3xl border p-6 space-y-6 shadow-xl transition-colors ${
-                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
+              {/* ASTROLOGER ACCOUNTS MANAGEMENT TABLE */}
+              <div className={`rounded-3xl border overflow-hidden shadow-xl transition-colors ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
               }`}>
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4 border-slate-200 dark:border-[#3a506b]">
-                  <div>
-                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase mb-2 border ${
-                      theme === 'dark' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-green-100 text-green-800 border-green-300'
-                    }`}>
-                      <DollarSign className="w-3.5 h-3.5 text-green-600" />
-                      Empaneled Astrologers Wallet & Payout Disbursement
-                    </div>
-                    <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
-                      Astrologer Wallet Balances & Pending Payouts
-                    </h3>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                      Monitor individual wallet balances, pending payout requests, total paid out, and settle earnings with UTR transaction references.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 4 KPI SUMMARY CARDS */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Card 1: Total Pending Payout Pool */}
-                  <div className={`p-4 rounded-2xl border ${
-                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-50/70 border-amber-200 text-slate-900'
-                  }`}>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${
-                      theme === 'dark' ? 'text-amber-400' : 'text-amber-800 font-extrabold'
-                    }`}>Total Wallet Balance Pending</span>
-                    <div className="font-mono font-extrabold text-2xl text-amber-600 dark:text-[#fbbf24] mt-1">
-                      ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
-                    </div>
-                    <span className={`text-[10px] block mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                      Across all {astrologers.length} empaneled Gurus
-                    </span>
-                  </div>
-
-                  {/* Card 2: Payout Requests Action Needed */}
-                  <div className={`p-4 rounded-2xl border ${
-                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-purple-50/70 border-purple-200 text-slate-900'
-                  }`}>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${
-                      theme === 'dark' ? 'text-purple-300' : 'text-purple-800 font-extrabold'
-                    }`}>Payout Requests Submitted</span>
-                    <div className="font-mono font-extrabold text-2xl text-purple-600 dark:text-purple-300 mt-1">
-                      {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length} Astrologers
-                    </div>
-                    <span className={`text-[10px] block mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                      Ready for UPI / Bank Disbursement
-                    </span>
-                  </div>
-
-                  {/* Card 3: Total Disbursed Paid Out */}
-                  <div className={`p-4 rounded-2xl border ${
-                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-emerald-50/70 border-emerald-200 text-slate-900'
-                  }`}>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${
-                      theme === 'dark' ? 'text-green-400' : 'text-green-800 font-extrabold'
-                    }`}>Total Disbursed (Paid Out)</span>
-                    <div className="font-mono font-extrabold text-2xl text-green-600 dark:text-green-400 mt-1">
-                      ₹{astrologers.reduce((s, a) => s + (a.totalPaidOut || 9250), 0).toLocaleString()}
-                    </div>
-                    <span className={`text-[10px] block mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                      Lifetime completed payouts
-                    </span>
-                  </div>
-
-                  {/* Card 4: Total Gross Astrologer Earnings */}
-                  <div className={`p-4 rounded-2xl border ${
-                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-sky-50/70 border-sky-200 text-slate-900'
-                  }`}>
-                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${
-                      theme === 'dark' ? 'text-sky-300' : 'text-sky-800 font-extrabold'
-                    }`}>Total Astrologer Gross Earnings</span>
-                    <div className="font-mono font-extrabold text-2xl text-sky-600 dark:text-sky-300 mt-1">
-                      ₹{astrologers.reduce((s, a) => s + (a.totalEarnings || 12750), 0).toLocaleString()}
-                    </div>
-                    <span className={`text-[10px] block mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                      Consultations + E-store sales
-                    </span>
-                  </div>
-                </div>
-
-                {/* ASTROLOGERS WALLET & PAYOUT TABLE */}
-                <div className={`rounded-2xl border overflow-hidden shadow-sm ${
-                  theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
-                }`}>
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs font-sans">
-                      <thead>
-                        <tr className={`font-serif font-bold uppercase border-b ${
-                          theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-200'
-                        }`}>
-                          <th className="p-4">Astrologer Guru</th>
-                          <th className="p-4">Specialty & Phone</th>
-                          <th className="p-4 text-center">Readings Done</th>
-                          <th className="p-4">Gross Earnings (₹)</th>
-                          <th className="p-4">Total Paid Out (₹)</th>
-                          <th className="p-4">Wallet Balance / Pending (₹)</th>
-                          <th className="p-4 text-center">Payout Status</th>
-                          <th className="p-4 text-right">Admin Action</th>
-                        </tr>
-                      </thead>
-                      <tbody className={`divide-y ${
-                        theme === 'dark' ? 'divide-[#3a506b]/40 text-white' : 'divide-slate-200 text-slate-900'
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-sans">
+                    <thead>
+                      <tr className={`font-serif font-bold uppercase border-b ${
+                        theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-200'
                       }`}>
-                        {astrologers.map((astro) => {
-                          const grossEarn = astro.totalEarnings || (astro.completedCount * 350 + astro.pendingPayout);
-                          const paidOut = astro.totalPaidOut || Math.max(0, grossEarn - astro.pendingPayout);
-                          const isRequested = astro.payoutStatus === 'REQUESTED' || astro.pendingPayout > 0;
+                        <th className="p-4">Astrologer Guru & Handle</th>
+                        <th className="p-4">Specialty & Location</th>
+                        <th className="p-4">Phone & WhatsApp</th>
+                        <th className="p-4 text-center">Exp (Yrs)</th>
+                        <th className="p-4 text-center">Account Status</th>
+                        <th className="p-4 text-right">Admin Account Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${
+                      theme === 'dark' ? 'divide-[#3a506b]/40 text-white' : 'divide-slate-200 text-slate-900'
+                    }`}>
+                      {astrologers.map((astro) => {
+                        const isOnHold = astro.status === 'ON_HOLD';
 
-                          return (
-                            <tr key={astro.id} className={`transition-colors ${
-                              theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
-                            }`}>
-                              <td className="p-4">
-                                <div className="font-extrabold text-sm flex items-center gap-2">
-                                  <span>{astro.name}</span>
-                                </div>
-                                <span className="text-xs font-mono font-bold text-sky-500 dark:text-sky-400 block">
-                                  @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                        return (
+                          <tr key={astro.id} className={`transition-colors ${
+                            isOnHold ? 'bg-amber-950/20' : (theme === 'dark' ? 'hover:bg-[#1c2541]/40' : 'hover:bg-slate-50')
+                          }`}>
+                            <td className="p-4">
+                              <div className="font-extrabold text-sm flex items-center gap-2">
+                                <span>{astro.name}</span>
+                              </div>
+                              <span className="text-xs font-mono font-bold text-sky-400 block">
+                                @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                              </span>
+                            </td>
+
+                            <td className="p-4">
+                              <span className="text-xs font-bold block text-gray-200">
+                                {astro.specialty}
+                              </span>
+                              <div className="text-[11px] text-amber-300 font-medium mt-0.5">
+                                📍 {astro.address || 'Imphal West, Manipur'}
+                              </div>
+                            </td>
+
+                            <td className="p-4">
+                              <a
+                                href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-green-400 font-mono font-bold hover:underline inline-flex items-center gap-1"
+                              >
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>{astro.whatsappNo}</span>
+                              </a>
+                              <span className="text-[10px] text-gray-400 font-mono block mt-0.5">{astro.phone}</span>
+                            </td>
+
+                            <td className="p-4 text-center font-mono font-bold">
+                              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">
+                                {astro.experienceYears || 15} Yrs
+                              </span>
+                            </td>
+
+                            <td className="p-4 text-center">
+                              {isOnHold ? (
+                                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-extrabold border border-amber-500/40">
+                                  🟡 ON HOLD (Suspended)
                                 </span>
-                                <a
-                                  href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-[10px] text-green-600 dark:text-green-400 font-mono font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
+                              ) : (
+                                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-extrabold border border-emerald-500/30">
+                                  🟢 ACTIVE & ONLINE
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="p-4 text-right">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => setEditingAstrologer(astro)}
+                                  className="px-2.5 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                                  title="Edit Full Name, Username, Phone, Manipur Address, & Password"
                                 >
-                                  <MessageSquare className="w-3 h-3" />
-                                  <span>{astro.whatsappNo}</span>
-                                </a>
-                              </td>
+                                  <Edit className="w-3.5 h-3.5" />
+                                  <span>Edit</span>
+                                </button>
 
-                              <td className="p-4">
-                                <span className={`text-xs font-bold block ${theme === 'dark' ? 'text-gray-200' : 'text-slate-800'}`}>
-                                  {astro.specialty}
-                                </span>
-                                <div className="text-[11px] text-amber-600 dark:text-amber-300 font-medium">
-                                  📍 {astro.address || 'Imphal West, Manipur'} ({astro.experienceYears || 15} Yrs Exp)
-                                </div>
-                                <span className="text-[10px] text-gray-500 font-mono block">📞 {astro.phone}</span>
-                              </td>
+                                <button
+                                  onClick={() => handleToggleHoldAstrologer(astro.id, astro.status)}
+                                  className={`px-2.5 py-1.5 rounded-xl font-bold text-xs inline-flex items-center gap-1 border cursor-pointer transition-colors ${
+                                    isOnHold
+                                      ? 'bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 border-emerald-500/40'
+                                      : 'bg-amber-600/30 hover:bg-amber-600 text-amber-300 border-amber-500/40'
+                                  }`}
+                                  title={isOnHold ? 'Re-activate Astrologer Account' : 'Put Astrologer Profile on Hold'}
+                                >
+                                  {isOnHold ? '🟢 Activate' : '🟡 Hold'}
+                                </button>
 
-                              <td className="p-4 text-center font-mono font-bold">
-                                <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 text-xs">
-                                  {astro.completedCount} Consultations
-                                </span>
-                              </td>
-
-                              <td className="p-4 font-mono font-bold text-sky-600 dark:text-sky-300 text-sm">
-                                ₹{grossEarn.toLocaleString()}
-                              </td>
-
-                              <td className="p-4 font-mono font-bold text-green-600 dark:text-green-400 text-sm">
-                                ₹{paidOut.toLocaleString()}
-                              </td>
-
-                              <td className="p-4 font-mono font-extrabold text-base text-amber-600 dark:text-[#fbbf24]">
-                                ₹{astro.pendingPayout.toLocaleString()}
-                              </td>
-
-                              <td className="p-4 text-center">
-                                {isRequested ? (
-                                  <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-800 dark:text-amber-300 text-[11px] font-extrabold border border-amber-500/40 animate-pulse inline-flex items-center gap-1">
-                                    <span>⏳ Payout Requested</span>
-                                  </span>
-                                ) : (
-                                  <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-800 dark:text-green-300 text-[11px] font-extrabold border border-green-500/30">
-                                    ✅ All Settled
-                                  </span>
-                                )}
-                                {astro.lastPayoutUtr && (
-                                  <span className="text-[9px] text-gray-400 font-mono block mt-1">
-                                    Last UTR: {astro.lastPayoutUtr}
-                                  </span>
-                                )}
-                              </td>
-
-                              <td className="p-4 text-right">
-                                <div className="flex items-center justify-end gap-2">
-                                  <button
-                                    onClick={() => setEditingAstrologer(astro)}
-                                    className="px-3 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
-                                    title="Edit Full Name, Username, Phone, Manipur Address, & Password"
-                                  >
-                                    <Edit className="w-3.5 h-3.5" />
-                                    <span>Edit</span>
-                                  </button>
-                                  <button
-                                    onClick={() => {
-                                      setPayoutModalAstro(astro);
-                                      setPayoutForm({
-                                        amount: astro.pendingPayout || 1000,
-                                        paymentMethod: 'GPay / PhonePe UPI',
-                                        utr: 'UPI-' + Math.floor(1000000000 + Math.random() * 900000000),
-                                        notes: 'Monthly Astrologer Commission Disbursement',
-                                      });
-                                    }}
-                                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md inline-flex items-center gap-1 cursor-pointer"
-                                  >
-                                    <DollarSign className="w-3.5 h-3.5" />
-                                    <span>Process Payout</span>
-                                  </button>
-                                </div>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
+                                <button
+                                  onClick={() => handleDeleteAstrologerAccount(astro.id, astro.name)}
+                                  className="px-2.5 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 font-bold text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                  title="Permanently Delete Astrologer Account"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                  <span>Delete</span>
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
@@ -4342,6 +4308,178 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </div>
                   );
                 })}
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5B: ASTROLOGER WALLETS & PAYOUT DISBURSEMENT */}
+          {activeTab === 'astro_payouts' && (
+            <div className="bg-[#1c2541] rounded-2xl border border-[#3a506b]/40 shadow-md p-6 space-y-6">
+              <div className="flex justify-between items-center pb-4 border-b border-[#3a506b]/40">
+                <div>
+                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Astrologer Wallet Balances & Commission Payouts</h3>
+                  <p className="text-xs text-[#5c7a99] font-sans">Monitor online astrologers, consultation counts, wallet balances, pending payout requests, and process UPI disbursements</p>
+                </div>
+              </div>
+
+              {/* 4 KPI SUMMARY CARDS */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className={`p-4 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-50/70 border-amber-200 text-slate-900'
+                }`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider block text-amber-400">Total Wallet Balance Pending</span>
+                  <div className="font-mono font-extrabold text-2xl text-amber-600 dark:text-[#fbbf24] mt-1">
+                    ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
+                  </div>
+                  <span className="text-[10px] block mt-1 text-gray-400">Across all {astrologers.length} empaneled Gurus</span>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-purple-50/70 border-purple-200 text-slate-900'
+                }`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider block text-purple-300">Payout Requests Submitted</span>
+                  <div className="font-mono font-extrabold text-2xl text-purple-600 dark:text-purple-300 mt-1">
+                    {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length} Astrologers
+                  </div>
+                  <span className="text-[10px] block mt-1 text-gray-400">Ready for UPI / Bank Disbursement</span>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-emerald-50/70 border-emerald-200 text-slate-900'
+                }`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider block text-green-400">Total Disbursed (Paid Out)</span>
+                  <div className="font-mono font-extrabold text-2xl text-green-600 dark:text-green-400 mt-1">
+                    ₹{astrologers.reduce((s, a) => s + (a.totalPaidOut || 9250), 0).toLocaleString()}
+                  </div>
+                  <span className="text-[10px] block mt-1 text-gray-400">Lifetime completed payouts</span>
+                </div>
+
+                <div className={`p-4 rounded-2xl border ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-sky-50/70 border-sky-200 text-slate-900'
+                }`}>
+                  <span className="text-[10px] font-bold uppercase tracking-wider block text-sky-300">Total Gross Astrologer Earnings</span>
+                  <div className="font-mono font-extrabold text-2xl text-sky-600 dark:text-sky-300 mt-1">
+                    ₹{astrologers.reduce((s, a) => s + (a.totalEarnings || 12750), 0).toLocaleString()}
+                  </div>
+                  <span className="text-[10px] block mt-1 text-gray-400">Consultations + E-store sales</span>
+                </div>
+              </div>
+
+              {/* ASTROLOGERS FINANCIAL PAYOUT TABLE */}
+              <div className={`rounded-2xl border overflow-hidden shadow-sm ${
+                theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
+              }`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-sans">
+                    <thead>
+                      <tr className={`font-serif font-bold uppercase border-b ${
+                        theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-200'
+                      }`}>
+                        <th className="p-4">Online Astrologer Guru</th>
+                        <th className="p-4">Specialty & Phone</th>
+                        <th className="p-4 text-center">Readings Done</th>
+                        <th className="p-4">Gross Earnings (₹)</th>
+                        <th className="p-4">Total Paid Out (₹)</th>
+                        <th className="p-4">Wallet Balance / Pending (₹)</th>
+                        <th className="p-4 text-center">Payout Status</th>
+                        <th className="p-4 text-right">Admin Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${
+                      theme === 'dark' ? 'divide-[#3a506b]/40 text-white' : 'divide-slate-200 text-slate-900'
+                    }`}>
+                      {astrologers.map((astro) => {
+                        const grossEarn = astro.totalEarnings || (astro.completedCount * 350 + astro.pendingPayout);
+                        const paidOut = astro.totalPaidOut || Math.max(0, grossEarn - astro.pendingPayout);
+                        const isRequested = astro.payoutStatus === 'REQUESTED' || astro.pendingPayout > 0;
+
+                        return (
+                          <tr key={astro.id} className={`transition-colors ${
+                            theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
+                          }`}>
+                            <td className="p-4">
+                              <div className="font-extrabold text-sm flex items-center gap-2">
+                                <span>{astro.name}</span>
+                              </div>
+                              <span className="text-xs font-mono font-bold text-sky-400 block">
+                                @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                              </span>
+                              <a
+                                href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-[10px] text-green-400 font-mono font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
+                              >
+                                <MessageSquare className="w-3 h-3" />
+                                <span>{astro.whatsappNo}</span>
+                              </a>
+                            </td>
+
+                            <td className="p-4">
+                              <span className="text-xs font-bold block text-gray-200">
+                                {astro.specialty}
+                              </span>
+                              <span className="text-[10px] text-gray-400 font-mono block">📞 {astro.phone}</span>
+                            </td>
+
+                            <td className="p-4 text-center font-mono font-bold">
+                              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">
+                                {astro.completedCount} Consultations
+                              </span>
+                            </td>
+
+                            <td className="p-4 font-mono font-bold text-sky-300 text-sm">
+                              ₹{grossEarn.toLocaleString()}
+                            </td>
+
+                            <td className="p-4 font-mono font-bold text-green-400 text-sm">
+                              ₹{paidOut.toLocaleString()}
+                            </td>
+
+                            <td className="p-4 font-mono font-extrabold text-base text-[#fbbf24]">
+                              ₹{astro.pendingPayout.toLocaleString()}
+                            </td>
+
+                            <td className="p-4 text-center">
+                              {isRequested ? (
+                                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-extrabold border border-amber-500/40 animate-pulse inline-flex items-center gap-1">
+                                  <span>⏳ Payout Requested</span>
+                                </span>
+                              ) : (
+                                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-[11px] font-extrabold border border-green-500/30">
+                                  ✅ All Settled
+                                </span>
+                              )}
+                              {astro.lastPayoutUtr && (
+                                <span className="text-[9px] text-gray-400 font-mono block mt-1">
+                                  Last UTR: {astro.lastPayoutUtr}
+                                </span>
+                              )}
+                            </td>
+
+                            <td className="p-4 text-right">
+                              <button
+                                onClick={() => {
+                                  setPayoutModalAstro(astro);
+                                  setPayoutForm({
+                                    amount: astro.pendingPayout || 1000,
+                                    paymentMethod: 'GPay / PhonePe UPI',
+                                    utr: 'UPI-' + Math.floor(1000000000 + Math.random() * 900000000),
+                                    notes: 'Monthly Astrologer Commission Disbursement',
+                                  });
+                                }}
+                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md inline-flex items-center gap-1.5 cursor-pointer"
+                              >
+                                <DollarSign className="w-3.5 h-3.5" />
+                                <span>💳 Process Payout</span>
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* PAYOUT DISBURSEMENT MODAL */}
