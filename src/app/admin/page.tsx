@@ -19,6 +19,8 @@ interface Astrologer {
   specialty: string;
   phone: string;
   whatsappNo: string;
+  address?: string;
+  experienceYears?: number;
   password?: string;
   completedCount: number;
   pendingPayout: number;
@@ -169,9 +171,12 @@ const EMPANELED_ASTROLOGERS: Astrologer[] = [
   {
     id: 'astro-1',
     name: 'Acharya Tombi Sharma',
+    username: 'tombi_guru',
     specialty: 'Vedic Horoscope & Kuthi Yengba Specialist',
     phone: '+91 98620 99881',
     whatsappNo: '+91 98620 99881',
+    address: 'Uripok, Imphal West, Manipur',
+    experienceYears: 15,
     completedCount: 142,
     pendingPayout: 3500,
     totalEarnings: 12750,
@@ -184,9 +189,12 @@ const EMPANELED_ASTROLOGERS: Astrologer[] = [
   {
     id: 'astro-2',
     name: 'Pandit Ningthem Meitei',
+    username: 'ningthem_meitei',
     specialty: 'Marriage Compatibility & Dasha Remedies',
     phone: '+91 97740 33411',
     whatsappNo: '+91 97740 33411',
+    address: 'Thoubal Mayai Leikai, Manipur',
+    experienceYears: 12,
     completedCount: 98,
     pendingPayout: 2250,
     totalEarnings: 8450,
@@ -199,9 +207,12 @@ const EMPANELED_ASTROLOGERS: Astrologer[] = [
   {
     id: 'astro-3',
     name: 'Guru Sanatomba',
+    username: 'sanatomba_guru',
     specialty: 'Navamsha D9 Chart & Gemstone Analysis',
     phone: '+91 98561 77122',
     whatsappNo: '+91 98561 77122',
+    address: 'Bishnupur Bazar, Manipur',
+    experienceYears: 18,
     completedCount: 64,
     pendingPayout: 1750,
     totalEarnings: 5950,
@@ -1708,6 +1719,8 @@ export default function AdminDashboardPage() {
       specialty: editingAstrologer.specialty || 'Vedic Horoscope Specialist',
       phone: editingAstrologer.phone || editingAstrologer.whatsappNo,
       whatsappNo: editingAstrologer.whatsappNo,
+      address: editingAstrologer.address || 'Imphal West, Manipur',
+      experienceYears: Number(editingAstrologer.experienceYears || 10),
       password: pwd,
       completedCount: editingAstrologer.completedCount || 0,
       pendingPayout: editingAstrologer.pendingPayout || 0,
@@ -3864,6 +3877,28 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       />
                     </div>
                     <div>
+                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Manipur Address / Location *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Uripok, Imphal West, Manipur"
+                        value={editingAstrologer.address || ''}
+                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, address: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-medium text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Experience (Years)</label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={60}
+                        placeholder="15"
+                        value={editingAstrologer.experienceYears || ''}
+                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, experienceYears: Number(e.target.value) })}
+                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-amber-300 font-bold text-xs"
+                      />
+                    </div>
+                    <div>
                       <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Assign Portal Password *</label>
                       <input
                         type="password"
@@ -4017,10 +4052,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               </td>
 
                               <td className="p-4">
-                                <span className={`text-xs block ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                                <span className={`text-xs font-bold block ${theme === 'dark' ? 'text-gray-200' : 'text-slate-800'}`}>
                                   {astro.specialty}
                                 </span>
-                                <span className="text-[10px] text-gray-500 font-mono block">{astro.phone}</span>
+                                <div className="text-[11px] text-amber-600 dark:text-amber-300 font-medium">
+                                  📍 {astro.address || 'Imphal West, Manipur'} ({astro.experienceYears || 15} Yrs Exp)
+                                </div>
+                                <span className="text-[10px] text-gray-500 font-mono block">📞 {astro.phone}</span>
                               </td>
 
                               <td className="p-4 text-center font-mono font-bold">
@@ -4059,21 +4097,31 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               </td>
 
                               <td className="p-4 text-right">
-                                <button
-                                  onClick={() => {
-                                    setPayoutModalAstro(astro);
-                                    setPayoutForm({
-                                      amount: astro.pendingPayout || 1000,
-                                      paymentMethod: 'GPay / PhonePe UPI',
-                                      utr: 'UPI-' + Math.floor(1000000000 + Math.random() * 900000000),
-                                      notes: 'Monthly Astrologer Commission Disbursement',
-                                    });
-                                  }}
-                                  className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md inline-flex items-center gap-1.5 cursor-pointer"
-                                >
-                                  <DollarSign className="w-3.5 h-3.5" />
-                                  <span>💳 Process Payout</span>
-                                </button>
+                                <div className="flex items-center justify-end gap-2">
+                                  <button
+                                    onClick={() => setEditingAstrologer(astro)}
+                                    className="px-3 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                                    title="Edit Full Name, Username, Phone, Manipur Address, & Password"
+                                  >
+                                    <Edit className="w-3.5 h-3.5" />
+                                    <span>Edit</span>
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setPayoutModalAstro(astro);
+                                      setPayoutForm({
+                                        amount: astro.pendingPayout || 1000,
+                                        paymentMethod: 'GPay / PhonePe UPI',
+                                        utr: 'UPI-' + Math.floor(1000000000 + Math.random() * 900000000),
+                                        notes: 'Monthly Astrologer Commission Disbursement',
+                                      });
+                                    }}
+                                    className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md inline-flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <DollarSign className="w-3.5 h-3.5" />
+                                    <span>Process Payout</span>
+                                  </button>
+                                </div>
                               </td>
                             </tr>
                           );
