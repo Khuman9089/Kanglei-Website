@@ -142,6 +142,7 @@ interface WalletTransaction {
 
 export default function AstrologerDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [astroUsernameInput, setAstroUsernameInput] = useState('');
   const [astroPasscodeInput, setAstroPasscodeInput] = useState('');
   const [authError, setAuthError] = useState('');
 
@@ -158,10 +159,11 @@ export default function AstrologerDashboard() {
   const handleAstroLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    const inputUser = astroUsernameInput.trim() || 'astrologer';
     const inputPwd = astroPasscodeInput.trim();
 
     if (!inputPwd || inputPwd.length < 4) {
-      setAuthError('❌ Please enter a valid password (minimum 4 characters).');
+      setAuthError('❌ Please enter a valid Username and Password (minimum 4 characters).');
       return;
     }
 
@@ -170,7 +172,7 @@ export default function AstrologerDashboard() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          identifier: 'astrologer',
+          identifier: inputUser,
           password: inputPwd,
           role: 'ASTROLOGER',
         }),
@@ -178,12 +180,13 @@ export default function AstrologerDashboard() {
 
       const data = await res.json();
       if (!res.ok) {
-        setAuthError(data.error || '❌ Access Denied: Incorrect Astrologer Passcode!');
+        setAuthError(data.error || '❌ Access Denied: Incorrect Username or Password!');
         return;
       }
 
       localStorage.setItem('kanglei_astro_authed', 'true');
       setIsAuthenticated(true);
+      setAstroUsernameInput('');
       setAstroPasscodeInput('');
     } catch (err: any) {
       setAuthError(err.message || 'Login failed');
@@ -853,16 +856,30 @@ Question: ${details.question || 'N/A'}`;
           <form onSubmit={handleAstroLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-gray-300 mb-1.5">
-                Astrologer Passcode <span className="text-red-500">*</span>
+                Username / Registered Phone Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                autoFocus
+                placeholder="Enter username or +91 98620 00000"
+                value={astroUsernameInput}
+                onChange={(e) => setAstroUsernameInput(e.target.value)}
+                className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-[#3a506b] bg-slate-50 dark:bg-[#0b132b] text-slate-900 dark:text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-extrabold uppercase tracking-wider text-slate-700 dark:text-gray-300 mb-1.5">
+                Portal Password <span className="text-red-500">*</span>
               </label>
               <input
                 type="password"
                 required
-                autoFocus
-                placeholder="Enter passcode (e.g. astro123)"
+                placeholder="Enter portal password"
                 value={astroPasscodeInput}
                 onChange={(e) => setAstroPasscodeInput(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-slate-300 dark:border-[#3a506b] bg-slate-50 dark:bg-[#0b132b] text-slate-900 dark:text-white font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none"
+                className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-[#3a506b] bg-slate-50 dark:bg-[#0b132b] text-slate-900 dark:text-white font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
               />
             </div>
 

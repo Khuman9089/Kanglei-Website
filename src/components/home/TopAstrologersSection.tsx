@@ -32,18 +32,24 @@ export default function TopAstrologersSection() {
   });
 
   useEffect(() => {
-    fetch('/api/astrologers')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.astrologers && Array.isArray(data.astrologers)) {
-          const featured = data.astrologers.filter((a: any) => a.active !== false && a.showOnHome !== false);
-          setAstrologers(featured.length > 0 ? featured.slice(0, 4) : data.astrologers.filter((a: any) => a.active !== false).slice(0, 4));
-        }
-        if (data.settings) {
-          setSettings((prev) => ({ ...prev, ...data.settings }));
-        }
-      })
-      .catch((err) => console.error('Error fetching astrologers:', err));
+    const fetchAstroData = () => {
+      fetch('/api/astrologers')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.astrologers && Array.isArray(data.astrologers)) {
+            const featured = data.astrologers.filter((a: any) => a.active !== false && a.showOnHome !== false);
+            setAstrologers(featured.length > 0 ? featured.slice(0, 4) : data.astrologers.filter((a: any) => a.active !== false).slice(0, 4));
+          }
+          if (data.settings) {
+            setSettings((prev) => ({ ...prev, ...data.settings }));
+          }
+        })
+        .catch((err) => console.error('Error fetching astrologers:', err));
+    };
+
+    fetchAstroData();
+    const interval = setInterval(fetchAstroData, 2500);
+    return () => clearInterval(interval);
   }, []);
 
   const handleStartChatCall = (astro: TopAstrologer, type: 'Chat' | 'Call') => {

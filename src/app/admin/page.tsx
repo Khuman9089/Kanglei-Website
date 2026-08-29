@@ -15,6 +15,7 @@ import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
 interface Astrologer {
   id: string;
   name: string;
+  username?: string;
   specialty: string;
   phone: string;
   whatsappNo: string;
@@ -1578,9 +1579,12 @@ export default function AdminDashboardPage() {
     if (!editingAstrologer?.name || !editingAstrologer?.whatsappNo) return;
 
     const pwd = editingAstrologer.password || 'astro123';
+    const uname = editingAstrologer.username || editingAstrologer.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+
     const newAstro: Astrologer = {
       id: editingAstrologer.id || 'astro-' + Date.now(),
       name: editingAstrologer.name,
+      username: uname,
       specialty: editingAstrologer.specialty || 'Vedic Horoscope Specialist',
       phone: editingAstrologer.phone || editingAstrologer.whatsappNo,
       whatsappNo: editingAstrologer.whatsappNo,
@@ -1609,7 +1613,7 @@ export default function AdminDashboardPage() {
       console.warn('API save astrologer:', err);
     }
 
-    setSaveAlert(`Empaneled Astrologer ${newAstro.name} saved with portal password!`);
+    setSaveAlert(`Empaneled Astrologer ${newAstro.name} (@${uname}) registered with credentials!`);
     setEditingAstrologer(null);
     setTimeout(() => setSaveAlert(''), 3000);
   };
@@ -1716,12 +1720,6 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <span>Authenticate & Unlock Admin Panel</span>
             </button>
           </form>
-
-          <div className="pt-4 border-t border-slate-100 dark:border-[#3a506b]/40 text-center">
-            <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium">
-              Demo Admin Password: <code className="bg-amber-100 text-amber-900 dark:bg-[#0b132b] dark:text-[#fbbf24] px-2 py-0.5 rounded font-mono font-bold">admin123</code>
-            </p>
-          </div>
         </div>
       </div>
     );
@@ -3694,6 +3692,17 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       />
                     </div>
                     <div>
+                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Assign Username *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. tombi_guru"
+                        value={editingAstrologer.username || ''}
+                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, username: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-sky-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                    <div>
                       <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Specialty</label>
                       <input
                         type="text"
@@ -3719,7 +3728,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       <input
                         type="password"
                         required
-                        placeholder="Assign password (e.g. astro123)"
+                        placeholder="Set portal password"
                         value={editingAstrologer.password || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, password: e.target.value })}
                         className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
