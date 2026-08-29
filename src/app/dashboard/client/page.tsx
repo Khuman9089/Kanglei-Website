@@ -37,13 +37,13 @@ interface KuthiOrder {
 }
 
 const MOCK_USER = {
-  name: "Nganba Meitei",
-  email: "nganba@example.com",
-  phone: "+91 98620 12345",
-  whatsapp: "+91 98620 12345",
-  sex: "Male",
-  address: "Uripok, Imphal West, Manipur, 795001",
-  memberSince: "15 January 2026"
+  name: "Client User",
+  email: "client@kangleiastro.com",
+  phone: "+91 98620 99881",
+  whatsapp: "+91 98620 99881",
+  sex: "Client",
+  address: "Imphal West, Manipur, 795001",
+  memberSince: "2026"
 };
 
 const KUNDLI_PROFILES = [
@@ -250,7 +250,7 @@ export default function ClientDashboard() {
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
           <div>
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#b45309]">My Dashboard</h1>
-            <p className="text-gray-600 mt-1">Welcome back, {MOCK_USER.name}</p>
+            <p className="text-gray-600 mt-1">Welcome back, {userProfile.name || 'Client'}</p>
           </div>
           <div className="flex gap-3">
             <Link href="/booking" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b] text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5">

@@ -24,23 +24,7 @@ export function Navbar() {
   useEffect(() => {
     const loadUser = () => {
       if (typeof window !== 'undefined') {
-        const isLoggedOut = localStorage.getItem('kanglei_logged_out') === 'true';
-        let stored = localStorage.getItem('kanglei_user');
-
-        if (!stored && !isLoggedOut) {
-          const defaultUser = {
-            name: "Nganba Meitei",
-            email: "nganba@example.com",
-            phone: "+91 98620 12345",
-            whatsappNo: "+91 98620 12345",
-            address: "Uripok, Imphal West, Manipur, 795001",
-            sex: "Male",
-            role: "CLIENT",
-            memberSince: "15 January 2026"
-          };
-          localStorage.setItem('kanglei_user', JSON.stringify(defaultUser));
-          stored = JSON.stringify(defaultUser);
-        }
+        const stored = localStorage.getItem('kanglei_user');
 
         if (stored) {
           try {
@@ -67,7 +51,8 @@ export function Navbar() {
   const handleLogout = () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('kanglei_user');
-      localStorage.setItem('kanglei_logged_out', 'true');
+      localStorage.removeItem('kanglei_client_authed');
+      localStorage.removeItem('kanglei_logged_out');
       window.dispatchEvent(new Event('user-login-change'));
     }
     setUser(null);
