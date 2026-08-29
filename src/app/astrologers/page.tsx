@@ -178,6 +178,124 @@ export default function AstrologersDirectoryPage() {
           </div>
         </div>
 
+        {/* ⚡ ASTROLOGER JYOTISH CALCULATOR TOOLS RIBBON */}
+        <div className="bg-gradient-to-r from-[#0b132b] via-[#1c2541] to-[#0b132b] p-6 rounded-3xl border border-[#3a506b] shadow-xl text-white space-y-4">
+          <div className="flex flex-wrap justify-between items-center gap-3 border-b border-[#3a506b]/60 pb-3">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#fbbf24] block">
+                ✦ Astrologer Jyotish Workspace
+              </span>
+              <h2 className="font-serif font-bold text-xl sm:text-2xl text-[#faf8f4]">
+                Astrologer Calculator & Horoscope Tools
+              </h2>
+            </div>
+            <span className="px-3 py-1 rounded-full bg-[#d97706]/20 text-[#fbbf24] border border-[#d97706]/40 text-xs font-mono font-bold">
+              ⚡ 5 New Tools Registered
+            </span>
+          </div>
+
+          {/* 5 TOOL BUTTONS GRID */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 pt-1">
+            
+            {/* 1. Dasha Yengpham */}
+            <button
+              onClick={() => alert("📜 Dasha Yengpham (Vimshottari Dasha Details) Calculator Engine Button Active! Full natal dasha period calculations coming soon.")}
+              className="p-3.5 rounded-2xl bg-[#0b132b] hover:bg-[#1e293b] border border-[#3a506b] hover:border-[#fbbf24] transition-all text-left group cursor-pointer shadow-md"
+            >
+              <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center font-bold text-sm mb-2 group-hover:scale-110 transition-transform">
+                📜
+              </div>
+              <h4 className="font-bold text-xs text-white group-hover:text-[#fbbf24] transition-colors leading-snug">
+                Dasha Yengpham
+              </h4>
+              <p className="text-[10px] text-gray-400 mt-1 line-clamp-2">
+                Get Vimshottari Dasha Details
+              </p>
+            </button>
+
+            {/* 2. Shani Sade Sati */}
+            <button
+              onClick={() => alert("🪐 Shani Sade Sati Calculator Engine Button Active! Saturn 7.5 year transit phase analysis coming soon.")}
+              className="p-3.5 rounded-2xl bg-[#0b132b] hover:bg-[#1e293b] border border-[#3a506b] hover:border-sky-400 transition-all text-left group cursor-pointer shadow-md"
+            >
+              <div className="w-8 h-8 rounded-xl bg-sky-500/20 text-sky-400 border border-sky-500/40 flex items-center justify-center font-bold text-sm mb-2 group-hover:scale-110 transition-transform">
+                🪐
+              </div>
+              <h4 className="font-bold text-xs text-white group-hover:text-sky-300 transition-colors leading-snug">
+                Shani Sade Sati
+              </h4>
+              <p className="text-[10px] text-gray-400 mt-1 line-clamp-2">
+                Saturn 7.5 Yr Transit & Remedies
+              </p>
+            </button>
+
+            {/* 3. Kaal Sarp Dosh */}
+            <button
+              onClick={() => alert("🐍 Kaal Sarp Dosh Calculator Engine Button Active! Rahu-Ketu axis containment analysis coming soon.")}
+              className="p-3.5 rounded-2xl bg-[#0b132b] hover:bg-[#1e293b] border border-[#3a506b] hover:border-purple-400 transition-all text-left group cursor-pointer shadow-md"
+            >
+              <div className="w-8 h-8 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/40 flex items-center justify-center font-bold text-sm mb-2 group-hover:scale-110 transition-transform">
+                🐍
+              </div>
+              <h4 className="font-bold text-xs text-white group-hover:text-purple-300 transition-colors leading-snug">
+                Kaal Sarp Dosh
+              </h4>
+              <p className="text-[10px] text-gray-400 mt-1 line-clamp-2">
+                Yoga Detection & Remedies
+              </p>
+            </button>
+
+            {/* 4. Yoga Analysis */}
+            <button
+              onClick={() => alert("✨ Planetary Yogas Calculator Engine Button Active! Gajakesari, Raj & Dhana Yoga detection coming soon.")}
+              className="p-3.5 rounded-2xl bg-[#0b132b] hover:bg-[#1e293b] border border-[#3a506b] hover:border-amber-300 transition-all text-left group cursor-pointer shadow-md"
+            >
+              <div className="w-8 h-8 rounded-xl bg-amber-400/20 text-amber-300 border border-amber-400/40 flex items-center justify-center font-bold text-sm mb-2 group-hover:scale-110 transition-transform">
+                ✨
+              </div>
+              <h4 className="font-bold text-xs text-white group-hover:text-amber-300 transition-colors leading-snug">
+                Yoga Analysis
+              </h4>
+              <p className="text-[10px] text-gray-400 mt-1 line-clamp-2">
+                Major Vedic Yogas
+              </p>
+            </button>
+
+            {/* 5. Match Making */}
+            <button
+              onClick={() => alert("💍 Match Making (Ashtakoot Gun Milan) Calculator Engine Button Active! 36-Gun marriage compatibility coming soon.")}
+              className="p-3.5 rounded-2xl bg-[#0b132b] hover:bg-[#1e293b] border border-[#3a506b] hover:border-pink-400 transition-all text-left group cursor-pointer shadow-md"
+            >
+              <div className="w-8 h-8 rounded-xl bg-pink-500/20 text-pink-400 border border-pink-500/40 flex items-center justify-center font-bold text-sm mb-2 group-hover:scale-110 transition-transform">
+                💍
+              </div>
+              <h4 className="font-bold text-xs text-white group-hover:text-pink-300 transition-colors leading-snug">
+                Match Making
+              </h4>
+              <p className="text-[10px] text-gray-400 mt-1 line-clamp-2">
+                36-Gun Ashtakoot Milan
+              </p>
+            </button>
+
+            {/* 6. Kuthi Generator */}
+            <Link
+              href="/kundli"
+              className="p-3.5 rounded-2xl bg-[#0b132b] hover:bg-[#1e293b] border border-[#3a506b] hover:border-[#d97706] transition-all text-left group cursor-pointer shadow-md block"
+            >
+              <div className="w-8 h-8 rounded-xl bg-[#d97706]/20 text-[#fbbf24] border border-[#d97706]/40 flex items-center justify-center font-bold text-sm mb-2 group-hover:scale-110 transition-transform">
+                📊
+              </div>
+              <h4 className="font-bold text-xs text-white group-hover:text-[#fbbf24] transition-colors leading-snug">
+                Kuthi Generator
+              </h4>
+              <p className="text-[10px] text-gray-400 mt-1 line-clamp-2">
+                D1 Rashi & D9 Navamsha
+              </p>
+            </Link>
+
+          </div>
+        </div>
+
         {/* Main Content 2-Column Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           
