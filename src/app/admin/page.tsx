@@ -3981,14 +3981,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               )}
 
               {/* ASTROLOGER ACCOUNTS MANAGEMENT TABLE */}
-              <div className={`rounded-3xl border overflow-hidden shadow-xl transition-colors ${
-                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
+              <div className={`rounded-3xl border overflow-hidden shadow-2xl transition-colors ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-300 shadow-md'
               }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-sans">
                     <thead>
-                      <tr className={`font-serif font-bold uppercase border-b ${
-                        theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-200'
+                      <tr className={`font-serif font-bold uppercase tracking-wider text-xs border-b ${
+                        theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-300'
                       }`}>
                         <th className="p-4">Astrologer Guru & Handle</th>
                         <th className="p-4">Specialty & Location</th>
@@ -3999,69 +3999,79 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       </tr>
                     </thead>
                     <tbody className={`divide-y ${
-                      theme === 'dark' ? 'divide-[#3a506b]/40 text-white' : 'divide-slate-200 text-slate-900'
+                      theme === 'dark' ? 'divide-[#3a506b]/50 text-white' : 'divide-slate-200 text-slate-900'
                     }`}>
                       {astrologers.map((astro) => {
                         const isOnHold = astro.status === 'ON_HOLD';
 
                         return (
                           <tr key={astro.id} className={`transition-colors ${
-                            isOnHold ? 'bg-amber-950/20' : (theme === 'dark' ? 'hover:bg-[#1c2541]/40' : 'hover:bg-slate-50')
+                            isOnHold 
+                              ? 'bg-amber-950/40 border-l-4 border-l-amber-500' 
+                              : (theme === 'dark' ? 'hover:bg-[#1c2541]/70 odd:bg-[#0b132b] even:bg-[#0f172a]/50' : 'hover:bg-slate-100 odd:bg-white even:bg-slate-50/70')
                           }`}>
+                            {/* 1. Guru Name & Handle */}
                             <td className="p-4">
-                              <div className="font-extrabold text-sm flex items-center gap-2">
-                                <span>{astro.name}</span>
+                              <div className="font-serif font-extrabold text-base text-white dark:text-[#faf8f4]">
+                                {astro.name}
                               </div>
-                              <span className="text-xs font-mono font-bold text-sky-400 block">
-                                @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
-                              </span>
+                              <div className="inline-block mt-1">
+                                <span className="text-xs font-mono font-extrabold text-sky-300 bg-sky-950/70 px-2 py-0.5 rounded-md border border-sky-500/40">
+                                  @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                                </span>
+                              </div>
                             </td>
 
+                            {/* 2. Specialty & Manipur Location */}
                             <td className="p-4">
-                              <span className="text-xs font-bold block text-gray-200">
+                              <span className="text-xs font-extrabold block text-amber-300 dark:text-amber-300">
                                 {astro.specialty}
                               </span>
-                              <div className="text-[11px] text-amber-300 font-medium mt-0.5">
+                              <div className="text-[11px] text-slate-200 dark:text-slate-200 font-semibold mt-1 inline-flex items-center gap-1 bg-slate-800/80 dark:bg-slate-800/80 px-2 py-0.5 rounded border border-slate-600">
                                 📍 {astro.address || 'Imphal West, Manipur'}
                               </div>
                             </td>
 
+                            {/* 3. Phone & WhatsApp */}
                             <td className="p-4">
                               <a
                                 href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-xs text-green-400 font-mono font-bold hover:underline inline-flex items-center gap-1"
+                                className="text-xs text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 px-2.5 py-1 rounded-lg font-mono font-extrabold hover:underline inline-flex items-center gap-1.5 shadow-sm transition-all"
                               >
-                                <MessageSquare className="w-3.5 h-3.5" />
+                                <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
                                 <span>{astro.whatsappNo}</span>
                               </a>
-                              <span className="text-[10px] text-gray-400 font-mono block mt-0.5">{astro.phone}</span>
+                              <span className="text-xs text-slate-300 dark:text-slate-300 font-mono font-bold block mt-1">📞 {astro.phone}</span>
                             </td>
 
+                            {/* 4. Experience Years */}
                             <td className="p-4 text-center font-mono font-bold">
-                              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">
-                                {astro.experienceYears || 15} Yrs
+                              <span className="px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-xs font-extrabold shadow-sm">
+                                {astro.experienceYears || 15} Yrs Exp
                               </span>
                             </td>
 
+                            {/* 5. Account Status Pill */}
                             <td className="p-4 text-center">
                               {isOnHold ? (
-                                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-extrabold border border-amber-500/40">
+                                <span className="px-3 py-1.5 rounded-full bg-amber-500/30 text-amber-200 text-xs font-extrabold border border-amber-400/60 shadow-sm inline-flex items-center gap-1">
                                   🟡 ON HOLD (Suspended)
                                 </span>
                               ) : (
-                                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[11px] font-extrabold border border-emerald-500/30">
+                                <span className="px-3 py-1.5 rounded-full bg-emerald-500/25 text-emerald-200 text-xs font-extrabold border border-emerald-400/50 shadow-sm inline-flex items-center gap-1">
                                   🟢 ACTIVE & ONLINE
                                 </span>
                               )}
                             </td>
 
+                            {/* 6. Admin Account Actions */}
                             <td className="p-4 text-right">
-                              <div className="flex items-center justify-end gap-1.5">
+                              <div className="flex items-center justify-end gap-2">
                                 <button
                                   onClick={() => setEditingAstrologer(astro)}
-                                  className="px-2.5 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs inline-flex items-center gap-1 cursor-pointer"
+                                  className="px-3 py-1.5 rounded-xl bg-amber-500/20 hover:bg-amber-500/40 border border-amber-500/50 text-amber-300 font-extrabold text-xs inline-flex items-center gap-1 cursor-pointer transition-all shadow-sm"
                                   title="Edit Full Name, Username, Phone, Manipur Address, & Password"
                                 >
                                   <Edit className="w-3.5 h-3.5" />
@@ -4070,10 +4080,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                                 <button
                                   onClick={() => handleToggleHoldAstrologer(astro.id, astro.status)}
-                                  className={`px-2.5 py-1.5 rounded-xl font-bold text-xs inline-flex items-center gap-1 border cursor-pointer transition-colors ${
+                                  className={`px-3 py-1.5 rounded-xl font-extrabold text-xs inline-flex items-center gap-1 border cursor-pointer transition-all shadow-sm ${
                                     isOnHold
-                                      ? 'bg-emerald-600/30 hover:bg-emerald-600 text-emerald-300 border-emerald-500/40'
-                                      : 'bg-amber-600/30 hover:bg-amber-600 text-amber-300 border-amber-500/40'
+                                      ? 'bg-emerald-600/30 hover:bg-emerald-500/50 text-emerald-200 border-emerald-400/50'
+                                      : 'bg-amber-600/30 hover:bg-amber-500/50 text-amber-200 border-amber-400/50'
                                   }`}
                                   title={isOnHold ? 'Re-activate Astrologer Account' : 'Put Astrologer Profile on Hold'}
                                 >
@@ -4082,7 +4092,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                                 <button
                                   onClick={() => handleDeleteAstrologerAccount(astro.id, astro.name)}
-                                  className="px-2.5 py-1.5 rounded-xl bg-red-600/20 hover:bg-red-600 text-red-300 hover:text-white border border-red-500/40 font-bold text-xs inline-flex items-center gap-1 cursor-pointer transition-colors"
+                                  className="px-3 py-1.5 rounded-xl bg-red-500/20 hover:bg-red-600/50 text-red-200 border border-red-500/40 font-extrabold text-xs inline-flex items-center gap-1 cursor-pointer transition-all shadow-sm"
                                   title="Permanently Delete Astrologer Account"
                                 >
                                   <Trash2 className="w-3.5 h-3.5" />
@@ -4366,14 +4376,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* ASTROLOGERS FINANCIAL PAYOUT TABLE */}
-              <div className={`rounded-2xl border overflow-hidden shadow-sm ${
-                theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
+              <div className={`rounded-3xl border overflow-hidden shadow-2xl transition-colors ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-300 shadow-md'
               }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-sans">
                     <thead>
-                      <tr className={`font-serif font-bold uppercase border-b ${
-                        theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-200'
+                      <tr className={`font-serif font-bold uppercase tracking-wider text-xs border-b ${
+                        theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-300'
                       }`}>
                         <th className="p-4">Online Astrologer Guru</th>
                         <th className="p-4">Specialty & Phone</th>
@@ -4386,7 +4396,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       </tr>
                     </thead>
                     <tbody className={`divide-y ${
-                      theme === 'dark' ? 'divide-[#3a506b]/40 text-white' : 'divide-slate-200 text-slate-900'
+                      theme === 'dark' ? 'divide-[#3a506b]/50 text-white' : 'divide-slate-200 text-slate-900'
                     }`}>
                       {astrologers.map((astro) => {
                         const grossEarn = astro.totalEarnings || (astro.completedCount * 350 + astro.pendingPayout);
@@ -4395,63 +4405,67 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                         return (
                           <tr key={astro.id} className={`transition-colors ${
-                            theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
+                            theme === 'dark' ? 'hover:bg-[#1c2541]/70 odd:bg-[#0b132b] even:bg-[#0f1f3d]/50' : 'hover:bg-slate-100 odd:bg-white even:bg-slate-50/70'
                           }`}>
                             <td className="p-4">
-                              <div className="font-extrabold text-sm flex items-center gap-2">
-                                <span>{astro.name}</span>
+                              <div className="font-serif font-extrabold text-base text-white dark:text-[#faf8f4]">
+                                {astro.name}
                               </div>
-                              <span className="text-xs font-mono font-bold text-sky-400 block">
-                                @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
-                              </span>
-                              <a
-                                href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-[10px] text-green-400 font-mono font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
-                              >
-                                <MessageSquare className="w-3 h-3" />
-                                <span>{astro.whatsappNo}</span>
-                              </a>
+                              <div className="inline-block mt-1">
+                                <span className="text-xs font-mono font-extrabold text-sky-300 bg-sky-950/70 px-2 py-0.5 rounded-md border border-sky-500/40">
+                                  @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                                </span>
+                              </div>
+                              <div className="mt-1.5">
+                                <a
+                                  href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/50 px-2 py-0.5 rounded-md font-mono font-extrabold hover:underline inline-flex items-center gap-1 shadow-sm transition-all"
+                                >
+                                  <MessageSquare className="w-3 h-3 text-emerald-400" />
+                                  <span>{astro.whatsappNo}</span>
+                                </a>
+                              </div>
                             </td>
 
                             <td className="p-4">
-                              <span className="text-xs font-bold block text-gray-200">
+                              <span className="text-xs font-extrabold block text-amber-300 dark:text-amber-300">
                                 {astro.specialty}
                               </span>
-                              <span className="text-[10px] text-gray-400 font-mono block">📞 {astro.phone}</span>
+                              <span className="text-xs text-slate-300 dark:text-slate-300 font-mono font-bold block mt-1">📞 {astro.phone}</span>
                             </td>
 
                             <td className="p-4 text-center font-mono font-bold">
-                              <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs">
+                              <span className="px-3 py-1.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/50 text-xs font-extrabold shadow-sm">
                                 {astro.completedCount} Consultations
                               </span>
                             </td>
 
-                            <td className="p-4 font-mono font-bold text-sky-300 text-sm">
+                            <td className="p-4 font-mono font-extrabold text-sky-300 text-sm">
                               ₹{grossEarn.toLocaleString()}
                             </td>
 
-                            <td className="p-4 font-mono font-bold text-green-400 text-sm">
+                            <td className="p-4 font-mono font-extrabold text-emerald-300 text-sm">
                               ₹{paidOut.toLocaleString()}
                             </td>
 
-                            <td className="p-4 font-mono font-extrabold text-base text-[#fbbf24]">
+                            <td className="p-4 font-mono font-extrabold text-base text-[#fbbf24] bg-amber-950/20 px-3 py-2 rounded-xl border border-amber-500/30">
                               ₹{astro.pendingPayout.toLocaleString()}
                             </td>
 
                             <td className="p-4 text-center">
                               {isRequested ? (
-                                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[11px] font-extrabold border border-amber-500/40 animate-pulse inline-flex items-center gap-1">
+                                <span className="px-3 py-1.5 rounded-full bg-amber-500/30 text-amber-200 text-xs font-extrabold border border-amber-400/60 shadow-sm animate-pulse inline-flex items-center gap-1">
                                   <span>⏳ Payout Requested</span>
                                 </span>
                               ) : (
-                                <span className="px-3 py-1 rounded-full bg-green-500/20 text-green-300 text-[11px] font-extrabold border border-green-500/30">
+                                <span className="px-3 py-1.5 rounded-full bg-emerald-500/25 text-emerald-200 text-xs font-extrabold border border-emerald-400/50 shadow-sm inline-flex items-center gap-1">
                                   ✅ All Settled
                                 </span>
                               )}
                               {astro.lastPayoutUtr && (
-                                <span className="text-[9px] text-gray-400 font-mono block mt-1">
+                                <span className="text-[10px] text-slate-400 font-mono block mt-1">
                                   Last UTR: {astro.lastPayoutUtr}
                                 </span>
                               )}
@@ -4468,7 +4482,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                     notes: 'Monthly Astrologer Commission Disbursement',
                                   });
                                 }}
-                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md inline-flex items-center gap-1.5 cursor-pointer"
+                                className="px-4 py-2 rounded-xl bg-gradient-to-r from-emerald-600 via-green-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-extrabold text-xs shadow-md inline-flex items-center gap-1.5 cursor-pointer border border-emerald-400/30 transition-all hover:scale-105"
                               >
                                 <DollarSign className="w-3.5 h-3.5" />
                                 <span>💳 Process Payout</span>
