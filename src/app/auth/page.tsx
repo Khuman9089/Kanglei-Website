@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
-import { User, Mail, Phone, MapPin, Lock, Sparkles, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw, KeyRound, MessageSquare } from 'lucide-react';
+import { User, Mail, Phone, MapPin, Lock, Sparkles, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw, KeyRound, MessageSquare, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AuthPage() {
@@ -30,6 +30,94 @@ export default function AuthPage() {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Forgot Password Modal State
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [resetStep, setResetStep] = useState<'contact' | 'otp_reset'>('contact');
+  const [resetIdentifier, setResetIdentifier] = useState('');
+  const [resetOtpInput, setResetOtpInput] = useState('');
+  const [resetNewPassword, setResetNewPassword] = useState('');
+  const [resetDemoOtp, setResetDemoOtp] = useState('');
+  const [resetMsg, setResetMsg] = useState('');
+  const [resetError, setResetError] = useState('');
+  const [resetLoading, setResetLoading] = useState(false);
+
+  const handleRequestResetOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError('');
+    setResetMsg('');
+    setResetLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'REQUEST_RESET_OTP', identifier: resetIdentifier }),
+      });
+      const data = await res.json();
+      setResetLoading(false);
+
+      if (!res.ok) {
+        setResetError(data.error || 'Failed to send OTP.');
+        return;
+      }
+
+      setResetDemoOtp(data.demoOtpCode);
+      setResetStep('otp_reset');
+      setResetMsg(`OTP sent to ${resetIdentifier}`);
+    } catch (err: any) {
+      setResetLoading(false);
+      setResetError(err.message || 'Network error');
+    }
+  };
+
+  const handleConfirmPasswordReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setResetError('');
+    setResetMsg('');
+    setResetLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'RESET_PASSWORD_WITH_OTP',
+          identifier: resetIdentifier,
+          otpCode: resetOtpInput,
+          newPassword: resetNewPassword,
+        }),
+      });
+      const data = await res.json();
+      setResetLoading(false);
+
+      if (!res.ok) {
+        setResetError(data.error || 'Password reset failed.');
+        return;
+      }
+
+      if (typeof window !== 'undefined') {
+        const existingUsers = JSON.parse(localStorage.getItem('kanglei_registered_users') || '[]');
+        const updated = existingUsers.map((u: any) =>
+          u.email.toLowerCase() === resetIdentifier.toLowerCase() || u.phone === resetIdentifier
+            ? { ...u, password: resetNewPassword }
+            : u
+        );
+        localStorage.setItem('kanglei_registered_users', JSON.stringify(updated));
+      }
+
+      setResetMsg('✅ Password reset successfully! You can now log in with your new password.');
+      setTimeout(() => {
+        setShowForgotModal(false);
+        setResetStep('contact');
+        setResetMsg('');
+        setActiveTab('login');
+      }, 2000);
+    } catch (err: any) {
+      setResetLoading(false);
+      setResetError(err.message || 'Password reset failed');
+    }
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
@@ -566,9 +654,16 @@ export default function AuthPage() {
                     <label className="font-bold text-[#0f172a] uppercase tracking-wider">
                       Password
                     </label>
-                    <a href="#" className="text-[11px] text-[#b45309] hover:underline font-bold">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setResetIdentifier(loginIdentifier);
+                        setShowForgotModal(true);
+                      }}
+                      className="text-[11px] text-[#b45309] hover:underline font-bold cursor-pointer"
+                    >
                       Forgot Password?
-                    </a>
+                    </button>
                   </div>
                   <input
                     type="password"
@@ -593,7 +688,7 @@ export default function AuthPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60"
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-60 cursor-pointer"
                 >
                   {loading ? (
                     <RefreshCw className="w-4 h-4 animate-spin" />
@@ -610,6 +705,123 @@ export default function AuthPage() {
         )}
 
       </main>
+
+      {/* FORGOT PASSWORD MODAL */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 bg-[#0f172a]/80 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-[#f3e8d2] shadow-2xl text-left font-sans">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-[#0f172a]">Reset Account Password</h3>
+                  <p className="text-xs text-gray-500">Verify your contact to set a new password</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowForgotModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {resetError && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
+                ⚠️ {resetError}
+              </div>
+            )}
+
+            {resetMsg && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                {resetMsg}
+              </div>
+            )}
+
+            {resetStep === 'contact' ? (
+              <form onSubmit={handleRequestResetOtp} className="space-y-4 text-xs">
+                <div>
+                  <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                    Registered Email or Phone Number *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. nganba@example.com or +91 98620 99881"
+                    value={resetIdentifier}
+                    onChange={(e) => setResetIdentifier(e.target.value)}
+                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-medium focus:border-[#d97706] focus:outline-none"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={resetLoading}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg cursor-pointer"
+                >
+                  {resetLoading ? 'Sending Reset OTP...' : 'Send Password Reset OTP →'}
+                </button>
+              </form>
+            ) : (
+              <form onSubmit={handleConfirmPasswordReset} className="space-y-4 text-xs">
+                {resetDemoOtp && (
+                  <div className="p-3 rounded-xl bg-amber-50 border border-amber-200 text-[#78350f] text-xs font-mono font-bold flex items-center justify-between">
+                    <span>Reset OTP Verification Code:</span>
+                    <strong className="text-sm text-[#b45309] bg-white px-2 py-0.5 rounded border border-amber-300">{resetDemoOtp}</strong>
+                  </div>
+                )}
+
+                <div>
+                  <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                    Enter 6-Digit OTP Code *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter 6-digit code"
+                    value={resetOtpInput}
+                    onChange={(e) => setResetOtpInput(e.target.value)}
+                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-center font-mono text-base font-extrabold text-[#b45309] focus:border-[#d97706] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                    Enter New Password *
+                  </label>
+                  <input
+                    type="password"
+                    required
+                    placeholder="Minimum 4 characters"
+                    value={resetNewPassword}
+                    onChange={(e) => setResetNewPassword(e.target.value)}
+                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-medium focus:border-[#d97706] focus:outline-none"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => setResetStep('contact')}
+                    className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={resetLoading}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer"
+                  >
+                    {resetLoading ? 'Resetting Password...' : 'Save New Password & Log In →'}
+                  </button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

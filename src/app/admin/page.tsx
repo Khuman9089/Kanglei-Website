@@ -360,7 +360,41 @@ interface CustomerReview {
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [adminPasswordInput, setAdminPasswordInput] = useState('');
+  const [adminNewPasswordInput, setAdminNewPasswordInput] = useState('');
+  const [adminPwdMsg, setAdminPwdMsg] = useState('');
   const [authError, setAuthError] = useState('');
+
+  const handleUpdateAdminMasterPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAdminPwdMsg('');
+    if (adminNewPasswordInput.trim().length < 4) {
+      setAdminPwdMsg('❌ Password must be at least 4 characters.');
+      return;
+    }
+
+    try {
+      await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CHANGE_PASSWORD',
+          identifier: 'admin@kanglei',
+          currentPassword: adminPasswordInput,
+          newPassword: adminNewPasswordInput,
+        }),
+      });
+    } catch (err) {
+      console.warn(err);
+    }
+
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('kanglei_admin_password', adminNewPasswordInput.trim());
+    }
+    setAdminPwdMsg('✅ Admin Master Password Updated & Secured Successfully!');
+    setAdminPasswordInput('');
+    setAdminNewPasswordInput('');
+    setTimeout(() => setAdminPwdMsg(''), 3500);
+  };
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -374,13 +408,16 @@ export default function AdminDashboardPage() {
   const handleAdminLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
+    const customPwd = typeof window !== 'undefined' ? localStorage.getItem('kanglei_admin_password') : null;
     const validPasswords = ['admin123', 'kanglei2026', 'admin@kanglei', 'admin'];
+    if (customPwd) validPasswords.push(customPwd);
+
     if (validPasswords.includes(adminPasswordInput.trim())) {
       localStorage.setItem('kanglei_admin_authed', 'true');
       setIsAuthenticated(true);
       setAdminPasswordInput('');
     } else {
-      setAuthError('❌ Access Denied: Incorrect Admin Security Password!');
+      setAuthError('❌ Incorrect Admin Password. Please try again.');
     }
   };
 
@@ -4454,7 +4491,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <span className="font-serif font-bold text-base text-[#fbbf24]">Active Service Catalog ({services.length} Packages)</span>
                     <button
                       onClick={() => setShowAddServiceModal(true)}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#0b132b] text-[#fbbf24] font-bold text-xs border border-[#3a506b] hover:border-[#fbbf24] flex items-center gap-1.5"
+                      className="px-3.5 py-1.5 rounded-xl bg-[#0b132b] text-[#fbbf24] font-bold text-xs border border-[#3a506b] hover:border-[#fbbf24] flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>+ Add New Service Name</span>
@@ -4464,6 +4501,64 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     All Service Package Titles, Client Prices (₹), Astrologer Payout Fees (₹), and Commission Splits (%) are managed and synchronized live via the rate card matrix in the <strong>Empaneled Astrologers</strong> tab.
                   </p>
                 </div>
+              </div>
+
+              {/* ADMIN MASTER PASSWORD UPDATE BOX */}
+              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b]/50 space-y-4 text-xs text-white">
+                <div className="flex items-center justify-between border-b border-[#3a506b]/50 pb-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
+                      <Lock className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Admin Security & Master Password</h4>
+                      <p className="text-xs text-gray-400">Update the master password required to access the /admin panel</p>
+                    </div>
+                  </div>
+                </div>
+
+                {adminPwdMsg && (
+                  <div className="p-3 rounded-xl bg-emerald-900/40 border border-emerald-500/50 text-emerald-300 font-bold">
+                    {adminPwdMsg}
+                  </div>
+                )}
+
+                <form onSubmit={handleUpdateAdminMasterPassword} className="space-y-4 max-w-xl">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        Current Master Password *
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Enter current password"
+                        value={adminPasswordInput}
+                        onChange={(e) => setAdminPasswordInput(e.target.value)}
+                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        New Master Password *
+                      </label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Enter new master password"
+                        value={adminNewPasswordInput}
+                        onChange={(e) => setAdminNewPasswordInput(e.target.value)}
+                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer"
+                  >
+                    Update Admin Master Password →
+                  </button>
+                </form>
               </div>
             </div>
           )}

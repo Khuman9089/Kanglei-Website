@@ -9,7 +9,7 @@ import {
   BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   Wallet, RefreshCw, Send, UploadCloud, Upload, User, Phone, Mail, MapPin, Paperclip,
-  CheckCircle, AlertCircle, Edit, Star, Heart, Baby, FileCheck,
+  CheckCircle, AlertCircle, Edit, Star, Heart, Baby, FileCheck, KeyRound,
   Hash, Sun, Flame, Disc, Compass, Car, Grid, Globe, ShoppingBag, Plus, Image as ImageIcon
 } from 'lucide-react';
 import NorthIndianChart from '@/components/charts/NorthIndianChart';
@@ -172,6 +172,66 @@ export default function AstrologerDashboard() {
     localStorage.removeItem('kanglei_astro_authed');
     localStorage.removeItem('kanglei_user');
     setIsAuthenticated(false);
+  };
+
+  // Password Change Modal State
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwdMsg, setPwdMsg] = useState('');
+  const [pwdError, setPwdError] = useState('');
+  const [pwdLoading, setPwdLoading] = useState(false);
+
+  const handleUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPwdError('');
+    setPwdMsg('');
+
+    if (newPassword !== confirmPassword) {
+      setPwdError('New passwords do not match!');
+      return;
+    }
+
+    if (newPassword.length < 4) {
+      setPwdError('Password must be at least 4 characters long.');
+      return;
+    }
+
+    setPwdLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CHANGE_PASSWORD',
+          identifier: profileForm.phone || profileForm.whatsappNo || 'astro123',
+          currentPassword,
+          newPassword,
+        }),
+      });
+
+      const data = await res.json();
+      setPwdLoading(false);
+
+      if (!res.ok) {
+        setPwdError(data.error || 'Password update failed.');
+        return;
+      }
+
+      setPwdMsg('✅ Portal password updated successfully!');
+      setTimeout(() => {
+        setShowPasswordModal(false);
+        setPwdMsg('');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      }, 2000);
+    } catch (err: any) {
+      setPwdLoading(false);
+      setPwdError(err.message || 'Failed to update password');
+    }
   };
 
   const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'wallet' | 'tools' | 'schedule' | 'profile' | 'astro_products' | 'astro_orders'>('overview');
@@ -1007,6 +1067,18 @@ Question: ${details.question || 'N/A'}`;
                   <div className="flex items-center gap-3">
                     <User className="w-4 h-4" />
                     <span>Guru Profile & Bio</span>
+                  </div>
+                </button>
+
+                <button
+                  onClick={() => setShowPasswordModal(true)}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    theme === 'dark' ? 'text-amber-300 hover:bg-[#1e293b]' : 'text-amber-800 hover:bg-amber-50 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <KeyRound className="w-4 h-4 text-amber-400" />
+                    <span>Update Password</span>
                   </div>
                 </button>
               </div>
@@ -3248,6 +3320,105 @@ Question: ${details.question || 'N/A'}`;
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ASTROLOGER CHANGE PASSWORD MODAL */}
+      {showPasswordModal && (
+        <div className="fixed inset-0 z-50 bg-[#0b132b]/85 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-[#1c2541] rounded-3xl max-w-md w-full p-6 space-y-4 border border-[#3a506b] shadow-2xl text-left font-sans text-white">
+            <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
+                  <KeyRound className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-[#fbbf24]">Update Portal Password</h3>
+                  <p className="text-xs text-gray-400">Change your Astrologer Login Passcode</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowPasswordModal(false)}
+                className="text-gray-400 hover:text-white p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {pwdError && (
+              <div className="p-3 rounded-xl bg-red-900/40 border border-red-500/50 text-red-300 text-xs font-bold">
+                ⚠️ {pwdError}
+              </div>
+            )}
+
+            {pwdMsg && (
+              <div className="p-3 rounded-xl bg-emerald-900/40 border border-emerald-500/50 text-emerald-300 text-xs font-bold">
+                {pwdMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdatePassword} className="space-y-4 text-xs">
+              <div>
+                <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">
+                  Current Password / Passcode *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter current password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">
+                  New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Minimum 4 characters"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">
+                  Confirm New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Re-type new password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-[#3a506b]">
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordModal(false)}
+                  className="px-4 py-2 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={pwdLoading}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer"
+                >
+                  {pwdLoading ? 'Saving...' : 'Update Password →'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

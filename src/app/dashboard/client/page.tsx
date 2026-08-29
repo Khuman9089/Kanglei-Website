@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { 
   LogOut, FileText, Clock, Download, MapPin, Phone, Mail, 
   Calendar, CreditCard, Plus, Eye, ChevronRight, UserCircle,
-  Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, Star
+  Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, Star, KeyRound
 } from 'lucide-react';
 
 interface KuthiOrder {
@@ -77,6 +77,66 @@ export default function ClientDashboard() {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [editForm, setEditForm] = useState(MOCK_USER);
   const [profileMsg, setProfileMsg] = useState('');
+
+  // Password Change Modal State
+  const [showClientPwdModal, setShowClientPwdModal] = useState(false);
+  const [clientCurrentPwd, setClientCurrentPwd] = useState('');
+  const [clientNewPwd, setClientNewPwd] = useState('');
+  const [clientConfirmPwd, setClientConfirmPwd] = useState('');
+  const [clientPwdMsg, setClientPwdMsg] = useState('');
+  const [clientPwdError, setClientPwdError] = useState('');
+  const [clientPwdLoading, setClientPwdLoading] = useState(false);
+
+  const handleClientUpdatePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setClientPwdError('');
+    setClientPwdMsg('');
+
+    if (clientNewPwd !== clientConfirmPwd) {
+      setClientPwdError('New passwords do not match!');
+      return;
+    }
+
+    if (clientNewPwd.length < 4) {
+      setClientPwdError('Password must be at least 4 characters long.');
+      return;
+    }
+
+    setClientPwdLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CHANGE_PASSWORD',
+          identifier: userProfile.email || userProfile.phone,
+          currentPassword: clientCurrentPwd,
+          newPassword: clientNewPwd,
+        }),
+      });
+
+      const data = await res.json();
+      setClientPwdLoading(false);
+
+      if (!res.ok) {
+        setClientPwdError(data.error || 'Password update failed.');
+        return;
+      }
+
+      setClientPwdMsg('✅ Account password updated successfully!');
+      setTimeout(() => {
+        setShowClientPwdModal(false);
+        setClientPwdMsg('');
+        setClientCurrentPwd('');
+        setClientNewPwd('');
+        setClientConfirmPwd('');
+      }, 2000);
+    } catch (err: any) {
+      setClientPwdLoading(false);
+      setClientPwdError(err.message || 'Failed to update password');
+    }
+  };
 
   // Review Modal State
   const [showWriteReviewModal, setShowWriteReviewModal] = useState(false);
@@ -420,15 +480,24 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              <button
-                onClick={() => {
-                  setEditForm(userProfile);
-                  setShowEditProfileModal(true);
-                }}
-                className="w-full py-2.5 bg-amber-50 hover:bg-amber-100 border border-[#f3e8d2] rounded-xl text-xs font-extrabold text-[#b45309] transition-colors shadow-xs cursor-pointer"
-              >
-                Edit Contact Details & Profile
-              </button>
+              <div className="space-y-2">
+                <button
+                  onClick={() => {
+                    setEditForm(userProfile);
+                    setShowEditProfileModal(true);
+                  }}
+                  className="w-full py-2.5 bg-amber-50 hover:bg-amber-100 border border-[#f3e8d2] rounded-xl text-xs font-extrabold text-[#b45309] transition-colors shadow-xs cursor-pointer"
+                >
+                  Edit Contact Details & Profile
+                </button>
+                <button
+                  onClick={() => setShowClientPwdModal(true)}
+                  className="w-full py-2.5 bg-gray-50 hover:bg-amber-50 border border-[#f3e8d2] rounded-xl text-xs font-bold text-gray-700 hover:text-[#b45309] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                >
+                  <KeyRound className="w-3.5 h-3.5 text-[#d97706]" />
+                  Change Account Password
+                </button>
+              </div>
             </motion.div>
 
             {/* Saved Kundli Profiles */}
@@ -760,6 +829,105 @@ export default function ClientDashboard() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* CLIENT CHANGE PASSWORD MODAL */}
+      {showClientPwdModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl border border-[#f3e8d2] shadow-2xl max-w-md w-full p-6 space-y-4 text-[#0f172a] text-xs">
+            <div className="flex justify-between items-center pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
+                  <KeyRound className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-lg text-[#0f172a]">Change Account Password</h3>
+                  <p className="text-xs text-gray-500">Update your client portal password</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowClientPwdModal(false)}
+                className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {clientPwdError && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-bold">
+                ⚠️ {clientPwdError}
+              </div>
+            )}
+
+            {clientPwdMsg && (
+              <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold">
+                {clientPwdMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleClientUpdatePassword} className="space-y-4 text-xs font-sans">
+              <div>
+                <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                  Current Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Enter current password"
+                  value={clientCurrentPwd}
+                  onChange={(e) => setClientCurrentPwd(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs focus:border-[#d97706] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                  New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Minimum 4 characters"
+                  value={clientNewPwd}
+                  onChange={(e) => setClientNewPwd(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs focus:border-[#d97706] focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                  Confirm New Password *
+                </label>
+                <input
+                  type="password"
+                  required
+                  placeholder="Re-type new password"
+                  value={clientConfirmPwd}
+                  onChange={(e) => setClientConfirmPwd(e.target.value)}
+                  className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs focus:border-[#d97706] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-gray-100">
+                <button
+                  type="button"
+                  onClick={() => setShowClientPwdModal(false)}
+                  className="px-4 py-2 rounded-xl bg-gray-100 text-gray-700 font-bold text-xs cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={clientPwdLoading}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#b45309] to-[#d97706] text-white font-extrabold text-xs shadow-md cursor-pointer"
+                >
+                  {clientPwdLoading ? 'Saving...' : 'Update Password →'}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
