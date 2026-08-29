@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import { Search, ChevronDown, CheckCircle2, Star, MessageCircle, Sparkles, Filter, Phone, ArrowUpDown } from 'lucide-react';
 import Link from 'next/link';
 
+import ConsultationBookingModal from '@/components/consultation/ConsultationBookingModal';
+
 interface AstrologerItem {
   id: string;
   name: string;
@@ -40,6 +42,17 @@ export default function AstrologersDirectoryPage() {
   const [sortBy, setSortBy] = useState<'rating' | 'priceAsc' | 'priceDesc' | 'experience'>('rating');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
 
+  // Consultation Flow Modal State
+  const [selectedAstrologerForModal, setSelectedAstrologerForModal] = useState<AstrologerItem | null>(null);
+  const [modalMode, setModalMode] = useState<'CHAT' | 'CALL'>('CHAT');
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+
+  const handleOpenConsultation = (astro: AstrologerItem, mode: 'CHAT' | 'CALL') => {
+    setSelectedAstrologerForModal(astro);
+    setModalMode(mode);
+    setIsBookingModalOpen(true);
+  };
+
   useEffect(() => {
     fetch('/api/astrologers')
       .then((res) => res.json())
@@ -53,12 +66,6 @@ export default function AstrologersDirectoryPage() {
       })
       .catch((err) => console.error('Error fetching astrologers directory:', err));
   }, []);
-
-  const handleStartChat = (astro: AstrologerItem) => {
-    const msg = `🙏 Hello! I want to start a live consultation with ${astro.name} on KangleiAstro.`;
-    const cleanPhone = astro.whatsappPhone ? astro.whatsappPhone.replace(/[^0-9]/g, '') : '919862099881';
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-  };
 
   // Filtered & Sorted Astrologers
   const filteredAstrologers = astrologers
@@ -100,7 +107,7 @@ export default function AstrologersDirectoryPage() {
           </p>
         </div>
 
-        {/* Search Bar & Category Filter Controls Ribbon (Matching Reference Layout) */}
+        {/* Search Bar & Category Filter Controls Ribbon */}
         <div className="bg-white p-4 rounded-3xl border border-[#f3e8d2] shadow-xs space-y-4">
           <div className="flex flex-col md:flex-row items-center gap-3">
             
@@ -265,21 +272,31 @@ export default function AstrologersDirectoryPage() {
                       </div>
                     </div>
 
-                    {/* Chat Now Pill Button */}
-                    <button
-                      onClick={() => handleStartChat(astro)}
-                      className="w-full py-2.5 px-4 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-2 shadow-2xs group-hover:bg-emerald-500 group-hover:text-white"
-                    >
-                      <MessageCircle className="w-4 h-4" />
-                      <span>Chat now</span>
-                    </button>
+                    {/* TWO Pill Buttons: Chat & Call (Matching Reference Image) */}
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() => handleOpenConsultation(astro, 'CHAT')}
+                        className="flex-1 py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                      >
+                        <MessageCircle className="w-3.5 h-3.5" />
+                        <span>Chat</span>
+                      </button>
+
+                      <button
+                        onClick={() => handleOpenConsultation(astro, 'CALL')}
+                        className="flex-1 py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                      >
+                        <Phone className="w-3.5 h-3.5" />
+                        <span>Call</span>
+                      </button>
+                    </div>
                   </motion.div>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Right Sidebar: TRENDING NOW - Most consulted this week (4 Cols on Desktop) */}
+          {/* Right Sidebar: TRENDING NOW - Most consulted this week */}
           <div className="lg:col-span-4">
             <div className="sticky top-28 bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-sm space-y-5">
               <div>
@@ -326,12 +343,20 @@ export default function AstrologersDirectoryPage() {
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => handleStartChat(astro)}
-                      className="px-3.5 py-1.5 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors shrink-0"
-                    >
-                      Chat
-                    </button>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        onClick={() => handleOpenConsultation(astro, 'CHAT')}
+                        className="px-2.5 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors"
+                      >
+                        Chat
+                      </button>
+                      <button
+                        onClick={() => handleOpenConsultation(astro, 'CALL')}
+                        className="px-2.5 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors"
+                      >
+                        Call
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -351,6 +376,14 @@ export default function AstrologersDirectoryPage() {
         </div>
 
       </div>
+
+      {/* MULTI-STEP CONSULTATION BOOKING MODAL */}
+      <ConsultationBookingModal
+        astrologer={selectedAstrologerForModal}
+        mode={modalMode}
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+      />
     </div>
   );
 }
