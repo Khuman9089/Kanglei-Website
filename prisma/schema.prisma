@@ -1,0 +1,334 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────────────────────
+// AUTH & USER MODELS
+// ─────────────────────────────────────────────────────────────
+
+model User {
+  id              String         @id @default(cuid())
+  name            String?
+  email           String         @unique
+  emailVerified   DateTime?
+  hashedPassword  String?
+  image           String?
+  phone           String?
+  whatsappNo      String?
+  address         String?
+  sex             String?        // "Male", "Female", "Other"
+  isVerified      Boolean        @default(false)
+  otpCode         String?
+  otpExpiresAt    DateTime?
+  role            UserRole       @default(CLIENT)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  accounts        Account[]
+  sessions        Session[]
+  birthProfiles   BirthProfile[]
+  bookings        Booking[]
+  payments        Payment[]
+  reports         Report[]
+
+  @@index([email])
+}
+
+enum UserRole {
+  CLIENT
+  ADMIN
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ─────────────────────────────────────────────────────────────
+// BIRTH PROFILES & CHART DATA
+// ─────────────────────────────────────────────────────────────
+
+model BirthProfile {
+  id           String    @id @default(cuid())
+  userId       String?
+  name         String
+  gender       Gender
+  dateOfBirth  DateTime
+  timeOfBirth  String             // "HH:mm" format
+  placeName    String
+  latitude     Float
+  longitude    Float
+  timezone     String             // IANA timezone e.g. "Asia/Kolkata"
+  utcOffset    Float              // UTC offset in hours e.g. 5.5
+  ayanamsa     Ayanamsa           @default(LAHIRI)
+  createdAt    DateTime           @default(now())
+
+  user         User?              @relation(fields: [userId], references: [id])
+  bookings     Booking[]
+  reports      Report[]
+  chartData    ChartData?
+
+  @@index([userId])
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+}
+
+enum Ayanamsa {
+  LAHIRI
+  RAMAN
+  KRISHNAMURTI
+  YUKTESHWAR
+}
+
+model ChartData {
+  id              String       @id @default(cuid())
+  birthProfileId  String       @unique
+  planets         Json         // Array of PlanetPosition objects
+  houses          Json         // Array of HouseData objects
+  nakshatras      Json         // Nakshatra data for each planet
+  dashas          Json         // Full Vimshottari Dasha tree
+  d9Chart         Json?        // Navamsha (D9) positions
+  ascendant       Float        // Lagna degree (sidereal)
+  moonSign        Int          // Moon rashi index (0-11)
+  sunSign         Int          // Sun rashi index (0-11)
+  calculatedAt    DateTime     @default(now())
+
+  birthProfile    BirthProfile @relation(fields: [birthProfileId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────────────────────────
+// SERVICES & BOOKING
+// ─────────────────────────────────────────────────────────────
+
+model Service {
+  id           String          @id @default(cuid())
+  name         String
+  slug         String          @unique
+  description  String          @db.Text
+  category     ServiceCategory
+  duration     Int?            // Duration in minutes (for consultations)
+  price        Decimal         @db.Decimal(10, 2)
+  currency     String          @default("INR")
+  isActive     Boolean         @default(true)
+  sortOrder    Int             @default(0)
+  features     String[]        // List of included features
+  createdAt    DateTime        @default(now())
+
+  bookings     Booking[]
+  reports      Report[]
+}
+
+enum ServiceCategory {
+  CONSULTATION_AUDIO
+  CONSULTATION_VIDEO
+  REPORT_AUTOMATED
+  REPORT_MANUAL
+  EXPRESS_QUESTION
+}
+
+model Booking {
+  id              String        @id @default(cuid())
+  referenceId     String        @unique @default(cuid())
+  userId          String
+  serviceId       String
+  birthProfileId  String
+  scheduledAt     DateTime      // The appointment date/time (UTC)
+  duration        Int           // In minutes
+  status          BookingStatus @default(PENDING)
+  meetingLink     String?       // Zoom/Meet link
+  calendarEventId String?       // Google Calendar event ID
+  notes           String?       @db.Text
+  question        String?       @db.Text  // For "Ask a Question" service
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  user            User          @relation(fields: [userId], references: [id])
+  service         Service       @relation(fields: [serviceId], references: [id])
+  birthProfile    BirthProfile  @relation(fields: [birthProfileId], references: [id])
+  payment         Payment?
+
+  @@index([userId, status])
+  @@index([scheduledAt])
+}
+
+enum BookingStatus {
+  PENDING
+  PENDING_PAYMENT
+  CONFIRMED
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+// ─────────────────────────────────────────────────────────────
+// PAYMENTS (Manual UPI Verification)
+// ─────────────────────────────────────────────────────────────
+
+model Payment {
+  id               String        @id @default(cuid())
+  userId           String
+  bookingId        String?       @unique
+  reportId         String?       @unique
+  amount           Decimal       @db.Decimal(10, 2)
+  currency         String        @default("INR")
+  status           PaymentStatus @default(PENDING)
+  upiTransactionId String?       // UTR number entered by client
+  screenshotUrl    String?       // Uploaded payment screenshot path
+  adminNotes       String?       // Admin verification notes
+  verifiedBy       String?       // Admin user ID who verified
+  verifiedAt       DateTime?     // When payment was verified
+  paidAt           DateTime?
+  createdAt        DateTime      @default(now())
+
+  user             User          @relation(fields: [userId], references: [id])
+  booking          Booking?      @relation(fields: [bookingId], references: [id])
+  report           Report?       @relation(fields: [reportId], references: [id])
+
+  @@index([userId, status])
+  @@index([status])
+}
+
+enum PaymentStatus {
+  PENDING           // Awaiting client payment
+  SUBMITTED         // Client uploaded proof, awaiting admin review
+  VERIFIED          // Admin confirmed payment
+  REJECTED          // Admin rejected (invalid screenshot/UTR)
+  REFUNDED
+}
+
+// ─────────────────────────────────────────────────────────────
+// REPORTS
+// ─────────────────────────────────────────────────────────────
+
+model Report {
+  id              String       @id @default(cuid())
+  userId          String
+  serviceId       String
+  birthProfileId  String
+  type            ReportType
+  status          ReportStatus @default(PENDING)
+  pdfUrl          String?      // Storage URL for generated PDF
+  generatedData   Json?        // Structured report data
+  adminNotes      String?      @db.Text
+  createdAt       DateTime     @default(now())
+  completedAt     DateTime?
+
+  user            User         @relation(fields: [userId], references: [id])
+  service         Service      @relation(fields: [serviceId], references: [id])
+  birthProfile    BirthProfile @relation(fields: [birthProfileId], references: [id])
+  payment         Payment?
+
+  @@index([userId, status])
+}
+
+enum ReportType {
+  BASIC_KUNDLI
+  DETAILED_HOROSCOPE
+  CAREER_REPORT
+  MARRIAGE_REPORT
+  GEMSTONE_ANALYSIS
+  REMEDIAL_REPORT
+  GUN_MILAN
+}
+
+enum ReportStatus {
+  PENDING
+  GENERATING
+  REVIEW
+  COMPLETED
+  FAILED
+}
+
+// ─────────────────────────────────────────────────────────────
+// AVAILABILITY & SCHEDULING
+// ─────────────────────────────────────────────────────────────
+
+model Availability {
+  id          String   @id @default(cuid())
+  dayOfWeek   Int      // 0=Sunday, 6=Saturday
+  startTime   String   // "09:00" 24hr format
+  endTime     String   // "17:00" 24hr format
+  isActive    Boolean  @default(true)
+  timezone    String   @default("Asia/Kolkata")
+}
+
+model BlockedDate {
+  id      String   @id @default(cuid())
+  date    DateTime
+  reason  String?
+}
+
+// ─────────────────────────────────────────────────────────────
+// TESTIMONIALS & SITE SETTINGS
+// ─────────────────────────────────────────────────────────────
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  location  String?
+  content   String   @db.Text
+  rating    Int      @default(5)
+  videoUrl  String?
+  isVisible Boolean  @default(true)
+  createdAt DateTime @default(now())
+}
+
+model SiteSettings {
+  id                  String  @id @default("default")
+  astrologerName      String  @default("Astrologer")
+  astrologerBio       String? @db.Text
+  astrologerImage     String?
+  consultationsDone   Int     @default(0)
+  yearsExperience     Int     @default(0)
+  bufferMinutes       Int     @default(15)
+  defaultTimezone     String  @default("Asia/Kolkata")
+  upiId               String  @default("astrologer@upi")
+  upiQrImageUrl       String?
+  upiHolderName       String  @default("Astrologer Name")
+}

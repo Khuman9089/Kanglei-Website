@@ -1,0 +1,96 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────────
+   KangleiAstro Bright Luminous Gold & Ivory Design System
+   ───────────────────────────────────────────────────────────── */
+
+:root {
+  --midnight-900: #0f172a;
+  --midnight-800: #1e293b;
+  --midnight-700: #334155;
+
+  --gold-700: #b45309;
+  --gold-600: #d97706;
+  --gold-500: #f59e0b;
+  --gold-400: #fbbf24;
+  --gold-100: #fef3c7;
+
+  --bright-bg: #fffdfa;
+  --bright-card: #ffffff;
+  --bright-cream: #faf8f4;
+  --bright-border: #f3e8d2;
+
+  --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-cormorant: 'Cormorant Garamond', Georgia, Cambria, 'Times New Roman', Times, serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 108%; /* Scales base rem sizing proportionally across all pages for bigger, comfortable typography */
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #fffdfa;
+  color: #0f172a;
+  font-family: var(--font-inter);
+  line-height: 1.65;
+  font-size: 1.05rem; /* Larger baseline body text */
+  margin: 0;
+  padding: 0;
+}
+
+/* Explicit typography overrides */
+.font-serif {
+  font-family: 'Cormorant Garamond', Georgia, serif !important;
+}
+
+.font-sans {
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* Bright Glassmorphism Card Utility */
+.glass-card {
+  background-color: #ffffff;
+  border: 1px solid #f3e8d2;
+  border-radius: 1.5rem;
+  box-shadow: 0 10px 40px rgba(217, 119, 6, 0.06);
+}
+
+/* Gold Gradient Text */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #b45309, #d97706, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Continuous Infinite Marquee Ticker */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  display: inline-flex;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
