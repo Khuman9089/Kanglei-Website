@@ -18,6 +18,7 @@ interface Astrologer {
   specialty: string;
   phone: string;
   whatsappNo: string;
+  password?: string;
   completedCount: number;
   pendingPayout: number;
   totalEarnings?: number;
@@ -1524,16 +1525,18 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleSaveAstrologer = (e: React.FormEvent) => {
+  const handleSaveAstrologer = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingAstrologer?.name || !editingAstrologer?.whatsappNo) return;
 
+    const pwd = editingAstrologer.password || 'astro123';
     const newAstro: Astrologer = {
       id: editingAstrologer.id || 'astro-' + Date.now(),
       name: editingAstrologer.name,
       specialty: editingAstrologer.specialty || 'Vedic Horoscope Specialist',
       phone: editingAstrologer.phone || editingAstrologer.whatsappNo,
       whatsappNo: editingAstrologer.whatsappNo,
+      password: pwd,
       completedCount: editingAstrologer.completedCount || 0,
       pendingPayout: editingAstrologer.pendingPayout || 0,
     };
@@ -1548,7 +1551,17 @@ export default function AdminDashboardPage() {
       return [...prev, newAstro];
     });
 
-    setSaveAlert('Empaneled Astrologer Registered Successfully!');
+    try {
+      await fetch('/api/astrologers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'SAVE_ASTROLOGER', astrologer: newAstro }),
+      });
+    } catch (err) {
+      console.warn('API save astrologer:', err);
+    }
+
+    setSaveAlert(`Empaneled Astrologer ${newAstro.name} saved with portal password!`);
     setEditingAstrologer(null);
     setTimeout(() => setSaveAlert(''), 3000);
   };
@@ -3619,35 +3632,55 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* ASTROLOGER REGISTRATION / EDIT MODAL */}
               {editingAstrologer && (
                 <form onSubmit={handleSaveAstrologer} className="p-5 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-3 font-sans text-xs">
-                  <h4 className="font-bold text-[#fbbf24] text-sm">Register / Edit Empaneled Astrologer</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                    <input
-                      type="text"
-                      required
-                      placeholder="Astrologer Full Name"
-                      value={editingAstrologer.name || ''}
-                      onChange={(e) => setEditingAstrologer({ ...editingAstrologer, name: e.target.value })}
-                      className="p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Specialty (e.g. Navamsha D9)"
-                      value={editingAstrologer.specialty || ''}
-                      onChange={(e) => setEditingAstrologer({ ...editingAstrologer, specialty: e.target.value })}
-                      className="p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white text-xs"
-                    />
-                    <input
-                      type="text"
-                      required
-                      placeholder="WhatsApp No. (+91 98620 00000)"
-                      value={editingAstrologer.whatsappNo || ''}
-                      onChange={(e) => setEditingAstrologer({ ...editingAstrologer, whatsappNo: e.target.value })}
-                      className="p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-[#fbbf24] font-mono font-bold text-xs"
-                    />
+                  <h4 className="font-bold text-[#fbbf24] text-sm">Register / Edit Empaneled Astrologer & Portal Password</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Full Name *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Astrologer Full Name"
+                        value={editingAstrologer.name || ''}
+                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, name: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Specialty</label>
+                      <input
+                        type="text"
+                        placeholder="Specialty (e.g. Navamsha D9)"
+                        value={editingAstrologer.specialty || ''}
+                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, specialty: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">WhatsApp / Phone *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="+91 98620 00000"
+                        value={editingAstrologer.whatsappNo || ''}
+                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, whatsappNo: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-[#fbbf24] font-mono font-bold text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Assign Portal Password *</label>
+                      <input
+                        type="password"
+                        required
+                        placeholder="Assign password (e.g. astro123)"
+                        value={editingAstrologer.password || ''}
+                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, password: e.target.value })}
+                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
                   </div>
-                  <div className="flex justify-end gap-2 pt-1">
-                    <button type="button" onClick={() => setEditingAstrologer(null)} className="px-4 py-2 rounded-xl bg-[#1c2541] text-gray-300">Cancel</button>
-                    <button type="submit" className="px-6 py-2 rounded-xl bg-[#d97706] text-white font-bold">Save Astrologer</button>
+                  <div className="flex justify-end gap-2 pt-1 border-t border-[#3a506b]/40">
+                    <button type="button" onClick={() => setEditingAstrologer(null)} className="px-4 py-2 rounded-xl bg-[#1c2541] text-gray-300 font-bold cursor-pointer">Cancel</button>
+                    <button type="submit" className="px-6 py-2 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold cursor-pointer">Save Astrologer Account & Password →</button>
                   </div>
                 </form>
               )}

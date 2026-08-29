@@ -70,6 +70,7 @@ export async function POST(request: Request) {
             );
           }
 
+          const userRoleStr = String(dbUser.role);
           return NextResponse.json({
             success: true,
             user: {
@@ -80,10 +81,10 @@ export async function POST(request: Request) {
               whatsappNo: dbUser.whatsappNo,
               sex: dbUser.sex,
               address: dbUser.address,
-              role: dbUser.role,
+              role: userRoleStr,
               joinedAt: dbUser.createdAt.toISOString().split('T')[0],
             },
-            redirectTo: dbUser.role === 'ASTROLOGER' ? '/dashboard/astrologer' : (dbUser.role === 'ADMIN' ? '/admin' : '/dashboard/client'),
+            redirectTo: userRoleStr === 'ASTROLOGER' ? '/dashboard/astrologer' : (userRoleStr === 'ADMIN' ? '/admin' : '/dashboard/client'),
           });
         }
       } catch (dbErr) {

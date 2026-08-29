@@ -212,6 +212,8 @@ export async function GET() {
   });
 }
 
+import prisma from '@/lib/db';
+
 export async function POST(req: Request) {
   try {
     const body = await req.json();
@@ -224,13 +226,40 @@ export async function POST(req: Request) {
       astrologersStore = body.astrologers;
     }
 
-    // Support single astrologer update (e.g., from Astrologer Dashboard or Admin)
-    if (body.updateAstrologer && body.updateAstrologer.id) {
-      const idx = astrologersStore.findIndex((a) => a.id === body.updateAstrologer.id || a.email === body.updateAstrologer.email);
+    const astro = body.astrologer || body.updateAstrologer;
+    if (astro && astro.name) {
+      const idx = astrologersStore.findIndex((a) => a.id === astro.id || a.whatsappPhone === astro.whatsappNo);
       if (idx !== -1) {
-        astrologersStore[idx] = { ...astrologersStore[idx], ...body.updateAstrologer };
+        astrologersStore[idx] = { ...astrologersStore[idx], ...astro };
       } else {
-        astrologersStore.push(body.updateAstrologer);
+        astrologersStore.push(astro);
+      }
+
+      // Persist in Prisma Database if DATABASE_URL is configured
+      if (process.env.DATABASE_URL) {
+        try {
+          const emailStr = astro.email || `astro-${(astro.whatsappNo || '000').replace(/[^\d]/g, '')}@kangleiastro.com`;
+          await prisma.user.upsert({
+            where: { email: emailStr },
+            update: {
+              name: astro.name,
+              phone: astro.phone || astro.whatsappNo,
+              whatsappNo: astro.whatsappNo,
+              hashedPassword: astro.password || 'astro123',
+              role: 'ASTROLOGER',
+            },
+            create: {
+              name: astro.name,
+              email: emailStr,
+              phone: astro.phone || astro.whatsappNo,
+              whatsappNo: astro.whatsappNo,
+              hashedPassword: astro.password || 'astro123',
+              role: 'ASTROLOGER',
+            },
+          });
+        } catch (dbErr) {
+          console.warn('Prisma Astrologer upsert error:', dbErr);
+        }
       }
     }
 
