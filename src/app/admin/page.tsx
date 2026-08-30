@@ -35,6 +35,13 @@ interface Astrologer {
   showOnHome?: boolean;
 }
 
+interface SubServiceItem {
+  id: string;
+  title: string;
+  price: number;
+  description?: string;
+}
+
 interface ManagedService {
   id: string;
   badge: string;
@@ -46,6 +53,7 @@ interface ManagedService {
   cta: string;
   link?: string;
   active: boolean;
+  subServices?: SubServiceItem[];
 }
 
 interface ProductItem {
@@ -231,23 +239,48 @@ const INITIAL_SERVICES: ManagedService[] = [
   {
     id: 's-1',
     badge: 'Popular',
-    title: 'Career & Financial Outlook',
-    description: 'In-depth analysis of job changes, business growth, wealth Yogas, and favorable timing for investments.',
+    title: 'Kuthi Yengba (Horoscope Analysis & Remedies)',
+    description: 'In-depth analysis of natal Kundali, Vimshottari Dasha, planetary transits, and customized Manipuri Vedic remedies.',
     features: [
-      'D1 Rashi & D10 Dasamsha chart analysis',
+      'D1 Rashi & D9 Navamsha chart analysis',
       'Favorable promotion & job change windows',
       'Personalized wealth accumulation remedies',
     ],
-    price: '₹1,499',
-    astroPayoutFee: 899,
-    cta: 'Book Now',
-    link: '/kundli',
+    price: '₹499',
+    astroPayoutFee: 300,
+    cta: 'Order Kuthi Yengba',
+    link: '/manipuri_kuthi_yengba',
     active: true,
+    subServices: [
+      { id: 'sub-101', title: 'Standard Kuthi Yengba (Detailed Dasha & Remedies)', price: 499, description: 'Complete analysis delivered to your WhatsApp within 12 Hours.' },
+      { id: 'sub-102', title: 'Express Fast-Track Kuthi Yengba (Delivered within 4 Hours)', price: 799, description: 'Priority queue processing delivered within 4 Hours.' },
+      { id: 'sub-103', title: 'Comprehensive 5-Year Life Roadmap Kuthi Report', price: 1199, description: 'Full 5-year planetary transit timeline and personalized remedies PDF.' },
+    ],
   },
   {
     id: 's-2',
+    badge: 'Traditional',
+    title: 'Kuthi Iba (Handwritten Kuthi Creation - কুঠি ইবা)',
+    description: 'Authentic hand-written Kuthi birth scroll prepared on sacred parchment by experienced Vedic Acharyas.',
+    features: [
+      'Handwritten D1 Rashi & D9 Navamsha charts',
+      'Consecrated with sacred Vedic Mantras',
+      'Physical home delivery across Manipur & India',
+    ],
+    price: '₹899',
+    astroPayoutFee: 550,
+    cta: 'Order Kuthi Iba',
+    link: '/manipuri_kuthi_yengba?service=s-2',
+    active: true,
+    subServices: [
+      { id: 'sub-201', title: 'Standard Handwritten Kuthi Paper (Single Child)', price: 899, description: 'Traditional handwritten birth scroll on sacred parchment.' },
+      { id: 'sub-202', title: 'Premium Gold-Stamped Traditional Kuthi Scroll', price: 1499, description: 'Deluxe gold-bordered scroll in protective sacred case.' },
+    ],
+  },
+  {
+    id: 's-3',
     badge: 'High Accuracy',
-    title: 'Marriage & Relationship Matching',
+    title: 'Pakna Wainaba Yengba (Kundli Matching & 36-Gun Milan)',
     description: 'Complete 36-Gun Ashtakoot Milan, Manglik Dosh analysis, and mental/emotional compatibility assessment.',
     features: [
       '36-Points Ashtakoot breakdown',
@@ -259,9 +292,13 @@ const INITIAL_SERVICES: ManagedService[] = [
     cta: 'Check Compatibility',
     link: '/matching',
     active: true,
+    subServices: [
+      { id: 'sub-301', title: '36-Gun Ashtakoot Match & Manglik Check', price: 1299, description: 'Detailed 36-point compatibility report for couple pair.' },
+      { id: 'sub-302', title: 'Full D9 Navamsha Couple Compatibility & Remedial Report', price: 1999, description: 'Comprehensive marriage compatibility with specific remedial pujas.' },
+    ],
   },
   {
-    id: 's-3',
+    id: 's-4',
     badge: 'Best Value',
     title: '1-on-1 Live Master Consultation',
     description: 'Direct face-to-face video consultation with our Master Vedic Astrologer with instant remedial guidance.',
@@ -273,24 +310,12 @@ const INITIAL_SERVICES: ManagedService[] = [
     price: '₹2,499',
     astroPayoutFee: 1499,
     cta: 'Book Consultation',
-    link: 'https://wa.me/918837487801?text=Hi%20Master%20Astrologer,%20I%20want%20to%20book%20a%201-on-1%20Live%20Consultation',
+    link: '/manipuri_kuthi_yengba?service=s-4',
     active: true,
-  },
-  {
-    id: 's-4',
-    badge: 'Annual Report',
-    title: 'Yearly Transit Outlook Report',
-    description: 'Detailed 20+ page annual forecast covering major planetary transits (Saturn, Jupiter, Rahu-Ketu).',
-    features: [
-      'Month-by-month prediction breakdown',
-      'Transit impact on natal Moon sign',
-      'Gemstone & Mantra recommendations',
+    subServices: [
+      { id: 'sub-401', title: '30-Minute Video/Phone Session', price: 1499, description: 'Direct 30-minute consultation with Master Astrologer.' },
+      { id: 'sub-402', title: '60-Minute Deep Consultation + Recorded Session & PDF Remedies', price: 2499, description: 'Full 60-minute session with recorded audio and written PDF remedies.' },
     ],
-    price: '₹999',
-    astroPayoutFee: 599,
-    cta: 'Order Report',
-    link: '/kundli/report',
-    active: true,
   },
 ];
 
@@ -1340,6 +1365,51 @@ export default function AdminDashboardPage() {
           const updatedFeatures = [...s.features];
           updatedFeatures[featureIndex] = newText;
           return { ...s, features: updatedFeatures };
+        }
+        return s;
+      })
+    );
+  };
+
+  const handleAddSubService = (serviceId: string) => {
+    setServices((prev) =>
+      prev.map((s) => {
+        if (s.id === serviceId) {
+          const newSub: SubServiceItem = {
+            id: 'sub-' + Date.now(),
+            title: 'New Sub-Service Option',
+            price: 499,
+            description: 'Sub-service details and delivery turnaround.',
+          };
+          return { ...s, subServices: [...(s.subServices || []), newSub] };
+        }
+        return s;
+      })
+    );
+  };
+
+  const handleUpdateSubService = (serviceId: string, subId: string, field: 'title' | 'price' | 'description', value: any) => {
+    setServices((prev) =>
+      prev.map((s) => {
+        if (s.id === serviceId && s.subServices) {
+          const updatedSubs = s.subServices.map((sub) => {
+            if (sub.id === subId) {
+              return { ...sub, [field]: field === 'price' ? (parseInt(value) || 0) : value };
+            }
+            return sub;
+          });
+          return { ...s, subServices: updatedSubs };
+        }
+        return s;
+      })
+    );
+  };
+
+  const handleRemoveSubService = (serviceId: string, subId: string) => {
+    setServices((prev) =>
+      prev.map((s) => {
+        if (s.id === serviceId && s.subServices) {
+          return { ...s, subServices: s.subServices.filter((sub) => sub.id !== subId) };
         }
         return s;
       })
@@ -4678,9 +4748,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         const astroPct = clientPriceNum > 0 ? Math.round((payoutNum / clientPriceNum) * 100) : 0;
 
                         return (
-                          <tr key={serv.id} className={`transition-colors ${
-                            theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
-                          }`}>
+                          <React.Fragment key={serv.id}>
+                            <tr className={`transition-colors ${
+                              theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
+                            }`}>
                             {/* Service Title & Badge inputs */}
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2">
@@ -4802,7 +4873,67 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               )}
                             </td>
                           </tr>
-                        );
+
+                          {/* SUB-SERVICES MANAGER INNER ROW */}
+                          <tr key={`${serv.id}-subs`} className={theme === 'dark' ? 'bg-[#0b132b]/80' : 'bg-slate-50/80'}>
+                            <td colSpan={7} className="px-6 py-4 border-b border-gray-700/40">
+                              <div className="space-y-3">
+                                <div className="flex items-center justify-between">
+                                  <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#d97706]">
+                                    <Sparkles className="w-4 h-4" />
+                                    <span>Sub-Services & Specific Pricing Menu for "{serv.title}"</span>
+                                  </div>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleAddSubService(serv.id)}
+                                    className="px-3 py-1.5 rounded-lg bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold text-xs flex items-center gap-1 transition-all cursor-pointer"
+                                  >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    <span>+ Add Sub-Service Option</span>
+                                  </button>
+                                </div>
+
+                                {(!serv.subServices || serv.subServices.length === 0) ? (
+                                  <p className="text-xs text-gray-400 italic">No sub-services defined for this category yet.</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {serv.subServices.map((sub) => (
+                                      <div key={sub.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#1c2541]/90 border border-[#3a506b] text-xs">
+                                        <div className="flex-1 flex flex-col sm:flex-row items-center gap-3">
+                                          <input
+                                            type="text"
+                                            value={sub.title}
+                                            onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'title', e.target.value)}
+                                            className="w-full sm:w-80 h-9 px-3 rounded-lg border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                            placeholder="Sub-Service Option Title"
+                                          />
+                                          <div className="flex items-center gap-1.5 shrink-0">
+                                            <span className="font-bold text-[#fbbf24]">Price (₹):</span>
+                                            <input
+                                              type="number"
+                                              value={sub.price}
+                                              onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'price', e.target.value)}
+                                              className="w-24 h-9 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
+                                            />
+                                          </div>
+                                        </div>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleRemoveSubService(serv.id, sub.id)}
+                                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors cursor-pointer"
+                                          title="Remove Sub-service"
+                                        >
+                                          <Trash2 className="w-4 h-4" />
+                                        </button>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        </React.Fragment>
+                      );
                       })}
                     </tbody>
                   </table>

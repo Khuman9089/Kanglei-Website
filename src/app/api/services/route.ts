@@ -2,16 +2,24 @@ import { NextResponse } from 'next/server';
 
 export const dynamic = 'force-static';
 
+export interface SubServiceItem {
+  id: string;
+  title: string;
+  price: number;
+  description?: string;
+}
+
 export interface ServiceItem {
   id: string;
-  badge: string;
+  badge?: string;
   title: string;
-  description: string;
-  features: string[];
-  price: string;
-  cta: string;
-  link: string;
+  description?: string;
+  features?: string[];
+  price?: string;
+  cta?: string;
+  link?: string;
   active: boolean;
+  subServices: SubServiceItem[];
 }
 
 // Global in-memory store for live persistence across admin edits & site views
@@ -19,22 +27,71 @@ let storedServices: ServiceItem[] = [
   {
     id: 's-1',
     badge: 'Popular',
-    title: 'Career & Financial Outlook',
-    description: 'In-depth analysis of job changes, business growth, wealth Yogas, and favorable timing for investments.',
+    title: 'Kuthi Yengba (Horoscope Analysis & Remedies)',
+    description: 'In-depth analysis of natal Kundali, Vimshottari Dasha, planetary transits, and customized Manipuri Vedic remedies.',
     features: [
-      'D1 Rashi & D10 Dasamsha chart analysis',
+      'D1 Rashi & D9 Navamsha chart analysis',
       'Favorable promotion & job change windows',
       'Personalized wealth accumulation remedies',
     ],
-    price: '₹1,499',
-    cta: 'Book Now',
-    link: '/booking?service=express-consultation-30',
+    price: '₹499',
+    cta: 'Order Kuthi Yengba',
+    link: '/manipuri_kuthi_yengba',
     active: true,
+    subServices: [
+      {
+        id: 'sub-101',
+        title: 'Standard Kuthi Yengba (Detailed Dasha & Remedies)',
+        price: 499,
+        description: 'Complete analysis delivered to your WhatsApp within 12 Hours.',
+      },
+      {
+        id: 'sub-102',
+        title: 'Express Fast-Track Kuthi Yengba (Delivered within 4 Hours)',
+        price: 799,
+        description: 'Priority queue processing delivered within 4 Hours.',
+      },
+      {
+        id: 'sub-103',
+        title: 'Comprehensive 5-Year Life Roadmap Kuthi Report',
+        price: 1199,
+        description: 'Full 5-year planetary transit timeline and personalized remedies PDF.',
+      },
+    ],
   },
   {
     id: 's-2',
+    badge: 'Traditional',
+    title: 'Kuthi Iba (Handwritten Kuthi Creation - কুঠি ইবা)',
+    description: 'Authentic hand-written Kuthi birth scroll prepared on sacred parchment by experienced Vedic Acharyas.',
+    features: [
+      'Handwritten D1 Rashi & D9 Navamsha charts',
+      'Consecrated with sacred Vedic Mantras',
+      'Physical home delivery across Manipur & India',
+    ],
+    price: '₹899',
+    cta: 'Order Kuthi Iba',
+    link: '/manipuri_kuthi_yengba?service=s-2',
+    active: true,
+    subServices: [
+      {
+        id: 'sub-201',
+        title: 'Standard Handwritten Kuthi Paper (Single Child)',
+        price: 899,
+        description: 'Traditional handwritten birth scroll on sacred parchment.',
+      },
+      {
+        id: 'sub-202',
+        title: 'Premium Gold-Stamped Traditional Kuthi Scroll',
+        price: 1499,
+        description: 'Deluxe gold-bordered scroll in protective sacred case.',
+      },
+    ],
+  },
+  {
+    id: 's-3',
     badge: 'High Accuracy',
-    title: 'Marriage & Relationship Matching',
+    title: 'Pakna Wainaba Yengba (Kundli Matching & 36-Gun Milan)',
     description: 'Complete 36-Gun Ashtakoot Milan, Manglik Dosh analysis, and mental/emotional compatibility assessment.',
     features: [
       '36-Points Ashtakoot breakdown',
@@ -45,9 +102,23 @@ let storedServices: ServiceItem[] = [
     cta: 'Check Compatibility',
     link: '/matching',
     active: true,
+    subServices: [
+      {
+        id: 'sub-301',
+        title: '36-Gun Ashtakoot Match & Manglik Check',
+        price: 1299,
+        description: 'Detailed 36-point compatibility report for couple pair.',
+      },
+      {
+        id: 'sub-302',
+        title: 'Full D9 Navamsha Couple Compatibility & Remedial Report',
+        price: 1999,
+        description: 'Comprehensive marriage compatibility with specific remedial pujas.',
+      },
+    ],
   },
   {
-    id: 's-3',
+    id: 's-4',
     badge: 'Best Value',
     title: '1-on-1 Live Master Consultation',
     description: 'Direct face-to-face video consultation with our Master Vedic Astrologer with instant remedial guidance.',
@@ -58,23 +129,22 @@ let storedServices: ServiceItem[] = [
     ],
     price: '₹2,499',
     cta: 'Book Consultation',
-    link: '/booking?service=comprehensive-consultation-60',
+    link: '/manipuri_kuthi_yengba?service=s-4',
     active: true,
-  },
-  {
-    id: 's-4',
-    badge: 'Annual Report',
-    title: 'Yearly Transit Outlook Report',
-    description: 'Detailed 20+ page annual forecast covering major planetary transits (Saturn, Jupiter, Rahu-Ketu).',
-    features: [
-      'Month-by-month prediction breakdown',
-      'Transit impact on natal Moon sign',
-      'Gemstone & Mantra recommendations',
+    subServices: [
+      {
+        id: 'sub-401',
+        title: '30-Minute Video/Phone Session',
+        price: 1499,
+        description: 'Direct 30-minute consultation with Master Astrologer.',
+      },
+      {
+        id: 'sub-402',
+        title: '60-Minute Deep Consultation + Recorded Session & PDF Remedies',
+        price: 2499,
+        description: 'Full 60-minute session with recorded audio and written PDF remedies.',
+      },
     ],
-    price: '₹999',
-    cta: 'Order Report',
-    link: '/booking?service=comprehensive-horoscope-report',
-    active: true,
   },
 ];
 
