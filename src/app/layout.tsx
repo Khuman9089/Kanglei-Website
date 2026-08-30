@@ -12,13 +12,14 @@ const baseUrl = 'https://benevolent-ganache-baa904.netlify.app';
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "KangleiAstro — Premium Vedic Astrology Consultations & Kuthi Yengba",
-    template: "%s | KangleiAstro",
+    default: "KuthiYengpham by KangleiAstro — Manipuri Kuthi Yengba & Vedic Astrology",
+    template: "%s | KuthiYengpham by KangleiAstro",
   },
   description:
-    "Discover your life's blueprint with personalized Manipuri Vedic astrology consultations, 30-page free horoscope reports, Kuthi Yengba, Ashtakoot 36-Gun Milan matching, and daily Moon sign transit forecasts.",
+    "Discover your life's blueprint with KuthiYengpham by KangleiAstro: authentic Manipuri Kuthi Yengba, Kuthi Iba, free Kundli generator, Ashtakoot 36-Gun Milan matching, and expert consultations.",
   keywords: [
-    "Vedic Astrology",
+    "KuthiYengpham",
+    "KuthiYengpham by KangleiAstro",
     "KangleiAstro",
     "Kuthi Yengba",
     "Kuthi Iba",
@@ -30,12 +31,10 @@ export const metadata: Metadata = {
     "Gun Milan",
     "Kundli Matching",
     "Vimshottari Dasha",
-    "Shani Sade Sati",
-    "Kaal Sarp Dosh",
   ],
-  authors: [{ name: "KangleiAstro Vedic Master Panel" }],
-  creator: "KangleiAstro",
-  publisher: "KangleiAstro",
+  authors: [{ name: "KuthiYengpham by KangleiAstro Vedic Panel" }],
+  creator: "KuthiYengpham by KangleiAstro",
+  publisher: "KuthiYengpham by KangleiAstro",
   formatDetection: {
     email: false,
     address: false,
@@ -53,10 +52,10 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "KangleiAstro — Premium Vedic Astrology Consultations & Kuthi Yengba",
-    description: "Connect face-to-face with Manipur's top empaneled Vedic astrologers for Kuthi Yengba, Vimshottari Dasha, and 36-Gun Ashtakoot marriage matching.",
+    title: "KuthiYengpham by KangleiAstro — Manipuri Kuthi Yengba & Vedic Astrology",
+    description: "Connect with Manipur's top empaneled Vedic astrologers for Kuthi Yengba, Kuthi Iba, Vimshottari Dasha, and 36-Gun Ashtakoot marriage matching.",
     url: baseUrl,
-    siteName: "KangleiAstro",
+    siteName: "KuthiYengpham by KangleiAstro",
     locale: "en_IN",
     type: "website",
     images: [

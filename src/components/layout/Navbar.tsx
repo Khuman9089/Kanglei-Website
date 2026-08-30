@@ -177,11 +177,11 @@ export function Navbar() {
               <Moon className="w-5 h-5 fill-[#fbbf24]" />
             </div>
             <div>
-              <span className="font-serif text-2xl font-bold tracking-tight text-[#0f172a] block leading-none">
-                KangleiAstro
+              <span className="font-serif text-2xl font-black tracking-tight text-[#0f172a] block leading-none">
+                KuthiYengpham
               </span>
-              <span className="text-[10px] text-[#b45309] font-sans font-bold tracking-wider block uppercase mt-0.5">
-                Vedic Astrology • Based on Moon Sign
+              <span className="text-[11px] text-[#b45309] font-sans font-extrabold tracking-wider block uppercase mt-0.5">
+                by KangleiAstro
               </span>
             </div>
           </Link>
