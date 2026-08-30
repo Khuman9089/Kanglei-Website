@@ -21,8 +21,8 @@ export function Footer() {
                 <Moon size={20} className="fill-[#fbbf24]" />
               </div>
               <div>
-                <span className="font-serif text-2xl font-black text-white block leading-none">KuthiYengpham</span>
-                <span className="font-script text-base text-[#fbbf24] font-bold italic tracking-normal block leading-tight mt-0.5 capitalize">by KangleiAstro</span>
+                <span className="font-serif text-xl sm:text-2xl font-black text-white block leading-none">KuthiYengpham</span>
+                <span className="font-script text-xs sm:text-sm text-[#fbbf24] font-bold italic tracking-tight block leading-tight mt-0.5 whitespace-nowrap">by KangleiAstro - Based on Vishuddha Siddhanta</span>
               </div>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
