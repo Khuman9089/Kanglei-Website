@@ -2,27 +2,33 @@
 
 import React, { useState } from 'react';
 import Navbar from '@/components/layout/Navbar';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Heart, Upload, FileText, CheckCircle2, AlertCircle, Sparkles, MessageSquare, ArrowRight, RefreshCw, User, Calendar, Clock, MapPin, Compass, QrCode, ShieldCheck, Check 
+  Heart, Upload, FileText, CheckCircle2, AlertCircle, Sparkles, MessageSquare, ArrowRight, RefreshCw, User, Calendar, Clock, MapPin, Compass, QrCode, ShieldCheck, Check, Trash2 
 } from 'lucide-react';
 import { calculateGunMilan } from '@/engine/matching';
 
 export default function MatchingPage() {
+  // Free vs Paid Version Option
+  const [matchingType, setMatchingType] = useState<'free' | 'paid'>('free');
+
   // Groom State
   const [groomName, setGroomName] = useState('');
   const [groomKuthiFile, setGroomKuthiFile] = useState<File | null>(null);
+  const [groomNoKuthi, setGroomNoKuthi] = useState(false);
   const [groomDob, setGroomDob] = useState('');
   const [groomTob, setGroomTob] = useState('');
-  const [groomPob, setGroomPob] = useState('');
+  const [groomPob, setGroomPob] = useState('Imphal, Manipur');
   const [groomLong, setGroomLong] = useState('77.2');
   const [groomLat, setGroomLat] = useState('28.6');
 
   // Bride State
   const [brideName, setBrideName] = useState('');
   const [brideKuthiFile, setBrideKuthiFile] = useState<File | null>(null);
+  const [brideNoKuthi, setBrideNoKuthi] = useState(false);
   const [brideDob, setBrideDob] = useState('');
   const [brideTob, setBrideTob] = useState('');
-  const [bridePob, setBridePob] = useState('');
+  const [bridePob, setBridePob] = useState('Imphal, Manipur');
   const [brideLong, setBrideLong] = useState('72.8');
   const [brideLat, setBrideLat] = useState('19.0');
 
@@ -39,20 +45,30 @@ export default function MatchingPage() {
     e.preventDefault();
     setErrorMsg('');
 
-    // Validation for Groom: if file not attached, DOB/TOB/POB are compulsory
-    if (!groomKuthiFile && (!groomDob || !groomTob || !groomPob)) {
-      setErrorMsg("Please provide Date, Time, & Place of Birth for Groom (or upload Groom's Kuthi paper).");
+    if (!groomName.trim()) {
+      setErrorMsg("Please enter Groom's Name.");
       return;
     }
 
-    // Validation for Bride: if file not attached, DOB/TOB/POB are compulsory
-    if (!brideKuthiFile && (!brideDob || !brideTob || !bridePob)) {
-      setErrorMsg("Please provide Date, Time, & Place of Birth for Bride (or upload Bride's Kuthi paper).");
+    if (!brideName.trim()) {
+      setErrorMsg("Please enter Bride's Name.");
       return;
     }
 
-    if (!whatsappNo) {
-      setErrorMsg("Please enter a valid WhatsApp Number to receive the full analytical report.");
+    // Validation for Groom: if file not attached and noKuthi checked
+    if (!groomKuthiFile && groomNoKuthi && (!groomDob || !groomTob || !groomPob.trim())) {
+      setErrorMsg("Please enter Date, Time, and Place of Birth for Groom (or upload Groom's Kuthi paper).");
+      return;
+    }
+
+    // Validation for Bride: if file not attached and noKuthi checked
+    if (!brideKuthiFile && brideNoKuthi && (!brideDob || !brideTob || !bridePob.trim())) {
+      setErrorMsg("Please enter Date, Time, and Place of Birth for Bride (or upload Bride's Kuthi paper).");
+      return;
+    }
+
+    if (!whatsappNo.trim()) {
+      setErrorMsg("Please enter a valid WhatsApp Number for report delivery.");
       return;
     }
 
@@ -67,7 +83,7 @@ export default function MatchingPage() {
 
   const handleConfirmUpiPayment = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!utr) {
+    if (!utr.trim()) {
       setErrorMsg("Please enter the 12-Digit UPI Transaction Ref (UTR) to confirm payment.");
       return;
     }
@@ -81,31 +97,28 @@ export default function MatchingPage() {
         sex: 'Couple',
         mobile: whatsappNo,
         whatsappNo: whatsappNo,
+        matchingType,
         kuthiAttached: !!(groomKuthiFile || brideKuthiFile),
-        kuthiFileName: groomKuthiFile ? groomKuthiFile.name : (brideKuthiFile ? brideKuthiFile.name : ''),
-        dob: `Groom: ${groomDob || 'Paper Uploaded'} | Bride: ${brideDob || 'Paper Uploaded'}`,
-        tob: `Groom: ${groomTob || 'Paper Uploaded'} | Bride: ${brideTob || 'Paper Uploaded'}`,
-        pob: `Groom: ${groomPob || 'Paper Uploaded'} | Bride: ${bridePob || 'Paper Uploaded'}`,
         groomDetails: {
           name: groomName,
-          dob: groomDob || 'Paper Uploaded',
-          tob: groomTob || 'Paper Uploaded',
-          pob: groomPob || 'Paper Uploaded',
-          long: groomLong,
-          lat: groomLat,
+          fileAttached: !!groomKuthiFile,
+          fileName: groomKuthiFile ? groomKuthiFile.name : '',
+          dob: groomDob || 'Kuthi Paper Uploaded',
+          tob: groomTob || 'Kuthi Paper Uploaded',
+          pob: groomPob || 'Kuthi Paper Uploaded',
         },
         brideDetails: {
           name: brideName,
-          dob: brideDob || 'Paper Uploaded',
-          tob: brideTob || 'Paper Uploaded',
-          pob: bridePob || 'Paper Uploaded',
-          long: brideLong,
-          lat: brideLat,
+          fileAttached: !!brideKuthiFile,
+          fileName: brideKuthiFile ? brideKuthiFile.name : '',
+          dob: brideDob || 'Kuthi Paper Uploaded',
+          tob: brideTob || 'Kuthi Paper Uploaded',
+          pob: bridePob || 'Kuthi Paper Uploaded',
         },
         utr: utr,
-        amount: 1299,
+        amount: matchingType === 'paid' ? 1299 : 0,
         category: 'matching',
-        serviceTitle: '36-Gun Ashtakoot Marriage Kundli Matching',
+        serviceTitle: `36-Gun Ashtakoot Marriage Kundli Matching (${matchingType.toUpperCase()})`,
       },
     };
 
@@ -153,6 +166,36 @@ export default function MatchingPage() {
           <p className="text-gray-600 text-sm md:text-base mt-2 max-w-2xl mx-auto">
             Traditional 36-Gun Ashtakoot Marriage Compatibility & Mental Alignment Assessment for Groom & Bride
           </p>
+
+          {/* TOP FREE vs PAID VERSION SELECTOR */}
+          <div className="flex justify-center mt-6">
+            <div className="bg-[#fef3c7] p-1.5 rounded-2xl border border-[#fde68a] inline-flex gap-2">
+              <button
+                type="button"
+                onClick={() => setMatchingType('free')}
+                className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                  matchingType === 'free'
+                    ? 'bg-[#d97706] text-white shadow-md'
+                    : 'text-[#78350f] hover:text-[#0f172a]'
+                }`}
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>Free 36-Gun Milan Score</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMatchingType('paid')}
+                className={`px-6 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer flex items-center gap-1.5 ${
+                  matchingType === 'paid'
+                    ? 'bg-[#d97706] text-white shadow-md'
+                    : 'text-[#78350f] hover:text-[#0f172a]'
+                }`}
+              >
+                <ShieldCheck className="w-4 h-4 text-yellow-200" />
+                <span>Paid Master Astrologer Report (₹1,299)</span>
+              </button>
+            </div>
+          </div>
         </div>
 
         {errorMsg && (
@@ -169,18 +212,18 @@ export default function MatchingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               
               {/* LEFT COLUMN: GROOM DETAILS */}
-              <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl space-y-5">
+              <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl space-y-5 text-left">
                 <div className="flex items-center gap-3 pb-4 border-b border-[#f3e8d2]">
                   <div className="w-10 h-10 rounded-2xl bg-blue-100 text-blue-700 border border-blue-200 flex items-center justify-center font-bold text-lg">
                     👦
                   </div>
                   <div>
                     <h3 className="font-serif font-bold text-xl text-[#0f172a]">Groom Details</h3>
-                    <p className="text-xs text-gray-500">Enter birth data or upload Kuthi paper</p>
+                    <p className="text-xs text-gray-500">Upload Kuthi paper or enter birth details</p>
                   </div>
                 </div>
 
-                {/* Full Name */}
+                {/* Groom Full Name */}
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                     Groom Full Name<span className="text-red-500">*</span>
@@ -196,104 +239,122 @@ export default function MatchingPage() {
                 </div>
 
                 {/* Upload Groom Kuthi */}
-                <div className="p-4 rounded-2xl bg-[#fefcf6] border-2 border-dashed border-[#fde68a] text-center space-y-2 hover:border-[#d97706] transition-colors">
+                <div className="p-4 rounded-2xl bg-[#fefcf6] border-2 border-dashed border-[#fde68a] text-center space-y-2 hover:border-[#d97706] transition-colors relative">
                   <Upload className="w-6 h-6 text-[#d97706] mx-auto" />
                   <span className="text-xs font-bold text-[#0f172a] block">Upload Groom Kuthi / Kundali Paper</span>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => setGroomKuthiFile(e.target.files?.[0] || null)}
-                    className="text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#d97706] file:text-white hover:file:opacity-90 cursor-pointer"
-                  />
-                  {groomKuthiFile && (
-                    <span className="text-[10px] text-green-600 font-bold block">✓ File Selected: {groomKuthiFile.name} (DOB/TOB optional)</span>
+                  
+                  {groomKuthiFile ? (
+                    <div className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white border border-green-300 text-xs font-bold text-green-700">
+                      <span>✓ {groomKuthiFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setGroomKuthiFile(null)}
+                        className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer ml-2"
+                        title="Remove file"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          setGroomKuthiFile(e.target.files[0]);
+                          setGroomNoKuthi(false);
+                        }
+                      }}
+                      className="text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#d97706] file:text-white hover:file:opacity-90 cursor-pointer"
+                    />
                   )}
                 </div>
 
-                {/* DOB, TOB, POB */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Date of Birth {!groomKuthiFile && <span className="text-red-500">*</span>}
+                {/* Checkbox: Groom does not have Kuthi paper (Only shown if file not attached) */}
+                {!groomKuthiFile && (
+                  <div className="pt-1">
+                    <label className="inline-flex items-center gap-2 text-xs font-bold text-[#b45309] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={groomNoKuthi}
+                        onChange={(e) => setGroomNoKuthi(e.target.checked)}
+                        className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
+                      />
+                      <span>☑ Groom does not have Kuthi paper (Enter Birth Details Manually)</span>
                     </label>
-                    <input
-                      type="date"
-                      required={!groomKuthiFile}
-                      value={groomDob}
-                      onChange={(e) => setGroomDob(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
-                    />
                   </div>
+                )}
 
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Time of Birth {!groomKuthiFile && <span className="text-red-500">*</span>}
-                    </label>
-                    <input
-                      type="time"
-                      required={!groomKuthiFile}
-                      value={groomTob}
-                      onChange={(e) => setGroomTob(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
-                    />
-                  </div>
-                </div>
+                {/* Groom Manual Birth Details - Shown ONLY when groomNoKuthi is checked and no file attached */}
+                <AnimatePresence>
+                  {!groomKuthiFile && groomNoKuthi && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4 overflow-hidden"
+                    >
+                      <div className="text-[10px] font-bold text-[#78350f] uppercase tracking-wider">
+                        Groom Manual Birth Details
+                      </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                    Place of Birth {!groomKuthiFile && <span className="text-red-500">*</span>}
-                  </label>
-                  <input
-                    type="text"
-                    required={!groomKuthiFile}
-                    placeholder="e.g. Imphal, Manipur"
-                    value={groomPob}
-                    onChange={(e) => setGroomPob(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
-                  />
-                </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                            Date of Birth<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            value={groomDob}
+                            onChange={(e) => setGroomDob(e.target.value)}
+                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
 
-                {/* Longitude & Latitude */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Longitude (East °)
-                    </label>
-                    <input
-                      type="text"
-                      value={groomLong}
-                      onChange={(e) => setGroomLong(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs"
-                    />
-                  </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                            Time of Birth<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="time"
+                            value={groomTob}
+                            onChange={(e) => setGroomTob(e.target.value)}
+                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
+                      </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Latitude (North °)
-                    </label>
-                    <input
-                      type="text"
-                      value={groomLat}
-                      onChange={(e) => setGroomLat(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs"
-                    />
-                  </div>
-                </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                          Place of Birth<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Imphal, Manipur"
+                          value={groomPob}
+                          onChange={(e) => setGroomPob(e.target.value)}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </div>
 
               {/* RIGHT COLUMN: BRIDE DETAILS */}
-              <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl space-y-5">
+              <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl space-y-5 text-left">
                 <div className="flex items-center gap-3 pb-4 border-b border-[#f3e8d2]">
                   <div className="w-10 h-10 rounded-2xl bg-pink-100 text-pink-700 border border-pink-200 flex items-center justify-center font-bold text-lg">
                     👧
                   </div>
                   <div>
                     <h3 className="font-serif font-bold text-xl text-[#0f172a]">Bride Details</h3>
-                    <p className="text-xs text-gray-500">Enter birth data or upload Kuthi paper</p>
+                    <p className="text-xs text-gray-500">Upload Kuthi paper or enter birth details</p>
                   </div>
                 </div>
 
-                {/* Full Name */}
+                {/* Bride Full Name */}
                 <div>
                   <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                     Bride Full Name<span className="text-red-500">*</span>
@@ -309,89 +370,107 @@ export default function MatchingPage() {
                 </div>
 
                 {/* Upload Bride Kuthi */}
-                <div className="p-4 rounded-2xl bg-[#fefcf6] border-2 border-dashed border-[#fde68a] text-center space-y-2 hover:border-[#d97706] transition-colors">
+                <div className="p-4 rounded-2xl bg-[#fefcf6] border-2 border-dashed border-[#fde68a] text-center space-y-2 hover:border-[#d97706] transition-colors relative">
                   <Upload className="w-6 h-6 text-[#d97706] mx-auto" />
                   <span className="text-xs font-bold text-[#0f172a] block">Upload Bride Kuthi / Kundali Paper</span>
-                  <input
-                    type="file"
-                    accept="image/*,.pdf"
-                    onChange={(e) => setBrideKuthiFile(e.target.files?.[0] || null)}
-                    className="text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#d97706] file:text-white hover:file:opacity-90 cursor-pointer"
-                  />
-                  {brideKuthiFile && (
-                    <span className="text-[10px] text-green-600 font-bold block">✓ File Selected: {brideKuthiFile.name} (DOB/TOB optional)</span>
+                  
+                  {brideKuthiFile ? (
+                    <div className="flex items-center justify-center gap-2 p-2 rounded-xl bg-white border border-green-300 text-xs font-bold text-green-700">
+                      <span>✓ {brideKuthiFile.name}</span>
+                      <button
+                        type="button"
+                        onClick={() => setBrideKuthiFile(null)}
+                        className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer ml-2"
+                        title="Remove file"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  ) : (
+                    <input
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          setBrideKuthiFile(e.target.files[0]);
+                          setBrideNoKuthi(false);
+                        }
+                      }}
+                      className="text-[11px] text-gray-500 file:mr-2 file:py-1 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#d97706] file:text-white hover:file:opacity-90 cursor-pointer"
+                    />
                   )}
                 </div>
 
-                {/* DOB, TOB, POB */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Date of Birth {!brideKuthiFile && <span className="text-red-500">*</span>}
+                {/* Checkbox: Bride does not have Kuthi paper (Only shown if file not attached) */}
+                {!brideKuthiFile && (
+                  <div className="pt-1">
+                    <label className="inline-flex items-center gap-2 text-xs font-bold text-[#b45309] cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={brideNoKuthi}
+                        onChange={(e) => setBrideNoKuthi(e.target.checked)}
+                        className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
+                      />
+                      <span>☑ Bride does not have Kuthi paper (Enter Birth Details Manually)</span>
                     </label>
-                    <input
-                      type="date"
-                      required={!brideKuthiFile}
-                      value={brideDob}
-                      onChange={(e) => setBrideDob(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
-                    />
                   </div>
+                )}
 
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Time of Birth {!brideKuthiFile && <span className="text-red-500">*</span>}
-                    </label>
-                    <input
-                      type="time"
-                      required={!brideKuthiFile}
-                      value={brideTob}
-                      onChange={(e) => setBrideTob(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
-                    />
-                  </div>
-                </div>
+                {/* Bride Manual Birth Details - Shown ONLY when brideNoKuthi is checked and no file attached */}
+                <AnimatePresence>
+                  {!brideKuthiFile && brideNoKuthi && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4 overflow-hidden"
+                    >
+                      <div className="text-[10px] font-bold text-[#78350f] uppercase tracking-wider">
+                        Bride Manual Birth Details
+                      </div>
 
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                    Place of Birth {!brideKuthiFile && <span className="text-red-500">*</span>}
-                  </label>
-                  <input
-                    type="text"
-                    required={!brideKuthiFile}
-                    placeholder="e.g. Imphal, Manipur"
-                    value={bridePob}
-                    onChange={(e) => setBridePob(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
-                  />
-                </div>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                            Date of Birth<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            value={brideDob}
+                            onChange={(e) => setBrideDob(e.target.value)}
+                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
 
-                {/* Longitude & Latitude */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Longitude (East °)
-                    </label>
-                    <input
-                      type="text"
-                      value={brideLong}
-                      onChange={(e) => setBrideLong(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs"
-                    />
-                  </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                            Time of Birth<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="time"
+                            value={brideTob}
+                            onChange={(e) => setBrideTob(e.target.value)}
+                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
+                      </div>
 
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Latitude (North °)
-                    </label>
-                    <input
-                      type="text"
-                      value={brideLat}
-                      onChange={(e) => setBrideLat(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs"
-                    />
-                  </div>
-                </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                          Place of Birth<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Imphal, Manipur"
+                          value={bridePob}
+                          onChange={(e) => setBridePob(e.target.value)}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
               </div>
 
             </div>
@@ -400,10 +479,12 @@ export default function MatchingPage() {
             <div className="bg-white p-6 md:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl max-w-2xl mx-auto space-y-5 text-center">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                  WhatsApp Number to Receive Full Analytic Report<span className="text-red-500">*</span>
+                  WhatsApp Number to Receive Report<span className="text-red-500">*</span>
                 </label>
                 <p className="text-xs text-gray-500 mb-3">
-                  Our Master Astrologer will perform deep D1 & D9 Navamsha compatibility and send the complete PDF report to this number.
+                  {matchingType === 'paid' 
+                    ? 'Our Master Astrologer will perform deep D1 & D9 Navamsha compatibility and send the complete PDF report to this number.'
+                    : 'Your 36-Gun Ashtakoot matching score and report summary will be sent to this WhatsApp number.'}
                 </p>
                 <input
                   type="text"
@@ -420,7 +501,7 @@ export default function MatchingPage() {
                 className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-sm shadow-xl hover:opacity-95 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
               >
                 <Heart className="w-5 h-5 text-white fill-white" />
-                <span>Calculate 36-Gun Ashtakoot Milan & Proceed →</span>
+                <span>Calculate 36-Gun Ashtakoot Milan ({matchingType.toUpperCase()}) →</span>
               </button>
             </div>
 
@@ -458,19 +539,19 @@ export default function MatchingPage() {
               </div>
             </div>
 
-            {/* STEP A: UPI PAYMENT GATEWAY STEP (Before Report Delivery) */}
-            {!isPaidConfirmed ? (
+            {/* IF PAID VERSION SELECTED: UPI PAYMENT GATEWAY STEP */}
+            {matchingType === 'paid' && !isPaidConfirmed ? (
               <form onSubmit={handleConfirmUpiPayment} className="bg-white p-8 rounded-3xl border border-[#fde68a] shadow-2xl space-y-6 text-xs text-left">
                 <div className="flex flex-wrap items-center justify-between pb-4 border-b border-[#fde68a] gap-2">
                   <div>
                     <span className="px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase tracking-wider border border-[#fde68a]">
-                      High Accuracy Package
+                      Master Astrologer Package
                     </span>
-                    <h3 className="font-serif font-bold text-2xl text-[#0f172a] mt-1">Marriage & Relationship Matching</h3>
+                    <h3 className="font-serif font-bold text-2xl text-[#0f172a] mt-1">Marriage & Relationship Report</h3>
                   </div>
                   <div className="text-right">
                     <span className="text-2xl font-black text-[#b45309] font-mono block">₹1,299</span>
-                    <span className="text-[10px] text-green-700 font-bold">Master Astrologer PDF Report</span>
+                    <span className="text-[10px] text-green-700 font-bold">Comprehensive PDF & Voice Guidance</span>
                   </div>
                 </div>
 
@@ -534,18 +615,20 @@ export default function MatchingPage() {
               </form>
             ) : (
 
-              /* STEP B: FINAL CONFIRMATION MESSAGE (Revealed After Payment) */
+              /* STEP B: FINAL CONFIRMATION MESSAGE */
               <div className="p-8 rounded-3xl bg-green-50 border border-green-200 text-green-800 text-center space-y-4 shadow-2xl">
                 <div className="w-16 h-16 rounded-full bg-green-100 text-green-600 border border-green-300 flex items-center justify-center mx-auto">
                   <CheckCircle2 className="w-9 h-9" />
                 </div>
-                <h4 className="font-serif font-bold text-2xl text-[#0f172a]">Kuthi Forwarded to Master Astrologer</h4>
+                <h4 className="font-serif font-bold text-2xl text-[#0f172a]">Kuthi Matching Request Received</h4>
                 <p className="text-xs leading-relaxed max-w-lg mx-auto text-gray-700 font-sans">
-                  We have forwarded your Groom (<strong>{groomName}</strong>) & Bride (<strong>{brideName}</strong>) Kuthi paper details to our Master Astrologer. Full analytical matching report will be sent directly to WhatsApp No: <strong className="text-[#b45309] font-mono text-sm">{submittedWhatsApp}</strong> within 12 Hrs.
+                  We have received your Groom (<strong>{groomName}</strong>) & Bride (<strong>{brideName}</strong>) Kuthi details. Matching report summary will be sent directly to WhatsApp No: <strong className="text-[#b45309] font-mono text-sm">{submittedWhatsApp}</strong>.
                 </p>
-                <div className="p-3 rounded-xl bg-white text-[#b45309] font-mono text-xs max-w-xs mx-auto border border-green-200">
-                  Payment UTR Logged: {utr}
-                </div>
+                {utr && (
+                  <div className="p-3 rounded-xl bg-white text-[#b45309] font-mono text-xs max-w-xs mx-auto border border-green-200">
+                    Payment UTR Logged: {utr}
+                  </div>
+                )}
               </div>
             )}
 
