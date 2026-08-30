@@ -114,11 +114,14 @@ function ManipuriKuthiYengbaContent() {
       return;
     }
 
-    if (noKuthiPaper || uploadedFilesCount === 0) {
+    if (noKuthiPaper) {
       if (!dob || !tob || !pob.trim()) {
-        setErrorMsg('Please enter Date of Birth, Time of Birth, and Place of Birth (or upload Kuthi Paper files).');
+        setErrorMsg('Please enter Date of Birth, Time of Birth, and Place of Birth.');
         return;
       }
+    } else if (uploadedFilesCount === 0) {
+      setErrorMsg('Please upload your Kuthi paper file(s) or check "I don\'t have a Kuthi paper".');
+      return;
     }
 
     setStep(2);
@@ -387,11 +390,11 @@ function ManipuriKuthiYengbaContent() {
                       onChange={(e) => setNoKuthiPaper(e.target.checked)}
                       className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
                     />
-                    <span>☑ I don't have Kuthi paper (Enter Birth Details Manually)</span>
+                    <span>☑ I don't have a Kuthi paper (Enter Birth Details Manually)</span>
                   </label>
 
-                  {/* Manual Birth Details Inputs */}
-                  {(noKuthiPaper || uploadedFilesCount === 0) && (
+                  {/* Manual Birth Details Inputs - Only shown when checkbox is checked */}
+                  {noKuthiPaper && (
                     <div className="mt-3 p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4">
                       <div className="text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
                         Enter Birth Details Manually
