@@ -6068,13 +6068,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     )}
                     {inspectingOrder.yek && (
                       <div>
-                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Yek (ইয়েক / Salai)</span>
+                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Yek / Salai</span>
                         <strong className="text-white text-sm">{inspectingOrder.yek}</strong>
                       </div>
                     )}
                     {inspectingOrder.gotra && (
                       <div>
-                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Gotra (গোত্র / Sagei)</span>
+                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Gotra / Sagei</span>
                         <strong className="text-white text-sm">{inspectingOrder.gotra}</strong>
                       </div>
                     )}

@@ -112,7 +112,7 @@ export function KuthiIbaModal({
           category,
           utr,
           amount: 899,
-          serviceType: 'Kuthi Iba (কুঠি ইবা)',
+          serviceType: 'Kuthi Iba',
         },
       };
 
@@ -150,7 +150,7 @@ export function KuthiIbaModal({
           <div className="flex items-center gap-2.5">
             <Sparkles className="w-5 h-5 text-yellow-200" />
             <div>
-              <h3 className="font-serif font-black text-xl leading-none">Get Your Full Kuthi (কুঠি ইবা)</h3>
+              <h3 className="font-serif font-black text-xl leading-none">Get Your Full Kuthi</h3>
               <p className="text-xs text-yellow-100 font-medium mt-1">Authentic Hand-written Kuthi • ₹899</p>
             </div>
           </div>
@@ -290,7 +290,7 @@ export function KuthiIbaModal({
 
               {/* Place of Birth */}
               <Input
-                label="Place Of Birth (পোইফম)"
+                label="Place Of Birth"
                 required
                 value={placeOfBirth}
                 onChange={(e) => setPlaceOfBirth(e.target.value)}

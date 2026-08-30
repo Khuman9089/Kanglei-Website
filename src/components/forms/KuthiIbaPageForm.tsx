@@ -95,7 +95,7 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
           category,
           utr,
           amount: 899,
-          serviceType: 'Kuthi Iba (কুঠি ইবা)',
+          serviceType: 'Kuthi Iba Service',
         },
       };
 
@@ -138,10 +138,10 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
         <div>
           <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase tracking-wider mb-2">
             <Sparkles className="w-4 h-4 text-[#d97706]" />
-            <span>Kuthi Iba (কুঠি ইবা) Service</span>
+            <span>Kuthi Iba Service</span>
           </div>
           <h2 className="text-2xl sm:text-3xl font-serif font-black text-[#0f172a]">
-            Order Kuthi Iba (কুঠি ইবা) — ₹899
+            Order Kuthi Iba — ₹899
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 font-medium mt-1">
             Complete Vedic Kuthi preparation with 24-hour WhatsApp PDF & Express physical delivery
@@ -312,7 +312,7 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
             type="submit"
             className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-base shadow-md hover:shadow-xl transition-all flex items-center justify-center gap-2"
           >
-            <span>Proceed to Pay ₹899 (Kuthi Iba - কুঠি ইবা)</span>
+            <span>Proceed to Pay ₹899 (Kuthi Iba)</span>
             <ArrowRight className="w-5 h-5" />
           </button>
         </form>
@@ -322,7 +322,7 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
       {step === 2 && (
         <div className="space-y-6">
           <div className="bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] text-center space-y-1">
-            <span className="text-xs text-gray-500 font-bold uppercase">Kuthi Iba (কুঠি ইবা) Service</span>
+            <span className="text-xs text-gray-500 font-bold uppercase">Kuthi Iba Service</span>
             <h4 className="text-3xl font-serif font-extrabold text-[#b45309]">₹899 Only</h4>
             <p className="text-xs text-gray-600 font-medium">Scan UPI QR Code using Google Pay, PhonePe, or Paytm</p>
           </div>
