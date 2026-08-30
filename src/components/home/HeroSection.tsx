@@ -39,6 +39,16 @@ export default function HeroSection() {
   });
 
   const [homePanchang, setHomePanchang] = useState<any>(null);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   useEffect(() => {
     fetch('/api/panchang')
@@ -106,44 +116,46 @@ export default function HeroSection() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
         {/* 1. Quick Feature Pills (Hidden on Mobile, Desktop Only) */}
-        <div className="hidden lg:flex flex-wrap items-center justify-center gap-2.5 mb-8">
-          <Link
-            href="/kundli"
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
-          >
-            <span className="text-[#d97706]">✦</span> Today's Horoscope
-          </Link>
+        {!isMobile && (
+          <div className="hidden lg:flex flex-wrap items-center justify-center gap-2.5 mb-8">
+            <Link
+              href="/kundli"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
+            >
+              <span className="text-[#d97706]">✦</span> Today's Horoscope
+            </Link>
 
-          <Link
-            href="/kundli"
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
-          >
-            <span className="text-[#d97706]">✦</span> Saturn Retrograde
-            <span className="ml-1 px-2 py-0.5 rounded bg-[#d97706] text-white text-[9px] font-extrabold uppercase">
-              FREE REPORT
-            </span>
-          </Link>
+            <Link
+              href="/kundli"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
+            >
+              <span className="text-[#d97706]">✦</span> Saturn Retrograde
+              <span className="ml-1 px-2 py-0.5 rounded bg-[#d97706] text-white text-[9px] font-extrabold uppercase">
+                FREE REPORT
+              </span>
+            </Link>
 
-          <Link
-            href="/kundli"
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
-          >
-            <span className="text-[#d97706]">✦</span> Dasha Analysis
-          </Link>
+            <Link
+              href="/kundli"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
+            >
+              <span className="text-[#d97706]">✦</span> Dasha Analysis
+            </Link>
 
-          <Link
-            href="/matching"
-            className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
-          >
-            <span className="text-[#d97706]">✦</span> Love Compatibility
-            <span className="ml-1 px-2 py-0.5 rounded bg-[#d97706] text-white text-[9px] font-extrabold uppercase">
-              8 POINTS RULE
-            </span>
-          </Link>
-        </div>
+            <Link
+              href="/matching"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
+            >
+              <span className="text-[#d97706]">✦</span> Love Compatibility
+              <span className="ml-1 px-2 py-0.5 rounded bg-[#d97706] text-white text-[9px] font-extrabold uppercase">
+                8 POINTS RULE
+              </span>
+            </Link>
+          </div>
+        )}
 
         {/* 2. Live Manipur Consultations & Activity Marquee Ticker (Hidden on Mobile, Desktop Only) */}
-        {tickerData.active && tickerData.items && tickerData.items.length > 0 && (
+        {!isMobile && tickerData.active && tickerData.items && tickerData.items.length > 0 && (
           <div className="hidden lg:flex w-full overflow-hidden bg-[#fef3c7]/60 border-y border-[#fde68a] py-2.5 mb-8 rounded-2xl relative shadow-xs items-center gap-3 px-3">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d97706] text-white text-[10px] uppercase font-extrabold shadow-sm shrink-0 z-10">
               <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
@@ -157,7 +169,7 @@ export default function HeroSection() {
               >
                 {tickerData.items.map((act, idx) => (
                   <span key={act.id || idx} className="inline-flex items-center gap-2 text-xs font-semibold text-[#78350f] shrink-0">
-                    <span className="text-[#d97706] font-bold">✦</span>
+                    <span className="text-[#d97706]">✦</span>
                     <strong className="font-extrabold text-[#0f172a]">{act.name}</strong> from <span className="font-bold text-[#b45309]">{act.place}</span> {act.action}
                     <span className="text-[10px] text-[#b45309]/80 font-mono">({act.time})</span>
                   </span>
@@ -166,7 +178,7 @@ export default function HeroSection() {
                 {/* Duplicate array for seamless continuous looping */}
                 {tickerData.items.map((act, idx) => (
                   <span key={`dup-${act.id || idx}`} className="inline-flex items-center gap-2 text-xs font-semibold text-[#78350f] shrink-0">
-                    <span className="text-[#d97706] font-bold">✦</span>
+                    <span className="text-[#d97706]">✦</span>
                     <strong className="font-extrabold text-[#0f172a]">{act.name}</strong> from <span className="font-bold text-[#b45309]">{act.place}</span> {act.action}
                     <span className="text-[10px] text-[#b45309]/80 font-mono">({act.time})</span>
                   </span>
@@ -180,92 +192,94 @@ export default function HeroSection() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
           
           {/* LEFT COLUMN: TODAY'S PANCHANG WIDGET (Hidden on Mobile, Desktop Only) */}
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="hidden lg:block lg:col-span-4 bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-[0_15px_50px_rgba(217,119,6,0.06)] relative overflow-hidden"
-          >
-            {/* Top Gold Ribbon Accent */}
-            <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
-
-            <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#fde68a]/50">
-              <div className="flex items-center gap-2.5">
-                <div className="w-10 h-10 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#b45309] shadow-xs">
-                  <Calendar className="w-5 h-5 text-[#d97706]" />
-                </div>
-                <div>
-                  <h3 className="font-serif font-bold text-lg text-[#0f172a]">Today's Panchang</h3>
-                  <p className="text-[11px] text-[#b45309] font-bold font-sans">{todayDateStr}</p>
-                </div>
-              </div>
-              <span className="px-2 py-0.5 rounded bg-[#fef3c7] text-[#b45309] text-[9px] font-extrabold uppercase border border-[#fde68a]">
-                VEDIC
-              </span>
-            </div>
-
-            {/* Panchang Metrics List */}
-            <div className="space-y-3 text-xs font-sans mb-6">
-              <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Sun className="w-4 h-4 text-[#d97706]" />
-                  <span>Sunrise / Sunset</span>
-                </div>
-                <span className="font-bold text-[#0f172a]">
-                  {homePanchang ? `${homePanchang.sunMoonTimings.sunrise} / ${homePanchang.sunMoonTimings.sunset}` : '04:57 AM / 05:31 PM'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Moon className="w-4 h-4 text-[#d97706]" />
-                  <span>Tithi</span>
-                </div>
-                <span className="font-bold text-[#b45309]">
-                  {homePanchang ? homePanchang.fiveAngas.tithi.summary : 'Shukla Paksha Purnima'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Sparkles className="w-4 h-4 text-[#d97706]" />
-                  <span>Nakshatra</span>
-                </div>
-                <span className="font-bold text-[#b45309]">
-                  {homePanchang ? `${homePanchang.fiveAngas.nakshatra.name} (P${homePanchang.fiveAngas.nakshatra.pada})` : 'Shravana (Pada 2)'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Compass className="w-4 h-4 text-[#d97706]" />
-                  <span>Yoga / Karana</span>
-                </div>
-                <span className="font-bold text-[#0f172a]">
-                  {homePanchang ? `${homePanchang.fiveAngas.yoga.name} / ${homePanchang.fiveAngas.karana.name}` : 'Ayushman / Taitila'}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between py-1.5">
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Clock className="w-4 h-4 text-red-500" />
-                  <span>Rahu Kaal</span>
-                </div>
-                <span className="font-bold text-red-600">
-                  {homePanchang ? `${homePanchang.muhurtas.rahuKaal.start} – ${homePanchang.muhurtas.rahuKaal.end}` : '01:58 PM – 03:34 PM'}
-                </span>
-              </div>
-            </div>
-
-            {/* See Full Panchang Button */}
-            <Link
-              href="/panchang"
-              className="w-full py-3 rounded-xl border border-[#d97706] bg-[#fefcf6] text-[#b45309] font-bold text-xs hover:bg-[#fef3c7] transition-all flex items-center justify-center gap-2 shadow-xs"
+          {!isMobile && (
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.5 }}
+              className="hidden lg:block lg:col-span-4 bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-[0_15px_50px_rgba(217,119,6,0.06)] relative overflow-hidden"
             >
-              <span>See Full Panchang</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </motion.div>
+              {/* Top Gold Ribbon Accent */}
+              <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+
+              <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#fde68a]/50">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-10 h-10 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#b45309] shadow-xs">
+                    <Calendar className="w-5 h-5 text-[#d97706]" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-bold text-lg text-[#0f172a]">Today's Panchang</h3>
+                    <p className="text-[11px] text-[#b45309] font-bold font-sans">{todayDateStr}</p>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded bg-[#fef3c7] text-[#b45309] text-[9px] font-extrabold uppercase border border-[#fde68a]">
+                  VEDIC
+                </span>
+              </div>
+
+              {/* Panchang Metrics List */}
+              <div className="space-y-3 text-xs font-sans mb-6">
+                <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Sun className="w-4 h-4 text-[#d97706]" />
+                    <span>Sunrise / Sunset</span>
+                  </div>
+                  <span className="font-bold text-[#0f172a]">
+                    {homePanchang ? `${homePanchang.sunMoonTimings.sunrise} / ${homePanchang.sunMoonTimings.sunset}` : '04:57 AM / 05:31 PM'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Moon className="w-4 h-4 text-[#d97706]" />
+                    <span>Tithi</span>
+                  </div>
+                  <span className="font-bold text-[#b45309]">
+                    {homePanchang ? homePanchang.fiveAngas.tithi.summary : 'Shukla Paksha Purnima'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Sparkles className="w-4 h-4 text-[#d97706]" />
+                    <span>Nakshatra</span>
+                  </div>
+                  <span className="font-bold text-[#b45309]">
+                    {homePanchang ? `${homePanchang.fiveAngas.nakshatra.name} (P${homePanchang.fiveAngas.nakshatra.pada})` : 'Shravana (Pada 2)'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Compass className="w-4 h-4 text-[#d97706]" />
+                    <span>Yoga / Karana</span>
+                  </div>
+                  <span className="font-bold text-[#0f172a]">
+                    {homePanchang ? `${homePanchang.fiveAngas.yoga.name} / ${homePanchang.fiveAngas.karana.name}` : 'Ayushman / Taitila'}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center gap-2 text-gray-600">
+                    <Clock className="w-4 h-4 text-red-500" />
+                    <span>Rahu Kaal</span>
+                  </div>
+                  <span className="font-bold text-red-600">
+                    {homePanchang ? `${homePanchang.muhurtas.rahuKaal.start} – ${homePanchang.muhurtas.rahuKaal.end}` : '01:58 PM – 03:34 PM'}
+                  </span>
+                </div>
+              </div>
+
+              {/* See Full Panchang Button */}
+              <Link
+                href="/panchang"
+                className="w-full py-3 rounded-xl border border-[#d97706] bg-[#fefcf6] text-[#b45309] font-bold text-xs hover:bg-[#fef3c7] transition-all flex items-center justify-center gap-2 shadow-xs"
+              >
+                <span>See Full Panchang</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </motion.div>
+          )}
 
           {/* RIGHT COLUMN: FREE KUNDLI REPORT FORM CARD (col-span-12 lg:col-span-8) */}
           <motion.div
