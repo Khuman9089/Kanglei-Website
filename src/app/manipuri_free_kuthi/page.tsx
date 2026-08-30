@@ -205,7 +205,7 @@ function ManipuriFreeKuthiContent() {
                   Want an Authentic Hand-Written Kuthi Paper?
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-300 max-w-xl mx-auto leading-relaxed">
-                  Order a traditional hand-written Kuthi (কুঠি ইবা) prepared on sacred parchment by experienced Manipur Acharyas with personalized remedial pujas.
+                  Order a traditional hand-written Kuthi prepared on sacred parchment by experienced Manipur Acharyas with personalized remedial pujas.
                 </p>
 
                 <div className="pt-2">
@@ -303,7 +303,7 @@ function ManipuriFreeKuthiContent() {
               {/* CTA BUTTON BELOW KUTHI RESULT VIEW */}
               <div className="bg-gradient-to-r from-[#1c2541] via-[#0b132b] to-[#0f172a] p-8 rounded-3xl border border-[#3a506b] text-white shadow-2xl text-center space-y-4 print:hidden">
                 <h3 className="text-2xl sm:text-3xl font-serif font-bold text-[#fbbf24]">
-                  Order Complete Hand-Written Kuthi Iba (কুঠি ইবা)
+                  Order Complete Hand-Written Kuthi Iba
                 </h3>
                 <p className="text-xs sm:text-sm text-gray-300 max-w-lg mx-auto">
                   Get full astrological house analysis, Yek, Gotra, and consecrated parchment scroll delivered to your doorstep.

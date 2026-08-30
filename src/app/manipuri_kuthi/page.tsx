@@ -148,7 +148,7 @@ function ManipuriKuthiContent() {
         <div className="mb-6 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fef3c7] border border-[#fde68a] text-[#b45309] text-xs font-bold uppercase tracking-wider mb-2">
             <Sparkles className="w-4 h-4 text-[#d97706]" />
-            Sacred Manipuri Kuthi Creation (কুঠি ইবা)
+            Sacred Manipuri Kuthi Creation
           </div>
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#0f172a]">
             Professional <span className="text-[#b45309]">Kuthi Iba Order Form</span>
@@ -209,7 +209,7 @@ function ManipuriKuthiContent() {
                   </div>
                   <div>
                     <h3 className="font-serif font-bold text-xl text-[#0f172a]">Kuthi Paper Specifications</h3>
-                    <p className="text-xs text-gray-500 font-sans">Choose between Newly Born Baby Kuthi or Kuthi Rewrite (পুনৰ লিখন)</p>
+                    <p className="text-xs text-gray-500 font-sans">Choose between Newly Born Baby Kuthi or Kuthi Rewrite (Restoration)</p>
                   </div>
                 </div>
 
@@ -239,7 +239,7 @@ function ManipuriKuthiContent() {
                       <Baby className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="font-bold text-sm text-[#0f172a] block">Newly Born Baby (নৱজাতক)</span>
+                      <span className="font-bold text-sm text-[#0f172a] block">Newly Born Baby</span>
                       <span className="text-[11px] text-gray-500 font-medium block mt-0.5">First-time Kuthi creation for a newly born infant</span>
                     </div>
                   </button>
@@ -259,7 +259,7 @@ function ManipuriKuthiContent() {
                       <Scroll className="w-5 h-5" />
                     </div>
                     <div>
-                      <span className="font-bold text-sm text-[#0f172a] block">Kuthi Rewrite (কুঠি ইবা / পুনৰ লিখন)</span>
+                      <span className="font-bold text-sm text-[#0f172a] block">Kuthi Rewrite (Restoration)</span>
                       <span className="text-[11px] text-gray-500 font-medium block mt-0.5">Re-writing / replacing damaged or lost old Kuthi paper</span>
                     </div>
                   </button>
@@ -396,7 +396,7 @@ function ManipuriKuthiContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Yek (এক) <span className="text-gray-400 font-normal">(Optional)</span>
+                      Yek <span className="text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <input
                       type="text"
@@ -409,7 +409,7 @@ function ManipuriKuthiContent() {
 
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Gotra (গোত্র) <span className="text-gray-400 font-normal">(Optional)</span>
+                      Gotra <span className="text-gray-400 font-normal">(Optional)</span>
                     </label>
                     <input
                       type="text"
@@ -531,7 +531,7 @@ function ManipuriKuthiContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-sans text-gray-700 bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a]">
                   <div>
                     <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Category</span>
-                    <span className="font-bold text-[#0f172a] text-sm">{kuthiCategory === 'new_born' ? 'Newly Born Baby (নৱজাতক)' : 'Kuthi Rewrite (পুনৰ লিখন)'}</span>
+                    <span className="font-bold text-[#0f172a] text-sm">{kuthiCategory === 'new_born' ? 'Newly Born Baby' : 'Kuthi Rewrite (Restoration)'}</span>
                   </div>
                   <div>
                     <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Parchment Scroll</span>
@@ -639,7 +639,7 @@ function ManipuriKuthiContent() {
               </h2>
 
               <div className="bg-[#fefcf6] p-6 rounded-2xl border border-[#fde68a] text-xs sm:text-sm text-[#78350f] leading-relaxed mb-8 font-medium shadow-xs">
-                Your handwritten Kuthi paper (<span className="font-extrabold text-[#b45309]">কুঠি ইবা</span>) is being prepared on sacred parchment by experienced Acharyas. Tracking details will be dispatched to your WhatsApp:
+                Your handwritten Kuthi paper is being prepared on sacred parchment by experienced Acharyas. Tracking details will be dispatched to your WhatsApp:
                 <strong className="block text-base text-[#b45309] font-bold mt-2 font-mono">
                   {whatsappNo}
                 </strong>

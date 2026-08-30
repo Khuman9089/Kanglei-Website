@@ -241,7 +241,7 @@ export function Navbar() {
               className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#78350f] hover:bg-[#92400e] text-white border border-[#fde68a] font-extrabold text-xs transition-all shadow-sm whitespace-nowrap shrink-0"
             >
               <Sparkles className="w-3.5 h-3.5 text-yellow-300 fill-yellow-300" />
-              <span>Kuthi Iba (কুঠি ইবা)</span>
+              <span>Kuthi Iba</span>
             </Link>
 
             <button
@@ -281,7 +281,7 @@ export function Navbar() {
                 Kuthi Yengba
               </Link>
               <Link href="/manipuri_kuthi" onClick={() => setIsOpen(false)} className="block py-3 text-center rounded-xl bg-[#0f172a] text-[#fbbf24] border border-[#fde68a] font-bold text-xs">
-                Kuthi Iba (কুঠি ইবা)
+                Kuthi Iba
               </Link>
             </div>
 
