@@ -147,13 +147,13 @@ export function Navbar() {
             ) : (
               <>
                 <Link
-                  href="/auth"
+                  href="/auth?tab=login"
                   className="px-3.5 py-1 rounded bg-[#d97706] text-white font-bold text-[11px] uppercase tracking-wider hover:bg-[#b45309] transition-colors shadow-xs"
                 >
                   LOGIN
                 </Link>
                 <Link
-                  href="/auth"
+                  href="/auth?tab=signup"
                   className="px-3 py-1 rounded border border-[#78350f]/30 text-[#78350f] font-bold text-[11px] uppercase tracking-wider hover:bg-[#78350f]/10 transition-colors"
                 >
                   SIGN UP
@@ -319,14 +319,14 @@ export function Navbar() {
                 ) : (
                   <>
                     <Link
-                      href="/auth"
+                      href="/auth?tab=login"
                       onClick={() => setIsOpen(false)}
                       className="flex-1 py-2.5 rounded-xl bg-[#d97706] text-white font-extrabold text-xs text-center shadow-xs hover:bg-[#b45309] transition-colors"
                     >
                       LOGIN
                     </Link>
                     <Link
-                      href="/auth"
+                      href="/auth?tab=signup"
                       onClick={() => setIsOpen(false)}
                       className="flex-1 py-2.5 rounded-xl border border-[#78350f]/40 text-[#78350f] font-extrabold text-xs text-center hover:bg-[#78350f]/10 transition-colors"
                     >

@@ -119,37 +119,38 @@ export default function HeroSection() {
         {!isMobile && (
           <div className="hidden-on-mobile hidden lg:flex mobile-hide-section flex-wrap items-center justify-center gap-2.5 mb-8">
             <Link
-              href="/kundli"
+              href="/booking"
               className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
             >
-              <span className="text-[#d97706]">✦</span> Today's Horoscope
+              <span className="text-[#d97706]">✦</span> Kuthi Yengba
             </Link>
 
             <Link
               href="/kundli"
               className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
             >
-              <span className="text-[#d97706]">✦</span> Saturn Retrograde
-              <span className="ml-1 px-2 py-0.5 rounded bg-[#d97706] text-white text-[9px] font-extrabold uppercase">
-                FREE REPORT
-              </span>
-            </Link>
-
-            <Link
-              href="/kundli"
-              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
-            >
-              <span className="text-[#d97706]">✦</span> Dasha Analysis
+              <span className="text-[#d97706]">✦</span> Kuthi Eba
             </Link>
 
             <Link
               href="/matching"
               className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
             >
-              <span className="text-[#d97706]">✦</span> Love Compatibility
-              <span className="ml-1 px-2 py-0.5 rounded bg-[#d97706] text-white text-[9px] font-extrabold uppercase">
-                8 POINTS RULE
-              </span>
+              <span className="text-[#d97706]">✦</span> Pakna Wainaba Yengba
+            </Link>
+
+            <Link
+              href="/panchang"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
+            >
+              <span className="text-[#d97706]">✦</span> Numit Leppa
+            </Link>
+
+            <Link
+              href="/services"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
+            >
+              <span className="text-[#d97706]">✦</span> Yumsarol
             </Link>
           </div>
         )}

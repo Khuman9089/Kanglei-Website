@@ -1,12 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import Navbar from '@/components/layout/Navbar';
 import { User, Mail, Phone, MapPin, Lock, Sparkles, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw, KeyRound, MessageSquare, X } from 'lucide-react';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
-export default function AuthPage() {
-  const [activeTab, setActiveTab] = useState<'signup' | 'login'>('signup');
+function AuthContent() {
+  const searchParams = useSearchParams();
+  const tabParam = searchParams?.get('tab');
+  const [activeTab, setActiveTab] = useState<'signup' | 'login'>(tabParam === 'signup' ? 'signup' : 'login');
+
+  useEffect(() => {
+    if (tabParam === 'signup') {
+      setActiveTab('signup');
+    } else if (tabParam === 'login') {
+      setActiveTab('login');
+    }
+  }, [tabParam]);
   const [step, setStep] = useState<'form' | 'otp'>('form');
 
   // Form State
@@ -813,5 +824,13 @@ export default function AuthPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AuthPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[#fffdfa] text-center pt-32 text-sm font-bold text-gray-500">Loading Portal...</div>}>
+      <AuthContent />
+    </Suspense>
   );
 }

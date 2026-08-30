@@ -26,7 +26,7 @@ export interface AstrologerItem {
 
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
 
-export const ALL_TOOL_IDS = ACTIVE_TOOLS_REGISTRY.map((t) => t.id);
+const ALL_TOOL_IDS = ACTIVE_TOOLS_REGISTRY.map((t) => t.id);
 
 export interface AstrologerSectionSettings {
   title: string;
