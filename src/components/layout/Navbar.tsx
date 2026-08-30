@@ -229,7 +229,7 @@ export function Navbar() {
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2.5">
             <Link
-              href="/manipuri_kuthi"
+              href="/manipuri_kuthi_yengba"
               className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 transition-opacity shadow-sm whitespace-nowrap shrink-0"
             >
               <Moon className="w-3.5 h-3.5 text-yellow-200 fill-yellow-200" />
@@ -277,7 +277,7 @@ export function Navbar() {
               Consultation & Reports
             </Link>
             <div className="grid grid-cols-2 gap-2 pt-2">
-              <Link href="/manipuri_kuthi" onClick={() => setIsOpen(false)} className="block py-3 text-center rounded-xl bg-[#d97706] text-white font-bold text-xs">
+              <Link href="/manipuri_kuthi_yengba" onClick={() => setIsOpen(false)} className="block py-3 text-center rounded-xl bg-[#d97706] text-white font-bold text-xs">
                 Kuthi Yengba
               </Link>
               <Link href="/manipuri_kuthi" onClick={() => setIsOpen(false)} className="block py-3 text-center rounded-xl bg-[#0f172a] text-[#fbbf24] border border-[#fde68a] font-bold text-xs">
