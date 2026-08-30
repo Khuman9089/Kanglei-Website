@@ -180,8 +180,8 @@ export function Navbar() {
               <span className="font-serif text-xl sm:text-2xl font-black tracking-tight text-[#0f172a] block leading-none">
                 KuthiYengpham
               </span>
-              <span className="font-script text-xs sm:text-sm text-[#b45309] font-bold italic tracking-tight block leading-tight mt-0.5 whitespace-nowrap">
-                by KangleiAstro - Based on Vishuddha Siddhanta
+              <span className="font-script text-[11px] sm:text-xs text-[#b45309] font-bold italic tracking-tight block leading-tight mt-0.5 whitespace-nowrap">
+                by KangleiAstro • Vishuddha Siddhanta
               </span>
             </div>
           </Link>

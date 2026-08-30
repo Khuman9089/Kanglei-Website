@@ -22,7 +22,7 @@ export function Footer() {
               </div>
               <div>
                 <span className="font-serif text-xl sm:text-2xl font-black text-white block leading-none">KuthiYengpham</span>
-                <span className="font-script text-xs sm:text-sm text-[#fbbf24] font-bold italic tracking-tight block leading-tight mt-0.5 whitespace-nowrap">by KangleiAstro - Based on Vishuddha Siddhanta</span>
+                <span className="font-script text-[11px] sm:text-xs text-[#fbbf24] font-bold italic tracking-tight block leading-tight mt-0.5 whitespace-nowrap">by KangleiAstro • Vishuddha Siddhanta</span>
               </div>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">
