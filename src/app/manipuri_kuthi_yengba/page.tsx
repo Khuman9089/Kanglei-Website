@@ -393,9 +393,15 @@ function ManipuriKuthiYengbaContent() {
                     <span>☑ I don't have a Kuthi paper (Enter Birth Details Manually)</span>
                   </label>
 
-                  {/* Manual Birth Details Inputs - Only shown when checkbox is checked */}
-                  {noKuthiPaper && (
-                    <div className="mt-3 p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4">
+                  {/* Manual Birth Details Inputs - Smoothly shown ONLY when checkbox is checked */}
+                  <AnimatePresence>
+                    {noKuthiPaper && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-3 p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4 overflow-hidden"
+                      >
                       <div className="text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
                         Enter Birth Details Manually
                       </div>
@@ -451,9 +457,10 @@ function ManipuriKuthiYengbaContent() {
                           className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
                         />
                       </div>
-                    </div>
+                    </motion.div>
                   )}
-                </div>
+                </AnimatePresence>
+              </div>
 
                 {/* Submit Button */}
                 <div className="pt-4 flex justify-end">
