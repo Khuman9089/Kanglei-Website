@@ -304,44 +304,44 @@ function AuthContent() {
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
       <Navbar />
-      <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
+      <main className="flex-1 pt-6 sm:pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-2xl mx-auto w-full flex flex-col justify-center items-center">
         
         {/* Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-6 w-full">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fef3c7] border border-[#fde68a] text-[#b45309] text-xs font-bold uppercase tracking-wider mb-3">
             <Sparkles className="w-4 h-4 text-[#d97706]" />
-            Secure Vedic Astrology Portal
+            Secure Vedic Portal
           </div>
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#0f172a]">
-            {activeTab === 'signup' ? 'Create Your' : 'Sign In To'} <span className="text-[#b45309]">KangleiAstro Account</span>
+            {activeTab === 'signup' ? 'Create Your' : 'Sign In To'} <span className="text-[#b45309]">KuthiYengpham Account</span>
           </h1>
           <p className="text-xs sm:text-sm text-gray-600 mt-1">
-            Access saved birth profiles, Vimshottari Dasha calculations, manual UPI payments, and consultation history.
+            Access saved birth profiles, Kuthi Yengba reports, and consultation history.
           </p>
         </div>
 
-        {/* Tab Selector */}
-        <div className="flex justify-center mb-8">
-          <div className="bg-[#fef3c7] p-1.5 rounded-2xl border border-[#fde68a] inline-flex gap-2">
-            <button
-              onClick={() => { setActiveTab('signup'); setStep('form'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`px-8 py-2.5 rounded-xl font-bold text-xs transition-all ${
-                activeTab === 'signup'
-                  ? 'bg-[#d97706] text-white shadow-md'
-                  : 'text-[#78350f] hover:text-[#0f172a]'
-              }`}
-            >
-              Sign Up (New Client)
-            </button>
+        {/* Tab Selector - Login First, Signup Second */}
+        <div className="flex justify-center mb-6 w-full">
+          <div className="bg-[#fef3c7] p-1.5 rounded-2xl border border-[#fde68a] inline-flex w-full sm:w-auto gap-1 text-center">
             <button
               onClick={() => { setActiveTab('login'); setStep('form'); setErrorMsg(''); setSuccessMsg(''); }}
-              className={`px-8 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              className={`flex-1 sm:flex-initial px-6 sm:px-8 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
                 activeTab === 'login'
                   ? 'bg-[#d97706] text-white shadow-md'
                   : 'text-[#78350f] hover:text-[#0f172a]'
               }`}
             >
-              Log In (Existing Client)
+              Log In (Existing User)
+            </button>
+            <button
+              onClick={() => { setActiveTab('signup'); setStep('form'); setErrorMsg(''); setSuccessMsg(''); }}
+              className={`flex-1 sm:flex-initial px-6 sm:px-8 py-2.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+                activeTab === 'signup'
+                  ? 'bg-[#d97706] text-white shadow-md'
+                  : 'text-[#78350f] hover:text-[#0f172a]'
+              }`}
+            >
+              Sign Up (New User)
             </button>
           </div>
         </div>
