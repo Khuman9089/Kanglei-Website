@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Moon, Phone, Mail, Headphones, Menu, X, Calendar, User, LogOut, ChevronDown, LayoutDashboard, Sparkles } from 'lucide-react';
+import { Moon, Phone, Mail, Headphones, Menu, X, Calendar, User, LogOut, ChevronDown, LayoutDashboard, Sparkles, Sun } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -219,15 +219,23 @@ export function Navbar() {
               Blog
             </Link>
             <Link
-              href="/#testimonials"
+              href="/numit_yengba"
               className="px-3.5 py-2 rounded-xl text-sm font-extrabold text-gray-800 hover:text-[#b45309] hover:bg-[#fef3c7]/60 transition-colors whitespace-nowrap"
             >
-              Client Reviews
+              Numit Yengba
             </Link>
           </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2.5">
+            <Link
+              href="/numit_yengba"
+              className="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs transition-opacity shadow-sm whitespace-nowrap shrink-0"
+            >
+              <Sun className="w-3.5 h-3.5 text-yellow-200 fill-yellow-200" />
+              <span>Numit Yengba</span>
+            </Link>
+
             <Link
               href="/manipuri_kuthi_yengba"
               className="hidden lg:inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 transition-opacity shadow-sm whitespace-nowrap shrink-0"
