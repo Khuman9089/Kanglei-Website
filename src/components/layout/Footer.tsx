@@ -22,7 +22,7 @@ export function Footer() {
               </div>
               <div>
                 <span className="font-serif text-2xl font-black text-white block leading-none">KuthiYengpham</span>
-                <span className="text-xs text-[#fbbf24] font-extrabold uppercase tracking-wider block mt-1">by KangleiAstro</span>
+                <span className="font-script text-base text-[#fbbf24] font-bold italic tracking-normal block leading-tight mt-0.5 capitalize">by KangleiAstro</span>
               </div>
             </div>
             <p className="text-xs text-gray-400 leading-relaxed">

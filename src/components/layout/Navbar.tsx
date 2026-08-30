@@ -180,7 +180,7 @@ export function Navbar() {
               <span className="font-serif text-2xl font-black tracking-tight text-[#0f172a] block leading-none">
                 KuthiYengpham
               </span>
-              <span className="text-[11px] text-[#b45309] font-sans font-extrabold tracking-wider block uppercase mt-0.5">
+              <span className="font-script text-base sm:text-lg text-[#b45309] font-bold italic tracking-normal block leading-tight mt-0.5 capitalize">
                 by KangleiAstro
               </span>
             </div>

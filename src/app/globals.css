@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap');
 
 /* ─────────────────────────────────────────────────────────────
    KangleiAstro Bright Luminous Gold & Ivory Design System
@@ -52,6 +53,10 @@ body {
 
 .font-sans {
   font-family: 'Inter', system-ui, sans-serif !important;
+}
+
+.font-script {
+  font-family: 'Dancing Script', cursive, serif !important;
 }
 
 h1, h2, h3, h4, h5, h6 {
