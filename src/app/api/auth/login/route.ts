@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-static';
 import prisma from '@/lib/db';
 
 const DEMO_CLIENTS: Record<string, any> = {

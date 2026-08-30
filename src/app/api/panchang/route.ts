@@ -1,4 +1,6 @@
 import { NextResponse } from 'next/server';
+
+export const dynamic = 'force-static';
 import { calculateVedicPanchang } from '@/engine/panchang';
 
 export async function GET(req: Request) {

@@ -1,4 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
+
+export const dynamic = 'force-static';
+
 import { calculatePlanetaryPositions } from '@/engine/ephemeris';
 import { calculateEqualHouses, assignPlanetsToHouses } from '@/engine/houses';
 import { calculateVimshottariDasha } from '@/engine/dashas';
