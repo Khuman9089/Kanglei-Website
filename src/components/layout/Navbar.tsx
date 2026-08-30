@@ -66,8 +66,8 @@ export function Navbar() {
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
-      {/* 1. TOP UTILITY BAR (Bright Warm Gold Theme) */}
-      <div className="bg-[#fef3c7] text-[#78350f] text-xs border-b border-[#fde68a]">
+      {/* 1. TOP UTILITY BAR (Bright Warm Gold Theme - Hidden on Mobile, Desktop Only) */}
+      <div className="hidden md:block bg-[#fef3c7] text-[#78350f] text-xs border-b border-[#fde68a]">
         <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-2">
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-1.5 font-medium">
@@ -283,6 +283,58 @@ export function Navbar() {
               <Link href="/kundli" onClick={() => setIsOpen(false)} className="block py-3 text-center rounded-xl bg-[#0f172a] text-[#fbbf24] border border-[#fde68a] font-bold text-xs">
                 Kuthi Iba (কুঠি ইবা)
               </Link>
+            </div>
+
+            {/* Mobile Support Contact Section under main menu */}
+            <div className="pt-4 border-t border-[#f3e8d2] space-y-3 font-sans">
+              <div className="text-[10px] font-extrabold uppercase tracking-widest text-[#b45309]">
+                Live Support & Contact
+              </div>
+              <div className="space-y-2 text-xs font-semibold text-gray-700">
+                <div className="flex items-center gap-2">
+                  <Headphones className="w-4 h-4 text-[#d97706]" />
+                  <span>Live Support (9:30 AM – 6:00 PM IST)</span>
+                </div>
+                <a href="tel:+919876543210" className="flex items-center gap-2 text-[#0f172a] font-bold hover:underline">
+                  <Phone className="w-4 h-4 text-[#d97706]" />
+                  <span>+91 98765 43210</span>
+                </a>
+                <a href="mailto:ccare@kangleiastro.com" className="flex items-center gap-2 text-gray-600 hover:underline">
+                  <Mail className="w-4 h-4 text-[#d97706]" />
+                  <span>ccare@kangleiastro.com</span>
+                </a>
+              </div>
+
+              {/* Mobile Account Auth Buttons */}
+              <div className="pt-2 flex items-center gap-2">
+                {user ? (
+                  <Link
+                    href={user.role === 'ASTROLOGER' ? '/dashboard/astrologer' : '/dashboard/client'}
+                    onClick={() => setIsOpen(false)}
+                    className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#b45309] to-[#d97706] text-white font-extrabold text-xs text-center shadow-xs flex items-center justify-center gap-2"
+                  >
+                    <User className="w-4 h-4" />
+                    <span>My Account ({user.name ? user.name.split(' ')[0] : 'Profile'})</span>
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/auth"
+                      onClick={() => setIsOpen(false)}
+                      className="flex-1 py-2.5 rounded-xl bg-[#d97706] text-white font-extrabold text-xs text-center shadow-xs hover:bg-[#b45309] transition-colors"
+                    >
+                      LOGIN
+                    </Link>
+                    <Link
+                      href="/auth"
+                      onClick={() => setIsOpen(false)}
+                      className="flex-1 py-2.5 rounded-xl border border-[#78350f]/40 text-[#78350f] font-extrabold text-xs text-center hover:bg-[#78350f]/10 transition-colors"
+                    >
+                      SIGN UP
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           </motion.div>
         )}
