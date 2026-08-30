@@ -5,6 +5,8 @@ import Footer from "@/components/layout/Footer";
 import BannerAd970x90 from "@/components/ui/BannerAd970x90";
 import JsonLd from "@/components/seo/JsonLd";
 
+import MobileBottomNav from "@/components/layout/MobileBottomNav";
+
 const baseUrl = 'https://benevolent-ganache-baa904.netlify.app';
 
 export const metadata: Metadata = {
@@ -140,11 +142,12 @@ export default function RootLayout({
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <JsonLd data={organizationSchema} />
       </head>
-      <body className="min-h-screen flex flex-col bg-[#fffdfa] text-[#0f172a] antialiased selection:bg-[#d97706]/20 selection:text-[#0f172a]">
+      <body className="min-h-screen flex flex-col bg-[#fffdfa] text-[#0f172a] antialiased selection:bg-[#d97706]/20 selection:text-[#0f172a] pb-16 md:pb-0">
         <Navbar />
         <BannerAd970x90 />
         <main className="flex-1 w-full">{children}</main>
         <Footer />
+        <MobileBottomNav />
       </body>
     </html>
   );
