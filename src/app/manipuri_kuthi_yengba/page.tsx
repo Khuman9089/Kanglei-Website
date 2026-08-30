@@ -4,20 +4,15 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Phone, Calendar, Clock, MapPin, FileText, CheckCircle2, 
-  ArrowRight, ArrowLeft, Sparkles, QrCode, ShieldCheck, MessageSquare, Plus, Trash2, Upload, FileUp, Eye 
+  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, MessageSquare 
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
 
-interface PersonEntry {
+interface KuthiSlot {
   id: string;
-  name: string;
-  files: File[];
-  noKuthiPaper: boolean;
-  dob: string;
-  tob: string;
-  pob: string;
-  notes: string;
+  label: string;
+  file: File | null;
 }
 
 function ManipuriKuthiYengbaContent() {
@@ -28,26 +23,20 @@ function ManipuriKuthiYengbaContent() {
   const [clientName, setClientName] = useState('');
   const [whatsappNo, setWhatsappNo] = useState('');
 
-  // Service Selection
-  const [selectedSubService, setSelectedSubService] = useState<{ id: string; title: string; price: number }>({
-    id: 'sub-101',
-    title: 'Standard Kuthi Reading',
-    price: 499,
-  });
+  // Price per person / Kuthi
+  const pricePerKuthi = 499;
 
-  // Array of Persons (Default: 1 person)
-  const [persons, setPersons] = useState<PersonEntry[]>([
-    {
-      id: 'person-1',
-      name: '',
-      files: [],
-      noKuthiPaper: false,
-      dob: '',
-      tob: '',
-      pob: 'Imphal, Manipur',
-      notes: '',
-    },
+  // Kuthi Slots (Default 1 slot)
+  const [slots, setSlots] = useState<KuthiSlot[]>([
+    { id: 'slot-1', label: 'Kuthi Paper #1', file: null },
   ]);
+
+  // Checkbox: I don't have Kuthi paper
+  const [noKuthiPaper, setNoKuthiPaper] = useState(false);
+  const [dob, setDob] = useState('');
+  const [tob, setTob] = useState('');
+  const [pob, setPob] = useState('Imphal, Manipur');
+  const [notes, setNotes] = useState('');
 
   // Payment State
   const [utrNumber, setUtrNumber] = useState('');
@@ -60,120 +49,75 @@ function ManipuriKuthiYengbaContent() {
     setOrderRef(ref);
   }, []);
 
-  // Update Person count based on pill selector (1 to 5)
-  const handlePersonCountChange = (count: number) => {
+  // Update Slot count based on 1 to 5 selector
+  const handleCountSelect = (count: number) => {
     setErrorMsg('');
-    const currentCount = persons.length;
+    const currentCount = slots.length;
     if (count > currentCount) {
-      const newItems: PersonEntry[] = [];
+      const newSlots: KuthiSlot[] = [];
       for (let i = currentCount + 1; i <= count; i++) {
-        newItems.push({
-          id: `person-${Date.now()}-${i}`,
-          name: '',
-          files: [],
-          noKuthiPaper: false,
-          dob: '',
-          tob: '',
-          pob: 'Imphal, Manipur',
-          notes: '',
+        newSlots.push({
+          id: `slot-${Date.now()}-${i}`,
+          label: `Kuthi Paper #${i}`,
+          file: null,
         });
       }
-      setPersons([...persons, ...newItems]);
+      setSlots([...slots, ...newSlots]);
     } else if (count < currentCount) {
-      setPersons(persons.slice(0, count));
+      setSlots(slots.slice(0, count));
     }
   };
 
-  // Add person dynamically (+ Add More Person button)
-  const handleAddPerson = () => {
-    const newId = `person-${Date.now()}-${persons.length + 1}`;
-    setPersons([
-      ...persons,
+  // Add one more slot (+ Add More button)
+  const handleAddSlot = () => {
+    const nextNum = slots.length + 1;
+    setSlots([
+      ...slots,
       {
-        id: newId,
-        name: '',
-        files: [],
-        noKuthiPaper: false,
-        dob: '',
-        tob: '',
-        pob: 'Imphal, Manipur',
-        notes: '',
+        id: `slot-${Date.now()}-${nextNum}`,
+        label: `Kuthi Paper #${nextNum}`,
+        file: null,
       },
     ]);
   };
 
-  // Remove person
-  const handleRemovePerson = (id: string) => {
-    if (persons.length <= 1) return;
-    setPersons(persons.filter((p) => p.id !== id));
+  // Remove specific slot
+  const handleRemoveSlot = (id: string) => {
+    if (slots.length <= 1) return;
+    const updated = slots.filter((s) => s.id !== id).map((s, idx) => ({
+      ...s,
+      label: `Kuthi Paper #${idx + 1}`,
+    }));
+    setSlots(updated);
   };
 
-  // Update specific field on person
-  const handlePersonFieldChange = (id: string, field: keyof PersonEntry, value: any) => {
-    setPersons(
-      persons.map((p) => (p.id === id ? { ...p, [field]: value } : p))
-    );
+  // Upload file for specific slot
+  const handleFileChange = (id: string, file: File | null) => {
+    setSlots(slots.map((s) => (s.id === id ? { ...s, file } : s)));
   };
 
-  // Multiple files upload per person
-  const handlePersonFileUpload = (id: string, newFiles: FileList | null) => {
-    if (!newFiles) return;
-    const addedFiles = Array.from(newFiles);
-    setPersons(
-      persons.map((p) => {
-        if (p.id === id) {
-          return { ...p, files: [...p.files, ...addedFiles] };
-        }
-        return p;
-      })
-    );
-  };
-
-  // Remove file from person
-  const handleRemovePersonFile = (personId: string, fileIdx: number) => {
-    setPersons(
-      persons.map((p) => {
-        if (p.id === personId) {
-          const updated = p.files.filter((_, idx) => idx !== fileIdx);
-          return { ...p, files: updated };
-        }
-        return p;
-      })
-    );
-  };
-
-  // Total calculated fee
-  const totalFee = selectedSubService.price * persons.length;
+  // Calculate Total Amount
+  const totalAmount = pricePerKuthi * slots.length;
+  const uploadedFilesCount = slots.filter((s) => s.file !== null).length;
 
   const handleStep1Submit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
     if (!clientName.trim()) {
-      setErrorMsg('Please enter Client / Applicant Name.');
+      setErrorMsg('Please enter your Name.');
       return;
     }
 
     if (!whatsappNo.trim()) {
-      setErrorMsg('Please enter WhatsApp Mobile Number for delivery.');
+      setErrorMsg('Please enter your WhatsApp Number.');
       return;
     }
 
-    // Validate each person
-    for (let i = 0; i < persons.length; i++) {
-      const p = persons[i];
-      const pNum = i + 1;
-
-      if (!p.name.trim()) {
-        setErrorMsg(`Please enter Name for Person #${pNum}.`);
+    if (noKuthiPaper || uploadedFilesCount === 0) {
+      if (!dob || !tob || !pob.trim()) {
+        setErrorMsg('Please enter Date of Birth, Time of Birth, and Place of Birth (or upload Kuthi Paper files).');
         return;
-      }
-
-      if (p.noKuthiPaper || p.files.length === 0) {
-        if (!p.dob || !p.tob || !p.pob.trim()) {
-          setErrorMsg(`Please enter Date, Time, and Place of Birth for Person #${pNum} (or attach Kuthi paper files).`);
-          return;
-        }
       }
     }
 
@@ -197,20 +141,14 @@ function ManipuriKuthiYengbaContent() {
         category: 'kuthi_yengba',
         clientName,
         whatsappNo,
-        personsCount: persons.length,
-        persons: persons.map((p) => ({
-          name: p.name,
-          filesCount: p.files.length,
-          fileNames: p.files.map((f) => f.name),
-          noKuthiPaper: p.noKuthiPaper,
-          dob: p.dob,
-          tob: p.tob,
-          pob: p.pob,
-          notes: p.notes,
-        })),
-        serviceTitle: selectedSubService.title,
-        pricePerPerson: selectedSubService.price,
-        totalAmount: totalFee,
+        personCount: slots.length,
+        uploadedFiles: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
+        noKuthiPaper,
+        dob,
+        tob,
+        pob,
+        notes,
+        totalAmount,
         utr: utrNumber,
       },
     };
@@ -233,23 +171,23 @@ function ManipuriKuthiYengbaContent() {
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
       <Navbar />
-      <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
+      <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto w-full">
         
         {/* Progress Tracker */}
         <div className="mb-6 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fef3c7] border border-[#fde68a] text-[#b45309] text-xs font-bold uppercase tracking-wider mb-2">
             <Sparkles className="w-4 h-4 text-[#d97706]" />
-            Manipuri Kuthi Yengba Consultation
+            Manipuri Kuthi Yengba Form
           </div>
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#0f172a]">
-            Kuthi Yengba <span className="text-[#b45309]">Intake & Analysis Form</span>
+            Kuthi Yengba <span className="text-[#b45309]">Intake Form</span>
           </h1>
 
           <div className="flex items-center justify-between max-w-md mx-auto mt-6 relative">
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-[#f3e8d2] -translate-y-1/2 z-0" />
             
             {[
-              { num: 1, label: 'Person & Kuthi Details' },
+              { num: 1, label: 'Upload Kuthi' },
               { num: 2, label: 'UPI Summary & Payment' },
               { num: 3, label: 'Order Confirmation' },
             ].map((s) => (
@@ -282,7 +220,7 @@ function ManipuriKuthiYengbaContent() {
 
         <AnimatePresence mode="wait">
           
-          {/* STEP 1: INTAKE FORM */}
+          {/* STEP 1: CLEAN INTAKE FORM */}
           {step === 1 && (
             <motion.div
               key="step1"
@@ -293,31 +231,29 @@ function ManipuriKuthiYengbaContent() {
             >
               <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#78350f] via-[#d97706] to-[#f59e0b]" />
 
-              {/* Service Header & Total Calculator Banner */}
-              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#fde68a]/50">
+              <div className="flex items-center justify-between border-b border-[#fde68a]/50 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706]">
                     <Eye className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-serif font-bold text-xl text-[#0f172a]">Kuthi Reading Details</h3>
-                    <p className="text-xs text-gray-500 font-sans">Upload Kuthi photo/PDF or enter birth timings for astrological analysis</p>
+                    <h3 className="font-serif font-bold text-xl text-[#0f172a]">Kuthi Paper Reading Form</h3>
+                    <p className="text-xs text-gray-500 font-sans">Fill in your contact details and upload Kuthi paper photos</p>
                   </div>
                 </div>
 
-                <div className="bg-[#fef3c7] px-4 py-2 rounded-2xl border border-[#fde68a] text-right">
-                  <span className="text-[10px] text-gray-500 font-bold block uppercase">Total Fee ({persons.length} {persons.length === 1 ? 'Person' : 'Persons'})</span>
-                  <span className="text-xl font-serif font-black text-[#b45309]">₹{totalFee}</span>
-                </div>
+                <span className="font-mono font-extrabold text-sm text-[#b45309] bg-[#fef3c7] px-3.5 py-1.5 rounded-xl border border-[#fde68a]">
+                  Total: ₹{totalAmount}
+                </span>
               </div>
 
               <form onSubmit={handleStep1Submit} className="space-y-6 text-xs font-sans">
                 
-                {/* 1. PRIMARY CONTACT INFORMATION */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
+                {/* 1. NAME & WHATSAPP NO */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Client / Applicant Name<span className="text-red-500">*</span>
+                      Your Name<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -325,13 +261,13 @@ function ManipuriKuthiYengbaContent() {
                       placeholder="Enter your full name"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      WhatsApp Mobile Number<span className="text-red-500">*</span>
+                      WhatsApp Number<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -339,222 +275,190 @@ function ManipuriKuthiYengbaContent() {
                       placeholder="+91 98765 43210"
                       value={whatsappNo}
                       onChange={(e) => setWhatsappNo(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
                 </div>
 
-                {/* 2. NUMBER OF PERSONS SELECTOR (1, 2, 3, 4, 5) */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
-                      How Many Persons for Kuthi Yengba?<span className="text-red-500">*</span>
-                    </label>
-                    <span className="text-[11px] text-gray-500 font-medium">Select count or use + icon below</span>
-                  </div>
-
+                {/* 2. HOW MANY PERSON SELECTOR (1, 2, 3, 4, 5) */}
+                <div className="space-y-2 pt-2">
+                  <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
+                    How Many Person / Kuthi Papers?<span className="text-red-500">*</span>
+                  </label>
+                  
                   <div className="grid grid-cols-5 gap-2 sm:gap-3">
                     {[1, 2, 3, 4, 5].map((num) => (
                       <button
                         key={num}
                         type="button"
-                        onClick={() => handlePersonCountChange(num)}
+                        onClick={() => handleCountSelect(num)}
                         className={`py-3 rounded-2xl font-black text-sm transition-all border cursor-pointer ${
-                          persons.length === num
+                          slots.length === num
                             ? 'bg-[#d97706] text-white border-[#d97706] shadow-md ring-2 ring-[#d97706]/30 scale-[1.02]'
                             : 'bg-[#fefcf6] text-[#0f172a] border-[#fde68a] hover:bg-[#fef3c7]'
                         }`}
                       >
-                        {num} {num === 1 ? 'Person' : 'Persons'}
+                        {num}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* 3. ROW BY ROW PERSON ENTRIES */}
-                <div className="space-y-6 pt-2">
-                  {persons.map((person, index) => (
-                    <div
-                      key={person.id}
-                      className="p-5 sm:p-6 rounded-3xl bg-white border-2 border-[#f3e8d2] shadow-sm relative space-y-4 transition-all hover:border-[#fde68a]"
-                    >
-                      <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-full bg-[#fef3c7] text-[#b45309] font-black text-xs flex items-center justify-center border border-[#fde68a]">
-                            #{index + 1}
+                {/* 3. UPLOAD KUTHI FILE BOXES */}
+                <div className="space-y-4 pt-2">
+                  <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
+                    Upload Kuthi Paper Files ({slots.length} {slots.length === 1 ? 'File' : 'Files'})
+                  </label>
+
+                  <div className="space-y-3">
+                    {slots.map((slot, index) => (
+                      <div
+                        key={slot.id}
+                        className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] flex flex-col sm:flex-row items-center justify-between gap-3"
+                      >
+                        <div className="flex items-center gap-2.5 shrink-0">
+                          <span className="w-7 h-7 rounded-full bg-[#d97706] text-white font-black text-xs flex items-center justify-center">
+                            {index + 1}
                           </span>
-                          <h4 className="font-serif font-bold text-base text-[#0f172a]">
-                            Person #{index + 1} Details
-                          </h4>
+                          <span className="font-bold text-xs text-[#0f172a]">{slot.label}</span>
                         </div>
 
-                        {persons.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemovePerson(person.id)}
-                            className="p-1.5 rounded-lg text-red-500 hover:bg-red-50 transition-colors cursor-pointer flex items-center gap-1 text-xs font-bold"
-                            title="Remove Person"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                            <span className="hidden sm:inline">Remove</span>
-                          </button>
-                        )}
+                        <div className="flex-1 w-full sm:w-auto flex items-center gap-2 justify-end">
+                          {slot.file ? (
+                            <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-white border border-[#fde68a] text-xs max-w-xs truncate">
+                              <FileUp className="w-4 h-4 text-[#d97706] shrink-0" />
+                              <span className="font-bold text-gray-800 truncate">{slot.file.name}</span>
+                              <button
+                                type="button"
+                                onClick={() => handleFileChange(slot.id, null)}
+                                className="text-red-500 hover:text-red-700 p-0.5 cursor-pointer ml-1"
+                                title="Remove File"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="px-4 py-2 rounded-xl bg-white border-2 border-dashed border-[#d97706] text-[#b45309] font-bold text-xs flex items-center gap-1.5 cursor-pointer hover:bg-[#fef3c7] transition-all">
+                              <Upload className="w-4 h-4 text-[#d97706]" />
+                              <span>Upload {slot.label}</span>
+                              <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                onChange={(e) => e.target.files && handleFileChange(slot.id, e.target.files[0])}
+                                className="hidden"
+                              />
+                            </label>
+                          )}
+
+                          {slots.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveSlot(slot.id)}
+                              className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                              title="Remove Kuthi slot"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* + ADD MORE KUTHI FILE BUTTON BELOW */}
+                  <div className="pt-1 flex justify-center">
+                    <button
+                      type="button"
+                      onClick={handleAddSlot}
+                      className="px-5 py-2.5 rounded-xl bg-white border-2 border-dashed border-[#d97706] text-[#b45309] font-bold text-xs hover:bg-[#fef3c7] transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>+ Add More Kuthi File</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* 4. CHECKBOX: I DON'T HAVE KUTHI PAPER */}
+                <div className="pt-2 border-t border-[#f3e8d2]">
+                  <label className="inline-flex items-center gap-2.5 text-xs font-bold text-[#b45309] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={noKuthiPaper}
+                      onChange={(e) => setNoKuthiPaper(e.target.checked)}
+                      className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
+                    />
+                    <span>☑ I don't have Kuthi paper (Enter Birth Details Manually)</span>
+                  </label>
+
+                  {/* Manual Birth Details Inputs */}
+                  {(noKuthiPaper || uploadedFilesCount === 0) && (
+                    <div className="mt-3 p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4">
+                      <div className="text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
+                        Enter Birth Details Manually
                       </div>
 
-                      {/* Person Name Input */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                            Date of Birth<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="date"
+                            value={dob}
+                            onChange={(e) => setDob(e.target.value)}
+                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                            Time of Birth<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="time"
+                            value={tob}
+                            onChange={(e) => setTob(e.target.value)}
+                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                            Place of Birth<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Imphal, Thoubal"
+                            value={pob}
+                            onChange={(e) => setPob(e.target.value)}
+                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
                       <div>
-                        <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                          Person #{index + 1} Full Name<span className="text-red-500">*</span>
+                        <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                          Specific Questions / Notes for Astrologer (Optional)
                         </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder={`Enter name of Person #${index + 1}`}
-                          value={person.name}
-                          onChange={(e) => handlePersonFieldChange(person.id, 'name', e.target.value)}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                        <textarea
+                          rows={2}
+                          placeholder="Enter any specific concerns (e.g. career, health, marriage)"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
                         />
                       </div>
-
-                      {/* File Upload Section for this Person */}
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
-                            Upload Kuthi Paper / Kundli Photos for {person.name || `Person #${index + 1}`}
-                          </label>
-                          <span className="text-[10px] text-gray-500 font-medium">Multiple files allowed (JPG, PNG, PDF)</span>
-                        </div>
-
-                        <div className="border-2 border-dashed border-[#fde68a] rounded-2xl p-4 bg-[#fefcf6] text-center hover:border-[#d97706] transition-colors relative">
-                          <input
-                            type="file"
-                            multiple
-                            accept="image/*,application/pdf"
-                            onChange={(e) => handlePersonFileUpload(person.id, e.target.files)}
-                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                          />
-                          <div className="flex flex-col items-center justify-center space-y-1">
-                            <Upload className="w-6 h-6 text-[#d97706]" />
-                            <span className="font-bold text-xs text-[#0f172a]">
-                              Click or Drag & Drop Kuthi Photos
-                            </span>
-                            <span className="text-[11px] text-gray-500">
-                              Upload Kuthi page photos or horoscope charts
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* List of uploaded files for this person */}
-                        {person.files.length > 0 && (
-                          <div className="space-y-1.5 pt-1">
-                            {person.files.map((file, fileIdx) => (
-                              <div
-                                key={fileIdx}
-                                className="flex items-center justify-between p-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs"
-                              >
-                                <div className="flex items-center gap-2 truncate pr-2">
-                                  <FileUp className="w-4 h-4 text-[#d97706] shrink-0" />
-                                  <span className="font-bold text-gray-800 truncate">{file.name}</span>
-                                  <span className="text-[10px] text-gray-400 font-mono">({(file.size / 1024).toFixed(0)} KB)</span>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemovePersonFile(person.id, fileIdx)}
-                                  className="text-red-500 hover:text-red-700 p-1 cursor-pointer"
-                                  title="Remove file"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Checkbox: I don't have Kuthi Paper */}
-                      <div className="pt-2 border-t border-gray-100">
-                        <label className="inline-flex items-center gap-2.5 text-xs font-bold text-[#b45309] cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={person.noKuthiPaper}
-                            onChange={(e) => handlePersonFieldChange(person.id, 'noKuthiPaper', e.target.checked)}
-                            className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
-                          />
-                          <span>☑ I don't have a Kuthi paper for {person.name || `Person #${index + 1}`} (Enter Birth Details Manually)</span>
-                        </label>
-
-                        {/* Expanded Manual Birth Details */}
-                        {(person.noKuthiPaper || person.files.length === 0) && (
-                          <div className="mt-3 p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4">
-                            <div className="text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
-                              Manual Birth Details for {person.name || `Person #${index + 1}`}
-                            </div>
-
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                                  Date of Birth<span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                  type="date"
-                                  value={person.dob}
-                                  onChange={(e) => handlePersonFieldChange(person.id, 'dob', e.target.value)}
-                                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                                  Time of Birth<span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                  type="time"
-                                  value={person.tob}
-                                  onChange={(e) => handlePersonFieldChange(person.id, 'tob', e.target.value)}
-                                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
-                                />
-                              </div>
-
-                              <div>
-                                <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                                  Place of Birth<span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                  type="text"
-                                  placeholder="e.g. Imphal, Thoubal"
-                                  value={person.pob}
-                                  onChange={(e) => handlePersonFieldChange(person.id, 'pob', e.target.value)}
-                                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-
                     </div>
-                  ))}
+                  )}
                 </div>
 
-                {/* + ADD MORE PERSON BUTTON BELOW ROW ENTRIES */}
-                <div className="pt-2 flex justify-center">
-                  <button
-                    type="button"
-                    onClick={handleAddPerson}
-                    className="px-6 py-3 rounded-2xl bg-[#fefcf6] border-2 border-dashed border-[#d97706] text-[#b45309] font-black text-xs hover:bg-[#fef3c7] transition-all flex items-center gap-2 shadow-xs cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    <span>+ Add Another Person for Kuthi Reading</span>
-                  </button>
-                </div>
-
-                {/* Submit Action Button */}
+                {/* Submit Button */}
                 <div className="pt-4 flex justify-end">
                   <button
                     type="submit"
                     className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Proceed to UPI Payment Summary (₹{totalFee})</span>
+                    <span>Proceed to UPI Payment Summary (₹{totalAmount})</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -589,13 +493,13 @@ function ManipuriKuthiYengbaContent() {
                     <p className="text-xs text-gray-500 font-sans">Order Ref: <span className="font-mono font-bold text-[#b45309]">{orderRef}</span></p>
                   </div>
                   <span className="px-3.5 py-1.5 rounded-xl bg-[#fef3c7] text-[#b45309] font-extrabold text-sm border border-[#fde68a]">
-                    Total Fee: ₹{totalFee}
+                    Total Fee: ₹{totalAmount}
                   </span>
                 </div>
 
-                <div className="space-y-3 bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] text-xs font-sans text-gray-700">
+                <div className="space-y-2 bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] text-xs font-sans text-gray-700">
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
-                    <span className="text-gray-500">Client Name:</span>
+                    <span className="text-gray-500">Name:</span>
                     <span className="font-bold text-[#0f172a]">{clientName}</span>
                   </div>
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
@@ -603,28 +507,25 @@ function ManipuriKuthiYengbaContent() {
                     <span className="font-bold text-[#0f172a]">{whatsappNo}</span>
                   </div>
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
-                    <span className="text-gray-500">Total Persons:</span>
-                    <span className="font-bold text-[#b45309]">{persons.length} Person(s)</span>
+                    <span className="text-gray-500">Total Kuthi Papers:</span>
+                    <span className="font-bold text-[#b45309]">{slots.length} Paper(s)</span>
                   </div>
 
-                  {/* List of Persons */}
-                  <div className="space-y-2 pt-1">
-                    <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Persons Breakdown:</span>
-                    {persons.map((p, idx) => (
-                      <div key={p.id} className="p-2.5 rounded-xl bg-white border border-[#fde68a] text-xs">
-                        <span className="font-bold text-[#0f172a]">#{idx + 1} {p.name}</span>
-                        {p.files.length > 0 ? (
-                          <span className="text-[#b45309] block text-[11px] font-semibold mt-0.5">
-                            📎 {p.files.length} Kuthi File(s) Attached ({p.files.map((f) => f.name).join(', ')})
-                          </span>
-                        ) : (
-                          <span className="text-gray-600 block text-[11px] font-medium mt-0.5">
-                            📅 DOB: {p.dob} • TOB: {p.tob} • POB: {p.pob}
-                          </span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+                  {uploadedFilesCount > 0 ? (
+                    <div className="pt-1">
+                      <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Attached Kuthi Files:</span>
+                      <ul className="list-disc list-inside space-y-1 font-semibold text-[#0f172a] mt-1">
+                        {slots.filter((s) => s.file !== null).map((s) => (
+                          <li key={s.id}>{s.label}: {s.file?.name}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <div className="pt-1">
+                      <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Birth Details:</span>
+                      <span className="font-semibold text-[#0f172a] block">DOB: {dob} • TOB: {tob} • POB: {pob}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -632,7 +533,7 @@ function ManipuriKuthiYengbaContent() {
               <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl text-center space-y-4">
                 <div className="flex items-center justify-center gap-2 text-[#b45309]">
                   <QrCode className="w-6 h-6" />
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Scan & Pay ₹{totalFee} via UPI</h3>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Scan & Pay ₹{totalAmount} via UPI</h3>
                 </div>
 
                 <div className="bg-[#fef3c7] p-6 rounded-2xl border border-[#fde68a] max-w-sm mx-auto">
@@ -680,7 +581,7 @@ function ManipuriKuthiYengbaContent() {
                     disabled={loading}
                     className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    {loading ? 'Submitting Order...' : `Confirm Order (₹${totalFee}) →`}
+                    {loading ? 'Submitting Order...' : `Confirm Order (₹${totalAmount}) →`}
                   </button>
                 </form>
               </div>
@@ -707,7 +608,7 @@ function ManipuriKuthiYengbaContent() {
               </h2>
 
               <div className="bg-[#fefcf6] p-6 rounded-2xl border border-[#fde68a] text-xs sm:text-sm text-[#78350f] leading-relaxed mb-8 font-medium shadow-xs">
-                Your Kuthi reading request for <strong className="font-bold">{persons.length} Person(s)</strong> has been assigned to our Acharyas. Detailed astrological PDF report & voice notes will be delivered to your WhatsApp:
+                Your Kuthi reading request for <strong className="font-bold">{slots.length} Paper(s)</strong> has been assigned to our Acharyas. Detailed astrological report & voice notes will be delivered to your WhatsApp:
                 <strong className="block text-base text-[#b45309] font-bold mt-2 font-mono">
                   {whatsappNo}
                 </strong>
