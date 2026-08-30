@@ -57,7 +57,7 @@ export default function BannerAd970x90() {
   }[banner.theme || 'gold'];
 
   return (
-    <aside aria-label="Advertisement Banner" className="w-full bg-[#fffdfa] pt-16 md:pt-24 pb-2 px-4 print:hidden flex justify-center items-center relative z-20">
+    <aside aria-label="Advertisement Banner" className="w-full bg-[#fffdfa] pt-14 md:pt-22 pb-0 px-4 print:hidden flex justify-center items-center relative z-20">
       {/* Exact 970px x 90px Standard Leaderboard Container */}
       <div className={`w-full max-w-[970px] min-h-[90px] rounded-2xl bg-gradient-to-r ${themeClasses} border-2 shadow-xl p-3.5 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 relative overflow-hidden`}>
         

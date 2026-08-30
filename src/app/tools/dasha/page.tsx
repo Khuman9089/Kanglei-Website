@@ -46,7 +46,7 @@ export default function DashaPage() {
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a]">
       <Navbar />
 
-      <div className="pt-4 sm:pt-6 pb-16 px-4 max-w-4xl mx-auto space-y-8">
+      <div className="pt-1 sm:pt-2 pb-16 px-4 max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fef3c7] border border-[#fde68a] text-[#b45309] text-xs font-extrabold uppercase">
             <Sparkles className="w-4 h-4 text-[#d97706]" />

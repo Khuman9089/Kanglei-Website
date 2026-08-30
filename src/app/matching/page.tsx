@@ -133,7 +133,7 @@ export default function MatchingPage() {
 
   return (
     <div className="min-h-screen bg-[#0b132b] text-[#faf8f4] flex flex-col font-sans antialiased">
-      <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-10">
+      <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-10">
         
         {/* Header Title */}
         <div className="text-center">
