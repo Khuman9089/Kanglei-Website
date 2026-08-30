@@ -67,7 +67,7 @@ export default function AdminPaymentsPage() {
   );
 
   return (
-    <div className="min-h-screen bg-[#0b132b] pt-28 pb-20 px-4">
+    <div className="min-h-screen bg-[#0b132b] pt-6 pb-20 px-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-wrap justify-between items-center mb-8 gap-4">
           <div>

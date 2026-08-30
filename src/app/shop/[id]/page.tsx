@@ -100,7 +100,7 @@ export default function ProductDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex items-center justify-center pt-32 pb-20">
+      <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex items-center justify-center pt-6 pb-20">
         <div className="text-center space-y-3">
           <div className="w-12 h-12 rounded-full border-4 border-[#d97706] border-t-transparent animate-spin mx-auto" />
           <p className="font-serif font-bold text-lg text-[#0f172a]">Loading Product Details...</p>
@@ -114,7 +114,7 @@ export default function ProductDetailPage() {
   const discountPct = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   return (
-    <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] font-sans pt-28 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] font-sans pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-8">
         
         {/* Back Link */}

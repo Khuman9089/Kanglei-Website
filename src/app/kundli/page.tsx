@@ -126,7 +126,7 @@ export default function KundliPage() {
 
       {/* Page Header (Hidden when results displayed) */}
       {!chartData && (
-        <div className="relative pt-36 pb-8 px-4 print:hidden">
+        <div className="relative pt-4 sm:pt-6 pb-8 px-4 print:hidden">
           <div className="max-w-7xl mx-auto text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#fef3c7] border border-[#fde68a] text-[#b45309] text-xs font-extrabold uppercase tracking-wider">
               <Sparkles className="w-4 h-4 text-[#d97706]" />
@@ -144,7 +144,7 @@ export default function KundliPage() {
         </div>
       )}
 
-      <div className={`max-w-6xl mx-auto px-4 ${chartData ? 'pt-28 sm:pt-32 pb-20' : 'pb-20'} print:pt-0 print:pb-0`}>
+      <div className={`max-w-6xl mx-auto px-4 ${chartData ? 'pt-4 sm:pt-6 pb-20' : 'pb-20'} print:pt-0 print:pb-0`}>
         <AnimatePresence mode="wait">
           {!chartData ? (
             <motion.div

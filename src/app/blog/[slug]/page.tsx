@@ -68,7 +68,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0f172a] text-[#faf8f4] flex flex-col font-sans">
-        <main className="flex-1 pt-36 text-center text-sm font-bold">Loading article...</main>
+        <main className="flex-1 pt-6 text-center text-sm font-bold">Loading article...</main>
       </div>
     );
   }
@@ -76,7 +76,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
   if (!post) {
     return (
       <div className="min-h-screen bg-[#0f172a] text-[#faf8f4] flex flex-col font-sans">
-        <main className="flex-1 pt-36 text-center">
+        <main className="flex-1 pt-6 text-center">
           <h2 className="text-2xl font-serif font-bold mb-4 text-white">Article Not Found</h2>
           <Link href="/blog" className="text-[#fbbf24] font-bold hover:underline">← Back to Blog Directory</Link>
         </main>
@@ -86,7 +86,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-[#faf8f4] flex flex-col font-sans antialiased">
-      <main className="flex-1 pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-8">
+      <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full space-y-8">
         
         {/* Navigation back */}
         <div>

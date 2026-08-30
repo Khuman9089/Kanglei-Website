@@ -46,7 +46,7 @@ export default function KaalSarpDoshPage() {
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a]">
       <Navbar />
 
-      <div className="pt-36 pb-16 px-4 max-w-4xl mx-auto space-y-8">
+      <div className="pt-4 sm:pt-6 pb-16 px-4 max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-3">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-800 text-xs font-extrabold uppercase">
             <ShieldAlert className="w-4 h-4 text-emerald-600" />
