@@ -29,7 +29,7 @@ export default function ServicesPage() {
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
       <Navbar />
-      <main className="flex-1 pt-36 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
+      <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full">
         
         {/* Header */}
         <div className="text-center mb-16">

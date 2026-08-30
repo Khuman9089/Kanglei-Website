@@ -94,7 +94,7 @@ export default function AstrologersDirectoryPage() {
   const trendingAstrologers = astrologers.filter((a) => a.isTrending || a.rating >= 4.9).slice(0, 7);
 
   return (
-    <div className="min-h-screen bg-[#fffdf5] text-[#0f172a] font-sans pt-28 pb-20">
+    <div className="min-h-screen bg-[#fffdf5] text-[#0f172a] font-sans pt-4 sm:pt-6 pb-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
         
         {/* Page Header */}

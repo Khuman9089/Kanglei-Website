@@ -140,10 +140,10 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-[#faf8f4] flex flex-col font-sans antialiased">
-      <main className="flex-1 pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
+      <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
         
         {/* 1. HERO HEADER */}
-        <div className="text-center pt-6">
+        <div className="text-center pt-2">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fef3c7]/10 border border-[#fbbf24]/30 text-[#fbbf24] text-xs font-bold uppercase tracking-wider mb-3">
             <Sparkles className="w-4 h-4 text-[#fbbf24]" />
             100% Certified Vedic Remedies & Authentic Literature

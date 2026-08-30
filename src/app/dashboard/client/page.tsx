@@ -243,7 +243,7 @@ export default function ClientDashboard() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fffdfa] pt-32 pb-16 font-sans text-[#0f172a]">
+    <div className="min-h-screen bg-[#fffdfa] pt-4 sm:pt-6 pb-16 font-sans text-[#0f172a]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Header Section */}
