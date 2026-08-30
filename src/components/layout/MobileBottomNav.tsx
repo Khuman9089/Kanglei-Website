@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Users, ScrollText, HeartHandshake, User, Sparkles } from 'lucide-react';
+import { Home, Users, Sparkles, Calendar, User } from 'lucide-react';
 
 export default function MobileBottomNav() {
   const pathname = usePathname();
@@ -53,14 +53,14 @@ export default function MobileBottomNav() {
       badge: 'LIVE',
     },
     {
-      label: 'Kundli',
-      href: '/kundli',
-      icon: ScrollText,
+      label: 'Services',
+      href: '/services',
+      icon: Sparkles,
     },
     {
-      label: 'Matching',
-      href: '/matching',
-      icon: HeartHandshake,
+      label: 'Panchang',
+      href: '/panchang',
+      icon: Calendar,
     },
     {
       label: user ? 'Account' : 'Login',

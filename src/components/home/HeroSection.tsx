@@ -105,8 +105,8 @@ export default function HeroSection() {
     <section className="relative pt-6 sm:pt-8 pb-8 sm:pb-10 bg-[#fffdfa] text-[#0f172a] border-b border-[#f3e8d2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         
-        {/* 1. Quick Feature Pills */}
-        <div className="flex flex-wrap items-center justify-center gap-2.5 mb-8">
+        {/* 1. Quick Feature Pills (Hidden on Mobile, Desktop Only) */}
+        <div className="hidden lg:flex flex-wrap items-center justify-center gap-2.5 mb-8">
           <Link
             href="/kundli"
             className="inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full border border-[#f3e8d2] bg-white text-xs font-bold text-[#b45309] hover:border-[#d97706] transition-all shadow-xs"
@@ -142,9 +142,9 @@ export default function HeroSection() {
           </Link>
         </div>
 
-        {/* 2. Live Manipur Consultations & Activity Marquee Ticker */}
+        {/* 2. Live Manipur Consultations & Activity Marquee Ticker (Hidden on Mobile, Desktop Only) */}
         {tickerData.active && tickerData.items && tickerData.items.length > 0 && (
-          <div className="w-full overflow-hidden bg-[#fef3c7]/60 border-y border-[#fde68a] py-2.5 mb-8 rounded-2xl relative shadow-xs flex items-center gap-3 px-3">
+          <div className="hidden lg:flex w-full overflow-hidden bg-[#fef3c7]/60 border-y border-[#fde68a] py-2.5 mb-8 rounded-2xl relative shadow-xs items-center gap-3 px-3">
             <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#d97706] text-white text-[10px] uppercase font-extrabold shadow-sm shrink-0 z-10">
               <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
               <span>LIVE CONSULTATIONS</span>
@@ -179,12 +179,12 @@ export default function HeroSection() {
         {/* 2. Hero 2-Column Grid: Left Panchang Widget + Right Kundli Form */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start text-left">
           
-          {/* LEFT COLUMN: TODAY'S PANCHANG WIDGET (col-span-12 lg:col-span-4) */}
+          {/* LEFT COLUMN: TODAY'S PANCHANG WIDGET (Hidden on Mobile, Desktop Only) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
-            className="lg:col-span-4 bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-[0_15px_50px_rgba(217,119,6,0.06)] relative overflow-hidden"
+            className="hidden lg:block lg:col-span-4 bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-[0_15px_50px_rgba(217,119,6,0.06)] relative overflow-hidden"
           >
             {/* Top Gold Ribbon Accent */}
             <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
