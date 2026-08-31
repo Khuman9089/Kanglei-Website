@@ -586,7 +586,7 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
 
   const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
@@ -1003,6 +1003,163 @@ export default function AdminDashboardPage() {
   };
 
   // Top Rated Astrologers Section CMS State
+  const [astrologerSectionSettings, setAstrologerSectionSettings] = useState({
+    title: "Talk to Manipur's",
+    highlightText: "Top Rated",
+    subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
+    showRateOnHome: true,
+  });
+
+  // Navbar Navigation Manager State & Handlers
+  const [navConfig, setNavConfig] = useState<any>({
+    items: [
+      { id: 'nav-1', title: 'Horoscopes', href: '/horoscope', type: 'link', active: true, order: 1 },
+      { id: 'nav-2', title: 'Astrologers', href: '/astrologers', type: 'link', active: true, order: 2 },
+      {
+        id: 'nav-3',
+        title: 'Services',
+        href: '/services',
+        type: 'dropdown',
+        active: true,
+        order: 3,
+        subItems: [
+          { id: 'sub-s1', title: 'Kuthi Yengba (Horoscope Reading)', href: '/manipuri_kuthi_yengba', description: 'In-depth Dasha forecast & Vedic remedies', badge: 'POPULAR', active: true },
+          { id: 'sub-s2', title: 'Kuthi Iba (Handwritten Creation)', href: '/manipuri_kuthi', description: 'Sacred parchment hand-written birth scroll', badge: 'TRADITIONAL', active: true },
+          { id: 'sub-s3', title: 'Numit Leppa Yengba', href: '/numit_leppa_yengba', description: 'Auspicious muhurat date selection', badge: 'HOT', active: true },
+          { id: 'sub-s4', title: 'Kundli Matching (36-Gun Milan)', href: '/matching', description: 'Marriage compatibility & Manglik check', active: true },
+        ],
+      },
+      { id: 'nav-4', title: 'E-Store', href: '/shop', type: 'link', active: true, order: 4 },
+      {
+        id: 'nav-5',
+        title: 'Free Tools',
+        href: '/manipuri_free_kuthi',
+        type: 'dropdown',
+        badge: 'FREE',
+        active: true,
+        order: 5,
+        subItems: [
+          { id: 'sub-f1', title: 'Free Manipuri Kundli Generator', href: '/manipuri_free_kuthi', description: 'Generate natal chart PDF instantly', badge: 'FREE', active: true },
+          { id: 'sub-f2', title: 'Free Gun Milan Matcher', href: '/matching', description: 'Quick 36-point Ashtakoot score check', active: true },
+        ],
+      },
+      { id: 'nav-6', title: 'Blog', href: '/blog', type: 'link', active: true, order: 6 },
+      { id: 'nav-7', title: 'Numit Leppa', href: '/numit_leppa_yengba', type: 'link', active: true, order: 7 },
+    ],
+    cbs: {
+      showKuthiYengbaBtn: true,
+      kuthiYengbaBtnText: 'Kuthi Yengba',
+      kuthiYengbaBtnHref: '/manipuri_kuthi_yengba',
+      showKuthiIbaBtn: true,
+      kuthiIbaBtnText: 'Kuthi Iba',
+      kuthiIbaBtnHref: '/manipuri_kuthi',
+      showNumitLeppaBtn: true,
+      numitLeppaBtnText: 'Numit Leppa',
+      numitLeppaBtnHref: '/numit_leppa_yengba',
+    },
+  });
+
+  useEffect(() => {
+    fetch('/api/navbar')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.items)) {
+          setNavConfig(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSaveNavConfig = async () => {
+    try {
+      const res = await fetch('/api/navbar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(navConfig),
+      });
+      if (res.ok) {
+        setSaveAlert('📌 Header Navbar Menu & Dropdown Config Published Live!');
+        setTimeout(() => setSaveAlert(''), 3500);
+      }
+    } catch (err) {
+      console.error('Error saving navbar:', err);
+    }
+  };
+
+  const handleAddNavItem = () => {
+    const newItem = {
+      id: `nav-${Date.now()}`,
+      title: 'New Menu Item',
+      href: '/services',
+      type: 'link',
+      active: true,
+      order: (navConfig.items?.length || 0) + 1,
+      subItems: [],
+    };
+    setNavConfig((prev: any) => ({
+      ...prev,
+      items: [...(prev.items || []), newItem],
+    }));
+  };
+
+  const handleRemoveNavItem = (id: string) => {
+    setNavConfig((prev: any) => ({
+      ...prev,
+      items: prev.items.filter((it: any) => it.id !== id),
+    }));
+  };
+
+  const handleToggleNavItem = (id: string) => {
+    setNavConfig((prev: any) => ({
+      ...prev,
+      items: prev.items.map((it: any) => (it.id === id ? { ...it, active: it.active === false } : it)),
+    }));
+  };
+
+  const handleMoveNavItem = (id: string, direction: 'up' | 'down') => {
+    const items = [...navConfig.items];
+    const index = items.findIndex((it: any) => it.id === id);
+    if (index === -1) return;
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= items.length) return;
+
+    const temp = items[index];
+    items[index] = items[targetIndex];
+    items[targetIndex] = temp;
+
+    const updated = items.map((it: any, idx: number) => ({ ...it, order: idx + 1 }));
+    setNavConfig((prev: any) => ({ ...prev, items: updated }));
+  };
+
+  const handleAddSubItem = (navId: string) => {
+    const newSub = {
+      id: `sub-${Date.now()}`,
+      title: 'New Sub-Link',
+      href: '/manipuri_kuthi_yengba',
+      description: 'Consultation & services link',
+      active: true,
+    };
+    setNavConfig((prev: any) => ({
+      ...prev,
+      items: prev.items.map((it: any) =>
+        it.id === navId
+          ? { ...it, subItems: [...(it.subItems || []), newSub] }
+          : it
+      ),
+    }));
+  };
+
+  const handleRemoveSubItem = (navId: string, subId: string) => {
+    setNavConfig((prev: any) => ({
+      ...prev,
+      items: prev.items.map((it: any) =>
+        it.id === navId
+          ? { ...it, subItems: (it.subItems || []).filter((s: any) => s.id !== subId) }
+          : it
+      ),
+    }));
+  };
+
   const [astrologerSectionSettings, setAstrologerSectionSettings] = useState({
     title: "Talk to Manipur's",
     highlightText: "Top Rated",
@@ -2172,6 +2329,23 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
                   }`}>
                     {services.length} Services
+                {/* 3. Navbar Navigation Controller */}
+                <button
+                  onClick={() => setActiveTab('navbar')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'navbar'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Menu className="w-4 h-4 text-[#d97706]" />
+                    <span>Navbar Menu Manager</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  }`}>
+                    Top Menu
                   </span>
                 </button>
               </div>
@@ -6455,6 +6629,467 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       )}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB: NAVBAR NAVIGATION MENU CONTROLLER */}
+          {activeTab === 'navbar' && (
+            <div className="space-y-6 text-[#0f172a] font-sans">
+              {/* TOP HEADER BAR */}
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] shadow-md flex flex-wrap items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center font-bold shadow-md">
+                    <Menu className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-serif font-bold text-xl text-[#b45309]">
+                      Navbar Navigation Menu Controller
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      Add, edit, remove & re-order top menu items, dropdown sub-menus, and call-to-action header buttons
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={handleAddNavItem}
+                    className="px-4 py-2.5 rounded-xl bg-amber-100 text-[#b45309] font-extrabold text-xs hover:bg-amber-200 transition-colors flex items-center gap-1.5 cursor-pointer border border-amber-300"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Add Top Menu Item</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveNavConfig}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save & Publish Navbar Live</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ACTIVE TOP MENU ITEMS CARDS */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center px-1">
+                  <h4 className="font-serif font-bold text-lg text-[#0f172a] flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#d97706]" />
+                    Top-Level Navigation Menu Links ({navConfig.items?.length || 0})
+                  </h4>
+                </div>
+
+                {navConfig.items?.map((item: any, index: number) => (
+                  <div
+                    key={item.id}
+                    className={`p-5 rounded-3xl border transition-all ${
+                      item.active !== false
+                        ? 'bg-white border-[#fde68a] shadow-sm'
+                        : 'bg-gray-50 border-gray-200 opacity-60'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#fde68a]/50 pb-3 mb-4">
+                      <div className="flex items-center gap-2">
+                        <span className="w-7 h-7 rounded-full bg-[#fef3c7] text-[#b45309] font-black text-xs flex items-center justify-center border border-[#fde68a]">
+                          {index + 1}
+                        </span>
+                        <input
+                          type="text"
+                          value={item.title}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setNavConfig((prev: any) => ({
+                              ...prev,
+                              items: prev.items.map((it: any) => (it.id === item.id ? { ...it, title: val } : it)),
+                            }));
+                          }}
+                          placeholder="Menu Item Title"
+                          className="font-serif font-bold text-base text-[#0f172a] bg-[#fefcf6] px-3 py-1 rounded-xl border border-gray-300 focus:border-[#d97706] focus:outline-none"
+                        />
+                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
+                          item.type === 'dropdown'
+                            ? 'bg-amber-100 text-[#b45309] border-amber-300'
+                            : 'bg-blue-50 text-blue-700 border-blue-200'
+                        }`}>
+                          {item.type === 'dropdown' ? 'Dropdown Menu' : 'Flat Link'}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {/* Move Up/Down */}
+                        <button
+                          type="button"
+                          onClick={() => handleMoveNavItem(item.id, 'up')}
+                          disabled={index === 0}
+                          className="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold disabled:opacity-30 cursor-pointer"
+                        >
+                          ↑ Up
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMoveNavItem(item.id, 'down')}
+                          disabled={index === (navConfig.items.length - 1)}
+                          className="px-2 py-1 rounded-lg bg-gray-100 text-gray-700 text-xs font-bold disabled:opacity-30 cursor-pointer"
+                        >
+                          ↓ Down
+                        </button>
+
+                        {/* Active Toggle */}
+                        <button
+                          type="button"
+                          onClick={() => handleToggleNavItem(item.id)}
+                          className={`px-3 py-1 rounded-xl text-xs font-bold cursor-pointer border ${
+                            item.active !== false
+                              ? 'bg-green-100 text-green-800 border-green-300'
+                              : 'bg-gray-200 text-gray-600 border-gray-300'
+                          }`}
+                        >
+                          {item.active !== false ? 'Active (Visible)' : 'Hidden'}
+                        </button>
+
+                        {/* Delete Menu Item */}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNavItem(item.id)}
+                          className="p-1.5 text-red-500 hover:text-red-700 rounded-lg hover:bg-red-50 cursor-pointer"
+                          title="Delete Menu Item"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">
+                          Menu Type (Link vs Dropdown)
+                        </label>
+                        <select
+                          value={item.type}
+                          onChange={(e) => {
+                            const val = e.target.value as any;
+                            setNavConfig((prev: any) => ({
+                              ...prev,
+                              items: prev.items.map((it: any) => (it.id === item.id ? { ...it, type: val, subItems: val === 'dropdown' ? (it.subItems || []) : it.subItems } : it)),
+                            }));
+                          }}
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                        >
+                          <option value="link">Direct Link (Navigates to URL)</option>
+                          <option value="dropdown">Dropdown Sub-Menu (Shows child links)</option>
+                        </select>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">
+                          Target URL Path / Link
+                        </label>
+                        <input
+                          type="text"
+                          value={item.href}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setNavConfig((prev: any) => ({
+                              ...prev,
+                              items: prev.items.map((it: any) => (it.id === item.id ? { ...it, href: val } : it)),
+                            }));
+                          }}
+                          placeholder="e.g. /services or /horoscope"
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-mono font-bold text-blue-700 focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">
+                          Badge Tag (Optional)
+                        </label>
+                        <input
+                          type="text"
+                          value={item.badge || ''}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            setNavConfig((prev: any) => ({
+                              ...prev,
+                              items: prev.items.map((it: any) => (it.id === item.id ? { ...it, badge: val } : it)),
+                            }));
+                          }}
+                          placeholder="e.g. HOT, FREE, NEW"
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-amber-700 uppercase focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* DROPDOWN SUB-ITEMS SECTION */}
+                    {item.type === 'dropdown' && (
+                      <div className="mt-4 p-4 rounded-2xl bg-[#fef3c7]/40 border border-[#fde68a] space-y-3">
+                        <div className="flex justify-between items-center pb-2 border-b border-[#fde68a]">
+                          <span className="text-xs font-bold text-[#78350f] uppercase tracking-wider">
+                            Dropdown Child Sub-Menu Links ({item.subItems?.length || 0})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleAddSubItem(item.id)}
+                            className="px-3 py-1 rounded-lg bg-amber-600 text-white font-extrabold text-[11px] hover:bg-amber-700 transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Plus className="w-3.5 h-3.5" />
+                            <span>+ Add Sub-Menu Link</span>
+                          </button>
+                        </div>
+
+                        {(!item.subItems || item.subItems.length === 0) ? (
+                          <div className="text-xs text-gray-500 italic text-center py-2">
+                            No child links in this dropdown yet. Click "+ Add Sub-Menu Link" above!
+                          </div>
+                        ) : (
+                          <div className="space-y-2">
+                            {item.subItems.map((sub: any) => (
+                              <div
+                                key={sub.id}
+                                className="p-3 rounded-xl bg-white border border-[#fde68a] grid grid-cols-1 sm:grid-cols-4 gap-2 items-center text-xs"
+                              >
+                                <div>
+                                  <label className="block text-[9px] font-bold text-gray-500 uppercase">Sub-Title</label>
+                                  <input
+                                    type="text"
+                                    value={sub.title}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setNavConfig((prev: any) => ({
+                                        ...prev,
+                                        items: prev.items.map((it: any) =>
+                                          it.id === item.id
+                                            ? {
+                                                ...it,
+                                                subItems: it.subItems?.map((s: any) => (s.id === sub.id ? { ...s, title: val } : s)),
+                                              }
+                                            : it
+                                        ),
+                                      }));
+                                    }}
+                                    placeholder="Child Title"
+                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] font-bold text-xs"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[9px] font-bold text-gray-500 uppercase">URL Link</label>
+                                  <input
+                                    type="text"
+                                    value={sub.href}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setNavConfig((prev: any) => ({
+                                        ...prev,
+                                        items: prev.items.map((it: any) =>
+                                          it.id === item.id
+                                            ? {
+                                                ...it,
+                                                subItems: it.subItems?.map((s: any) => (s.id === sub.id ? { ...s, href: val } : s)),
+                                              }
+                                            : it
+                                        ),
+                                      }));
+                                    }}
+                                    placeholder="/manipuri_kuthi_yengba"
+                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] font-mono text-blue-700 text-[11px]"
+                                  />
+                                </div>
+
+                                <div>
+                                  <label className="block text-[9px] font-bold text-gray-500 uppercase">Description</label>
+                                  <input
+                                    type="text"
+                                    value={sub.description || ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setNavConfig((prev: any) => ({
+                                        ...prev,
+                                        items: prev.items.map((it: any) =>
+                                          it.id === item.id
+                                            ? {
+                                                ...it,
+                                                subItems: it.subItems?.map((s: any) => (s.id === sub.id ? { ...s, description: val } : s)),
+                                              }
+                                            : it
+                                        ),
+                                      }));
+                                    }}
+                                    placeholder="Sub-text description"
+                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-gray-600 text-[11px]"
+                                  />
+                                </div>
+
+                                <div className="flex items-center gap-2 justify-end pt-3 sm:pt-0">
+                                  <input
+                                    type="text"
+                                    value={sub.badge || ''}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setNavConfig((prev: any) => ({
+                                        ...prev,
+                                        items: prev.items.map((it: any) =>
+                                          it.id === item.id
+                                            ? {
+                                                ...it,
+                                                subItems: it.subItems?.map((s: any) => (s.id === sub.id ? { ...s, badge: val } : s)),
+                                              }
+                                            : it
+                                        ),
+                                      }));
+                                    }}
+                                    placeholder="Badge"
+                                    className="w-20 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-amber-700 text-[10px] font-bold uppercase text-center"
+                                  />
+
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveSubItem(item.id, sub.id)}
+                                    className="p-1 text-red-500 hover:bg-red-50 rounded-lg cursor-pointer"
+                                    title="Remove Sub Item"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* HEADER ACTION BUTTONS CONTROLLER CARD */}
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] shadow-md space-y-4 text-[#0f172a]">
+                <h4 className="font-serif font-bold text-lg text-[#b45309] flex items-center gap-2 border-b border-[#fde68a] pb-3">
+                  <Sun className="w-5 h-5 text-[#d97706]" />
+                  Header CTA Action Buttons (Top Right Desktop Buttons)
+                </h4>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+                  {/* Button 1: Numit Leppa */}
+                  <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-2">
+                    <label className="flex items-center justify-between font-bold text-[#0f172a]">
+                      <span>Numit Leppa Button</span>
+                      <input
+                        type="checkbox"
+                        checked={navConfig.cbs?.showNumitLeppaBtn !== false}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, showNumitLeppaBtn: val } }));
+                        }}
+                        className="rounded text-[#d97706] w-4 h-4 cursor-pointer"
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.cbs?.numitLeppaBtnText || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, numitLeppaBtnText: val } }));
+                      }}
+                      placeholder="Button Label"
+                      className="w-full h-9 px-2.5 rounded-lg border border-gray-300 text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      value={navConfig.cbs?.numitLeppaBtnHref || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, numitLeppaBtnHref: val } }));
+                      }}
+                      placeholder="Target Link"
+                      className="w-full h-9 px-2.5 rounded-lg border border-gray-300 font-mono text-blue-700 text-xs"
+                    />
+                  </div>
+
+                  {/* Button 2: Kuthi Yengba */}
+                  <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-2">
+                    <label className="flex items-center justify-between font-bold text-[#0f172a]">
+                      <span>Kuthi Yengba Button</span>
+                      <input
+                        type="checkbox"
+                        checked={navConfig.cbs?.showKuthiYengbaBtn !== false}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, showKuthiYengbaBtn: val } }));
+                        }}
+                        className="rounded text-[#d97706] w-4 h-4 cursor-pointer"
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.cbs?.kuthiYengbaBtnText || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, kuthiYengbaBtnText: val } }));
+                      }}
+                      placeholder="Button Label"
+                      className="w-full h-9 px-2.5 rounded-lg border border-gray-300 text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      value={navConfig.cbs?.kuthiYengbaBtnHref || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, kuthiYengbaBtnHref: val } }));
+                      }}
+                      placeholder="Target Link"
+                      className="w-full h-9 px-2.5 rounded-lg border border-gray-300 font-mono text-blue-700 text-xs"
+                    />
+                  </div>
+
+                  {/* Button 3: Kuthi Iba */}
+                  <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-2">
+                    <label className="flex items-center justify-between font-bold text-[#0f172a]">
+                      <span>Kuthi Iba Button</span>
+                      <input
+                        type="checkbox"
+                        checked={navConfig.cbs?.showKuthiIbaBtn !== false}
+                        onChange={(e) => {
+                          const val = e.target.checked;
+                          setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, showKuthiIbaBtn: val } }));
+                        }}
+                        className="rounded text-[#d97706] w-4 h-4 cursor-pointer"
+                      />
+                    </label>
+                    <input
+                      type="text"
+                      value={navConfig.cbs?.kuthiIbaBtnText || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, kuthiIbaBtnText: val } }));
+                      }}
+                      placeholder="Button Label"
+                      className="w-full h-9 px-2.5 rounded-lg border border-gray-300 text-xs font-bold"
+                    />
+                    <input
+                      type="text"
+                      value={navConfig.cbs?.kuthiIbaBtnHref || ''}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setNavConfig((prev: any) => ({ ...prev, cbs: { ...prev.cbs, kuthiIbaBtnHref: val } }));
+                      }}
+                      placeholder="Target Link"
+                      className="w-full h-9 px-2.5 rounded-lg border border-gray-300 font-mono text-blue-700 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="pt-2 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={handleSaveNavConfig}
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer flex items-center gap-2"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>Save & Publish Navbar Live</span>
+                  </button>
                 </div>
               </div>
             </div>
