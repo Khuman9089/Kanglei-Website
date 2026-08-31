@@ -644,7 +644,7 @@ export default function AdminDashboardPage() {
     setTimeout(() => setSaveAlert(''), 3500);
   };
   // Theme State (Dark / Light) - Default to Dark for high-contrast celestial UI
-  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
+  const [theme, setTheme] = useState<'dark' | 'light'>('light');
 
   useEffect(() => {
     const saved = localStorage.getItem('admin_theme') as 'dark' | 'light';
@@ -1969,30 +1969,32 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
   return (
     <div className={`min-h-screen flex font-sans antialiased transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-[#0b132b] text-[#faf8f4]' : 'bg-[#f8fafc] text-slate-900'
+      theme === 'dark' ? 'bg-[#0b132b] text-[#faf8f4]' : 'bg-[#fffdfa] text-[#0f172a]'
     }`}>
       
       {/* ─────────────────────────────────────────────────────────────
          1. ROYAL VEDIC LEFT SIDEBAR DRAWER (Midnight Navy & Gold Theme)
          ───────────────────────────────────────────────────────────── */}
       <aside className={`w-64 border-r flex flex-col justify-between shrink-0 hidden md:flex min-h-screen transition-colors duration-300 ${
-        theme === 'dark' ? 'bg-[#0f172a] border-[#1e293b]' : 'bg-white border-slate-200 shadow-md'
+        theme === 'dark' ? 'bg-[#0f172a] border-[#1e293b]' : 'bg-white border-[#f3e8d2] shadow-md'
       }`}>
         <div>
           {/* App Brand Header */}
-          <div className="h-16 px-6 border-b border-[#1e293b] flex items-center justify-between">
+          <div className={`h-16 px-6 border-b flex items-center justify-between ${
+            theme === 'dark' ? 'border-[#1e293b]' : 'border-[#f3e8d2]'
+          }`}>
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center shadow-md">
                 <Moon className="w-5 h-5 fill-[#fbbf24] text-[#fbbf24]" />
               </div>
               <div>
                 <span className={`font-serif text-lg font-bold block leading-tight ${
-                  theme === 'dark' ? 'text-white' : 'text-slate-900'
+                  theme === 'dark' ? 'text-white' : 'text-[#0f172a]'
                 }`}>
-                  KangleiAstro
+                  KuthiYengpham
                 </span>
                 <span className="text-[10px] text-[#d97706] font-extrabold uppercase tracking-wider block">
-                  Admin Control Portal
+                  by KangleiAstro • Admin Portal
                 </span>
               </div>
             </div>
@@ -2419,7 +2421,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         
         {/* Top Control Header Bar */}
         <header className={`h-16 border-b px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300 shadow-md ${
-          theme === 'dark' ? 'bg-[#0f172a] border-[#1e293b]' : 'bg-white/90 backdrop-blur-md border-slate-200'
+          theme === 'dark' ? 'bg-[#0f172a] border-[#1e293b]' : 'bg-white/95 backdrop-blur-md border-[#f3e8d2]'
         }`}>
           <div className="flex items-center gap-4">
             <div className="relative w-64 md:w-80">
@@ -2432,7 +2434,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 className={`w-full pl-10 pr-4 py-2 rounded-xl border text-xs font-medium focus:outline-none transition-all ${
                   theme === 'dark'
                     ? 'bg-[#1c2541] border-[#3a506b] text-white placeholder-gray-400 focus:border-[#d97706]'
-                    : 'bg-slate-100 border-slate-300 text-slate-900 placeholder-slate-400 focus:border-amber-500'
+                    : 'bg-[#fefcf6] border-[#fde68a] text-[#0f172a] placeholder-gray-400 focus:border-[#d97706]'
                 }`}
               />
             </div>
@@ -2490,48 +2492,48 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-slate-200 text-slate-900 shadow-sm'
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'}`}>Gross Revenue</span>
-                    <span className="text-[11px] font-bold text-green-400 bg-green-500/20 px-2 py-0.5 rounded-full border border-green-500/30">+30.6%</span>
+                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Gross Revenue</span>
+                    <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">+30.6%</span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>₹48,950</span>
-                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-slate-600'}`}>Total Kuthi Yengba Collections</span>
+                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>₹48,950</span>
+                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Total Kuthi Yengba Collections</span>
                 </div>
 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-slate-200 text-slate-900 shadow-sm'
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'}`}>Active Astrologers</span>
-                    <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">3 Empaneled</span>
+                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Active Astrologers</span>
+                    <span className="text-[11px] font-bold text-[#b45309] bg-[#fef3c7] px-2 py-0.5 rounded-full border border-[#fde68a]">3 Empaneled</span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>{astrologers.length} Gurus</span>
-                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-slate-600'}`}>Ready for Kuthi Assignments</span>
+                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>{astrologers.length} Gurus</span>
+                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Ready for Kuthi Assignments</span>
                 </div>
 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-slate-200 text-slate-900 shadow-sm'
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'}`}>Pending Kuthi Orders</span>
-                    <span className="text-[11px] font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/30">Action Needed</span>
+                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Pending Kuthi Orders</span>
+                    <span className="text-[11px] font-bold text-[#b45309] bg-[#fef3c7] px-2 py-0.5 rounded-full border border-[#fde68a]">Action Needed</span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
+                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
                     {orders.filter(o => o.status !== 'COMPLETED').length} Orders
                   </span>
-                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-slate-600'}`}>Awaiting Astrologer / Client Dispatch</span>
+                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Awaiting Astrologer / Client Dispatch</span>
                 </div>
 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-slate-200 text-slate-900 shadow-sm'
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'}`}>Astrologer Payouts</span>
-                    <span className="text-[11px] font-bold text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded-full border border-blue-500/30">₹250 / Kuthi</span>
+                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Astrologer Payouts</span>
+                    <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">₹250 / Kuthi</span>
                   </div>
-                  <span className="text-[10px] text-[#5c7a99]">Pending Astrologer Payout Pool</span>
+                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Pending Astrologer Payout Pool</span>
                 </div>
 
               </div>
