@@ -19,6 +19,7 @@ export interface ServiceItem {
   price?: string;
   cta?: string;
   link?: string;
+  pageTarget?: '/manipuri_kuthi_yengba' | '/manipuri_kuthi' | '/matching' | 'all';
   active: boolean;
   subServices: SubServiceItem[];
 }
@@ -37,6 +38,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: '₹499',
     cta: 'Order Kuthi Yengba',
     link: '/manipuri_kuthi_yengba',
+    pageTarget: '/manipuri_kuthi_yengba',
     active: true,
     subServices: [
       {
@@ -72,6 +74,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: '₹899',
     cta: 'Order Kuthi Iba',
     link: '/manipuri_kuthi',
+    pageTarget: '/manipuri_kuthi',
     active: true,
     subServices: [
       {
@@ -101,6 +104,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: '₹1,299',
     cta: 'Check Compatibility',
     link: '/matching',
+    pageTarget: '/matching',
     active: true,
     subServices: [
       {
@@ -130,6 +134,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     price: '₹2,499',
     cta: 'Book Consultation',
     link: '/manipuri_kuthi_yengba?service=s-4',
+    pageTarget: '/manipuri_kuthi_yengba',
     active: true,
     subServices: [
       {

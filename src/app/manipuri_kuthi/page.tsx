@@ -70,9 +70,10 @@ function ManipuriKuthiContent() {
             targetService = data.services.find((s: any) => s.id === targetServiceId);
           }
 
-          // Search specifically for admin services linked strictly to /manipuri_kuthi
+          // Search specifically for admin services assigned strictly to /manipuri_kuthi
           const matchingServices = data.services.filter((s: any) => 
             s.active !== false && (
+              s.pageTarget === '/manipuri_kuthi' ||
               s.link === '/manipuri_kuthi' || 
               (s.link && s.link.startsWith('/manipuri_kuthi?')) ||
               (s.link && s.link.startsWith('/manipuri_kuthi/')) ||

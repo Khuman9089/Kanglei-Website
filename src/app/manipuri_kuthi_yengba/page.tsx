@@ -101,9 +101,10 @@ function ManipuriKuthiYengbaContent() {
             setSubServices(formattedSubs);
             setSelectedSubService(formattedSubs[0]);
           } else {
-            // Filter active admin services linked strictly with /manipuri_kuthi_yengba
+            // Filter active admin services assigned strictly to /manipuri_kuthi_yengba
             const matchingServices = data.services.filter((s: any) => 
               s.active !== false && (
+                s.pageTarget === '/manipuri_kuthi_yengba' ||
                 s.link === '/manipuri_kuthi_yengba' || 
                 (s.link && s.link.startsWith('/manipuri_kuthi_yengba?')) ||
                 (s.link && s.link.startsWith('/manipuri_kuthi_yengba/')) ||

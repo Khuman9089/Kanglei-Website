@@ -52,6 +52,7 @@ interface ManagedService {
   astroPayoutFee: number;
   cta: string;
   link?: string;
+  pageTarget?: '/manipuri_kuthi_yengba' | '/manipuri_kuthi' | '/matching' | 'all';
   active: boolean;
   subServices?: SubServiceItem[];
 }
@@ -250,6 +251,7 @@ const INITIAL_SERVICES: ManagedService[] = [
     astroPayoutFee: 300,
     cta: 'Order Kuthi Yengba',
     link: '/manipuri_kuthi_yengba',
+    pageTarget: '/manipuri_kuthi_yengba',
     active: true,
     subServices: [
       { id: 'sub-101', title: 'Standard Kuthi Yengba (Detailed Dasha & Remedies)', price: 499, description: 'Complete analysis delivered to your WhatsApp within 12 Hours.' },
@@ -271,6 +273,7 @@ const INITIAL_SERVICES: ManagedService[] = [
     astroPayoutFee: 550,
     cta: 'Order Kuthi Iba',
     link: '/manipuri_kuthi',
+    pageTarget: '/manipuri_kuthi',
     active: true,
     subServices: [
       { id: 'sub-201', title: 'Standard Handwritten Kuthi Paper (Single Child)', price: 899, description: 'Traditional handwritten birth scroll on sacred parchment.' },
@@ -291,6 +294,7 @@ const INITIAL_SERVICES: ManagedService[] = [
     astroPayoutFee: 779,
     cta: 'Check Compatibility',
     link: '/matching',
+    pageTarget: '/matching',
     active: true,
     subServices: [
       { id: 'sub-301', title: '36-Gun Ashtakoot Match & Manglik Check', price: 1299, description: 'Detailed 36-point compatibility report for couple pair.' },
@@ -311,6 +315,7 @@ const INITIAL_SERVICES: ManagedService[] = [
     astroPayoutFee: 1499,
     cta: 'Book Consultation',
     link: '/manipuri_kuthi_yengba?service=s-4',
+    pageTarget: '/manipuri_kuthi_yengba',
     active: true,
     subServices: [
       { id: 'sub-401', title: '30-Minute Video/Phone Session', price: 1499, description: 'Direct 30-minute consultation with Master Astrologer.' },
@@ -5173,23 +5178,31 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 </div>
                               </td>
 
-                              {/* Button CTA Text & Link inputs */}
+                              {/* Button CTA Text & Page Assignment inputs */}
                               <td className="px-4 py-3">
                                 <div className="flex flex-col gap-1">
                                   <input
                                     type="text"
                                     value={serv.cta}
                                     onChange={(e) => handleServiceChange(serv.id, 'cta', e.target.value)}
-                                    className="w-40 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                    className="w-44 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                                     placeholder="Button Text"
                                   />
-                                  <input
-                                    type="text"
-                                    value={serv.link || ''}
-                                    onChange={(e) => handleServiceChange(serv.id, 'link', e.target.value)}
-                                    className="w-40 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-[11px] focus:border-[#d97706] focus:outline-none"
-                                    placeholder="Target Link (e.g. /matching)"
-                                  />
+                                  <select
+                                    value={serv.pageTarget || (serv.link?.includes('/manipuri_kuthi_yengba') ? '/manipuri_kuthi_yengba' : serv.link === '/manipuri_kuthi' ? '/manipuri_kuthi' : serv.link === '/matching' ? '/matching' : 'all')}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setServices((prev) =>
+                                        prev.map((s) => (s.id === serv.id ? { ...s, pageTarget: val as any, link: val !== 'all' ? val : s.link } : s))
+                                      );
+                                    }}
+                                    className="w-44 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[11px] font-bold text-[#b45309] focus:border-[#d97706] focus:outline-none"
+                                  >
+                                    <option value="/manipuri_kuthi_yengba">Page: /manipuri_kuthi_yengba</option>
+                                    <option value="/manipuri_kuthi">Page: /manipuri_kuthi</option>
+                                    <option value="/matching">Page: /matching</option>
+                                    <option value="all">Page: All / General</option>
+                                  </select>
                                 </div>
                               </td>
 
