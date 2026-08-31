@@ -556,7 +556,7 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
 
   const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
@@ -641,6 +641,56 @@ export default function AdminDashboardPage() {
     setSaveAlert(`✅ New Client "${newClient.name}" registered & verified in database!`);
     setShowAddClientModal(false);
     setNewClientForm({ name: '', email: '', phone: '', whatsappNo: '', sex: 'Male', address: 'Imphal West, Manipur' });
+    setTimeout(() => setSaveAlert(''), 3500);
+  };
+
+  // Add Jyotish / Astrologer Guru State
+  const [showAddAstroModal, setShowAddAstroModal] = useState(false);
+  const [newAstroForm, setNewAstroForm] = useState({
+    name: '',
+    specialty: 'Kuthi Yengba & Vedic Astrology',
+    phone: '',
+    whatsappNo: '',
+    experienceYears: 10,
+    username: '',
+    password: '',
+    address: 'Imphal, Manipur',
+  });
+
+  const handleRegisterNewAstro = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newAstroForm.name.trim() || !newAstroForm.whatsappNo.trim()) return;
+
+    const newGuru: Astrologer = {
+      id: 'astro-' + Date.now(),
+      name: newAstroForm.name,
+      username: newAstroForm.username || newAstroForm.name.toLowerCase().replace(/\s+/g, ''),
+      specialty: newAstroForm.specialty,
+      phone: newAstroForm.phone || newAstroForm.whatsappNo,
+      whatsappNo: newAstroForm.whatsappNo,
+      experienceYears: Number(newAstroForm.experienceYears) || 10,
+      password: newAstroForm.password || 'guru123',
+      status: 'ACTIVE',
+      completedCount: 0,
+      pendingPayout: 0,
+      totalEarnings: 0,
+      totalPaidOut: 0,
+      showOnHome: true,
+    };
+
+    setAstrologers([newGuru, ...astrologers]);
+    setShowAddAstroModal(false);
+    setSaveAlert(`🙏 ${newGuru.name} added successfully as a registered Jyotish Guru!`);
+    setNewAstroForm({
+      name: '',
+      specialty: 'Kuthi Yengba & Vedic Astrology',
+      phone: '',
+      whatsappNo: '',
+      experienceYears: 10,
+      username: '',
+      password: '',
+      address: 'Imphal, Manipur',
+    });
     setTimeout(() => setSaveAlert(''), 3500);
   };
   // Theme State (Dark / Light) - Default to Dark for high-contrast celestial UI
@@ -2006,49 +2056,133 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             {/* Category 1: DASHBOARD */}
             <div>
               <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
+                theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'
               }`}>
                 Dashboard
               </span>
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === 'dashboard'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <LayoutDashboard className="w-4 h-4" />
-                  <span>Overview & Analytics</span>
-                </div>
-              </button>
-            </div>
-
-            {/* Category 2: ORDERS & DISPATCH */}
-            <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
-              }`}>
-                Orders & Dispatch
-              </span>
               <div className="space-y-1">
+                {/* 1. Overview & Analytics */}
+                <button
+                  onClick={() => setActiveTab('dashboard')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'dashboard'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <LayoutDashboard className="w-4 h-4" />
+                    <span>Overview & Analytics</span>
+                  </div>
+                </button>
+
+                {/* 2. Kuthi Orders Hub */}
                 <button
                   onClick={() => setActiveTab('kuthi')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
                     activeTab === 'kuthi'
                       ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <FileText className="w-4 h-4" />
+                    <FileText className="w-4 h-4 text-[#d97706]" />
                     <span>Kuthi Orders Hub</span>
                   </div>
-                  <span className="px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f] text-[10px] font-extrabold">
+                  <span className="px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f] text-[10px] font-extrabold border border-[#fde68a]">
                     {orders.filter(o => o.status !== 'COMPLETED').length}
                   </span>
                 </button>
+              </div>
+            </div>
+
+            {/* Category 2: GURU & JYOTISH SECTION */}
+            <div className="pt-2">
+              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
+                theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'
+              }`}>
+                Guru & Jyotish Section
+              </span>
+              <div className="space-y-1 pl-1 border-l-2 border-[#d97706]/40 ml-2">
+                {/* 1. All Jyotishs */}
+                <button
+                  onClick={() => setActiveTab('astrologers')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astrologers'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Award className="w-4 h-4 text-[#d97706]" />
+                    <span>All Jyotishs</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
+                  }`}>
+                    {astrologers.length} Gurus
+                  </span>
+                </button>
+
+                {/* 2. Payout Request */}
+                <button
+                  onClick={() => setActiveTab('astro_payouts')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_payouts'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <DollarSign className="w-4 h-4 text-green-600" />
+                    <span>Payout Request</span>
+                  </div>
+                  {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length > 0 ? (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
+                      ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
+                    </span>
+                  ) : (
+                    <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-extrabold border border-green-200">
+                      Settled
+                    </span>
+                  )}
+                </button>
+
+                {/* 3. Assign List */}
+                <button
+                  onClick={() => setActiveTab('astro_assign_list')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_assign_list'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <UserCheck className="w-4 h-4 text-sky-600" />
+                    <span>Assign List</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-800 border-sky-200'
+                  }`}>
+                    {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length} Assigned
+                  </span>
+                </button>
+
+                {/* 4. Add Jyotish */}
+                <button
+                  onClick={() => setShowAddAstroModal(true)}
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold bg-[#fef3c7] text-[#b45309] hover:bg-[#fde68a] transition-all border border-[#fde68a] cursor-pointer"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Plus className="w-4 h-4 text-[#d97706]" />
+                    <span>+ Add Jyotish</span>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-white text-[#d97706] text-[10px] font-extrabold border border-[#fde68a]">
+                    New Guru
+                  </span>
+                </button>
+              </div>
+            </div>
 
             {/* Category: E-STORE OPERATIONS */}
             <div className="pt-2">
@@ -2171,51 +2305,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </button>
             </div>
 
-                {/* 1. Astrologer Accounts & Profiles */}
-                <button
-                  onClick={() => setActiveTab('astrologers')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astrologers'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Award className="w-4 h-4 text-[#fbbf24]" />
-                    <span>Astrologer Accounts</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
-                  }`}>
-                    {astrologers.length} Gurus
-                  </span>
-                </button>
-
-                {/* 2. Astrologer Wallets & Payouts */}
-                <button
-                  onClick={() => setActiveTab('astro_payouts')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_payouts'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <DollarSign className="w-4 h-4 text-green-500" />
-                    <span>Astrologer Payouts & Wallets</span>
-                  </div>
-                  {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-900 text-[10px] font-extrabold animate-pulse">
-                      ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
-                    </span>
-                  ) : (
-                    <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-700 text-[10px] font-extrabold border border-green-500/30">
-                      Settled
-                    </span>
-                  )}
-                </button>
-
-                {/* 3. 👥 CLIENT BASE DIRECTORY TAB */}
+            {/* Category: MANAGEMENT & SETTINGS */}
+            <div>
+              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
+                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
+              }`}>
+                Management & Settings
+              </span>
+              <div className="space-y-1">
+                {/* Client Base Directory */}
                 <button
                   onClick={() => setActiveTab('clients')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -2235,7 +2333,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </span>
                 </button>
 
-                {/* 4. Astrologer Service Payout Rate Card */}
+                {/* Service Rate Card Matrix */}
                 <button
                   onClick={() => setActiveTab('astro_rates')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -4679,6 +4777,115 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
           )}
 
+          {/* TAB 5C: ASTROLOGER ASSIGN LIST (DEDICATED VIEW) */}
+          {activeTab === 'astro_assign_list' && (
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl space-y-6 text-left font-sans">
+              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#fde68a] gap-3">
+                <div>
+                  <span className="px-3.5 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase tracking-wider border border-[#fde68a] inline-block mb-1">
+                    Guru & Jyotish Dispatching
+                  </span>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Astrologers Assigned Orders List</h3>
+                  <p className="text-xs text-gray-500">Track Kuthi, Numit Yengba, and Matching orders assigned to empaneled Gurus</p>
+                </div>
+                <button
+                  onClick={() => setShowAddAstroModal(true)}
+                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add New Jyotish</span>
+                </button>
+              </div>
+
+              {/* KPI Stat Pills */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase block">Total Assigned Orders</span>
+                  <div className="text-2xl font-black text-[#b45309] font-mono mt-1">
+                    {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase block">Pending Analysis</span>
+                  <div className="text-2xl font-black text-amber-600 font-mono mt-1">
+                    {orders.filter(o => (o.assignedAstrologerId || o.status === 'ASSIGNED') && o.status !== 'COMPLETED').length}
+                  </div>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
+                  <span className="text-[10px] font-bold text-gray-500 uppercase block">Reports Received & Delivered</span>
+                  <div className="text-2xl font-black text-green-600 font-mono mt-1">
+                    {orders.filter(o => o.status === 'COMPLETED' || o.reportReceivedFromAstro).length}
+                  </div>
+                </div>
+              </div>
+
+              {/* ASSIGNED ORDERS TABLE */}
+              <div className="rounded-2xl border border-[#fde68a] overflow-hidden shadow-xs">
+                <table className="w-full text-left text-xs font-sans">
+                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase tracking-wider border-b border-[#fde68a]">
+                    <tr>
+                      <th className="p-3.5">Order Ref & Service</th>
+                      <th className="p-3.5">Client Particulars</th>
+                      <th className="p-3.5">Assigned Jyotish Guru</th>
+                      <th className="p-3.5 text-center">Status</th>
+                      <th className="p-3.5 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#fde68a] bg-white">
+                    {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-8 text-center text-gray-400 font-bold">
+                          No assigned orders found yet. Select an order in Kuthi Orders Hub to assign an Astrologer.
+                        </td>
+                      </tr>
+                    ) : (
+                      orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').map((o) => (
+                        <tr key={o.id} className="hover:bg-[#fefcf6]">
+                          <td className="p-3.5">
+                            <span className="font-mono font-bold text-[#b45309] block">{o.orderRef}</span>
+                            <span className="text-gray-600 font-bold text-[11px]">{o.serviceType}</span>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-bold text-[#0f172a] block">{o.clientName} ({o.sex})</span>
+                            <span className="text-gray-500 font-mono text-[10px]">{o.whatsappNo}</span>
+                          </td>
+                          <td className="p-3.5">
+                            <span className="font-serif font-bold text-[#d97706] block">
+                              🙏 {o.assignedAstrologerName || 'Assigned Astrologer'}
+                            </span>
+                            <span className="text-[10px] text-gray-400">Guru Assigned</span>
+                          </td>
+                          <td className="p-3.5 text-center">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
+                              o.status === 'COMPLETED'
+                                ? 'bg-green-100 text-green-700 border-green-200'
+                                : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
+                            }`}>
+                              {o.status === 'COMPLETED' ? '✓ Completed' : '⏳ In Analysis'}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-right">
+                            <a
+                              href={`https://wa.me/${(o.whatsappNo || '').replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(o.clientName)},%20your%20Kuthi%20report%20is%20being%20processed%20by%20${encodeURIComponent(o.assignedAstrologerName || 'our Acharya')}.`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-3 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-[10px] inline-flex items-center gap-1 shadow-xs"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>WhatsApp</span>
+                            </a>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
           {/* TAB 5B: DEDICATED ASTROLOGER SERVICE PAYOUT RATE CARD & COMMISSION SPLIT WORKSPACE */}
           {activeTab === 'astro_rates' && (
             <div className={`rounded-3xl border p-6 space-y-6 shadow-xl transition-colors ${
@@ -5078,6 +5285,138 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <div className="flex justify-end gap-2 pt-2 border-t border-[#3a506b]/40">
                       <button type="button" onClick={() => setShowAddClientModal(false)} className="px-4 py-2 rounded-xl bg-[#1c2541] text-gray-300 font-bold cursor-pointer">Cancel</button>
                       <button type="submit" className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold cursor-pointer">Save Client Account →</button>
+                    </div>
+                  </form>
+                </div>
+              )}
+
+              {/* REGISTER NEW JYOTISH GURU MODAL */}
+              {showAddAstroModal && (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/60 backdrop-blur-xs flex items-center justify-center p-4">
+                  <form onSubmit={handleRegisterNewAstro} className="bg-white w-full max-w-lg rounded-3xl border border-[#f3e8d2] p-6 sm:p-8 space-y-4 text-xs font-sans text-[#0f172a] shadow-2xl relative">
+                    <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-5 h-5 text-[#d97706]" />
+                        <h4 className="font-serif font-bold text-xl text-[#0f172a]">Register New Jyotish Guru</h4>
+                      </div>
+                      <button type="button" onClick={() => setShowAddAstroModal(false)} className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                          Jyotish Full Name<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Acharya Tombi Sharma"
+                          value={newAstroForm.name}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, name: e.target.value })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                          Specialty / Category<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Kuthi Yengba, Dasha & Remedies"
+                          value={newAstroForm.specialty}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, specialty: e.target.value })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                          WhatsApp Mobile Number<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="tel"
+                          required
+                          placeholder="+91 98620 12345"
+                          value={newAstroForm.whatsappNo}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, whatsappNo: e.target.value })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                          Experience (Years)
+                        </label>
+                        <input
+                          type="number"
+                          value={newAstroForm.experienceYears}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, experienceYears: Number(e.target.value) })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                          Astrologer Username
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. tombi_sharma"
+                          value={newAstroForm.username}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, username: e.target.value })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                          Astrologer Login Password
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. guru123"
+                          value={newAstroForm.password}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, password: e.target.value })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Address / Location
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Imphal West, Manipur"
+                        value={newAstroForm.address}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, address: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddAstroModal(false)}
+                        className="px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        type="submit"
+                        className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer"
+                      >
+                        + Save & Empanel Jyotish Guru →
+                      </button>
                     </div>
                   </form>
                 </div>
