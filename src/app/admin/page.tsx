@@ -2097,6 +2097,56 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
 
+            {/* Category: WEBSITE CMS & SERVICES */}
+            <div className="pt-2">
+              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
+                theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'
+              }`}>
+                Website CMS & Services
+              </span>
+              <div className="space-y-1 pl-1 border-l-2 border-[#d97706]/40 ml-2">
+                {/* 1. Website Astrologers */}
+                <button
+                  onClick={() => setActiveTab('astro_website')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_website'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-[#d97706]" />
+                    <span>Website Astrologers</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  }`}>
+                    CMS Display
+                  </span>
+                </button>
+
+                {/* 2. Website Services */}
+                <button
+                  onClick={() => setActiveTab('astro_services')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_services' || activeTab === 'astro_rates'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Tag className="w-4 h-4 text-[#d97706]" />
+                    <span>Website Services</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  }`}>
+                    {services.length} Services
+                  </span>
+                </button>
+              </div>
+            </div>
+
             {/* Category 2: GURU & JYOTISH SECTION */}
             <div className="pt-2">
               <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
@@ -2122,46 +2172,6 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
                   }`}>
                     {astrologers.length} Gurus
-                  </span>
-                </button>
-
-                {/* 2. Website Display CMS */}
-                <button
-                  onClick={() => setActiveTab('astro_website')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_website'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-[#d97706]" />
-                    <span>Website Astrologers</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
-                  }`}>
-                    CMS Display
-                  </span>
-                </button>
-
-                {/* 3. Website Services CMS */}
-                <button
-                  onClick={() => setActiveTab('astro_services')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_services' || activeTab === 'astro_rates'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Tag className="w-4 h-4 text-[#d97706]" />
-                    <span>Website Services</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
-                  }`}>
-                    {services.length} Services
                   </span>
                 </button>
 
