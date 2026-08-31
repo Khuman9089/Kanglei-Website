@@ -57,7 +57,7 @@ function ManipuriKuthiContent() {
     const ref = 'KI-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
 
-    // Fetch live service packages from Admin API /api/services specifically linked for /manipuri_kuthi
+    // Fetch live sub-categories from Admin services API (sharing /manipuri_kuthi_yengba sub-categories)
     fetch('/api/services')
       .then((res) => res.json())
       .then((data) => {
@@ -70,15 +70,12 @@ function ManipuriKuthiContent() {
             targetService = data.services.find((s: any) => s.id === targetServiceId);
           }
 
-          // Search specifically for the admin backend service designated for /manipuri_kuthi
+          // Search for /manipuri_kuthi_yengba service or Kuthi services (s-2 or s-1)
           if (!targetService) {
             targetService = data.services.find((s: any) => 
-              s.link === '/manipuri_kuthi' || 
-              (s.link && s.link.startsWith('/manipuri_kuthi'))
-            ) || data.services.find((s: any) => 
-              s.id === 's-2' || 
-              (s.title && s.title.toLowerCase().includes('kuthi iba'))
-            );
+              s.link === '/manipuri_kuthi_yengba' || 
+              (s.link && s.link.includes('/manipuri_kuthi_yengba'))
+            ) || data.services.find((s: any) => s.id === 's-2' || s.id === 's-1');
           }
 
           if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
@@ -89,10 +86,28 @@ function ManipuriKuthiContent() {
             }));
             setPackages(formatted);
             setSelectedPackage(formatted[0]);
+          } else {
+            // Aggregate all sub-categories defined across active admin services
+            const allAdminSubs: KuthiIbaPackage[] = [];
+            data.services.forEach((s: any) => {
+              if (s.active !== false && Array.isArray(s.subServices)) {
+                s.subServices.forEach((sub: any) => {
+                  allAdminSubs.push({
+                    id: sub.id,
+                    title: sub.title,
+                    price: Number(sub.price) || 899,
+                  });
+                });
+              }
+            });
+            if (allAdminSubs.length > 0) {
+              setPackages(allAdminSubs);
+              setSelectedPackage(allAdminSubs[0]);
+            }
           }
         }
       })
-      .catch((err) => console.error('Error fetching admin Kuthi Iba packages:', err));
+      .catch((err) => console.error('Error fetching admin Kuthi packages:', err));
   }, []);
 
   const handleAddressToggle = (checked: boolean) => {
