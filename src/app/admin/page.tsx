@@ -2329,6 +2329,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
                   }`}>
                     {services.length} Services
+                  </span>
+                </button>
+
                 {/* 3. Navbar Navigation Controller */}
                 <button
                   onClick={() => setActiveTab('navbar')}
