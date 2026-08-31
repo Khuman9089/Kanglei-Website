@@ -76,6 +76,54 @@ function ManipuriKuthiYengbaContent() {
   useEffect(() => {
     const ref = 'KY-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
+
+    // Fetch live sub-categories from Admin services API
+    fetch('/api/services')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.services) && data.services.length > 0) {
+          const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+          const targetServiceId = urlParams ? urlParams.get('service') : null;
+
+          let targetService = null;
+          if (targetServiceId) {
+            targetService = data.services.find((s: any) => s.id === targetServiceId);
+          }
+
+          // If a specific service was targeted and has subServices
+          if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
+            const formattedSubs: KuthiSubServiceOption[] = targetService.subServices.map((sub: any) => ({
+              id: sub.id,
+              title: sub.title,
+              price: Number(sub.price) || 499,
+            }));
+            setSubServices(formattedSubs);
+            setSelectedSubService(formattedSubs[0]);
+          } else {
+            // Aggregate all active subServices defined across all admin services
+            const allAdminSubs: KuthiSubServiceOption[] = [];
+            data.services.forEach((s: any) => {
+              if (s.active !== false && Array.isArray(s.subServices)) {
+                s.subServices.forEach((sub: any) => {
+                  allAdminSubs.push({
+                    id: sub.id,
+                    title: sub.title,
+                    price: Number(sub.price) || 499,
+                  });
+                });
+              }
+            });
+
+            if (allAdminSubs.length > 0) {
+              setSubServices(allAdminSubs);
+              setSelectedSubService(allAdminSubs[0]);
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching admin sub-services:', err);
+      });
   }, []);
 
   // Update Slot count based on 1 to 5 selector
