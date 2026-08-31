@@ -556,7 +556,7 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
 
   const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
@@ -2122,6 +2122,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
                   }`}>
                     {astrologers.length} Gurus
+                  </span>
+                </button>
+
+                {/* 2. Website Display CMS */}
+                <button
+                  onClick={() => setActiveTab('astro_website')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_website'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-[#d97706]" />
+                    <span>Website Astrologers</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  }`}>
+                    CMS Display
                   </span>
                 </button>
 
@@ -4295,21 +4315,29 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </table>
                 </div>
               </div>
+            </div>
+          )}
 
+          {/* TAB 5E: WEBSITE ASTROLOGERS DISPLAY CMS (Controlled for Home & Astrologers Page) */}
+          {activeTab === 'astro_website' && (
+            <div className="space-y-6">
+              
               {/* TOP RATED ASTROLOGERS SECTION CMS FORM */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4">
-                <div className="flex flex-wrap justify-between items-center gap-4 border-b border-[#3a506b] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 shadow-md">
+                <div className="flex flex-wrap justify-between items-center gap-4 border-b border-[#fde68a] pb-3">
                   <div>
-                    <h3 className="font-serif font-bold text-xl text-[#fbbf24] flex items-center gap-2">
+                    <h3 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-[#d97706]" />
                       <span>Top Rated Astrologers Section CMS Settings</span>
                     </h3>
-                    <p className="text-xs text-gray-400">Control headline, text accents, & 4-step verification tagline displayed on homepage</p>
+                    <p className="text-xs text-gray-500">
+                      Control headline, text accents, & 4-step verification tagline displayed on homepage & astrologers page
+                    </p>
                   </div>
 
                   <button
                     onClick={handleSaveAstrologerSectionSettings}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     <span>Save Section Settings</span>
@@ -4318,56 +4346,56 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Section Title Prefix *
                     </label>
                     <input
                       type="text"
                       value={astrologerSectionSettings.title}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, title: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Highlighted Gold Text Accent *
                     </label>
                     <input
                       type="text"
                       value={astrologerSectionSettings.highlightText}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, highlightText: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Verification Subtitle Tagline *
                     </label>
                     <input
                       type="text"
                       value={astrologerSectionSettings.subtitleTagline}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, subtitleTagline: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-700 text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Homepage Rate & Action Button Controls */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-[#3a506b]/60">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-[#fde68a]">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#fbbf24] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Show Per-Minute Rates on Homepage Cards?
                     </label>
                     <div className="flex items-center gap-3">
                       <button
                         type="button"
                         onClick={() => setAstrologerSectionSettings({ ...astrologerSectionSettings, showRateOnHome: !astrologerSectionSettings.showRateOnHome })}
-                        className={`px-4 py-2.5 rounded-xl text-xs font-extrabold border transition-all ${
+                        className={`px-4 py-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
                           astrologerSectionSettings.showRateOnHome !== false
-                            ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                            : 'bg-gray-700 text-gray-400 border-gray-600'
+                            ? 'bg-green-100 text-green-800 border-green-300'
+                            : 'bg-gray-100 text-gray-600 border-gray-300'
                         }`}
                       >
                         {astrologerSectionSettings.showRateOnHome !== false ? '🟢 Display Rates (e.g. ₹35/min)' : '⚪ Hide Rates on Homepage'}
@@ -4376,13 +4404,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#fbbf24] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Homepage Action Buttons Mode
                     </label>
                     <select
                       value={astrologerSectionSettings.actionButtonType || 'both'}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, actionButtonType: e.target.value as any })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     >
                       <option value="both">💬 Chat & 📞 Call (Dual Buttons Side-by-Side)</option>
                       <option value="chat_only">💬 Chat Only (Single Full-Width Button)</option>
@@ -4392,17 +4420,17 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               </div>
 
-              {/* ASTROLOGERS CARDS GRID */}
+              {/* ASTROLOGERS CARDS GRID FOR WEBSITE DISPLAY */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {(apiAstrologers.length > 0 ? apiAstrologers : astrologers).map((astro) => {
                   const isFeaturedOnHome = astro.showOnHome !== false;
 
                   return (
-                    <div key={astro.id} className="p-5 rounded-2xl bg-[#0b132b] border border-[#3a506b]/60 space-y-3 font-sans relative flex flex-col justify-between">
+                    <div key={astro.id} className="p-5 rounded-3xl bg-white border border-[#fde68a] space-y-3 font-sans relative flex flex-col justify-between shadow-md">
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex items-center gap-3">
-                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500 p-0.5 shrink-0 bg-[#1c2541]">
+                            <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500 p-0.5 shrink-0 bg-white">
                               <img
                                 src={astro.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80'}
                                 alt={astro.name}
@@ -4410,18 +4438,18 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               />
                             </div>
                             <div>
-                              <h4 className="font-bold text-white text-base leading-tight">{astro.name}</h4>
-                              <p className="text-[11px] text-amber-300 font-mono mt-0.5">{astro.badge || 'Verified'}</p>
+                              <h4 className="font-bold text-[#0f172a] text-base leading-tight">{astro.name}</h4>
+                              <p className="text-[11px] text-[#b45309] font-mono mt-0.5 font-bold">{astro.badge || 'Verified'}</p>
                             </div>
                           </div>
 
                           <button
                             type="button"
                             onClick={() => handleToggleShowOnHome(astro.id, isFeaturedOnHome)}
-                            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border transition-all shrink-0 ${
+                            className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border transition-all shrink-0 cursor-pointer ${
                               isFeaturedOnHome
-                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
-                                : 'bg-gray-700/50 text-gray-400 border-gray-600'
+                                ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                                : 'bg-gray-100 text-gray-500 border-gray-300'
                             }`}
                             title="Toggle whether displayed in Homepage Top Astrologers section"
                           >
@@ -4429,29 +4457,29 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           </button>
                         </div>
 
-                        <p className="text-xs text-[#5c7a99] line-clamp-2">{astro.specialty || (astro.specialties && astro.specialties.join(' · '))}</p>
+                        <p className="text-xs text-gray-600 line-clamp-2">{astro.specialty || (astro.specialties && astro.specialties.join(' · '))}</p>
 
-                        <div className="pt-3 border-t border-[#3a506b]/40 space-y-2 text-xs">
+                        <div className="pt-3 border-t border-[#fde68a] space-y-2 text-xs">
                           {/* Price Per Minute Control */}
-                          <div className="flex items-center justify-between bg-[#1c2541] p-2.5 rounded-xl border border-[#3a506b]/60">
-                            <span className="text-gray-300 font-bold">Homepage Rate (₹/min):</span>
+                          <div className="flex items-center justify-between bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a]">
+                            <span className="text-gray-700 font-bold">Homepage Rate (₹/min):</span>
                             <div className="flex items-center gap-1">
-                              <span className="text-amber-400 font-bold">₹</span>
+                              <span className="text-[#b45309] font-bold">₹</span>
                               <input
                                 type="number"
                                 min={10}
                                 max={500}
                                 value={astro.pricePerMin || 35}
                                 onChange={(e) => handleUpdateAstroRate(astro.id, Number(e.target.value))}
-                                className="w-16 h-8 px-2 rounded-lg bg-[#0b132b] border border-[#3a506b] text-amber-300 font-mono font-bold text-center text-xs focus:border-[#d97706] focus:outline-none"
+                                className="w-16 h-8 px-2 rounded-lg bg-white border border-gray-300 text-[#b45309] font-mono font-bold text-center text-xs focus:border-[#d97706] focus:outline-none"
                               />
-                              <span className="text-[10px] text-gray-400 font-mono">/min</span>
+                              <span className="text-[10px] text-gray-500 font-mono">/min</span>
                             </div>
                           </div>
 
-                          <div className="flex justify-between text-gray-300">
+                          <div className="flex justify-between text-gray-700">
                             <span>WhatsApp Contact:</span>
-                            <span className="font-bold text-[#fbbf24] font-mono">{astro.whatsappPhone || astro.whatsappNo}</span>
+                            <span className="font-bold text-[#b45309] font-mono">{astro.whatsappPhone || astro.whatsappNo}</span>
                           </div>
 
                           {/* MANAGE ASTROLOGER TOOLS PERMISSIONS BUTTON */}
@@ -4459,50 +4487,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <button
                               type="button"
                               onClick={() => handleOpenToolModal(astro)}
-                              className="w-full py-2 px-3 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs flex items-center justify-between transition-colors cursor-pointer"
+                              className="w-full py-2 px-3 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] border border-[#fde68a] text-[#b45309] font-bold text-xs flex items-center justify-between transition-colors cursor-pointer"
                             >
                               <div className="flex items-center gap-1.5">
                                 <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
                                 <span>Tool Access Permissions</span>
                               </div>
-                              <span className="px-2 py-0.5 rounded-full bg-[#fbbf24]/20 text-[10px] font-extrabold">
+                              <span className="px-2 py-0.5 rounded-full bg-white text-[#b45309] text-[10px] font-extrabold border border-[#fde68a]">
                                 {astro.allowedTools ? astro.allowedTools.length : 19}/19 Allowed
                               </span>
                             </button>
                           </div>
-                          {astro.completedCount !== undefined && (
-                            <div className="flex justify-between text-gray-300">
-                              <span>Kuthi Analyzed:</span>
-                              <span className="font-bold text-white">{astro.completedCount} Orders</span>
-                            </div>
-                          )}
-                          {astro.pendingPayout !== undefined && (
-                            <div className="flex justify-between text-gray-300 pt-1 border-t border-[#3a506b]/20">
-                              <span>Pending Payout:</span>
-                              <span className="font-bold text-green-400 font-mono text-sm">₹{astro.pendingPayout.toLocaleString()}</span>
-                            </div>
-                          )}
                         </div>
                       </div>
-
-                      {astro.pendingPayout !== undefined && (
-                        <button
-                          onClick={() => {
-                            setPayoutModalAstro(astro);
-                            setPayoutForm({
-                              amount: astro.pendingPayout,
-                              paymentMethod: 'GPay / PhonePe UPI',
-                              utr: `UPI${Math.floor(100000000000 + Math.random() * 900000000000)}`,
-                              notes: `Weekly Commission Payout Disbursement to ${astro.name}`,
-                            });
-                          }}
-                          disabled={astro.pendingPayout <= 0}
-                          className="w-full py-2.5 mt-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] disabled:bg-gray-700 disabled:opacity-60 text-white font-bold text-xs transition-colors shadow-xs flex items-center justify-center gap-2"
-                        >
-                          <DollarSign className="w-4 h-4" />
-                          <span>{astro.pendingPayout > 0 ? `Disburse Payout (₹${astro.pendingPayout.toLocaleString()})` : 'No Pending Payout'}</span>
-                        </button>
-                      )}
                     </div>
                   );
                 })}
