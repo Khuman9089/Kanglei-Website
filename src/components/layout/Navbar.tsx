@@ -219,21 +219,21 @@ export function Navbar() {
               Blog
             </Link>
             <Link
-              href="/numit_yengba"
+              href="/numit_leppa_yengba"
               className="px-3.5 py-2 rounded-xl text-sm font-extrabold text-gray-800 hover:text-[#b45309] hover:bg-[#fef3c7]/60 transition-colors whitespace-nowrap"
             >
-              Numit Yengba
+              Numit Leppa
             </Link>
           </div>
 
           {/* Right Action Buttons */}
           <div className="flex items-center gap-2.5">
             <Link
-              href="/numit_yengba"
+              href="/numit_leppa_yengba"
               className="hidden xl:inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs transition-opacity shadow-sm whitespace-nowrap shrink-0"
             >
               <Sun className="w-3.5 h-3.5 text-yellow-200 fill-yellow-200" />
-              <span>Numit Yengba</span>
+              <span>Numit Leppa</span>
             </Link>
 
             <Link

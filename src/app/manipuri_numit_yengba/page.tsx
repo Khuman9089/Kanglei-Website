@@ -1,5 +1,3 @@
-import NumitYengbaPage from '@/app/numit_yengba/page';
+import NumitYengbaPage from '../numit_yengba/page';
 
-export default function ManipuriNumitYengbaAlias() {
-  return <NumitYengbaPage />;
-}
+export default NumitYengbaPage;
