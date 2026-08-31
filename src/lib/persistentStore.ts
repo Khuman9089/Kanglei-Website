@@ -96,13 +96,16 @@ export function writePersistentData<T>(key: string, data: T): boolean {
   writePersistentDataLocal(key, data);
 
   // Fire-and-forget background cloud sync to Supabase
-  supabase
-    .from('kv_store')
-    .upsert({ key, value: data, updated_at: new Date().toISOString() }, { onConflict: 'key' })
-    .then(({ error }) => {
+  (async () => {
+    try {
+      const { error } = await supabase
+        .from('kv_store')
+        .upsert({ key, value: data, updated_at: new Date().toISOString() }, { onConflict: 'key' });
       if (error) console.warn(`Background kv_store sync for "${key}":`, error.message);
-    })
-    .catch(() => {});
+    } catch (err) {
+      // Silent catch for background sync
+    }
+  })();
 
   return true;
 }
