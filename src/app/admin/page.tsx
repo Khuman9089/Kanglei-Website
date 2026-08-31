@@ -556,7 +556,7 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'settings'>('dashboard');
 
   const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
@@ -2142,6 +2142,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
                   }`}>
                     CMS Display
+                  </span>
+                </button>
+
+                {/* 3. Website Services CMS */}
+                <button
+                  onClick={() => setActiveTab('astro_services')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_services' || activeTab === 'astro_rates'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Tag className="w-4 h-4 text-[#d97706]" />
+                    <span>Website Services</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  }`}>
+                    {services.length} Services
                   </span>
                 </button>
 
@@ -4884,59 +4904,173 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
           )}
 
-          {/* TAB 5B: DEDICATED ASTROLOGER SERVICE PAYOUT RATE CARD & COMMISSION SPLIT WORKSPACE */}
-          {activeTab === 'astro_rates' && (
-            <div className={`rounded-3xl border p-6 space-y-6 shadow-xl transition-colors ${
-              theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
-            }`}>
-              <div className="flex flex-wrap items-center justify-between gap-4 border-b pb-4 border-slate-200 dark:border-[#3a506b]">
-                <div>
-                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase mb-2 border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
-                  }`}>
-                    <DollarSign className="w-3.5 h-3.5 text-[#d97706]" />
-                    Astrologer Service Payout Rate Card & Commission Split Control
+          {/* TAB 5B: DEDICATED WEBSITE SERVICES CMS (Add Services, Rates & Sub-Services Matrix) */}
+          {(activeTab === 'astro_services' || activeTab === 'astro_rates') && (
+            <div className="space-y-6">
+              
+              {/* TOP CARD: ADD NEW SERVICE PACKAGE FORM */}
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] shadow-md space-y-5 text-[#0f172a]">
+                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#fde68a] pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center font-bold shadow-md">
+                      <Plus className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h3 className="font-serif font-bold text-xl text-[#b45309]">
+                        Add New Service Package / Consultation Category
+                      </h3>
+                      <p className="text-xs text-gray-500">
+                        Create and publish a new astrology consultation service live on the website
+                      </p>
+                    </div>
                   </div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
-                    Service Package Rates, Payout Fees & Split Matrix
-                  </h3>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}`}>
-                    Directly edit Service Package Titles, Client Prices (₹), Astrologer Payout Fees (₹), Platform Net Share (₹), Commission Split %, and Button CTA Links live.
-                  </p>
-                </div>
 
-                <div className="flex items-center gap-3">
                   <button
+                    type="button"
                     onClick={() => setShowAddServiceModal(true)}
-                    className={`px-4 py-2.5 rounded-xl font-bold text-xs border transition-all flex items-center gap-1.5 shadow-sm cursor-pointer ${
-                      theme === 'dark' ? 'bg-[#0b132b] text-[#fbbf24] border-[#3a506b] hover:border-[#fbbf24]' : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
-                    }`}
+                    className="px-5 py-2 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] font-bold text-xs border border-[#fde68a] transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Plus className="w-4 h-4 text-[#d97706]" />
-                    <span>+ Add New Service Package</span>
+                    <span>Open Add Modal</span>
                   </button>
+                </div>
+
+                <form onSubmit={handleCreateNewServicePackage} className="space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
+                    <div className="sm:col-span-8">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                        Service Package Name / Title *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Manglik Dasha & Marriage Compatibility Audit"
+                        value={newServiceForm.title}
+                        onChange={(e) => setNewServiceForm({ ...newServiceForm, title: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="sm:col-span-4">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                        Tag Badge Label
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. POPULAR / SPECIAL"
+                        value={newServiceForm.badge}
+                        onChange={(e) => setNewServiceForm({ ...newServiceForm, badge: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs uppercase focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                        Client Price (₹) *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. ₹1,499"
+                        value={newServiceForm.price}
+                        onChange={(e) => setNewServiceForm({ ...newServiceForm, price: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                        Astrologer Payout Fee (₹) *
+                      </label>
+                      <input
+                        type="number"
+                        required
+                        placeholder="e.g. 900"
+                        value={newServiceForm.astroPayoutFee}
+                        onChange={(e) => setNewServiceForm({ ...newServiceForm, astroPayoutFee: parseInt(e.target.value) || 0 })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-700 font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                      Description / Highlights Copy *
+                    </label>
+                    <textarea
+                      required
+                      rows={2}
+                      placeholder="Describe what the client receives in this service package..."
+                      value={newServiceForm.description}
+                      onChange={(e) => setNewServiceForm({ ...newServiceForm, description: e.target.value })}
+                      className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none font-medium"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                        Button CTA Label Text
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Book Consultation"
+                        value={newServiceForm.cta}
+                        onChange={(e) => setNewServiceForm({ ...newServiceForm, cta: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                        Button Target Link / URL
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. /matching or /booking"
+                        value={newServiceForm.link}
+                        onChange={(e) => setNewServiceForm({ ...newServiceForm, link: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end pt-2">
+                    <button
+                      type="submit"
+                      className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer flex items-center gap-2"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>+ Publish New Service Live</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* BOTTOM CARD: ACTIVE SERVICE CATALOG & RATE MATRIX */}
+              <div className="bg-white rounded-3xl border border-[#fde68a] shadow-md p-6 space-y-6 text-[#0f172a]">
+                <div className="flex justify-between items-center pb-4 border-b border-[#fde68a]">
+                  <div>
+                    <h3 className="font-serif font-bold text-2xl text-[#b45309]">Active Service Rate Matrix & Sub-Services ({services.length})</h3>
+                    <p className="text-xs text-gray-500 font-sans">Manage service pricing, astrologer payouts, platform commission splits, and specific sub-service options</p>
+                  </div>
 
                   <button
                     onClick={handleSaveServices}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-1.5 cursor-pointer"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
-                    <span>Save All Pricing Live</span>
+                    <span>Save All Services Live</span>
                   </button>
                 </div>
-              </div>
 
-              {/* RATE CARD MATRIX TABLE */}
-              <div className={`rounded-2xl border overflow-hidden shadow-sm ${
-                theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
-              }`}>
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans">
+                  <table className="w-full text-left border-collapse text-xs font-sans">
                     <thead>
-                      <tr className={`font-serif font-bold uppercase border-b ${
-                        theme === 'dark' ? 'bg-[#0f172a] text-[#fbbf24] border-[#3a506b]' : 'bg-slate-100 text-slate-900 border-slate-200'
-                      }`}>
-                        <th className="px-4 py-3.5">Service Package Title & Badge</th>
+                      <tr className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold text-[10px] border-b border-[#fde68a]">
+                        <th className="px-4 py-3.5">Service Title & Badge</th>
                         <th className="px-4 py-3.5">Client Price (₹)</th>
                         <th className="px-4 py-3.5">Astrologer Fee (₹)</th>
                         <th className="px-4 py-3.5">Platform Net Share (₹)</th>
@@ -4945,9 +5079,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="px-4 py-3.5 text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className={`divide-y ${
-                      theme === 'dark' ? 'divide-[#3a506b]/40 text-white' : 'divide-slate-200 text-slate-900'
-                    }`}>
+                    <tbody className="divide-y divide-gray-200 text-[#0f172a]">
                       {services.map((serv) => {
                         const clientPriceNum = parseInt(serv.price.replace(/[^\d]/g, '')) || 0;
                         const payoutNum = serv.astroPayoutFee || Math.round(clientPriceNum * 0.6);
@@ -4956,196 +5088,181 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                         return (
                           <React.Fragment key={serv.id}>
-                            <tr className={`transition-colors ${
-                              theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
-                            }`}>
-                            {/* Service Title & Badge inputs */}
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-2">
-                                <input
-                                  type="text"
-                                  value={serv.title}
-                                  onChange={(e) => handleServiceChange(serv.id, 'title', e.target.value)}
-                                  className={`w-56 h-9 px-2.5 rounded-lg border font-bold text-xs focus:border-[#d97706] focus:outline-none ${
-                                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900 shadow-xs'
-                                  }`}
-                                  placeholder="Package Title"
-                                />
-                                <input
-                                  type="text"
-                                  value={serv.badge}
-                                  onChange={(e) => handleServiceChange(serv.id, 'badge', e.target.value)}
-                                  className={`w-24 h-9 px-2 rounded-lg border font-extrabold text-[10px] uppercase text-center focus:border-[#d97706] focus:outline-none ${
-                                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
-                                  }`}
-                                  placeholder="Badge"
-                                />
-                              </div>
-                            </td>
-
-                            {/* Client Price input */}
-                            <td className="px-4 py-3 font-mono font-bold">
-                              <input
-                                type="text"
-                                value={serv.price}
-                                onChange={(e) => handleServiceChange(serv.id, 'price', e.target.value)}
-                                className={`w-24 h-9 px-2 rounded-lg border font-extrabold text-xs font-mono focus:border-[#d97706] focus:outline-none ${
-                                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-white border-slate-300 text-amber-900 shadow-xs'
-                                }`}
-                              />
-                            </td>
-
-                            {/* Astrologer Payout Fee input */}
-                            <td className="px-4 py-3 font-mono">
-                              <div className="flex items-center gap-1">
-                                <span className={theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-bold'}>₹</span>
-                                <input
-                                  type="number"
-                                  value={payoutNum}
-                                  onChange={(e) => {
-                                    const val = parseInt(e.target.value) || 0;
-                                    setServices((prev) =>
-                                      prev.map((s) => (s.id === serv.id ? { ...s, astroPayoutFee: val } : s))
-                                    );
-                                  }}
-                                  className={`w-24 h-9 px-2 rounded-lg border font-extrabold font-mono text-xs focus:border-[#d97706] focus:outline-none ${
-                                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-green-400' : 'bg-white border-slate-300 text-green-700 shadow-xs'
-                                  }`}
-                                />
-                              </div>
-                            </td>
-
-                            {/* Platform Net Share */}
-                            <td className="px-4 py-3 font-mono font-bold text-sky-600 dark:text-blue-400">
-                              ₹{platformShare.toLocaleString()}
-                            </td>
-
-                            {/* Commission Split % input */}
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-1">
-                                <input
-                                  type="number"
-                                  min={0}
-                                  max={100}
-                                  value={astroPct}
-                                  onChange={(e) => {
-                                    const pct = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                                    const newPayout = Math.round((clientPriceNum * pct) / 100);
-                                    setServices((prev) =>
-                                      prev.map((s) => (s.id === serv.id ? { ...s, astroPayoutFee: newPayout } : s))
-                                    );
-                                  }}
-                                  className={`w-16 h-9 px-2 rounded-lg border font-extrabold text-center text-xs focus:border-[#d97706] focus:outline-none ${
-                                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-green-300' : 'bg-white border-slate-300 text-green-800 shadow-xs'
-                                  }`}
-                                />
-                                <span className={`text-xs font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>%</span>
-                              </div>
-                            </td>
-
-                            {/* Button CTA Text & Link inputs */}
-                            <td className="px-4 py-3">
-                              <div className="flex flex-col gap-1">
-                                <input
-                                  type="text"
-                                  value={serv.cta}
-                                  onChange={(e) => handleServiceChange(serv.id, 'cta', e.target.value)}
-                                  className={`w-40 h-8 px-2 rounded-lg border font-bold text-xs focus:border-[#d97706] focus:outline-none ${
-                                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900 shadow-xs'
-                                  }`}
-                                  placeholder="Button Text"
-                                />
-                                <input
-                                  type="text"
-                                  value={serv.link || ''}
-                                  onChange={(e) => handleServiceChange(serv.id, 'link', e.target.value)}
-                                  className={`w-40 h-8 px-2 rounded-lg border font-mono text-[11px] focus:border-[#d97706] focus:outline-none ${
-                                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-sky-300' : 'bg-white border-slate-300 text-sky-700 shadow-xs'
-                                  }`}
-                                  placeholder="Target Link (e.g. /matching)"
-                                />
-                              </div>
-                            </td>
-
-                            {/* Delete button */}
-                            <td className="px-4 py-3 text-right">
-                              {services.length > 1 && (
-                                <button
-                                  onClick={() => setServices((prev) => prev.filter((s) => s.id !== serv.id))}
-                                  className="p-1.5 text-red-500 hover:text-red-700 transition-colors rounded-lg hover:bg-red-500/10 cursor-pointer"
-                                  title="Delete Package"
-                                >
-                                  <Trash2 className="w-4 h-4" />
-                                </button>
-                              )}
-                            </td>
-                          </tr>
-
-                          {/* SUB-SERVICES MANAGER INNER ROW */}
-                          <tr key={`${serv.id}-subs`} className={theme === 'dark' ? 'bg-[#0b132b]/80' : 'bg-slate-50/80'}>
-                            <td colSpan={7} className="px-6 py-4 border-b border-gray-700/40">
-                              <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                  <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#d97706]">
-                                    <Sparkles className="w-4 h-4" />
-                                    <span>Sub-Services & Specific Pricing Menu for "{serv.title}"</span>
-                                  </div>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleAddSubService(serv.id)}
-                                    className="px-3 py-1.5 rounded-lg bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold text-xs flex items-center gap-1 transition-all cursor-pointer"
-                                  >
-                                    <Plus className="w-3.5 h-3.5" />
-                                    <span>+ Add Sub-Service Option</span>
-                                  </button>
+                            <tr className="hover:bg-[#fefcf6] transition-colors">
+                              {/* Service Title & Badge inputs */}
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="text"
+                                    value={serv.title}
+                                    onChange={(e) => handleServiceChange(serv.id, 'title', e.target.value)}
+                                    className="w-56 h-9 px-2.5 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                    placeholder="Package Title"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={serv.badge}
+                                    onChange={(e) => handleServiceChange(serv.id, 'badge', e.target.value)}
+                                    className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase text-center focus:border-[#d97706] focus:outline-none"
+                                    placeholder="Badge"
+                                  />
                                 </div>
+                              </td>
 
-                                {(!serv.subServices || serv.subServices.length === 0) ? (
-                                  <p className="text-xs text-gray-400 italic">No sub-services defined for this category yet.</p>
-                                ) : (
-                                  <div className="space-y-2">
-                                    {serv.subServices.map((sub) => (
-                                      <div key={sub.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-[#1c2541]/90 border border-[#3a506b] text-xs">
-                                        <div className="flex-1 flex flex-col sm:flex-row items-center gap-3">
-                                          <input
-                                            type="text"
-                                            value={sub.title}
-                                            onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'title', e.target.value)}
-                                            className="w-full sm:w-80 h-9 px-3 rounded-lg border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                                            placeholder="Sub-Service Option Title"
-                                          />
-                                          <div className="flex items-center gap-1.5 shrink-0">
-                                            <span className="font-bold text-[#fbbf24]">Price (₹):</span>
-                                            <input
-                                              type="number"
-                                              value={sub.price}
-                                              onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'price', e.target.value)}
-                                              className="w-24 h-9 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
-                                            />
-                                          </div>
-                                        </div>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleRemoveSubService(serv.id, sub.id)}
-                                          className="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-500/20 rounded-lg transition-colors cursor-pointer"
-                                          title="Remove Sub-service"
-                                        >
-                                          <Trash2 className="w-4 h-4" />
-                                        </button>
-                                      </div>
-                                    ))}
-                                  </div>
+                              {/* Client Price input */}
+                              <td className="px-4 py-3 font-mono font-bold">
+                                <input
+                                  type="text"
+                                  value={serv.price}
+                                  onChange={(e) => handleServiceChange(serv.id, 'price', e.target.value)}
+                                  className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs font-mono focus:border-[#d97706] focus:outline-none"
+                                />
+                              </td>
+
+                              {/* Astrologer Payout Fee input */}
+                              <td className="px-4 py-3 font-mono">
+                                <div className="flex items-center gap-1">
+                                  <span className="text-gray-500 font-bold">₹</span>
+                                  <input
+                                    type="number"
+                                    value={payoutNum}
+                                    onChange={(e) => {
+                                      const val = parseInt(e.target.value) || 0;
+                                      setServices((prev) =>
+                                        prev.map((s) => (s.id === serv.id ? { ...s, astroPayoutFee: val } : s))
+                                      );
+                                    }}
+                                    className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-emerald-700 font-extrabold font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                                  />
+                                </div>
+                              </td>
+
+                              {/* Platform Net Share */}
+                              <td className="px-4 py-3 font-mono font-bold text-blue-700">
+                                ₹{platformShare.toLocaleString()}
+                              </td>
+
+                              {/* Commission Split % input */}
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-1">
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={100}
+                                    value={astroPct}
+                                    onChange={(e) => {
+                                      const pct = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                                      const newPayout = Math.round((clientPriceNum * pct) / 100);
+                                      setServices((prev) =>
+                                        prev.map((s) => (s.id === serv.id ? { ...s, astroPayoutFee: newPayout } : s))
+                                      );
+                                    }}
+                                    className="w-16 h-9 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-green-800 font-extrabold text-center text-xs focus:border-[#d97706] focus:outline-none"
+                                  />
+                                  <span className="text-xs font-bold text-gray-700">%</span>
+                                </div>
+                              </td>
+
+                              {/* Button CTA Text & Link inputs */}
+                              <td className="px-4 py-3">
+                                <div className="flex flex-col gap-1">
+                                  <input
+                                    type="text"
+                                    value={serv.cta}
+                                    onChange={(e) => handleServiceChange(serv.id, 'cta', e.target.value)}
+                                    className="w-40 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                    placeholder="Button Text"
+                                  />
+                                  <input
+                                    type="text"
+                                    value={serv.link || ''}
+                                    onChange={(e) => handleServiceChange(serv.id, 'link', e.target.value)}
+                                    className="w-40 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-[11px] focus:border-[#d97706] focus:outline-none"
+                                    placeholder="Target Link (e.g. /matching)"
+                                  />
+                                </div>
+                              </td>
+
+                              {/* Delete button */}
+                              <td className="px-4 py-3 text-right">
+                                {services.length > 1 && (
+                                  <button
+                                    onClick={() => setServices((prev) => prev.filter((s) => s.id !== serv.id))}
+                                    className="p-1.5 text-red-500 hover:text-red-700 transition-colors rounded-lg hover:bg-red-50 cursor-pointer"
+                                    title="Delete Package"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                  </button>
                                 )}
-                              </div>
-                            </td>
-                          </tr>
-                        </React.Fragment>
-                      );
+                              </td>
+                            </tr>
+
+                            {/* SUB-SERVICES MANAGER INNER ROW */}
+                            <tr key={`${serv.id}-subs`} className="bg-[#fefcf6]">
+                              <td colSpan={7} className="px-6 py-4 border-b border-gray-200">
+                                <div className="space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2 text-xs font-extrabold uppercase tracking-wider text-[#b45309]">
+                                      <Sparkles className="w-4 h-4 text-[#d97706]" />
+                                      <span>Sub-Services & Specific Pricing Menu for "{serv.title}"</span>
+                                    </div>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAddSubService(serv.id)}
+                                      className="px-3 py-1.5 rounded-lg bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold text-xs flex items-center gap-1 transition-all cursor-pointer"
+                                    >
+                                      <Plus className="w-3.5 h-3.5" />
+                                      <span>+ Add Sub-Service Option</span>
+                                    </button>
+                                  </div>
+
+                                  {(!serv.subServices || serv.subServices.length === 0) ? (
+                                    <p className="text-xs text-gray-500 italic">No sub-services defined for this category yet.</p>
+                                  ) : (
+                                    <div className="space-y-2">
+                                      {serv.subServices.map((sub) => (
+                                        <div key={sub.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-white border border-[#fde68a] text-xs shadow-xs">
+                                          <div className="flex-1 flex flex-col sm:flex-row items-center gap-3">
+                                            <input
+                                              type="text"
+                                              value={sub.title}
+                                              onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'title', e.target.value)}
+                                              className="w-full sm:w-80 h-9 px-3 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                              placeholder="Sub-Service Option Title"
+                                            />
+                                            <div className="flex items-center gap-1.5 shrink-0">
+                                              <span className="font-bold text-[#b45309]">Price (₹):</span>
+                                              <input
+                                                type="number"
+                                                value={sub.price}
+                                                onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'price', e.target.value)}
+                                                className="w-24 h-9 px-2.5 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
+                                              />
+                                            </div>
+                                          </div>
+                                          <button
+                                            type="button"
+                                            onClick={() => handleRemoveSubService(serv.id, sub.id)}
+                                            className="p-1.5 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors cursor-pointer"
+                                            title="Remove Sub-service"
+                                          >
+                                            <Trash2 className="w-4 h-4" />
+                                          </button>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          </React.Fragment>
+                        );
                       })}
                     </tbody>
                   </table>
                 </div>
               </div>
+
             </div>
           )}
 
