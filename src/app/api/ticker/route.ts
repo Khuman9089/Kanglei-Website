@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export interface TickerItem {
   id: string;
@@ -16,7 +17,7 @@ export interface TickerSettings {
   items: TickerItem[];
 }
 
-let tickerStore: TickerSettings = {
+const DEFAULT_TICKER: TickerSettings = {
   active: true,
   speedSeconds: 65, // Slower, readable default marquee speed
   items: [
@@ -32,19 +33,22 @@ let tickerStore: TickerSettings = {
 };
 
 export async function GET() {
-  return NextResponse.json({ ticker: tickerStore });
+  const ticker = readPersistentData<TickerSettings>('ticker', DEFAULT_TICKER);
+  return NextResponse.json({ ticker });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    let currentTicker = readPersistentData<TickerSettings>('ticker', DEFAULT_TICKER);
     if (body.ticker) {
-      tickerStore = {
-        ...tickerStore,
+      currentTicker = {
+        ...currentTicker,
         ...body.ticker,
       };
+      writePersistentData('ticker', currentTicker);
     }
-    return NextResponse.json({ success: true, ticker: tickerStore });
+    return NextResponse.json({ success: true, ticker: currentTicker });
   } catch (error) {
     return NextResponse.json({ error: 'Failed to update ticker settings' }, { status: 500 });
   }

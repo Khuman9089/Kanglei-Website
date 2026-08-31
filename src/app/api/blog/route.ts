@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export interface BlogPost {
   id: string;
@@ -21,7 +22,7 @@ export interface BlogPost {
   status: 'PUBLISHED' | 'DRAFT';
 }
 
-let storedPosts: BlogPost[] = [
+const DEFAULT_POSTS: BlogPost[] = [
   {
     id: 'post-1',
     slug: 'saturn-sade-sati-phases-and-remedies',
@@ -105,35 +106,40 @@ A score above 18 points is considered favorable, while scores above 28 indicate 
 ];
 
 export async function GET() {
-  return NextResponse.json({ posts: storedPosts });
+  const posts = readPersistentData<BlogPost[]>('blog_posts', DEFAULT_POSTS);
+  return NextResponse.json({ posts });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    let posts = readPersistentData<BlogPost[]>('blog_posts', DEFAULT_POSTS);
 
     if (body.action === 'CREATE' || body.action === 'UPDATE') {
       const post: BlogPost = body.post;
-      const index = storedPosts.findIndex((p) => p.id === post.id);
+      const index = posts.findIndex((p) => p.id === post.id);
       if (index >= 0) {
-        storedPosts[index] = { ...storedPosts[index], ...post };
+        posts[index] = { ...posts[index], ...post };
       } else {
-        storedPosts.unshift(post);
+        posts.unshift(post);
       }
-      return NextResponse.json({ success: true, message: 'Blog post saved successfully!', posts: storedPosts });
+      writePersistentData('blog_posts', posts);
+      return NextResponse.json({ success: true, message: 'Blog post saved successfully!', posts });
     }
 
     if (body.action === 'LIKE') {
-      const index = storedPosts.findIndex((p) => p.id === body.id);
+      const index = posts.findIndex((p) => p.id === body.id);
       if (index >= 0) {
-        storedPosts[index].likes += 1;
+        posts[index].likes += 1;
+        writePersistentData('blog_posts', posts);
       }
-      return NextResponse.json({ success: true, likes: storedPosts[index]?.likes || 0 });
+      return NextResponse.json({ success: true, likes: posts[index]?.likes || 0 });
     }
 
     if (body.action === 'DELETE') {
-      storedPosts = storedPosts.filter((p) => p.id !== body.id);
-      return NextResponse.json({ success: true, message: 'Blog post deleted successfully!', posts: storedPosts });
+      posts = posts.filter((p) => p.id !== body.id);
+      writePersistentData('blog_posts', posts);
+      return NextResponse.json({ success: true, message: 'Blog post deleted successfully!', posts });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export interface CustomerReview {
   id: string;
@@ -15,7 +16,7 @@ export interface CustomerReview {
   createdAt: string;
 }
 
-let REVIEWS_DATABASE: CustomerReview[] = [
+const DEFAULT_REVIEWS: CustomerReview[] = [
   {
     id: 'rev-1',
     clientName: 'Priya S.',
@@ -87,19 +88,21 @@ let REVIEWS_DATABASE: CustomerReview[] = [
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const approvedOnly = searchParams.get('approvedOnly') === 'true';
+  const reviews = readPersistentData<CustomerReview[]>('reviews', DEFAULT_REVIEWS);
 
   if (approvedOnly) {
-    const approved = REVIEWS_DATABASE.filter((r) => r.status === 'APPROVED');
+    const approved = reviews.filter((r) => r.status === 'APPROVED');
     return NextResponse.json({ success: true, reviews: approved });
   }
 
-  return NextResponse.json({ success: true, reviews: REVIEWS_DATABASE });
+  return NextResponse.json({ success: true, reviews });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { action, review, reviewId } = body;
+    let reviews = readPersistentData<CustomerReview[]>('reviews', DEFAULT_REVIEWS);
 
     // 1. SUBMIT_REVIEW (From Client Dashboard)
     if (action === 'SUBMIT_REVIEW' && review) {
@@ -116,24 +119,27 @@ export async function POST(req: Request) {
         createdAt: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
       };
 
-      REVIEWS_DATABASE = [newReview, ...REVIEWS_DATABASE];
+      reviews = [newReview, ...reviews];
+      writePersistentData('reviews', reviews);
       return NextResponse.json({ success: true, message: 'Review submitted successfully for admin approval!', review: newReview });
     }
 
     // 2. APPROVE_REVIEW (Admin Action)
     if (action === 'APPROVE_REVIEW' && reviewId) {
-      REVIEWS_DATABASE = REVIEWS_DATABASE.map((r) =>
+      reviews = reviews.map((r) =>
         r.id === reviewId ? { ...r, status: 'APPROVED', isVerified: true } : r
       );
-      return NextResponse.json({ success: true, message: 'Review approved and published live!', reviews: REVIEWS_DATABASE });
+      writePersistentData('reviews', reviews);
+      return NextResponse.json({ success: true, message: 'Review approved and published live!', reviews });
     }
 
     // 3. REJECT_REVIEW (Admin Action)
     if (action === 'REJECT_REVIEW' && reviewId) {
-      REVIEWS_DATABASE = REVIEWS_DATABASE.map((r) =>
+      reviews = reviews.map((r) =>
         r.id === reviewId ? { ...r, status: 'REJECTED' } : r
       );
-      return NextResponse.json({ success: true, message: 'Review rejected.', reviews: REVIEWS_DATABASE });
+      writePersistentData('reviews', reviews);
+      return NextResponse.json({ success: true, message: 'Review rejected.', reviews });
     }
 
     // 4. CREATE_REVIEW (Admin Manual Add)
@@ -150,13 +156,14 @@ export async function POST(req: Request) {
         createdAt: new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' }),
       };
 
-      REVIEWS_DATABASE = [newReview, ...REVIEWS_DATABASE];
-      return NextResponse.json({ success: true, message: 'New verified review added!', reviews: REVIEWS_DATABASE });
+      reviews = [newReview, ...reviews];
+      writePersistentData('reviews', reviews);
+      return NextResponse.json({ success: true, message: 'New verified review added!', reviews });
     }
 
     // 5. UPDATE_REVIEW (Admin Edit)
     if (action === 'UPDATE_REVIEW' && reviewId && review) {
-      REVIEWS_DATABASE = REVIEWS_DATABASE.map((r) =>
+      reviews = reviews.map((r) =>
         r.id === reviewId
           ? {
               ...r,
@@ -169,13 +176,15 @@ export async function POST(req: Request) {
             }
           : r
       );
-      return NextResponse.json({ success: true, message: 'Review updated successfully!', reviews: REVIEWS_DATABASE });
+      writePersistentData('reviews', reviews);
+      return NextResponse.json({ success: true, message: 'Review updated successfully!', reviews });
     }
 
     // 6. DELETE_REVIEW (Admin Action)
     if (action === 'DELETE_REVIEW' && reviewId) {
-      REVIEWS_DATABASE = REVIEWS_DATABASE.filter((r) => r.id !== reviewId);
-      return NextResponse.json({ success: true, message: 'Review deleted.', reviews: REVIEWS_DATABASE });
+      reviews = reviews.filter((r) => r.id !== reviewId);
+      writePersistentData('reviews', reviews);
+      return NextResponse.json({ success: true, message: 'Review deleted.', reviews });
     }
 
     return NextResponse.json({ success: false, error: 'Invalid action' }, { status: 400 });

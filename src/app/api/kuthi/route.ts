@@ -1,5 +1,8 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+
+export const dynamic = 'force-dynamic';
 
 export interface KuthiOrder {
   id: string;
@@ -51,9 +54,10 @@ export interface KuthiOrder {
   reportUploadedAt?: string;
   reportUploadedBy?: string;
   reportNotes?: string;
+  clientRequirement?: string;
 }
 
-let KUTHI_ORDERS: KuthiOrder[] = [
+const DEFAULT_KUTHI_ORDERS: KuthiOrder[] = [
   {
     id: 'k-1',
     orderRef: 'KY-2026-8941',
@@ -126,6 +130,7 @@ export async function GET() {
         category: d.category,
         assignedAstrologerId: d.assigned_astrologer_id,
         assignedAstrologerName: d.assigned_astrologer_name,
+        clientRequirement: d.client_requirement,
       }));
       return NextResponse.json({ success: true, orders: dbOrders });
     }
@@ -133,13 +138,15 @@ export async function GET() {
     console.warn('Supabase fetch fallback to local:', err);
   }
 
-  return NextResponse.json({ success: true, orders: KUTHI_ORDERS });
+  const orders = readPersistentData<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
+  return NextResponse.json({ success: true, orders });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { action, order, orderId, astroId, astroName } = body;
+    let orders = readPersistentData<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
 
     if (action === 'CREATE_ORDER' && order) {
       const newId = 'k-' + Date.now();
@@ -173,6 +180,7 @@ export async function POST(req: Request) {
         gotra: order.gotra || order.rewriteDetails?.gotra || '',
         deliveryAddress: order.deliveryAddress || order.rewriteDetails?.deliveryAddress || '',
         category: order.category || 'kuthi_yengba',
+        clientRequirement: order.clientRequirement || '',
       };
 
       // Try inserting into Supabase
@@ -199,14 +207,16 @@ export async function POST(req: Request) {
             mother_name: newOrder.motherName,
             delivery_address: newOrder.deliveryAddress,
             category: newOrder.category,
+            client_requirement: newOrder.clientRequirement,
           },
         ]);
       } catch (dbErr) {
         console.warn('Supabase insert fallback:', dbErr);
       }
 
-      KUTHI_ORDERS = [newOrder, ...KUTHI_ORDERS];
-      return NextResponse.json({ success: true, order: newOrder, orders: KUTHI_ORDERS });
+      orders = [newOrder, ...orders];
+      writePersistentData('kuthi_orders', orders);
+      return NextResponse.json({ success: true, order: newOrder, orders });
     }
 
     if (action === 'ASSIGN_ASTROLOGER' && orderId && astroId) {
@@ -214,12 +224,13 @@ export async function POST(req: Request) {
         await supabase.from('orders').update({ assigned_astrologer_id: astroId, assigned_astrologer_name: astroName, status: 'ASSIGNED' }).eq('id', orderId);
       } catch (e) {}
 
-      KUTHI_ORDERS = KUTHI_ORDERS.map((o) =>
+      orders = orders.map((o) =>
         o.id === orderId
           ? { ...o, assignedAstrologerId: astroId, assignedAstrologerName: astroName, status: 'ASSIGNED' }
           : o
       );
-      return NextResponse.json({ success: true, orders: KUTHI_ORDERS });
+      writePersistentData('kuthi_orders', orders);
+      return NextResponse.json({ success: true, orders });
     }
 
     if (action === 'MARK_COMPLETED' && orderId) {
@@ -227,10 +238,11 @@ export async function POST(req: Request) {
         await supabase.from('orders').update({ status: 'COMPLETED' }).eq('id', orderId);
       } catch (e) {}
 
-      KUTHI_ORDERS = KUTHI_ORDERS.map((o) =>
+      orders = orders.map((o) =>
         o.id === orderId ? { ...o, status: 'COMPLETED' } : o
       );
-      return NextResponse.json({ success: true, orders: KUTHI_ORDERS });
+      writePersistentData('kuthi_orders', orders);
+      return NextResponse.json({ success: true, orders });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

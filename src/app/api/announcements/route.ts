@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export interface AdminAnnouncement {
   id: string;
@@ -16,7 +17,7 @@ export interface AdminAnnouncement {
   isActive: boolean;
 }
 
-let storedAnnouncements: AdminAnnouncement[] = [
+const DEFAULT_ANNOUNCEMENTS: AdminAnnouncement[] = [
   {
     id: 'ann-1',
     title: '🛒 Astrologer E-Store Marketplace is Live!',
@@ -56,15 +57,17 @@ let storedAnnouncements: AdminAnnouncement[] = [
 ];
 
 export async function GET() {
+  const announcements = readPersistentData<AdminAnnouncement[]>('announcements', DEFAULT_ANNOUNCEMENTS);
   return NextResponse.json({
     success: true,
-    announcements: storedAnnouncements,
+    announcements,
   });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    let announcements = readPersistentData<AdminAnnouncement[]>('announcements', DEFAULT_ANNOUNCEMENTS);
 
     if (body.action === 'CREATE') {
       const newAnn: AdminAnnouncement = {
@@ -81,48 +84,52 @@ export async function POST(request: Request) {
         isActive: true,
       };
 
-      storedAnnouncements.unshift(newAnn);
+      announcements.unshift(newAnn);
+      writePersistentData('announcements', announcements);
       return NextResponse.json({
         success: true,
         message: 'Announcement published live for Astrologers!',
-        announcements: storedAnnouncements,
+        announcements,
       });
     }
 
     if (body.action === 'UPDATE') {
-      const idx = storedAnnouncements.findIndex((a) => a.id === body.announcement.id);
+      const idx = announcements.findIndex((a) => a.id === body.announcement.id);
       if (idx >= 0) {
-        storedAnnouncements[idx] = { ...storedAnnouncements[idx], ...body.announcement };
+        announcements[idx] = { ...announcements[idx], ...body.announcement };
+        writePersistentData('announcements', announcements);
       }
       return NextResponse.json({
         success: true,
         message: 'Announcement updated!',
-        announcements: storedAnnouncements,
+        announcements,
       });
     }
 
     if (body.action === 'DELETE') {
-      storedAnnouncements = storedAnnouncements.filter((a) => a.id !== body.id);
+      announcements = announcements.filter((a) => a.id !== body.id);
+      writePersistentData('announcements', announcements);
       return NextResponse.json({
         success: true,
         message: 'Announcement removed.',
-        announcements: storedAnnouncements,
+        announcements,
       });
     }
 
     if (body.action === 'TOGGLE_ACTIVE') {
-      const ann = storedAnnouncements.find((a) => a.id === body.id);
+      const ann = announcements.find((a) => a.id === body.id);
       if (ann) {
         ann.isActive = !ann.isActive;
+        writePersistentData('announcements', announcements);
       }
       return NextResponse.json({
         success: true,
         message: 'Announcement status toggled!',
-        announcements: storedAnnouncements,
+        announcements,
       });
     }
 
-    return NextResponse.json({ success: true, announcements: storedAnnouncements });
+    return NextResponse.json({ success: true, announcements });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Server error' }, { status: 500 });
   }

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export interface AstrologerItem {
   id: string;
@@ -36,7 +37,7 @@ export interface AstrologerSectionSettings {
   actionButtonType: 'both' | 'chat_only' | 'call_only'; // Control button function (Chat, Call, or Both)
 }
 
-let sectionSettings: AstrologerSectionSettings = {
+const DEFAULT_SECTION_SETTINGS: AstrologerSectionSettings = {
   title: "Talk to Manipur's",
   highlightText: "Top Rated",
   subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
@@ -44,7 +45,7 @@ let sectionSettings: AstrologerSectionSettings = {
   actionButtonType: 'both',
 };
 
-let astrologersStore: AstrologerItem[] = [
+const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
   {
     id: 'astro-1',
     name: 'Acharya Tombi Sharma',
@@ -208,9 +209,11 @@ let astrologersStore: AstrologerItem[] = [
 ];
 
 export async function GET() {
+  const settings = readPersistentData<AstrologerSectionSettings>('astrologer_settings', DEFAULT_SECTION_SETTINGS);
+  const astrologers = readPersistentData<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
   return NextResponse.json({
-    settings: sectionSettings,
-    astrologers: astrologersStore,
+    settings,
+    astrologers,
   });
 }
 
@@ -219,23 +222,28 @@ import prisma from '@/lib/db';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    let currentSettings = readPersistentData<AstrologerSectionSettings>('astrologer_settings', DEFAULT_SECTION_SETTINGS);
+    let currentAstrologers = readPersistentData<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
 
     if (body.settings) {
-      sectionSettings = { ...sectionSettings, ...body.settings };
+      currentSettings = { ...currentSettings, ...body.settings };
+      writePersistentData('astrologer_settings', currentSettings);
     }
 
     if (body.astrologers && Array.isArray(body.astrologers)) {
-      astrologersStore = body.astrologers;
+      currentAstrologers = body.astrologers;
+      writePersistentData('astrologers', currentAstrologers);
     }
 
     const astro = body.astrologer || body.updateAstrologer;
     if (astro && astro.name) {
-      const idx = astrologersStore.findIndex((a) => a.id === astro.id || a.whatsappPhone === astro.whatsappNo);
+      const idx = currentAstrologers.findIndex((a) => a.id === astro.id || a.whatsappPhone === astro.whatsappNo);
       if (idx !== -1) {
-        astrologersStore[idx] = { ...astrologersStore[idx], ...astro };
+        currentAstrologers[idx] = { ...currentAstrologers[idx], ...astro };
       } else {
-        astrologersStore.push(astro);
+        currentAstrologers.push(astro);
       }
+      writePersistentData('astrologers', currentAstrologers);
 
       // Persist in Prisma Database if DATABASE_URL is configured
       if (process.env.DATABASE_URL) {
@@ -267,8 +275,8 @@ export async function POST(req: Request) {
 
     return NextResponse.json({
       success: true,
-      settings: sectionSettings,
-      astrologers: astrologersStore,
+      settings: currentSettings,
+      astrologers: currentAstrologers,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update astrologers' }, { status: 500 });

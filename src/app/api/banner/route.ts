@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export interface BannerAdConfig {
   active: boolean;
@@ -12,7 +13,7 @@ export interface BannerAdConfig {
   theme: 'gold' | 'crimson' | 'emerald' | 'midnight';
 }
 
-let bannerAdState: BannerAdConfig = {
+const DEFAULT_BANNER: BannerAdConfig = {
   active: true,
   title: '✨ Special Manipuri Astrological Offer',
   description: 'Get 20% OFF Kuthi Matching & Full 36-Gun Ashtakoot Compatibility Reports today!',
@@ -23,16 +24,19 @@ let bannerAdState: BannerAdConfig = {
 };
 
 export async function GET() {
-  return NextResponse.json({ banner: bannerAdState });
+  const banner = readPersistentData<BannerAdConfig>('banner', DEFAULT_BANNER);
+  return NextResponse.json({ banner });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
+    let currentBanner = readPersistentData<BannerAdConfig>('banner', DEFAULT_BANNER);
     if (body.banner) {
-      bannerAdState = { ...bannerAdState, ...body.banner };
+      currentBanner = { ...currentBanner, ...body.banner };
+      writePersistentData('banner', currentBanner);
     }
-    return NextResponse.json({ success: true, banner: bannerAdState });
+    return NextResponse.json({ success: true, banner: currentBanner });
   } catch (error: any) {
     return NextResponse.json({ error: error.message || 'Failed to update banner ad' }, { status: 500 });
   }

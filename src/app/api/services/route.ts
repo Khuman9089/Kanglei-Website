@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 
 export interface SubServiceItem {
   id: string;
@@ -22,8 +23,7 @@ export interface ServiceItem {
   subServices: SubServiceItem[];
 }
 
-// Global in-memory store for live persistence across admin edits & site views
-let storedServices: ServiceItem[] = [
+const DEFAULT_SERVICES: ServiceItem[] = [
   {
     id: 's-1',
     badge: 'Popular',
@@ -149,18 +149,19 @@ let storedServices: ServiceItem[] = [
 ];
 
 export async function GET() {
-  return NextResponse.json({ services: storedServices });
+  const services = readPersistentData<ServiceItem[]>('services', DEFAULT_SERVICES);
+  return NextResponse.json({ services });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     if (Array.isArray(body.services)) {
-      storedServices = body.services;
+      writePersistentData<ServiceItem[]>('services', body.services);
       return NextResponse.json({
         success: true,
         message: 'Service & Pricing settings saved successfully!',
-        services: storedServices,
+        services: body.services,
       });
     }
     return NextResponse.json({ error: 'Invalid services array' }, { status: 400 });
