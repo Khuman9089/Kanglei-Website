@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Phone, Calendar, Clock, MapPin, FileText, CheckCircle2, 
-  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, MessageSquare 
+  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, MessageSquare, Truck, BookOpen 
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
@@ -22,9 +22,11 @@ function ManipuriKuthiYengbaContent() {
   // Primary Contact Info
   const [clientName, setClientName] = useState('');
   const [whatsappNo, setWhatsappNo] = useState('');
+  const [gender, setGender] = useState<'Male' | 'Female'>('Male');
 
   // Price per person / Kuthi
   const pricePerKuthi = 499;
+  const kuthiRewriteFeePerPaper = 1000;
 
   // Kuthi Slots (Default 1 slot)
   const [slots, setSlots] = useState<KuthiSlot[]>([
@@ -37,6 +39,14 @@ function ManipuriKuthiYengbaContent() {
   const [tob, setTob] = useState('');
   const [pob, setPob] = useState('Imphal, Manipur');
   const [notes, setNotes] = useState('');
+
+  // Checkbox: Want to Rewrite Physical Kuthi Paper
+  const [wantKuthiRewrite, setWantKuthiRewrite] = useState(false);
+  const [fatherName, setFatherName] = useState('');
+  const [motherName, setMotherName] = useState('');
+  const [yekSalai, setYekSalai] = useState('Mangang');
+  const [gotra, setGotra] = useState('Gautama');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
 
   // Payment State
   const [utrNumber, setUtrNumber] = useState('');
@@ -96,8 +106,11 @@ function ManipuriKuthiYengbaContent() {
     setSlots(slots.map((s) => (s.id === id ? { ...s, file } : s)));
   };
 
-  // Calculate Total Amount
-  const totalAmount = pricePerKuthi * slots.length;
+  // Calculate Total Amount (Reading Fee + Optional Rewrite Fee)
+  const baseReadingAmount = pricePerKuthi * slots.length;
+  const rewriteAmount = wantKuthiRewrite ? (kuthiRewriteFeePerPaper * slots.length) : 0;
+  const totalAmount = baseReadingAmount + rewriteAmount;
+
   const uploadedFilesCount = slots.filter((s) => s.file !== null).length;
 
   const handleStep1Submit = (e: React.FormEvent) => {
@@ -124,6 +137,17 @@ function ManipuriKuthiYengbaContent() {
       return;
     }
 
+    if (wantKuthiRewrite) {
+      if (!fatherName.trim() || !motherName.trim()) {
+        setErrorMsg("Please enter Father's Name and Mother's Name for physical Kuthi writing.");
+        return;
+      }
+      if (!deliveryAddress.trim()) {
+        setErrorMsg('Please enter your complete Physical Delivery Address for Kuthi paper delivery.');
+        return;
+      }
+    }
+
     setStep(2);
   };
 
@@ -144,6 +168,7 @@ function ManipuriKuthiYengbaContent() {
         category: 'kuthi_yengba',
         clientName,
         whatsappNo,
+        gender,
         personCount: slots.length,
         uploadedFiles: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
         noKuthiPaper,
@@ -151,6 +176,16 @@ function ManipuriKuthiYengbaContent() {
         tob,
         pob,
         notes,
+        wantKuthiRewrite,
+        rewriteDetails: wantKuthiRewrite ? {
+          fatherName,
+          motherName,
+          yekSalai,
+          gotra,
+          deliveryAddress,
+        } : null,
+        baseReadingAmount,
+        rewriteAmount,
         totalAmount,
         utr: utrNumber,
       },
@@ -190,7 +225,7 @@ function ManipuriKuthiYengbaContent() {
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-[#f3e8d2] -translate-y-1/2 z-0" />
             
             {[
-              { num: 1, label: 'Upload Kuthi' },
+              { num: 1, label: 'Upload Kuthi & Details' },
               { num: 2, label: 'UPI Summary & Payment' },
               { num: 3, label: 'Order Confirmation' },
             ].map((s) => (
@@ -223,7 +258,7 @@ function ManipuriKuthiYengbaContent() {
 
         <AnimatePresence mode="wait">
           
-          {/* STEP 1: CLEAN INTAKE FORM */}
+          {/* STEP 1: INTAKE FORM */}
           {step === 1 && (
             <motion.div
               key="step1"
@@ -241,19 +276,24 @@ function ManipuriKuthiYengbaContent() {
                   </div>
                   <div>
                     <h3 className="font-serif font-bold text-xl text-[#0f172a]">Kuthi Paper Reading Form</h3>
-                    <p className="text-xs text-gray-500 font-sans">Fill in your contact details and upload Kuthi paper photos</p>
+                    <p className="text-xs text-gray-500 font-sans">Fill in your details, upload Kuthi, or opt for physical Kuthi rewrite</p>
                   </div>
                 </div>
 
-                <span className="font-mono font-extrabold text-sm text-[#b45309] bg-[#fef3c7] px-3.5 py-1.5 rounded-xl border border-[#fde68a]">
-                  Total: ₹{totalAmount}
-                </span>
+                <div className="text-right">
+                  <span className="font-mono font-extrabold text-sm text-[#b45309] bg-[#fef3c7] px-3.5 py-1.5 rounded-xl border border-[#fde68a] block">
+                    Total: ₹{totalAmount}
+                  </span>
+                  {wantKuthiRewrite && (
+                    <span className="text-[10px] text-green-700 font-bold block mt-0.5">+ Kuthi Rewrite Included</span>
+                  )}
+                </div>
               </div>
 
               <form onSubmit={handleStep1Submit} className="space-y-6 text-xs font-sans">
                 
-                {/* 1. NAME & WHATSAPP NO */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 1. NAME, WHATSAPP NO & GENDER SELECTOR */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
                       Your Name<span className="text-red-500">*</span>
@@ -280,6 +320,37 @@ function ManipuriKuthiYengbaContent() {
                       onChange={(e) => setWhatsappNo(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                     />
+                  </div>
+
+                  {/* GENDER / SEX SELECTOR */}
+                  <div>
+                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                      Gender / Sex<span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-2 h-11">
+                      <button
+                        type="button"
+                        onClick={() => setGender('Male')}
+                        className={`rounded-xl font-bold text-xs transition-all border cursor-pointer ${
+                          gender === 'Male'
+                            ? 'bg-[#d97706] text-white border-[#d97706] shadow-sm'
+                            : 'bg-[#fefcf6] text-[#0f172a] border-gray-300 hover:bg-[#fef3c7]'
+                        }`}
+                      >
+                        👦 Male
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGender('Female')}
+                        className={`rounded-xl font-bold text-xs transition-all border cursor-pointer ${
+                          gender === 'Female'
+                            ? 'bg-[#d97706] text-white border-[#d97706] shadow-sm'
+                            : 'bg-[#fefcf6] text-[#0f172a] border-gray-300 hover:bg-[#fef3c7]'
+                        }`}
+                      >
+                        👧 Female
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -402,65 +473,173 @@ function ManipuriKuthiYengbaContent() {
                         exit={{ opacity: 0, height: 0 }}
                         className="mt-3 p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4 overflow-hidden"
                       >
-                      <div className="text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
-                        Enter Birth Details Manually
-                      </div>
+                        <div className="text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
+                          Enter Birth Details Manually
+                        </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                        <div>
-                          <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                            Date of Birth<span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            type="date"
-                            value={dob}
-                            onChange={(e) => setDob(e.target.value)}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
-                          />
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                              Date of Birth<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="date"
+                              value={dob}
+                              onChange={(e) => setDob(e.target.value)}
+                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                              Time of Birth<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="time"
+                              value={tob}
+                              onChange={(e) => setTob(e.target.value)}
+                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                              Place of Birth<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Imphal, Thoubal"
+                              value={pob}
+                              onChange={(e) => setPob(e.target.value)}
+                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
                         </div>
 
                         <div>
                           <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                            Time of Birth<span className="text-red-500">*</span>
+                            Specific Questions / Notes for Astrologer (Optional)
                           </label>
-                          <input
-                            type="time"
-                            value={tob}
-                            onChange={(e) => setTob(e.target.value)}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                          <textarea
+                            rows={2}
+                            placeholder="Enter any specific concerns (e.g. career, health, marriage)"
+                            value={notes}
+                            onChange={(e) => setNotes(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
                           />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+
+                {/* 5. CHECKBOX: WANT TO REWRITE PHYSICAL KUTHI PAPER (+FEES & DELIVERY ADDRESS) */}
+                <div className="pt-3 border-t border-[#f3e8d2]">
+                  <label className="inline-flex items-center gap-2.5 text-xs font-extrabold text-[#d97706] cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={wantKuthiRewrite}
+                      onChange={(e) => setWantKuthiRewrite(e.target.checked)}
+                      className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
+                    />
+                    <span>☑ Want to Rewrite / Create Physical Kuthi Paper? (+₹1,000 per paper for handwritten delivery)</span>
+                  </label>
+
+                  {/* Physical Delivery & Ancestral Details Form - Shown ONLY when checkbox checked */}
+                  <AnimatePresence>
+                    {wantKuthiRewrite && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="mt-3 p-5 rounded-2xl bg-[#fef3c7]/60 border-2 border-[#fde68a] space-y-4 overflow-hidden"
+                      >
+                        <div className="flex items-center gap-2 text-[#78350f] font-bold text-xs uppercase tracking-wider pb-2 border-b border-[#fde68a]">
+                          <Truck className="w-4 h-4 text-[#d97706]" />
+                          <span>Physical Kuthi Writing & Home Delivery Particulars</span>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-800 mb-1 uppercase">
+                              Father's Name<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required={wantKuthiRewrite}
+                              placeholder="Enter Father's Name"
+                              value={fatherName}
+                              onChange={(e) => setFatherName(e.target.value)}
+                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-800 mb-1 uppercase">
+                              Mother's Name<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="text"
+                              required={wantKuthiRewrite}
+                              placeholder="Enter Mother's Name"
+                              value={motherName}
+                              onChange={(e) => setMotherName(e.target.value)}
+                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-800 mb-1 uppercase">
+                              Yek / Salai
+                            </label>
+                            <select
+                              value={yekSalai}
+                              onChange={(e) => setYekSalai(e.target.value)}
+                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none cursor-pointer"
+                            >
+                              <option value="Mangang">Mangang</option>
+                              <option value="Luwang">Luwang</option>
+                              <option value="Khuman">Khuman</option>
+                              <option value="Angom">Angom</option>
+                              <option value="Moilang">Moilang</option>
+                              <option value="Kha-Nganba">Kha-Nganba</option>
+                              <option value="Salai Leishangthem">Salai Leishangthem</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-800 mb-1 uppercase">
+                              Gotra
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. Gautama, Sandilya"
+                              value={gotra}
+                              onChange={(e) => setGotra(e.target.value)}
+                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
                         </div>
 
                         <div>
-                          <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                            Place of Birth<span className="text-red-500">*</span>
+                          <label className="block text-[11px] font-bold text-gray-800 mb-1 uppercase">
+                            Physical Home Delivery Address<span className="text-red-500">*</span>
                           </label>
-                          <input
-                            type="text"
-                            placeholder="e.g. Imphal, Thoubal"
-                            value={pob}
-                            onChange={(e) => setPob(e.target.value)}
-                            className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                          <textarea
+                            rows={2}
+                            required={wantKuthiRewrite}
+                            placeholder="Enter complete address, locality, landmark, city & pincode for paper delivery"
+                            value={deliveryAddress}
+                            onChange={(e) => setDeliveryAddress(e.target.value)}
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
                           />
                         </div>
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                          Specific Questions / Notes for Astrologer (Optional)
-                        </label>
-                        <textarea
-                          rows={2}
-                          placeholder="Enter any specific concerns (e.g. career, health, marriage)"
-                          value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Submit Button */}
                 <div className="pt-4 flex justify-end">
@@ -507,19 +686,26 @@ function ManipuriKuthiYengbaContent() {
                   </span>
                 </div>
 
-                <div className="space-y-2 bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] text-xs font-sans text-gray-700">
+                <div className="space-y-2.5 bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] text-xs font-sans text-gray-700">
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">Name:</span>
-                    <span className="font-bold text-[#0f172a]">{clientName}</span>
+                    <span className="font-bold text-[#0f172a]">{clientName} ({gender})</span>
                   </div>
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">WhatsApp Number:</span>
                     <span className="font-bold text-[#0f172a]">{whatsappNo}</span>
                   </div>
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
-                    <span className="text-gray-500">Total Kuthi Papers:</span>
-                    <span className="font-bold text-[#b45309]">{slots.length} Paper(s)</span>
+                    <span className="text-gray-500">Reading Fee ({slots.length} Paper):</span>
+                    <span className="font-bold text-[#0f172a]">₹{baseReadingAmount}</span>
                   </div>
+
+                  {wantKuthiRewrite && (
+                    <div className="flex justify-between border-b border-[#fde68a] pb-2">
+                      <span className="text-gray-500">Physical Kuthi Writing & Delivery Fee:</span>
+                      <span className="font-bold text-green-700">₹{rewriteAmount}</span>
+                    </div>
+                  )}
 
                   {uploadedFilesCount > 0 ? (
                     <div className="pt-1">
@@ -534,6 +720,14 @@ function ManipuriKuthiYengbaContent() {
                     <div className="pt-1">
                       <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Birth Details:</span>
                       <span className="font-semibold text-[#0f172a] block">DOB: {dob} • TOB: {tob} • POB: {pob}</span>
+                    </div>
+                  )}
+
+                  {wantKuthiRewrite && (
+                    <div className="pt-2 border-t border-[#fde68a] space-y-1">
+                      <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Delivery Particulars:</span>
+                      <p className="font-semibold text-[#0f172a]">Parents: {fatherName} & {motherName} | Yek: {yekSalai} | Gotra: {gotra}</p>
+                      <p className="text-gray-600">Address: {deliveryAddress}</p>
                     </div>
                   )}
                 </div>
@@ -622,8 +816,15 @@ function ManipuriKuthiYengbaContent() {
                 <strong className="block text-base text-[#b45309] font-bold mt-2 font-mono">
                   {whatsappNo}
                 </strong>
+
+                {wantKuthiRewrite && (
+                  <div className="mt-3 p-3 bg-white rounded-xl border border-green-300 text-green-800 text-xs">
+                    📦 Physical Kuthi paper will be handwritten and dispatched to: <strong className="block text-gray-900 mt-1">{deliveryAddress}</strong>
+                  </div>
+                )}
+
                 <span className="inline-block mt-3 px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">
-                  ⚡ Delivery: Within 24 Hours on WhatsApp
+                  ⚡ Digital Delivery: Within 24 Hours on WhatsApp
                 </span>
               </div>
 
@@ -634,7 +835,7 @@ function ManipuriKuthiYengbaContent() {
                 </div>
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Client Name:</span>
-                  <span className="font-bold text-[#0f172a]">{clientName}</span>
+                  <span className="font-bold text-[#0f172a]">{clientName} ({gender})</span>
                 </div>
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Submitted UTR:</span>
