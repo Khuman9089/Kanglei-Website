@@ -19,15 +19,16 @@ export interface NumitLeppaSubServiceOption {
   id: string;
   title: string;
   price: number;
+  description?: string;
 }
 
 const DEFAULT_NUMIT_SUB_SERVICES: NumitLeppaSubServiceOption[] = [
-  { id: 'numit-1', title: 'Yum Sangba (Housewarming Date)', price: 501 },
-  { id: 'numit-2', title: 'Luhongba (Marriage & Wedding Date)', price: 751 },
-  { id: 'numit-3', title: 'Swasti Puja & Child Naming Date', price: 351 },
-  { id: 'numit-4', title: 'Business & Office Opening Date', price: 501 },
-  { id: 'numit-5', title: 'Vehicle & Property Registration Date', price: 351 },
-  { id: 'numit-6', title: 'General Numit Leppa (Auspicious Date)', price: 401 },
+  { id: 'sub-501', title: 'Yum Sangba (Housewarming Date)', price: 501, description: 'Auspicious muhurat & Griha Pravesh alignment' },
+  { id: 'sub-502', title: 'Luhongba (Marriage & Wedding Date)', price: 751, description: 'Subha Vivaha muhurat & lagna calculations' },
+  { id: 'sub-503', title: 'Swasti Puja & Naming (Child Naming)', price: 351, description: 'Nakshatra & auspicious naming date' },
+  { id: 'sub-504', title: 'Business & Office Opening', price: 501, description: 'Shubh Labh & trade inauguration date' },
+  { id: 'sub-505', title: 'Vehicle & Property Registration', price: 351, description: 'Auspicious vehicle delivery & land purchase' },
+  { id: 'sub-506', title: 'General Numit Yengba (Auspicious Date)', price: 401, description: 'General travel, ritual, or important event' },
 ];
 
 function NumitLeppaYengbaContent() {
@@ -84,21 +85,61 @@ function NumitLeppaYengbaContent() {
     const ref = 'NL-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
 
-    fetch('/api/admin/services')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.numitSubServices && data.numitSubServices.length > 0) {
-          setSubServices(data.numitSubServices);
-          setSelectedSubService(data.numitSubServices[0]);
-        }
-      })
-      .catch(() => {});
-
-    // Fetch physical document scroll packages (from /manipuri_kuthi service)
+    // Fetch live Numit Leppa sub-categories & physical packages from Admin services API
     fetch('/api/services')
       .then((res) => res.json())
       .then((data) => {
         if (data && Array.isArray(data.services) && data.services.length > 0) {
+          const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+          const targetServiceId = urlParams ? urlParams.get('service') : null;
+
+          let targetService = null;
+          if (targetServiceId) {
+            targetService = data.services.find((s: any) => s.id === targetServiceId);
+          }
+
+          // Filter active admin services assigned strictly to /numit_leppa_yengba
+          const matchingServices = data.services.filter((s: any) => 
+            s.active !== false && (
+              s.pageTarget === '/numit_leppa_yengba' ||
+              s.link === '/numit_leppa_yengba' || 
+              (s.link && s.link.startsWith('/numit_leppa_yengba?')) ||
+              (s.link && s.link.startsWith('/numit_yengba')) ||
+              s.id === 's-5'
+            )
+          );
+
+          if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
+            const formattedSubs: NumitLeppaSubServiceOption[] = targetService.subServices.map((sub: any) => ({
+              id: sub.id,
+              title: sub.title,
+              price: Number(sub.price) || 501,
+              description: sub.description || 'Auspicious muhurat alignment',
+            }));
+            setSubServices(formattedSubs);
+            setSelectedSubService(formattedSubs[0]);
+          } else {
+            const filteredSubs: NumitLeppaSubServiceOption[] = [];
+            matchingServices.forEach((s: any) => {
+              if (Array.isArray(s.subServices)) {
+                s.subServices.forEach((sub: any) => {
+                  filteredSubs.push({
+                    id: sub.id,
+                    title: sub.title,
+                    price: Number(sub.price) || 501,
+                    description: sub.description || 'Auspicious muhurat alignment',
+                  });
+                });
+              }
+            });
+
+            if (filteredSubs.length > 0) {
+              setSubServices(filteredSubs);
+              setSelectedSubService(filteredSubs[0]);
+            }
+          }
+
+          // Fetch physical document scroll packages (from /manipuri_kuthi service)
           const physService = data.services.find((s: any) => 
             s.pageTarget === '/manipuri_kuthi' ||
             s.link === '/manipuri_kuthi' || 
@@ -117,7 +158,7 @@ function NumitLeppaYengbaContent() {
           }
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error('Error fetching admin Numit Leppa services:', err));
   }, []);
 
   // Update Slot count based on 1 to 5 selector
@@ -355,8 +396,8 @@ function NumitLeppaYengbaContent() {
 
               <form onSubmit={handleStep1Submit} className="space-y-6 text-xs font-sans">
                 
-                {/* 1. NAME, WHATSAPP NO & SUB-CATEGORY DROPDOWN */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 1. NAME & WHATSAPP NUMBER */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
                       Your Name<span className="text-red-500">*</span>
@@ -384,26 +425,42 @@ function NumitLeppaYengbaContent() {
                       className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
+                </div>
 
-                  {/* SUB-CATEGORY DROPDOWN SELECTION */}
-                  <div>
-                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Select Numit Leppa Reason<span className="text-red-500">*</span>
-                    </label>
-                    <select
-                      value={selectedSubService.id}
-                      onChange={(e) => {
-                        const found = subServices.find((s) => s.id === e.target.value);
-                        if (found) setSelectedSubService(found);
-                      }}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none cursor-pointer"
-                    >
-                      {subServices.map((sub) => (
-                        <option key={sub.id} value={sub.id}>
-                          {sub.title} (₹{sub.price})
-                        </option>
-                      ))}
-                    </select>
+                {/* SELECT REASON FOR NUMIT YENGBA (AUSPICIOUS DATE) GRID CARDS */}
+                <div className="space-y-2 pt-2">
+                  <label className="block font-bold text-[#0f172a] uppercase tracking-wider text-xs">
+                    SELECT REASON FOR NUMIT YENGBA (AUSPICIOUS DATE)<span className="text-red-500">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                    {subServices.map((sub) => {
+                      const isSelected = selectedSubService.id === sub.id;
+                      return (
+                        <div
+                          key={sub.id}
+                          onClick={() => setSelectedSubService(sub)}
+                          className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
+                            isSelected
+                              ? 'bg-[#fef3c7]/60 border-[#d97706] shadow-sm ring-2 ring-[#d97706]/20 font-bold'
+                              : 'bg-[#fffdfa] border-[#fde68a] hover:bg-[#fef3c7]/30 text-gray-700'
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-2">
+                            <span className="font-extrabold text-[#0f172a] text-xs sm:text-sm">
+                              {sub.title}
+                            </span>
+                            <span className="font-mono font-black text-xs sm:text-sm text-[#b45309] shrink-0">
+                              ₹{sub.price}
+                            </span>
+                          </div>
+                          {sub.description && (
+                            <p className="text-[11px] text-gray-500 font-medium mt-1">
+                              {sub.description}
+                            </p>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
 

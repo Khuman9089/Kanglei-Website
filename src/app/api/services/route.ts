@@ -19,7 +19,7 @@ export interface ServiceItem {
   price?: string;
   cta?: string;
   link?: string;
-  pageTarget?: '/manipuri_kuthi_yengba' | '/manipuri_kuthi' | '/matching' | 'all';
+  pageTarget?: '/manipuri_kuthi_yengba' | '/manipuri_kuthi' | '/numit_leppa_yengba' | '/matching' | 'all';
   active: boolean;
   subServices: SubServiceItem[];
 }
@@ -149,6 +149,30 @@ const DEFAULT_SERVICES: ServiceItem[] = [
         price: 2499,
         description: 'Full 60-minute session with recorded audio and written PDF remedies.',
       },
+    ],
+  },
+  {
+    id: 's-5',
+    badge: 'Auspicious',
+    title: 'Numit Leppa / Numit Yengba (Auspicious Muhurat Date)',
+    description: 'Calculate auspicious dates & shubha muhurat for Yum Sangba, Luhongba, Swasti Puja, Business & Vehicle Purchase.',
+    features: [
+      'Auspicious Tithi, Nakshatra & Lagna timing',
+      'Grahachar & planetary alignment for event',
+      'Written Muhurat PDF guidance delivered to WhatsApp',
+    ],
+    price: '₹501',
+    cta: 'Check Auspicious Date',
+    link: '/numit_leppa_yengba',
+    pageTarget: '/numit_leppa_yengba',
+    active: true,
+    subServices: [
+      { id: 'sub-501', title: 'Yum Sangba (Housewarming Date)', price: 501, description: 'Auspicious muhurat & Griha Pravesh alignment' },
+      { id: 'sub-502', title: 'Luhongba (Marriage & Wedding Date)', price: 751, description: 'Subha Vivaha muhurat & lagna calculations' },
+      { id: 'sub-503', title: 'Swasti Puja & Naming (Child Naming)', price: 351, description: 'Nakshatra & auspicious naming date' },
+      { id: 'sub-504', title: 'Business & Office Opening', price: 501, description: 'Shubh Labh & trade inauguration date' },
+      { id: 'sub-505', title: 'Vehicle & Property Registration', price: 351, description: 'Auspicious vehicle delivery & land purchase' },
+      { id: 'sub-506', title: 'General Numit Yengba (Auspicious Date)', price: 401, description: 'General travel, ritual, or important event' },
     ],
   },
 ];
