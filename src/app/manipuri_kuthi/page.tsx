@@ -57,15 +57,29 @@ function ManipuriKuthiContent() {
     const ref = 'KI-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
 
-    // Fetch live service packages from Admin API /api/services
+    // Fetch live service packages from Admin API /api/services specifically linked for /manipuri_kuthi
     fetch('/api/services')
       .then((res) => res.json())
       .then((data) => {
         if (data && Array.isArray(data.services) && data.services.length > 0) {
           const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
-          const targetServiceId = urlParams ? urlParams.get('service') : 's-2';
+          const targetServiceId = urlParams ? urlParams.get('service') : null;
 
-          let targetService = data.services.find((s: any) => s.id === targetServiceId) || data.services.find((s: any) => s.id === 's-2');
+          let targetService = null;
+          if (targetServiceId) {
+            targetService = data.services.find((s: any) => s.id === targetServiceId);
+          }
+
+          // Search specifically for the admin backend service designated for /manipuri_kuthi
+          if (!targetService) {
+            targetService = data.services.find((s: any) => 
+              s.link === '/manipuri_kuthi' || 
+              (s.link && s.link.startsWith('/manipuri_kuthi'))
+            ) || data.services.find((s: any) => 
+              s.id === 's-2' || 
+              (s.title && s.title.toLowerCase().includes('kuthi iba'))
+            );
+          }
 
           if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
             const formatted: KuthiIbaPackage[] = targetService.subServices.map((sub: any) => ({
