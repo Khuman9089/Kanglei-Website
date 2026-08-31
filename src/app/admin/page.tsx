@@ -698,8 +698,9 @@ export default function AdminDashboardPage() {
 
   useEffect(() => {
     const saved = localStorage.getItem('admin_theme') as 'dark' | 'light';
-    if (saved) setTheme(saved);
-    else setTheme('dark');
+    if (saved === 'dark') setTheme('light'); // Enforce bright warm luminous ivory matching site
+    else setTheme('light');
+    localStorage.setItem('admin_theme', 'light');
   }, []);
 
   const toggleTheme = () => {
@@ -2490,20 +2491,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         </div>
 
         {/* Bottom Profile Card */}
-        <div className="p-4 border-t border-[#1e293b]">
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-[#1c2541] border border-[#3a506b]/40">
+        <div className="p-4 border-t border-[#fde68a]">
+          <div className="flex items-center justify-between p-3 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
             <div className="flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-[#d97706] text-white font-bold text-xs flex items-center justify-center shadow-xs">
                 ADM
               </div>
               <div className="overflow-hidden">
-                <span className="font-bold text-xs text-white block truncate">Central Admin</span>
-                <span className="text-[10px] text-gray-400 block truncate">admin@kangleiastro.com</span>
+                <span className="font-bold text-xs text-[#0f172a] block truncate">Central Admin</span>
+                <span className="text-[10px] text-gray-500 block truncate">admin@kangleiastro.com</span>
               </div>
             </div>
             <button
               onClick={handleAdminLogout}
-              className="text-gray-400 hover:text-red-400 transition-colors p-1.5 cursor-pointer"
+              className="text-gray-400 hover:text-red-600 transition-colors p-1.5 cursor-pointer"
               title="Lock Admin Panel & Log Out"
             >
               <LogOut className="w-4 h-4" />
@@ -2637,13 +2638,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* Multi-Astrologer Workflow Instruction Banner */}
-              <div className="p-6 rounded-2xl bg-gradient-to-r from-[#1c2541] via-[#0f172a] to-[#0b132b] text-white border border-[#3a506b]/50 shadow-xl relative overflow-hidden">
+              <div className="p-6 rounded-2xl bg-gradient-to-r from-[#fef3c7] via-[#fde68a] to-[#fef3c7] text-[#0f172a] border border-[#fde68a] shadow-md relative overflow-hidden">
                 <div className="max-w-2xl relative z-10">
-                  <span className="px-3 py-1 rounded-full bg-[#fef3c7] text-[#78350f] font-extrabold text-[10px] uppercase tracking-wider mb-3 inline-block">
+                  <span className="px-3 py-1 rounded-full bg-white text-[#b45309] font-extrabold text-[10px] uppercase tracking-wider mb-3 inline-block border border-[#fde68a]">
                     ⚡ Centralized Multi-Astrologer Routing Workflow
                   </span>
-                  <h3 className="font-serif font-bold text-2xl text-[#fbbf24] mb-2">How Kuthi Yengba Dispatching Works</h3>
-                  <ol className="text-xs text-slate-200 space-y-2 mt-3 list-decimal list-inside font-sans">
+                  <h3 className="font-serif font-bold text-2xl text-[#b45309] mb-2">How Kuthi Yengba Dispatching Works</h3>
+                  <ol className="text-xs text-[#78350f] space-y-2 mt-3 list-decimal list-inside font-sans font-medium">
                     <li><strong>Client Submits Order:</strong> Client uploads Kuthi / birth details & submits UPI UTR on `/booking`.</li>
                     <li><strong>Admin Assigns Astrologer:</strong> Select an empaneled astrologer from the dropdown and click <strong>"Forward Kuthi to Astrologer (WhatsApp)"</strong>.</li>
                     <li><strong>Astrologer Returns Report:</strong> Astrologer analyzes the Kundali and sends the PDF report back to the Central Admin WhatsApp.</li>
@@ -2657,23 +2658,23 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 2: KUTHI ORDERS & MULTI-ASTROLOGER ROUTING HUB */}
           {(activeTab === 'dashboard' || activeTab === 'kuthi') && (
-            <div className="bg-[#1c2541] rounded-2xl border border-[#3a506b]/40 shadow-md overflow-hidden">
-              <div className="p-6 border-b border-[#3a506b]/40 flex flex-wrap items-center justify-between gap-4">
+            <div className="bg-white rounded-2xl border border-[#f3e8d2] shadow-xl overflow-hidden">
+              <div className="p-6 border-b border-[#fde68a] bg-[#fefcf6] flex flex-wrap items-center justify-between gap-4">
                 <div>
-                  <h3 className="font-serif font-bold text-[#faf8f4] text-xl">Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
-                  <p className="text-xs text-[#5c7a99]">Assign orders to astrologers via WhatsApp & deliver finished reports back to clients</p>
+                  <h3 className="font-serif font-bold text-[#0f172a] text-xl">Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
+                  <p className="text-xs text-gray-500">Assign orders to astrologers via WhatsApp & deliver finished reports back to clients</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="px-3.5 py-1.5 rounded-xl bg-[#0b132b] text-[#fbbf24] text-xs font-bold border border-[#3a506b]">
+                  <span className="px-3.5 py-1.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-extrabold border border-[#fde68a]">
                     {filteredOrders.length} Total Orders
                   </span>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-sans text-[#faf8f4]">
-                  <thead className="bg-[#0f172a] text-[#fbbf24] font-serif font-bold uppercase tracking-wider border-b border-[#3a506b]">
+                <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase tracking-wider border-b border-[#fde68a]">
                     <tr>
                       <th className="px-6 py-3.5">Order Ref</th>
                       <th className="px-6 py-3.5">Client & Details</th>
@@ -2684,27 +2685,27 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       <th className="px-6 py-3.5 text-right">Step 3: Dispatch to Client</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#3a506b]/30">
+                  <tbody className="divide-y divide-[#fde68a]">
                     {filteredOrders.map((o) => {
                       const assignedAstro = astrologers.find(a => a.id === o.assignedAstrologerId);
 
                       return (
-                        <tr key={o.id} className="hover:bg-[#0b132b]/40 transition-colors">
-                          <td className="px-6 py-4 font-mono font-bold text-[#fbbf24] text-sm">{o.orderRef}</td>
-                          <td className="px-6 py-4 font-bold text-white">{o.clientName} ({o.sex})</td>
+                        <tr key={o.id} className="hover:bg-[#fefcf6] transition-colors">
+                          <td className="px-6 py-4 font-mono font-bold text-[#b45309] text-sm">{o.orderRef}</td>
+                          <td className="px-6 py-4 font-bold text-[#0f172a]">{o.clientName} ({o.sex})</td>
                           <td className="px-6 py-4">
                             <button
                               onClick={() => setInspectingOrder(o)}
-                              className="group p-2.5 rounded-xl bg-[#0b132b] hover:bg-[#0b132b]/80 border border-[#3a506b]/60 text-left w-full"
+                              className="group p-2.5 rounded-xl bg-[#fefcf6] hover:bg-[#fef3c7] border border-[#fde68a] text-left w-full cursor-pointer transition-colors"
                             >
-                              <span className="font-bold text-[#fbbf24] text-xs flex items-center gap-1.5">
-                                <Eye className="w-3.5 h-3.5 text-[#fbbf24]" />
+                              <span className="font-bold text-[#b45309] text-xs flex items-center gap-1.5">
+                                <Eye className="w-3.5 h-3.5 text-[#d97706]" />
                                 <span>View & Download Kuthi</span>
                               </span>
                               {o.kuthiAttached ? (
-                                <span className="text-[10px] text-green-400 font-bold block mt-0.5">📄 File Attached: {o.kuthiFileName}</span>
+                                <span className="text-[10px] text-green-700 font-bold block mt-0.5">📄 File Attached: {o.kuthiFileName}</span>
                               ) : (
-                                <span className="text-[10px] text-gray-300 block mt-0.5">📅 DOB: {o.dob}</span>
+                                <span className="text-[10px] text-gray-600 block mt-0.5">📅 DOB: {o.dob}</span>
                               )}
                             </button>
                           </td>
@@ -2713,7 +2714,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <select
                               value={o.assignedAstrologerId || ''}
                               onChange={(e) => handleAssignAstrologer(o.id, e.target.value)}
-                              className="w-full py-1.5 px-2 rounded-xl border border-[#3a506b] bg-[#0b132b] text-xs font-bold text-white focus:border-[#d97706] focus:outline-none"
+                              className="w-full py-1.5 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
                             >
                               <option value="">-- Assign Astrologer --</option>
                               {astrologers.map((astro) => (
@@ -2723,7 +2724,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               ))}
                             </select>
                             {o.assignedAstrologerName && (
-                              <span className="text-[10px] text-[#fbbf24] font-bold block mt-1">
+                              <span className="text-[10px] text-[#b45309] font-bold block mt-1">
                                 Guru: {o.assignedAstrologerName}
                               </span>
                             )}
@@ -2779,10 +2780,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 3: BLOG CMS */}
           {activeTab === 'blog' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-2xl border border-[#3a506b]/40">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Vedic Astrology Blog & Content Management</h3>
-                  <p className="text-xs text-[#5c7a99]">Write, edit, publish, and delete blog articles live on `/blog`</p>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Vedic Astrology Blog & Content Management</h3>
+                  <p className="text-xs text-gray-500">Write, edit, publish, and delete blog articles live on `/blog`</p>
                 </div>
                 <button
                   onClick={() =>
@@ -2796,7 +2797,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       status: 'PUBLISHED',
                     })
                   }
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                 >
                   <FilePlus className="w-4 h-4" />
                   <span>+ Compose New Article</span>
@@ -2805,33 +2806,33 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* BLOG EDITOR FORM MODAL */}
               {editingPost && (
-                <form onSubmit={handleSaveBlogPost} className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4 font-sans text-xs shadow-xl">
-                  <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]/40">
-                    <h4 className="font-serif font-bold text-xl text-[#fbbf24]">
+                <form onSubmit={handleSaveBlogPost} className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 font-sans text-xs shadow-xl">
+                  <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
+                    <h4 className="font-serif font-bold text-xl text-[#0f172a]">
                       {editingPost.id ? 'Edit Blog Article' : 'Compose New Vedic Blog Article'}
                     </h4>
-                    <button type="button" onClick={() => setEditingPost(null)} className="p-1.5 text-gray-400 hover:text-white">
+                    <button type="button" onClick={() => setEditingPost(null)} className="p-1.5 text-gray-400 hover:text-gray-600 cursor-pointer">
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                     <div className="sm:col-span-8">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Title</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Title</label>
                       <input
                         type="text"
                         required
                         value={editingPost.title || ''}
                         onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
                       />
                     </div>
                     <div className="sm:col-span-4">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Category</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Category</label>
                       <select
                         value={editingPost.category || 'Transits & Dashas'}
                         onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
                       >
                         <option value="Transits & Dashas">Transits & Dashas</option>
                         <option value="Marriage Compatibility">Marriage Compatibility</option>
@@ -2842,26 +2843,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Article Content</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Article Content</label>
                     <textarea
                       rows={8}
                       required
                       value={editingPost.content || ''}
                       onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
-                      className="w-full p-4 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-100 text-xs font-mono"
+                      className="w-full p-4 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-mono"
                     />
                   </div>
 
                   <div className="flex justify-end gap-3 pt-2">
-                    <button type="button" onClick={() => setEditingPost(null)} className="px-5 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 text-xs font-bold border border-[#3a506b]">Cancel</button>
-                    <button type="submit" className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md">Publish Live →</button>
+                    <button type="button" onClick={() => setEditingPost(null)} className="px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 text-xs font-bold cursor-pointer">Cancel</button>
+                    <button type="submit" className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer">Publish Live →</button>
                   </div>
                 </form>
               )}
 
-              <div className="bg-[#1c2541] rounded-2xl border border-[#3a506b]/40 overflow-hidden">
-                <table className="w-full text-left text-xs font-sans text-[#faf8f4]">
-                  <thead className="bg-[#0f172a] text-[#fbbf24] font-serif font-bold uppercase border-b border-[#3a506b]">
+              <div className="bg-white rounded-2xl border border-[#f3e8d2] overflow-hidden shadow-md">
+                <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase border-b border-[#fde68a]">
                     <tr>
                       <th className="px-6 py-3.5">Title</th>
                       <th className="px-6 py-3.5">Category</th>
@@ -2869,15 +2870,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       <th className="px-6 py-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#3a506b]/30">
+                  <tbody className="divide-y divide-[#fde68a]">
                     {blogPosts.map((post) => (
-                      <tr key={post.id} className="hover:bg-[#0b132b]/40">
-                        <td className="px-6 py-4 font-bold text-white max-w-xs truncate">{post.title}</td>
-                        <td className="px-6 py-4 text-amber-300">{post.category}</td>
-                        <td className="px-6 py-4 text-gray-300">{post.author}</td>
+                      <tr key={post.id} className="hover:bg-[#fefcf6]">
+                        <td className="px-6 py-4 font-bold text-[#0f172a] max-w-xs truncate">{post.title}</td>
+                        <td className="px-6 py-4 text-[#b45309] font-bold">{post.category}</td>
+                        <td className="px-6 py-4 text-gray-600">{post.author}</td>
                         <td className="px-6 py-4 text-right space-x-2">
-                          <button onClick={() => setEditingPost(post)} className="px-3 py-1.5 rounded-xl bg-blue-600/30 text-blue-300 text-[10px] font-bold">Edit</button>
-                          <button onClick={() => handleDeletePost(post.id)} className="px-3 py-1.5 rounded-xl bg-red-600/30 text-red-300 text-[10px] font-bold">Delete</button>
+                          <button onClick={() => setEditingPost(post)} className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#b45309] border border-[#fde68a] text-[10px] font-bold cursor-pointer">Edit</button>
+                          <button onClick={() => handleDeletePost(post.id)} className="px-3 py-1.5 rounded-xl bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold cursor-pointer">Delete</button>
                         </td>
                       </tr>
                     ))}
@@ -2890,23 +2891,23 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 4A: E-STORE CLIENT ORDERS HUB */}
           {(activeTab === 'shop_orders' || activeTab === 'shop') && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-3xl border border-[#fde68a] gap-4 shadow-md">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-xs font-extrabold uppercase mb-2 border border-[#fbbf24]/30">
-                    <ShoppingBag className="w-3.5 h-3.5 text-[#fbbf24]" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                    <ShoppingBag className="w-3.5 h-3.5 text-[#d97706]" />
                     E-Store Orders & Payment Verification
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
                     Client Shipping Orders & UTR Ledger
                   </h3>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     Inspect 12-digit UTR payments, verify buyer address, update order status, and assign courier dispatch.
                   </p>
                 </div>
 
                 <button
                   onClick={() => setActiveTab('shop_delivery')}
-                  className="px-5 py-2.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] border border-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <Truck className="w-4 h-4 text-[#d97706]" />
                   <span>Go to Courier Delivery Hub →</span>
@@ -2915,42 +2916,42 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* Stats Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-[#3a506b] space-y-1">
-                  <span className="text-xs text-gray-400 font-bold block uppercase">Total Orders</span>
-                  <span className="text-2xl font-serif font-extrabold text-[#fbbf24]">{shopOrders.length}</span>
+                <div className="bg-white p-5 rounded-2xl border border-[#fde68a] space-y-1 shadow-xs">
+                  <span className="text-xs text-gray-500 font-bold block uppercase">Total Orders</span>
+                  <span className="text-2xl font-serif font-extrabold text-[#b45309]">{shopOrders.length}</span>
                 </div>
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-green-500/40 space-y-1">
-                  <span className="text-xs text-green-400 font-bold block uppercase">Paid / Verified</span>
-                  <span className="text-2xl font-serif font-extrabold text-green-300">
+                <div className="bg-white p-5 rounded-2xl border border-green-300 space-y-1 shadow-xs">
+                  <span className="text-xs text-green-700 font-bold block uppercase">Paid / Verified</span>
+                  <span className="text-2xl font-serif font-extrabold text-green-700">
                     {shopOrders.filter((o) => o.status === 'PAID').length}
                   </span>
                 </div>
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-blue-500/40 space-y-1">
-                  <span className="text-xs text-blue-400 font-bold block uppercase">Dispatched</span>
-                  <span className="text-2xl font-serif font-extrabold text-blue-300">
+                <div className="bg-white p-5 rounded-2xl border border-blue-300 space-y-1 shadow-xs">
+                  <span className="text-xs text-blue-700 font-bold block uppercase">Dispatched</span>
+                  <span className="text-2xl font-serif font-extrabold text-blue-700">
                     {shopOrders.filter((o) => o.status === 'DISPATCHED').length}
                   </span>
                 </div>
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-purple-500/40 space-y-1">
-                  <span className="text-xs text-purple-400 font-bold block uppercase">Total Revenue</span>
-                  <span className="text-2xl font-serif font-extrabold text-purple-300 font-mono">
+                <div className="bg-white p-5 rounded-2xl border border-purple-300 space-y-1 shadow-xs">
+                  <span className="text-xs text-purple-700 font-bold block uppercase">Total Revenue</span>
+                  <span className="text-2xl font-serif font-extrabold text-purple-700 font-mono">
                     ₹{shopOrders.reduce((sum, o) => sum + (o.totalAmount || 0), 0).toLocaleString()}
                   </span>
                 </div>
               </div>
 
               {/* CLIENT STORE ORDERS TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] overflow-hidden shadow-xl">
-                <div className="p-5 border-b border-[#3a506b] flex flex-wrap justify-between items-center gap-3">
+              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
+                <div className="p-5 border-b border-[#fde68a] bg-[#fefcf6] flex flex-wrap justify-between items-center gap-3">
                   <div>
-                    <h4 className="font-serif font-bold text-lg text-[#fbbf24]">E-Store Orders Directory ({shopOrders.length})</h4>
-                    <p className="text-xs text-gray-400">Review buyer information and click "Assign Delivery" to generate tracking</p>
+                    <h4 className="font-serif font-bold text-lg text-[#b45309]">E-Store Orders Directory ({shopOrders.length})</h4>
+                    <p className="text-xs text-gray-500">Review buyer information and click "Assign Delivery" to generate tracking</p>
                   </div>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans">
-                    <thead className="bg-[#0b132b] text-[#e0a96d] uppercase tracking-wider font-extrabold border-b border-[#3a506b]">
+                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                    <thead className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold border-b border-[#fde68a]">
                       <tr>
                         <th className="p-4">Order Ref & Date</th>
                         <th className="p-4">Buyer Details</th>
@@ -2961,7 +2962,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50">
+                    <tbody className="divide-y divide-[#fde68a]">
                       {shopOrders.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="p-8 text-center text-gray-400 font-medium">
@@ -2970,26 +2971,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         </tr>
                       ) : (
                         shopOrders.map((ord) => (
-                          <tr key={ord.id} className="hover:bg-[#0b132b]/40 transition-colors">
+                          <tr key={ord.id} className="hover:bg-[#fefcf6] transition-colors">
                             <td className="p-4">
-                              <div className="font-mono font-extrabold text-[#fbbf24] text-xs">{ord.orderRef}</div>
-                              <div className="text-gray-400 text-[10px]">{ord.orderedAt}</div>
+                              <div className="font-mono font-extrabold text-[#b45309] text-xs">{ord.orderRef}</div>
+                              <div className="text-gray-500 text-[10px]">{ord.orderedAt}</div>
                             </td>
                             <td className="p-4">
-                              <div className="font-extrabold text-white">{ord.buyerName}</div>
-                              <div className="text-amber-300 font-mono text-[11px]">{ord.whatsappNo || ord.mobile}</div>
+                              <div className="font-extrabold text-[#0f172a]">{ord.buyerName}</div>
+                              <div className="text-[#b45309] font-mono text-[11px]">{ord.whatsappNo || ord.mobile}</div>
                             </td>
-                            <td className="p-4 max-w-xs text-gray-200">
+                            <td className="p-4 max-w-xs text-gray-700">
                               <div className="line-clamp-2">{ord.address}</div>
-                              <span className="font-mono text-[10px] text-gray-400">PIN: {ord.pincode}</span>
+                              <span className="font-mono text-[10px] text-gray-500">PIN: {ord.pincode}</span>
                             </td>
                             <td className="p-4">
                               <div className="space-y-1">
                                 {ord.items.map((it, iIdx) => (
-                                  <div key={iIdx} className="text-slate-200 font-medium">
-                                    • {it.title} <span className="text-[#fbbf24]">x{it.quantity}</span>
+                                  <div key={iIdx} className="text-slate-800 font-medium">
+                                    • {it.title} <span className="text-[#b45309] font-bold">x{it.quantity}</span>
                                     {it.sellerName && (
-                                      <span className="text-[10px] text-amber-300 block font-bold font-mono pl-3">
+                                      <span className="text-[10px] text-[#b45309] block font-bold font-mono pl-3">
                                         Seller: {it.sellerName} (Comm: {it.adminCommissionPct ?? 15}%)
                                       </span>
                                     )}
@@ -3075,15 +3076,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {activeTab === 'shop_products' && (
             <div className="space-y-6">
               {/* PLATFORM COMMISSION SETTINGS CARD */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] flex flex-wrap items-center justify-between gap-4 shadow-lg">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] flex flex-wrap items-center justify-between gap-4 shadow-md">
                 <div className="space-y-1 max-w-xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-extrabold uppercase border border-[#fbbf24]/30">
-                    <DollarSign className="w-3 h-3" />
+                  <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] text-[10px] font-extrabold uppercase border border-[#fde68a]">
+                    <DollarSign className="w-3 h-3 text-[#d97706]" />
                     Astrologer Marketplace Commission Rate
                   </div>
-                  <h4 className="font-serif font-bold text-lg text-white">Platform Commission Settings</h4>
-                  <p className="text-xs text-gray-400">
-                    Set the default commission % deducted by Admin on products sold by empaneled astrologers. (Currently set to <strong className="text-[#fbbf24] font-mono">{commissionSettings.defaultCommissionPct}%</strong>).
+                  <h4 className="font-serif font-bold text-lg text-[#0f172a]">Platform Commission Settings</h4>
+                  <p className="text-xs text-gray-500">
+                    Set the default commission % deducted by Admin on products sold by empaneled astrologers. (Currently set to <strong className="text-[#b45309] font-mono">{commissionSettings.defaultCommissionPct}%</strong>).
                   </p>
                 </div>
 
@@ -3095,7 +3096,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       max={100}
                       value={editingCommissionPct}
                       onChange={(e) => setEditingCommissionPct(Number(e.target.value))}
-                      className="w-24 h-10 px-3 pr-7 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-sm text-center"
+                      className="w-24 h-10 px-3 pr-7 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-sm text-center"
                     />
                     <span className="absolute right-3 top-2.5 font-bold text-gray-400 text-xs">%</span>
                   </div>
@@ -3110,23 +3111,23 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* PENDING ASTROLOGER SUBMISSIONS TABLE */}
               {shopProducts.some((p) => p.status === 'PENDING_APPROVAL') && (
-                <div className="bg-[#1c2541] rounded-3xl border border-amber-500/50 shadow-xl overflow-hidden">
-                  <div className="p-6 bg-amber-500/10 border-b border-amber-500/30 flex justify-between items-center">
+                <div className="bg-white rounded-3xl border border-amber-300 shadow-xl overflow-hidden">
+                  <div className="p-6 bg-amber-50 border-b border-amber-200 flex justify-between items-center">
                     <div>
-                      <h4 className="font-serif font-bold text-xl text-[#fbbf24] flex items-center gap-2">
+                      <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
                         <span>⏳ Pending Astrologer Product Submissions</span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-500/30 text-amber-300 text-xs font-mono font-bold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-[#78350f] text-xs font-mono font-bold">
                           {shopProducts.filter((p) => p.status === 'PENDING_APPROVAL').length}
                         </span>
                       </h4>
-                      <p className="text-xs text-amber-200/80">Review items submitted by astrologers before publishing live on the store.</p>
+                      <p className="text-xs text-amber-800">Review items submitted by astrologers before publishing live on the store.</p>
                     </div>
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs">
+                    <table className="w-full text-left border-collapse text-xs text-[#0f172a]">
                       <thead>
-                        <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase">
+                        <tr className="bg-[#fef3c7] border-b border-[#fde68a] text-[#78350f] font-serif uppercase">
                           <th className="p-4">Vendor Astrologer</th>
                           <th className="p-4">Product Title</th>
                           <th className="p-4">Category</th>
@@ -3136,7 +3137,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           <th className="p-4 text-center">Admin Verification</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#3a506b]/50">
+                      <tbody className="divide-y divide-[#fde68a]">
                         {shopProducts
                           .filter((p) => p.status === 'PENDING_APPROVAL')
                           .map((p) => {
@@ -3144,13 +3145,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             const commAmt = Math.round((p.price * commPct) / 100);
                             const netPayout = p.price - commAmt;
                             return (
-                              <tr key={p.id} className="hover:bg-[#0b132b]/40">
-                                <td className="p-4 font-bold text-amber-300">{p.sellerName || 'Empaneled Astrologer'}</td>
-                                <td className="p-4 font-extrabold text-white">{p.title}</td>
-                                <td className="p-4 text-gray-300">{p.category}</td>
-                                <td className="p-4 font-mono font-bold text-white">₹{p.price.toLocaleString()}</td>
-                                <td className="p-4 font-mono text-amber-300">₹{commAmt} ({commPct}%)</td>
-                                <td className="p-4 font-mono font-bold text-emerald-400">₹{netPayout.toLocaleString()}</td>
+                              <tr key={p.id} className="hover:bg-[#fefcf6]">
+                                <td className="p-4 font-bold text-[#b45309]">{p.sellerName || 'Empaneled Astrologer'}</td>
+                                <td className="p-4 font-extrabold text-[#0f172a]">{p.title}</td>
+                                <td className="p-4 text-gray-600">{p.category}</td>
+                                <td className="p-4 font-mono font-bold text-[#0f172a]">₹{p.price.toLocaleString()}</td>
+                                <td className="p-4 font-mono text-[#b45309]">₹{commAmt} ({commPct}%)</td>
+                                <td className="p-4 font-mono font-bold text-emerald-700">₹{netPayout.toLocaleString()}</td>
                                 <td className="p-4 text-center space-x-2">
                                   <button
                                     onClick={() => handleApproveProduct(p.id)}
@@ -3160,7 +3161,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                   </button>
                                   <button
                                     onClick={() => handleRejectProduct(p.id)}
-                                    className="px-3.5 py-1.5 rounded-xl bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white font-bold text-xs cursor-pointer"
+                                    className="px-3.5 py-1.5 rounded-xl bg-red-100 hover:bg-red-200 text-red-700 font-bold text-xs cursor-pointer border border-red-300"
                                   >
                                     ❌ Reject
                                   </button>
@@ -3174,16 +3175,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               )}
 
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-3xl border border-[#fde68a] gap-4 shadow-md">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-xs font-extrabold uppercase mb-2 border border-[#fbbf24]/30">
-                    <Package className="w-3.5 h-3.5 text-[#fbbf24]" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                    <Package className="w-3.5 h-3.5 text-[#d97706]" />
                     Product Catalog & Stock Management
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
                     Add, Edit & Update E-Store Products
                   </h3>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     Add new gemstones, books, yantras, or puja items, update selling prices, stock inventory, and lab certificate badges.
                   </p>
                 </div>
@@ -3191,7 +3192,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <div className="flex items-center gap-3">
                   <button
                     onClick={() => setShowCategoryManagerModal(true)}
-                    className="px-4 py-3 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+                    className="px-4 py-3 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] border border-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <Tag className="w-4 h-4 text-[#d97706]" />
                     <span>Manage Categories ({shopCategories.length})</span>
@@ -3401,15 +3402,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               )}
 
               {/* PRODUCT INVENTORY CATALOG TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] overflow-hidden shadow-xl">
-                <div className="p-5 border-b border-[#3a506b] flex justify-between items-center">
-                  <h4 className="font-serif font-bold text-lg text-[#fbbf24]">E-Store Product Catalog ({shopProducts.length} Items)</h4>
-                  <span className="text-xs text-gray-400">Click edit to update price, stock, or description</span>
+              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
+                <div className="p-5 border-b border-[#fde68a] bg-[#fefcf6] flex justify-between items-center">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309]">E-Store Product Catalog ({shopProducts.length} Items)</h4>
+                  <span className="text-xs text-gray-500">Click edit to update price, stock, or description</span>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans text-[#faf8f4]">
-                    <thead className="bg-[#0f172a] text-[#fbbf24] font-serif font-bold uppercase border-b border-[#3a506b]">
+                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                    <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase border-b border-[#fde68a]">
                       <tr>
                         <th className="px-6 py-3.5">Product Title</th>
                         <th className="px-6 py-3.5">Category</th>
@@ -3420,35 +3421,35 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="px-6 py-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/30">
+                    <tbody className="divide-y divide-[#fde68a]">
                       {shopProducts.map((prod) => (
-                        <tr key={prod.id} className="hover:bg-[#0b132b]/40">
+                        <tr key={prod.id} className="hover:bg-[#fefcf6]">
                           <td className="px-6 py-4">
-                            <div className="font-bold text-white text-sm">{prod.title}</div>
-                            <div className="text-gray-400 text-[10px] line-clamp-1">{prod.description}</div>
+                            <div className="font-bold text-[#0f172a] text-sm">{prod.title}</div>
+                            <div className="text-gray-500 text-[10px] line-clamp-1">{prod.description}</div>
                           </td>
-                          <td className="px-6 py-4 text-amber-300 font-bold">{prod.category}</td>
-                          <td className="px-6 py-4 font-mono font-bold text-[#fbbf24]">
+                          <td className="px-6 py-4 text-[#b45309] font-bold">{prod.category}</td>
+                          <td className="px-6 py-4 font-mono font-bold text-[#b45309]">
                             ₹{prod.price.toLocaleString()}
-                            <span className="text-gray-500 line-through text-[10px] block font-normal">₹{prod.originalPrice.toLocaleString()}</span>
+                            <span className="text-gray-400 line-through text-[10px] block font-normal">₹{prod.originalPrice.toLocaleString()}</span>
                           </td>
-                          <td className="px-6 py-4 font-mono text-green-400 font-extrabold">{prod.stock} units</td>
-                          <td className="px-6 py-4 text-amber-400 text-[10px] font-extrabold uppercase">{prod.badge}</td>
+                          <td className="px-6 py-4 font-mono text-green-700 font-extrabold">{prod.stock} units</td>
+                          <td className="px-6 py-4 text-[#d97706] text-[10px] font-extrabold uppercase">{prod.badge}</td>
                           <td className="px-6 py-4 text-center">
                             <button
                               onClick={() => handleToggleProductFeatured(prod.id)}
                               className={`px-3 py-1 rounded-xl text-[10px] font-extrabold border transition-all cursor-pointer ${
                                 prod.isFeatured
-                                  ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                                  : 'bg-[#0b132b] text-gray-400 border-[#3a506b] hover:text-white'
+                                  ? 'bg-[#fef3c7] text-[#b45309] border-[#fde68a] shadow-xs'
+                                  : 'bg-white text-gray-500 border-gray-300 hover:text-gray-800'
                               }`}
                             >
                               {prod.isFeatured ? '⭐ Featured' : '+ Feature'}
                             </button>
                           </td>
                           <td className="px-6 py-4 text-right space-x-2">
-                            <button onClick={() => setEditingProduct(prod)} className="px-3 py-1.5 rounded-xl bg-blue-600/30 text-blue-300 text-[10px] font-bold cursor-pointer">Edit</button>
-                            <button onClick={() => handleDeleteProduct(prod.id)} className="px-3 py-1.5 rounded-xl bg-red-600/30 text-red-300 text-[10px] font-bold cursor-pointer">Delete</button>
+                            <button onClick={() => setEditingProduct(prod)} className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#b45309] border border-[#fde68a] text-[10px] font-bold cursor-pointer">Edit</button>
+                            <button onClick={() => handleDeleteProduct(prod.id)} className="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 border border-red-200 text-[10px] font-bold cursor-pointer">Delete</button>
                           </td>
                         </tr>
                       ))}
@@ -4047,11 +4048,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5A: EMPANELED ASTROLOGER ACCOUNTS & PROFILES */}
           {activeTab === 'astrologers' && (
-            <div className="bg-[#1c2541] rounded-2xl border border-[#3a506b]/40 shadow-md p-6 space-y-6">
-              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#3a506b]/40 gap-4">
+            <div className="bg-white rounded-2xl border border-[#f3e8d2] shadow-xl p-6 space-y-6 text-[#0f172a]">
+              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#fde68a] gap-4">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Empaneled Astrologer Accounts & Profiles</h3>
-                  <p className="text-xs text-slate-300 font-sans font-medium">Manage registered Astrologers, edit profiles, hold/suspend access, or delete accounts</p>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Empaneled Astrologer Accounts & Profiles</h3>
+                  <p className="text-xs text-gray-500 font-sans font-medium">Manage registered Astrologers, edit profiles, hold/suspend access, or delete accounts</p>
                 </div>
                 <button
                   onClick={() => setEditingAstrologer({ name: '', specialty: 'Vedic Horoscope Specialist', whatsappNo: '', pendingPayout: 0, completedCount: 0 })}
@@ -4064,64 +4065,64 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* ASTROLOGER REGISTRATION / EDIT MODAL */}
               {editingAstrologer && (
-                <form onSubmit={handleSaveAstrologer} className="p-5 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-3 font-sans text-xs">
-                  <h4 className="font-bold text-[#fbbf24] text-sm">Register / Edit Empaneled Astrologer Account & Password</h4>
+                <form onSubmit={handleSaveAstrologer} className="p-5 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-3 font-sans text-xs text-[#0f172a]">
+                  <h4 className="font-bold text-[#b45309] text-sm">Register / Edit Empaneled Astrologer Account & Password</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Full Name *</label>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Full Name *</label>
                       <input
                         type="text"
                         required
                         placeholder="Astrologer Full Name"
                         value={editingAstrologer.name || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, name: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
+                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Assign Username *</label>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Assign Username *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. tombi_guru"
                         value={editingAstrologer.username || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, username: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-sky-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Specialty</label>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Specialty</label>
                       <input
                         type="text"
                         placeholder="Specialty (e.g. Navamsha D9)"
                         value={editingAstrologer.specialty || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, specialty: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white text-xs"
+                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">WhatsApp / Phone *</label>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">WhatsApp / Phone *</label>
                       <input
                         type="text"
                         required
                         placeholder="+91 98620 00000"
                         value={editingAstrologer.whatsappNo || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, whatsappNo: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-[#fbbf24] font-mono font-bold text-xs"
+                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Manipur Address / Location *</label>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Manipur Address / Location *</label>
                       <input
                         type="text"
                         placeholder="e.g. Uripok, Imphal West, Manipur"
                         value={editingAstrologer.address || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, address: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-medium text-xs"
+                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-medium text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Experience (Years)</label>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Experience (Years)</label>
                       <input
                         type="number"
                         min={1}
@@ -4129,23 +4130,23 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="15"
                         value={editingAstrologer.experienceYears || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, experienceYears: Number(e.target.value) })}
-                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-amber-300 font-bold text-xs"
+                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-bold text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Assign Portal Password *</label>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Assign Portal Password *</label>
                       <input
                         type="password"
                         required
                         placeholder="Set portal password"
                         value={editingAstrologer.password || ''}
                         onChange={(e) => setEditingAstrologer({ ...editingAstrologer, password: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
-                  <div className="flex justify-end gap-2 pt-1 border-t border-[#3a506b]/40">
-                    <button type="button" onClick={() => setEditingAstrologer(null)} className="px-4 py-2 rounded-xl bg-[#1c2541] text-gray-300 font-bold cursor-pointer">Cancel</button>
+                  <div className="flex justify-end gap-2 pt-1 border-t border-[#fde68a]">
+                    <button type="button" onClick={() => setEditingAstrologer(null)} className="px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold cursor-pointer">Cancel</button>
                     <button type="submit" className="px-6 py-2 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold cursor-pointer">Save Astrologer Account →</button>
                   </div>
                 </form>
@@ -4563,11 +4564,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* ASTROLOGERS FINANCIAL PAYOUT TABLE */}
-              <div className="rounded-3xl border border-[#3a506b] overflow-hidden shadow-2xl bg-[#0b132b]">
+              <div className="rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl bg-white">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-sans">
                     <thead>
-                      <tr className="bg-[#0f172a] text-[#fbbf24] font-serif font-extrabold uppercase tracking-wider text-xs border-b border-[#3a506b]">
+                      <tr className="bg-[#fef3c7] text-[#78350f] font-serif font-extrabold uppercase tracking-wider text-xs border-b border-[#fde68a]">
                         <th className="p-4">Online Astrologer Guru</th>
                         <th className="p-4">Specialty & Phone</th>
                         <th className="p-4 text-center">Readings Done</th>
@@ -4578,20 +4579,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-right">Admin Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50 text-white">
+                    <tbody className="divide-y divide-[#fde68a] text-[#0f172a]">
                       {astrologers.map((astro) => {
                         const grossEarn = astro.totalEarnings || (astro.completedCount * 350 + astro.pendingPayout);
                         const paidOut = astro.totalPaidOut || Math.max(0, grossEarn - astro.pendingPayout);
                         const isRequested = astro.payoutStatus === 'REQUESTED' || astro.pendingPayout > 0;
 
                         return (
-                          <tr key={astro.id} className="transition-colors hover:bg-[#1c2541] odd:bg-[#0b132b] even:bg-[#0f172a]/60">
+                          <tr key={astro.id} className="transition-colors hover:bg-[#fefcf6] odd:bg-white even:bg-[#fefcf6]">
                             <td className="p-4">
-                              <div className="font-serif font-extrabold text-base text-white">
+                              <div className="font-serif font-extrabold text-base text-[#0f172a]">
                                 {astro.name}
                               </div>
                               <div className="inline-block mt-1">
-                                <span className="text-xs font-mono font-extrabold text-sky-300 bg-sky-950 border border-sky-400/60 px-2.5 py-0.5 rounded-md shadow-xs">
+                                <span className="text-xs font-mono font-extrabold text-[#b45309] bg-[#fef3c7] border border-[#fde68a] px-2.5 py-0.5 rounded-md shadow-xs">
                                   @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
                                 </span>
                               </div>
@@ -4600,51 +4601,51 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                   href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-emerald-300 bg-emerald-950 hover:bg-emerald-900 border border-emerald-400 px-3 py-1 rounded-lg font-mono font-extrabold hover:underline inline-flex items-center gap-1.5 shadow-sm transition-all"
+                                  className="text-xs text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3 py-1 rounded-lg font-mono font-extrabold hover:underline inline-flex items-center gap-1.5 shadow-xs transition-all"
                                 >
-                                  <MessageSquare className="w-3.5 h-3.5 text-emerald-400" />
+                                  <MessageSquare className="w-3.5 h-3.5 text-emerald-700" />
                                   <span>{astro.whatsappNo}</span>
                                 </a>
                               </div>
                             </td>
 
                             <td className="p-4">
-                              <span className="text-xs font-extrabold block text-[#fbbf24]">
+                              <span className="text-xs font-extrabold block text-[#b45309]">
                                 {astro.specialty}
                               </span>
-                              <span className="text-xs text-slate-200 font-mono font-bold block mt-1">📞 {astro.phone}</span>
+                              <span className="text-xs text-gray-600 font-mono font-bold block mt-1">📞 {astro.phone}</span>
                             </td>
 
                             <td className="p-4 text-center font-mono font-bold">
-                              <span className="px-3 py-1.5 rounded-full bg-amber-500/25 text-amber-200 border border-amber-400 font-extrabold text-xs shadow-sm">
+                              <span className="px-3 py-1.5 rounded-full bg-[#fef3c7] text-[#b45309] border border-[#fde68a] font-extrabold text-xs shadow-xs">
                                 {astro.completedCount} Consultations
                               </span>
                             </td>
 
-                            <td className="p-4 font-mono font-extrabold text-sky-300 text-sm">
+                            <td className="p-4 font-mono font-extrabold text-sky-800 text-sm">
                               ₹{grossEarn.toLocaleString()}
                             </td>
 
-                            <td className="p-4 font-mono font-extrabold text-emerald-300 text-sm">
+                            <td className="p-4 font-mono font-extrabold text-emerald-700 text-sm">
                               ₹{paidOut.toLocaleString()}
                             </td>
 
-                            <td className="p-4 font-mono font-extrabold text-base text-[#fbbf24] bg-amber-950/40 px-3 py-2 rounded-xl border border-amber-500/50">
+                            <td className="p-4 font-mono font-extrabold text-base text-[#b45309] bg-[#fef3c7] px-3 py-2 rounded-xl border border-[#fde68a]">
                               ₹{astro.pendingPayout.toLocaleString()}
                             </td>
 
                             <td className="p-4 text-center">
                               {isRequested ? (
-                                <span className="px-3.5 py-1.5 rounded-full bg-amber-500/30 text-amber-200 text-xs font-extrabold border border-amber-400 shadow-sm animate-pulse inline-flex items-center gap-1">
+                                <span className="px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-900 text-xs font-extrabold border border-amber-300 shadow-xs animate-pulse inline-flex items-center gap-1">
                                   <span>⏳ Payout Requested</span>
                                 </span>
                               ) : (
-                                <span className="px-3.5 py-1.5 rounded-full bg-emerald-500/30 text-emerald-200 text-xs font-extrabold border border-emerald-400 shadow-sm inline-flex items-center gap-1">
+                                <span className="px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-900 text-xs font-extrabold border border-emerald-300 shadow-xs inline-flex items-center gap-1">
                                   ✅ All Settled
                                 </span>
                               )}
                               {astro.lastPayoutUtr && (
-                                <span className="text-xs text-slate-300 font-mono block mt-1">
+                                <span className="text-xs text-gray-500 font-mono block mt-1">
                                   Last UTR: {astro.lastPayoutUtr}
                                 </span>
                               )}
@@ -5154,13 +5155,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB: CLIENT BASE / USER DIRECTORY */}
           {activeTab === 'clients' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-2xl border border-[#3a506b]/40">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4] flex items-center gap-2">
-                    <Users className="w-6 h-6 text-[#fbbf24]" />
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a] flex items-center gap-2">
+                    <Users className="w-6 h-6 text-[#d97706]" />
                     <span>Client Base & Customer Directory</span>
                   </h3>
-                  <p className="text-xs text-[#5c7a99]">Manage registered client accounts, view consultation history, saved birth charts, & contact details</p>
+                  <p className="text-xs text-gray-500">Manage registered client accounts, view consultation history, saved birth charts, & contact details</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <button
@@ -5175,30 +5176,30 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* KPI STATS ROW */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
-                  <span className="text-[10px] font-bold text-[#e0a96d] uppercase tracking-wider block">Total Registered Clients</span>
-                  <div className="font-mono font-extrabold text-2xl text-[#fbbf24]">{clientBase.length}</div>
-                  <span className="text-[10px] text-gray-400 block">Verified user accounts</span>
+                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                  <span className="text-[10px] font-bold text-[#b45309] uppercase tracking-wider block">Total Registered Clients</span>
+                  <div className="font-mono font-extrabold text-2xl text-[#b45309]">{clientBase.length}</div>
+                  <span className="text-[10px] text-gray-500 block">Verified user accounts</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
-                  <span className="text-[10px] font-bold text-purple-300 uppercase tracking-wider block">Consultations Booked</span>
-                  <div className="font-mono font-extrabold text-2xl text-purple-300">{clientBase.reduce((s, c) => s + c.totalOrders, 0)}</div>
-                  <span className="text-[10px] text-gray-400 block">Lifetime Kuthi consultations</span>
+                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                  <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wider block">Consultations Booked</span>
+                  <div className="font-mono font-extrabold text-2xl text-purple-700">{clientBase.reduce((s, c) => s + c.totalOrders, 0)}</div>
+                  <span className="text-[10px] text-gray-500 block">Lifetime Kuthi consultations</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
-                  <span className="text-[10px] font-bold text-green-400 uppercase tracking-wider block">Total Client Revenue</span>
-                  <div className="font-mono font-extrabold text-2xl text-green-400">₹{clientBase.reduce((s, c) => s + c.totalSpent, 0).toLocaleString()}</div>
-                  <span className="text-[10px] text-gray-400 block">Consultation fees paid</span>
+                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                  <span className="text-[10px] font-bold text-green-700 uppercase tracking-wider block">Total Client Revenue</span>
+                  <div className="font-mono font-extrabold text-2xl text-green-700">₹{clientBase.reduce((s, c) => s + c.totalSpent, 0).toLocaleString()}</div>
+                  <span className="text-[10px] text-gray-500 block">Consultation fees paid</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#1c2541] border border-[#3a506b] text-white space-y-1">
-                  <span className="text-[10px] font-bold text-sky-300 uppercase tracking-wider block">Saved Birth Kundli Charts</span>
-                  <div className="font-mono font-extrabold text-2xl text-sky-300">{clientBase.reduce((s, c) => s + c.savedKundlisCount, 0)}</div>
-                  <span className="text-[10px] text-gray-400 block">Calculated & stored charts</span>
+                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                  <span className="text-[10px] font-bold text-sky-700 uppercase tracking-wider block">Saved Birth Kundli Charts</span>
+                  <div className="font-mono font-extrabold text-2xl text-sky-700">{clientBase.reduce((s, c) => s + c.savedKundlisCount, 0)}</div>
+                  <span className="text-[10px] text-gray-500 block">Calculated & stored charts</span>
                 </div>
               </div>
 
               {/* SEARCH & FILTER BAR */}
-              <div className="bg-[#1c2541] p-4 rounded-2xl border border-[#3a506b] flex flex-wrap gap-4 items-center justify-between">
+              <div className="bg-white p-4 rounded-2xl border border-[#f3e8d2] flex flex-wrap gap-4 items-center justify-between shadow-xs">
                 <div className="relative flex-1 min-w-[260px]">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -5206,65 +5207,65 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="Search client by name, email, phone, or location..."
                     value={clientSearchTerm}
                     onChange={(e) => setClientSearchTerm(e.target.value)}
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs focus:border-[#d97706] focus:outline-none"
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* REGISTER NEW CLIENT FORM MODAL */}
               {showAddClientModal && (
-                <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] space-y-4 text-xs">
-                  <div className="flex justify-between items-center border-b border-[#3a506b] pb-2">
-                    <h4 className="font-bold text-[#fbbf24] text-sm flex items-center gap-2">
+                <div className="bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] space-y-4 text-xs shadow-md">
+                  <div className="flex justify-between items-center border-b border-[#fde68a] pb-2">
+                    <h4 className="font-bold text-[#b45309] text-sm flex items-center gap-2">
                       <Users className="w-4 h-4 text-[#d97706]" />
                       Register & Create Client User Record
                     </h4>
-                    <button type="button" onClick={() => setShowAddClientModal(false)} className="text-gray-400 hover:text-white p-1">
+                    <button type="button" onClick={() => setShowAddClientModal(false)} className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
                       <X className="w-4 h-4" />
                     </button>
                   </div>
 
-                  <form onSubmit={handleRegisterNewClient} className="space-y-3 font-sans">
+                  <form onSubmit={handleRegisterNewClient} className="space-y-3 font-sans text-[#0f172a]">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       <div>
-                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Client Full Name *</label>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Client Full Name *</label>
                         <input
                           type="text"
                           required
                           placeholder="Full Name"
                           value={newClientForm.name}
                           onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
-                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Email Address *</label>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Email Address *</label>
                         <input
                           type="email"
                           required
                           placeholder="client@example.com"
                           value={newClientForm.email}
                           onChange={(e) => setNewClientForm({ ...newClientForm, email: e.target.value })}
-                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-sky-300 font-mono text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-sky-800 font-mono text-xs"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Phone / WhatsApp *</label>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Phone / WhatsApp *</label>
                         <input
                           type="text"
                           required
                           placeholder="+91 98620 00000"
                           value={newClientForm.phone}
                           onChange={(e) => setNewClientForm({ ...newClientForm, phone: e.target.value, whatsappNo: e.target.value })}
-                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-[#fbbf24] font-mono font-bold text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Gender / Sex</label>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Gender / Sex</label>
                         <select
                           value={newClientForm.sex}
                           onChange={(e) => setNewClientForm({ ...newClientForm, sex: e.target.value as any })}
-                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs"
                         >
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
@@ -5272,18 +5273,18 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         </select>
                       </div>
                       <div className="sm:col-span-2">
-                        <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">Address / Location</label>
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Address / Location</label>
                         <input
                           type="text"
                           placeholder="City, District, State"
                           value={newClientForm.address}
                           onChange={(e) => setNewClientForm({ ...newClientForm, address: e.target.value })}
-                          className="w-full p-2.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs"
                         />
                       </div>
                     </div>
-                    <div className="flex justify-end gap-2 pt-2 border-t border-[#3a506b]/40">
-                      <button type="button" onClick={() => setShowAddClientModal(false)} className="px-4 py-2 rounded-xl bg-[#1c2541] text-gray-300 font-bold cursor-pointer">Cancel</button>
+                    <div className="flex justify-end gap-2 pt-2 border-t border-[#fde68a]">
+                      <button type="button" onClick={() => setShowAddClientModal(false)} className="px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold cursor-pointer">Cancel</button>
                       <button type="submit" className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold cursor-pointer">Save Client Account →</button>
                     </div>
                   </form>
@@ -5423,11 +5424,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               )}
 
               {/* CLIENT BASE TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-xl overflow-hidden">
+              <div className="bg-white rounded-3xl border border-[#fde68a] shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs">
+                  <table className="w-full text-left border-collapse text-xs text-[#0f172a]">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase tracking-wider">
+                      <tr className="bg-[#fef3c7] border-b border-[#fde68a] text-[#78350f] font-serif uppercase tracking-wider">
                         <th className="p-4">Client Name</th>
                         <th className="p-4">Contact Info (Email & Phone)</th>
                         <th className="p-4">Gender & Location</th>
@@ -5437,7 +5438,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-right">Admin Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50 text-white">
+                    <tbody className="divide-y divide-[#fde68a] text-[#0f172a]">
                       {clientBase
                         .filter(
                           (c) =>
@@ -5447,22 +5448,22 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             c.address.toLowerCase().includes(clientSearchTerm.toLowerCase())
                         )
                         .map((client) => (
-                          <tr key={client.id} className="hover:bg-[#0b132b]/40 transition-colors">
+                          <tr key={client.id} className="hover:bg-[#fefcf6] transition-colors">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#b45309] to-[#d97706] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                                   {client.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div className="font-extrabold text-sm text-white">{client.name}</div>
-                                  <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-extrabold border border-emerald-500/30">
+                                  <div className="font-extrabold text-sm text-[#0f172a]">{client.name}</div>
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold border border-emerald-300">
                                     {client.status}
                                   </span>
                                 </div>
                               </div>
                             </td>
                             <td className="p-4">
-                              <div className="text-gray-200 font-medium">{client.email}</div>
+                              <div className="text-gray-700 font-medium">{client.email}</div>
                               <a
                                 href={`https://wa.me/${client.whatsappNo.replace(/[^0-9]/g, '')}`}
                                 target="_blank"
@@ -5571,14 +5572,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 6: SITE SETTINGS */}
           {activeTab === 'settings' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-2xl border border-[#3a506b]/40">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Site Settings & General Configuration</h3>
-                  <p className="text-xs text-[#5c7a99]">Manage website platform parameters, UPI merchant handles, helpline numbers, & service rate cards</p>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Site Settings & General Configuration</h3>
+                  <p className="text-xs text-gray-500">Manage website platform parameters, UPI merchant handles, helpline numbers, & service rate cards</p>
                 </div>
                 <button
                   onClick={handleSaveServices}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save All Settings Live</span>
@@ -5586,62 +5587,62 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* UNIFIED PLATFORM CONFIGURATION & RATE CARD OVERVIEW */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b]/50 space-y-5 text-xs text-white">
-                <h4 className="font-serif font-bold text-xl text-[#fbbf24] flex items-center gap-2 border-b border-[#3a506b]/50 pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
+                <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2 border-b border-[#fde68a] pb-3">
                   <Tag className="w-5 h-5 text-[#d97706]" />
                   <span>Platform Helpline & UPI Merchant Settings</span>
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Official WhatsApp Booking Helpline
                     </label>
                     <input
                       type="text"
                       defaultValue="+91 88374 87801"
-                      className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                      className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Official Merchant UPI VPA ID
                     </label>
                     <input
                       type="text"
                       defaultValue="kangleiastro@upi"
-                      className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-green-400 font-mono font-bold text-xs"
+                      className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-green-700 font-mono font-bold text-xs"
                     />
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#3a506b]/50 space-y-2">
+                <div className="pt-4 border-t border-[#fde68a] space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="font-serif font-bold text-base text-[#fbbf24]">Active Service Catalog ({services.length} Packages)</span>
+                    <span className="font-serif font-bold text-base text-[#b45309]">Active Service Catalog ({services.length} Packages)</span>
                     <button
                       onClick={() => setShowAddServiceModal(true)}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#0b132b] text-[#fbbf24] font-bold text-xs border border-[#3a506b] hover:border-[#fbbf24] flex items-center gap-1.5 cursor-pointer"
+                      className="px-3.5 py-1.5 rounded-xl bg-[#fef3c7] text-[#b45309] font-bold text-xs border border-[#fde68a] hover:bg-[#fde68a] flex items-center gap-1.5 cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>+ Add New Service Name</span>
                     </button>
                   </div>
-                  <p className="text-gray-300 text-xs">
+                  <p className="text-gray-600 text-xs">
                     All Service Package Titles, Client Prices (₹), Astrologer Payout Fees (₹), and Commission Splits (%) are managed and synchronized live via the rate card matrix in the <strong>Empaneled Astrologers</strong> tab.
                   </p>
                 </div>
               </div>
 
               {/* ADMIN MASTER PASSWORD UPDATE BOX */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b]/50 space-y-4 text-xs text-white">
-                <div className="flex items-center justify-between border-b border-[#3a506b]/50 pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 text-xs text-[#0f172a] shadow-md">
+                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                       <Lock className="w-5 h-5" />
                     </div>
                     <div>
-                      <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Admin Security & Master Password</h4>
-                      <p className="text-xs text-gray-400">Update the master password required to access the /admin panel</p>
+                      <h4 className="font-serif font-bold text-lg text-[#b45309]">Admin Security & Master Password</h4>
+                      <p className="text-xs text-gray-500">Update the master password required to access the /admin panel</p>
                     </div>
                   </div>
                 </div>
@@ -5695,14 +5696,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB: 970x90 BANNER AD CMS */}
           {activeTab === 'banner' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-2xl border border-[#3a506b]/40">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">970 x 90 Leaderboard Ad Space CMS</h3>
-                  <p className="text-xs text-[#5c7a99]">Control website-wide header banner image, title, short description, button text, & target link live</p>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">970 x 90 Leaderboard Ad Space CMS</h3>
+                  <p className="text-xs text-gray-500">Control website-wide header banner image, title, short description, button text, & target link live</p>
                 </div>
                 <button
                   onClick={handleSaveBannerAd}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
                   <span>Save Banner Ad Live</span>
@@ -5710,36 +5711,36 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* LIVE AD PREVIEW CARD */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-3">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-3 shadow-md">
                 <div className="flex items-center justify-between">
-                  <span className="font-serif font-bold text-sm text-[#fbbf24] uppercase tracking-wider flex items-center gap-2">
+                  <span className="font-serif font-bold text-sm text-[#b45309] uppercase tracking-wider flex items-center gap-2">
                     <Megaphone className="w-4 h-4 text-[#d97706]" />
                     <span>Real-Time Visitor Preview (970 x 90 px Standard Leaderboard Format)</span>
                   </span>
-                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${bannerAd.active ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-red-500/20 text-red-300 border-red-500/30'}`}>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${bannerAd.active ? 'bg-green-100 text-green-800 border-green-300' : 'bg-red-100 text-red-800 border-red-300'}`}>
                     {bannerAd.active ? 'ACTIVE & VISIBLE ON SITE' : 'HIDDEN / DISABLED'}
                   </span>
                 </div>
 
                 {/* Interactive Simulated Preview Box */}
-                <div className="w-full bg-[#0b132b] p-4 rounded-2xl border border-[#3a506b] flex items-center justify-center">
-                  <div className="w-full max-w-[970px] min-h-[90px] rounded-2xl bg-gradient-to-r from-[#0b132b] via-[#1c2541] to-[#0b132b] border-2 border-[#c69214] shadow-xl p-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 relative overflow-hidden text-white">
+                <div className="w-full bg-[#fefcf6] p-4 rounded-2xl border border-[#fde68a] flex items-center justify-center">
+                  <div className="w-full max-w-[970px] min-h-[90px] rounded-2xl bg-gradient-to-r from-[#fef3c7] via-[#fde68a] to-[#fef3c7] border-2 border-[#d97706] shadow-md p-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 relative overflow-hidden text-[#0f172a]">
                     <div className="flex items-center gap-3.5 z-10 overflow-hidden">
                       {bannerAd.imageUrl ? (
-                        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-[#c69214]/40 bg-black/40">
+                        <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-[#d97706]/40 bg-white">
                           <img src={bannerAd.imageUrl} alt="Ad Preview" className="w-full h-full object-cover" />
                         </div>
                       ) : (
-                        <div className="w-12 h-12 rounded-xl bg-[#c69214]/20 border border-[#c69214] text-[#fbbf24] flex items-center justify-center shrink-0">
+                        <div className="w-12 h-12 rounded-xl bg-white border border-[#d97706] text-[#b45309] flex items-center justify-center shrink-0">
                           <Sparkles className="w-6 h-6" />
                         </div>
                       )}
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded bg-[#c69214] text-white font-black text-[9px] uppercase">ADVERTISEMENT</span>
-                          <h4 className="font-serif font-bold text-white text-base truncate">{bannerAd.title || 'Ad Title Here'}</h4>
+                          <span className="px-2 py-0.5 rounded bg-[#d97706] text-white font-black text-[9px] uppercase">ADVERTISEMENT</span>
+                          <h4 className="font-serif font-bold text-[#0f172a] text-base truncate">{bannerAd.title || 'Ad Title Here'}</h4>
                         </div>
-                        <p className="text-xs text-slate-200 line-clamp-1">{bannerAd.description || 'Short Description copy...'}</p>
+                        <p className="text-xs text-gray-700 line-clamp-1">{bannerAd.description || 'Short Description copy...'}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0 z-10">
@@ -5752,24 +5753,24 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* EDIT FORM FIELDS */}
-              <form onSubmit={handleSaveBannerAd} className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4 text-xs text-white shadow-xl">
-                <div className="flex items-center justify-between border-b border-[#3a506b]/60 pb-3">
-                  <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Ad Banner Content & Target Configuration</h4>
-                  <label className="inline-flex items-center gap-2 cursor-pointer bg-[#0b132b] px-4 py-2 rounded-xl border border-[#3a506b]">
+              <form onSubmit={handleSaveBannerAd} className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 text-xs text-[#0f172a] shadow-md">
+                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309]">Ad Banner Content & Target Configuration</h4>
+                  <label className="inline-flex items-center gap-2 cursor-pointer bg-[#fefcf6] px-4 py-2 rounded-xl border border-[#fde68a]">
                     <input
                       type="checkbox"
                       checked={bannerAd.active}
                       onChange={(e) => setBannerAd({ ...bannerAd, active: e.target.checked })}
                       className="rounded text-[#d97706]"
                     />
-                    <span className="text-xs text-[#fbbf24] font-extrabold">Enable 970x90 Banner Ad on Website</span>
+                    <span className="text-xs text-[#b45309] font-extrabold">Enable 970x90 Banner Ad on Website</span>
                   </label>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                   {/* Title */}
                   <div className="sm:col-span-8">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Ad Headline Title *
                     </label>
                     <input
@@ -5878,13 +5879,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* Header Card */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] flex flex-wrap justify-between items-center gap-4">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] flex flex-wrap justify-between items-center gap-4 shadow-md">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4] flex items-center gap-2">
-                    <Sparkles className="w-6 h-6 text-[#fbbf24]" />
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a] flex items-center gap-2">
+                    <Sparkles className="w-6 h-6 text-[#d97706]" />
                     <span>Live Activity Marquee Ticker CMS</span>
                   </h3>
-                  <p className="text-xs text-[#5c7a99]">
+                  <p className="text-xs text-gray-500">
                     Control horizontal marquee scrolling speed, customize Manipur client activities, & manage live homepage notifications
                   </p>
                 </div>
@@ -5896,10 +5897,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       setTickerSettings(updated);
                       handleSaveTickerSettings(updated);
                     }}
-                    className={`px-4 py-2 rounded-xl font-extrabold text-xs border transition-all ${
+                    className={`px-4 py-2 rounded-xl font-extrabold text-xs border transition-all cursor-pointer ${
                       tickerSettings.active
-                        ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                        : 'bg-gray-700 text-gray-400 border-gray-600'
+                        ? 'bg-green-100 text-green-800 border-green-300'
+                        : 'bg-gray-100 text-gray-600 border-gray-300'
                     }`}
                   >
                     {tickerSettings.active ? '🟢 Ticker Enabled (Live)' : '⚪ Ticker Disabled'}
@@ -5907,7 +5908,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   <button
                     onClick={() => handleSaveTickerSettings()}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     <span>Save Ticker Settings</span>
@@ -5916,13 +5917,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* 1. MARQUEE SPEED CONTROL & PRESETS */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4">
-                <div className="flex items-center justify-between border-b border-[#3a506b] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 shadow-md">
+                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
                   <div>
-                    <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Marquee Scrolling Speed Control</h4>
-                    <p className="text-xs text-gray-400">Higher duration in seconds = slower & smoother text scrolling speed</p>
+                    <h4 className="font-serif font-bold text-lg text-[#b45309]">Marquee Scrolling Speed Control</h4>
+                    <p className="text-xs text-gray-500">Higher duration in seconds = slower & smoother text scrolling speed</p>
                   </div>
-                  <span className="font-mono font-extrabold text-base text-amber-300 bg-[#0b132b] px-4 py-1.5 rounded-xl border border-[#3a506b]">
+                  <span className="font-mono font-extrabold text-base text-[#b45309] bg-[#fef3c7] px-4 py-1.5 rounded-xl border border-[#fde68a]">
                     {tickerSettings.speedSeconds} seconds / loop
                   </span>
                 </div>
@@ -5931,7 +5932,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   
                   {/* Preset Speed Buttons */}
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-extrabold uppercase tracking-wider text-[#e0a96d]">
+                    <label className="block text-[10px] font-extrabold uppercase tracking-wider text-[#b45309]">
                       Quick Speed Presets
                     </label>
                     <div className="grid grid-cols-2 gap-2">
@@ -6142,16 +6143,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* Header Card */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] flex flex-wrap justify-between items-center gap-4">
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] flex flex-wrap justify-between items-center gap-4 shadow-md">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-xs font-extrabold uppercase mb-2 border border-[#fbbf24]/30">
-                    <Star className="w-3.5 h-3.5 fill-[#fbbf24]" />
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                    <Star className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
                     Customer Reviews Moderation Hub
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
                     Client Reviews & Testimonials CMS
                   </h3>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-gray-500">
                     Approve, edit, or delete customer reviews. Approved reviews are displayed live on the homepage testimonials carousel.
                   </p>
                 </div>
@@ -6167,40 +6168,40 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* Stats Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-[#3a506b] space-y-1">
-                  <span className="text-xs text-gray-400 font-bold block uppercase">Total Reviews</span>
-                  <span className="text-2xl font-serif font-extrabold text-white">{reviews.length}</span>
+                <div className="bg-white p-5 rounded-2xl border border-[#fde68a] space-y-1 shadow-xs">
+                  <span className="text-xs text-gray-500 font-bold block uppercase">Total Reviews</span>
+                  <span className="text-2xl font-serif font-extrabold text-[#b45309]">{reviews.length}</span>
                 </div>
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-green-500/40 space-y-1">
-                  <span className="text-xs text-green-400 font-bold block uppercase">Approved (Live)</span>
-                  <span className="text-2xl font-serif font-extrabold text-green-300">
+                <div className="bg-white p-5 rounded-2xl border border-green-300 space-y-1 shadow-xs">
+                  <span className="text-xs text-green-700 font-bold block uppercase">Approved (Live)</span>
+                  <span className="text-2xl font-serif font-extrabold text-green-700">
                     {reviews.filter((r) => r.status === 'APPROVED').length}
                   </span>
                 </div>
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-amber-500/40 space-y-1">
-                  <span className="text-xs text-amber-400 font-bold block uppercase">Pending Moderation</span>
-                  <span className="text-2xl font-serif font-extrabold text-amber-300">
+                <div className="bg-white p-5 rounded-2xl border border-amber-300 space-y-1 shadow-xs">
+                  <span className="text-xs text-amber-800 font-bold block uppercase">Pending Moderation</span>
+                  <span className="text-2xl font-serif font-extrabold text-[#b45309]">
                     {reviews.filter((r) => r.status === 'PENDING').length}
                   </span>
                 </div>
-                <div className="bg-[#1c2541] p-5 rounded-2xl border border-purple-500/40 space-y-1">
-                  <span className="text-xs text-purple-400 font-bold block uppercase">Average Rating</span>
-                  <span className="text-2xl font-serif font-extrabold text-purple-300 flex items-center gap-1">
+                <div className="bg-white p-5 rounded-2xl border border-purple-300 space-y-1 shadow-xs">
+                  <span className="text-xs text-purple-700 font-bold block uppercase">Average Rating</span>
+                  <span className="text-2xl font-serif font-extrabold text-purple-700 flex items-center gap-1">
                     5.0 <Star className="w-5 h-5 fill-amber-400 text-amber-400" />
                   </span>
                 </div>
               </div>
 
               {/* Reviews List Table */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] overflow-hidden">
-                <div className="p-5 border-b border-[#3a506b] flex justify-between items-center">
-                  <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Submitted Client Reviews</h4>
-                  <span className="text-xs text-gray-400">Click Approve to publish live on homepage</span>
+              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
+                <div className="p-5 border-b border-[#fde68a] bg-[#fefcf6] flex justify-between items-center">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309]">Submitted Client Reviews</h4>
+                  <span className="text-xs text-gray-500">Click Approve to publish live on homepage</span>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans">
-                    <thead className="bg-[#0b132b] text-[#e0a96d] uppercase tracking-wider font-extrabold border-b border-[#3a506b]">
+                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                    <thead className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold border-b border-[#fde68a]">
                       <tr>
                         <th className="p-4">Client & Location</th>
                         <th className="p-4">Rating</th>
@@ -6210,7 +6211,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50">
+                    <tbody className="divide-y divide-[#fde68a]">
                       {reviews.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="p-8 text-center text-gray-400 font-medium">
@@ -6219,10 +6220,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         </tr>
                       ) : (
                         reviews.map((r) => (
-                          <tr key={r.id} className="hover:bg-[#0b132b]/40 transition-colors">
+                          <tr key={r.id} className="hover:bg-[#fefcf6] transition-colors">
                             <td className="p-4">
-                              <div className="font-extrabold text-white text-sm">{r.clientName}</div>
-                              <div className="text-gray-400 text-[11px]">{r.location}</div>
+                              <div className="font-extrabold text-[#0f172a] text-sm">{r.clientName}</div>
+                              <div className="text-gray-500 text-[11px]">{r.location}</div>
                             </td>
                             <td className="p-4">
                               <div className="flex items-center gap-1">
@@ -6231,21 +6232,21 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 ))}
                               </div>
                             </td>
-                            <td className="p-4 font-bold text-amber-300">{r.serviceName || 'Consultation'}</td>
-                            <td className="p-4 text-gray-200 max-w-xs font-medium leading-relaxed">{r.comment}</td>
+                            <td className="p-4 font-bold text-[#b45309]">{r.serviceName || 'Consultation'}</td>
+                            <td className="p-4 text-gray-700 max-w-xs font-medium leading-relaxed">{r.comment}</td>
                             <td className="p-4">
                               {r.status === 'APPROVED' && (
-                                <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-extrabold border border-emerald-500/30">
+                                <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
                                   🟢 APPROVED
                                 </span>
                               )}
                               {r.status === 'PENDING' && (
-                                <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold border border-amber-500/30 animate-pulse">
+                                <span className="px-3 py-1 rounded-full bg-amber-100 text-[#78350f] text-[10px] font-extrabold border border-amber-300 animate-pulse">
                                   ⏳ PENDING APPROVAL
                                 </span>
                               )}
                               {r.status === 'REJECTED' && (
-                                <span className="px-3 py-1 rounded-full bg-rose-500/20 text-rose-300 text-[10px] font-extrabold border border-rose-500/30">
+                                <span className="px-3 py-1 rounded-full bg-rose-100 text-rose-800 text-[10px] font-extrabold border border-rose-300">
                                   🔴 REJECTED
                                 </span>
                               )}
@@ -6300,26 +6301,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-         3. KUTHI DOCUMENT INSPECTION & DOWNLOAD MODAL (Vedic Dark Gold Theme)
+         3. KUTHI DOCUMENT INSPECTION & DOWNLOAD MODAL
          ───────────────────────────────────────────────────────────── */}
       {inspectingOrder && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] w-full max-w-2xl rounded-3xl border border-[#3a506b] shadow-2xl overflow-hidden relative text-left font-sans text-white">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a]">
             
             {/* Modal Header */}
-            <div className="p-6 bg-[#0f172a] text-white flex items-center justify-between border-b border-[#3a506b]">
+            <div className="p-6 bg-[#fef3c7] text-[#0f172a] flex items-center justify-between border-b border-[#fde68a]">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <FileText className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[#fbbf24]">Kuthi Document & Client Profile</h3>
-                  <p className="text-xs text-gray-400 font-mono">Ref ID: {inspectingOrder.orderRef}</p>
+                  <h3 className="font-serif font-bold text-lg text-[#b45309]">Kuthi Document & Client Profile</h3>
+                  <p className="text-xs text-gray-500 font-mono">Ref ID: {inspectingOrder.orderRef}</p>
                 </div>
               </div>
               <button
                 onClick={() => setInspectingOrder(null)}
-                className="p-2 text-gray-400 hover:text-white transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-700 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -6328,10 +6329,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
               
               {/* Document Preview Box & Download Trigger */}
-              <div className="p-5 rounded-2xl bg-[#0b132b] border border-[#3a506b] text-white flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="p-5 rounded-2xl bg-[#fefcf6] border border-[#fde68a] text-[#0f172a] flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
-                  <span className="font-bold text-xs text-[#fbbf24] uppercase tracking-wider block">Attached Kuthi File</span>
-                  <strong className="text-sm text-white block mt-0.5">
+                  <span className="font-bold text-xs text-[#b45309] uppercase tracking-wider block">Attached Kuthi File</span>
+                  <strong className="text-sm text-[#0f172a] block mt-0.5">
                     {inspectingOrder.kuthiAttached ? inspectingOrder.kuthiFileName : 'No Physical Paper Uploaded (Use Birth Details Below)'}
                   </strong>
                 </div>
@@ -6340,28 +6341,28 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <a
                     href={inspectingOrder.kuthiFileUrl || '#'}
                     download
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-bold text-xs flex items-center gap-2 shadow-md shrink-0"
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-bold text-xs flex items-center gap-2 shadow-md shrink-0 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
                     <span>Download Kuthi File</span>
                   </a>
                 ) : (
-                  <span className="px-3 py-1.5 rounded-xl bg-[#1e293b] text-gray-300 font-bold text-xs">
+                  <span className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#78350f] font-bold text-xs border border-amber-300">
                     Birth Details Mode
                   </span>
                 )}
               </div>
 
               {/* Complete Client / Couple Details Table */}
-              <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] space-y-4 text-xs">
-                <div className="flex items-center justify-between border-b border-[#3a506b]/60 pb-3">
+              <div className="bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] space-y-4 text-xs">
+                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
                   <div>
-                    <span className="text-gray-400 text-[10px] uppercase font-bold block">Client / Couple Name</span>
-                    <strong className="text-white text-base">{inspectingOrder.clientName} ({inspectingOrder.sex})</strong>
+                    <span className="text-gray-500 text-[10px] uppercase font-bold block">Client / Couple Name</span>
+                    <strong className="text-[#0f172a] text-base">{inspectingOrder.clientName} ({inspectingOrder.sex})</strong>
                   </div>
                   <div className="text-right">
-                    <span className="text-gray-400 text-[10px] uppercase font-bold block">WhatsApp Contact</span>
-                    <strong className="text-[#fbbf24] text-sm font-mono">{inspectingOrder.whatsappNo}</strong>
+                    <span className="text-gray-500 text-[10px] uppercase font-bold block">WhatsApp Contact</span>
+                    <strong className="text-[#b45309] text-sm font-mono">{inspectingOrder.whatsappNo}</strong>
                   </div>
                 </div>
 
@@ -6369,106 +6370,106 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {inspectingOrder.dob && inspectingOrder.dob.includes('Groom:') ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
                     {/* Groom Column */}
-                    <div className="p-4 rounded-xl bg-[#1c2541] border border-blue-500/30 space-y-2">
-                      <span className="font-bold text-blue-400 text-xs flex items-center gap-1.5 border-b border-blue-500/20 pb-1.5">
+                    <div className="p-4 rounded-xl bg-white border border-blue-200 space-y-2 shadow-xs">
+                      <span className="font-bold text-blue-700 text-xs flex items-center gap-1.5 border-b border-blue-200 pb-1.5">
                         👦 Groom Birth Details
                       </span>
-                      <div className="space-y-1 text-slate-200">
-                        <div><span className="text-gray-400 text-[10px]">DOB:</span> <strong className="text-white">{inspectingOrder.dob.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
-                        <div><span className="text-gray-400 text-[10px]">TOB:</span> <strong className="text-white">{inspectingOrder.tob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
-                        <div><span className="text-gray-400 text-[10px]">POB:</span> <strong className="text-white">{inspectingOrder.pob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
+                      <div className="space-y-1 text-gray-700">
+                        <div><span className="text-gray-500 text-[10px]">DOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.dob.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">TOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.tob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">POB:</span> <strong className="text-[#0f172a]">{inspectingOrder.pob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
                       </div>
                     </div>
 
                     {/* Bride Column */}
-                    <div className="p-4 rounded-xl bg-[#1c2541] border border-pink-500/30 space-y-2">
-                      <span className="font-bold text-pink-400 text-xs flex items-center gap-1.5 border-b border-pink-500/20 pb-1.5">
+                    <div className="p-4 rounded-xl bg-white border border-pink-200 space-y-2 shadow-xs">
+                      <span className="font-bold text-pink-700 text-xs flex items-center gap-1.5 border-b border-pink-200 pb-1.5">
                         👧 Bride Birth Details
                       </span>
-                      <div className="space-y-1 text-slate-200">
-                        <div><span className="text-gray-400 text-[10px]">DOB:</span> <strong className="text-white">{inspectingOrder.dob.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
-                        <div><span className="text-gray-400 text-[10px]">TOB:</span> <strong className="text-white">{inspectingOrder.tob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
-                        <div><span className="text-gray-400 text-[10px]">POB:</span> <strong className="text-white">{inspectingOrder.pob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
+                      <div className="space-y-1 text-gray-700">
+                        <div><span className="text-gray-500 text-[10px]">DOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.dob.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">TOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.tob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">POB:</span> <strong className="text-[#0f172a]">{inspectingOrder.pob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
                       </div>
                     </div>
                   </div>
                 ) : (
                   /* Standard Single Client / Kuthi Iba Order */
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-300 bg-[#1c2541] p-4 rounded-xl border border-[#3a506b]/60">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 bg-white p-4 rounded-xl border border-[#fde68a]">
                     {inspectingOrder.fatherName && (
                       <div>
-                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Father's Name (পিতাগী মমিং)</span>
-                        <strong className="text-white text-sm">{inspectingOrder.fatherName}</strong>
+                        <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Father's Name (পিতাগী মমিং)</span>
+                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.fatherName}</strong>
                       </div>
                     )}
                     {inspectingOrder.motherName && (
                       <div>
-                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Mother's Name (ইমাগী মমিং)</span>
-                        <strong className="text-white text-sm">{inspectingOrder.motherName}</strong>
+                        <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Mother's Name (ইমাগী মমিং)</span>
+                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.motherName}</strong>
                       </div>
                     )}
                     {inspectingOrder.yek && (
                       <div>
-                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Yek / Salai</span>
-                        <strong className="text-white text-sm">{inspectingOrder.yek}</strong>
+                        <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Yek / Salai</span>
+                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.yek}</strong>
                       </div>
                     )}
                     {inspectingOrder.gotra && (
                       <div>
-                        <span className="text-amber-400 text-[10px] uppercase font-extrabold block">Gotra / Sagei</span>
-                        <strong className="text-white text-sm">{inspectingOrder.gotra}</strong>
+                        <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Gotra / Sagei</span>
+                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.gotra}</strong>
                       </div>
                     )}
                     <div>
-                      <span className="text-gray-400 text-[10px] uppercase font-bold block">Date of Birth</span>
-                      <strong className="text-white">{inspectingOrder.dob || 'See Kuthi Document'}</strong>
+                      <span className="text-gray-500 text-[10px] uppercase font-bold block">Date of Birth</span>
+                      <strong className="text-[#0f172a]">{inspectingOrder.dob || 'See Kuthi Document'}</strong>
                     </div>
                     <div>
-                      <span className="text-gray-400 text-[10px] uppercase font-bold block">Time of Birth</span>
-                      <strong className="text-white">{inspectingOrder.tob || 'See Kuthi Document'}</strong>
+                      <span className="text-gray-500 text-[10px] uppercase font-bold block">Time of Birth</span>
+                      <strong className="text-[#0f172a]">{inspectingOrder.tob || 'See Kuthi Document'}</strong>
                     </div>
                     <div className="sm:col-span-2">
-                      <span className="text-gray-400 text-[10px] uppercase font-bold block">Place of Birth</span>
-                      <strong className="text-white">{inspectingOrder.pob || 'See Kuthi Document'}</strong>
+                      <span className="text-gray-500 text-[10px] uppercase font-bold block">Place of Birth</span>
+                      <strong className="text-[#0f172a]">{inspectingOrder.pob || 'See Kuthi Document'}</strong>
                     </div>
                     {inspectingOrder.deliveryAddress && (
-                      <div className="sm:col-span-2 pt-2 border-t border-[#3a506b]/40">
-                        <span className="text-emerald-400 text-[10px] uppercase font-extrabold block">Physical Delivery Address (Hardcopy Shipment)</span>
-                        <strong className="text-emerald-100 text-xs font-mono">{inspectingOrder.deliveryAddress}</strong>
+                      <div className="sm:col-span-2 pt-2 border-t border-gray-200">
+                        <span className="text-emerald-700 text-[10px] uppercase font-extrabold block">Physical Delivery Address (Hardcopy Shipment)</span>
+                        <strong className="text-emerald-800 text-xs font-mono">{inspectingOrder.deliveryAddress}</strong>
                       </div>
                     )}
                   </div>
                 )}
 
                 {inspectingOrder.question && (
-                  <div className="pt-2 border-t border-[#3a506b]/40">
-                    <span className="text-gray-400 text-[10px] uppercase font-bold block">Analysis Question / Notes</span>
-                    <p className="text-gray-200 font-mono text-[11px] mt-0.5">{inspectingOrder.question}</p>
+                  <div className="pt-2 border-t border-gray-200">
+                    <span className="text-gray-500 text-[10px] uppercase font-bold block">Analysis Question / Notes</span>
+                    <p className="text-gray-800 font-mono text-[11px] mt-0.5">{inspectingOrder.question}</p>
                   </div>
                 )}
               </div>
 
               {/* Astrologer Uploaded Report Box */}
-              <div className="p-5 rounded-2xl bg-[#0b132b] border border-green-500/40 text-white space-y-3">
+              <div className="p-5 rounded-2xl bg-white border border-green-300 text-[#0f172a] space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-green-400 uppercase tracking-wider flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-green-400" />
+                  <span className="font-bold text-xs text-green-700 uppercase tracking-wider flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
                     <span>Astrologer Uploaded Report</span>
                   </span>
                   {inspectingOrder.reportUploadedAt && (
-                    <span className="text-[10px] text-gray-400 font-mono">{inspectingOrder.reportUploadedAt}</span>
+                    <span className="text-[10px] text-gray-500 font-mono">{inspectingOrder.reportUploadedAt}</span>
                   )}
                 </div>
 
                 {inspectingOrder.reportReceivedFromAstro || inspectingOrder.reportFileName ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#1c2541] p-3 rounded-xl border border-[#3a506b]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#fefcf6] p-3 rounded-xl border border-[#fde68a]">
                     <div>
-                      <div className="font-bold text-white text-sm">{inspectingOrder.reportFileName || 'Astrological_Remedies_Report.pdf'}</div>
+                      <div className="font-bold text-[#0f172a] text-sm">{inspectingOrder.reportFileName || 'Astrological_Remedies_Report.pdf'}</div>
                       {inspectingOrder.reportUploadedBy && (
-                        <div className="text-[11px] text-gray-400 mt-0.5">Uploaded by Guru: {inspectingOrder.reportUploadedBy}</div>
+                        <div className="text-[11px] text-gray-600 mt-0.5">Uploaded by Guru: {inspectingOrder.reportUploadedBy}</div>
                       )}
                       {inspectingOrder.reportNotes && (
-                        <div className="text-[11px] text-gray-300 italic mt-1 bg-[#0b132b] p-2 rounded-lg border border-[#3a506b]/40">
+                        <div className="text-[11px] text-gray-700 italic mt-1 bg-white p-2 rounded-lg border border-gray-200">
                           &ldquo;{inspectingOrder.reportNotes}&rdquo;
                         </div>
                       )}
@@ -6477,14 +6478,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       href={inspectingOrder.reportFileUrl || '/sample_kuthi_report.pdf'}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs flex items-center gap-2 shadow-md shrink-0"
+                      className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs flex items-center gap-2 shadow-md shrink-0 cursor-pointer"
                     >
                       <Download className="w-4 h-4" />
                       <span>Download Report PDF</span>
                     </a>
                   </div>
                 ) : (
-                  <div className="text-xs text-gray-400 italic bg-[#1c2541] p-3 rounded-xl border border-[#3a506b]">
+                  <div className="text-xs text-gray-500 italic bg-[#fefcf6] p-3 rounded-xl border border-[#fde68a]">
                     ⏳ Report not yet uploaded by assigned astrologer. Astrologer can upload directly from their dashboard.
                   </div>
                 )}
@@ -6494,15 +6495,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <div className="flex justify-between items-center pt-2">
                 <button
                   onClick={() => handleCopyDetails(inspectingOrder)}
-                  className="px-4 py-2.5 rounded-xl bg-[#1e293b] hover:bg-[#334155] text-white font-bold text-xs flex items-center gap-2 border border-[#3a506b]"
+                  className="px-4 py-2.5 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 border border-[#fde68a] cursor-pointer"
                 >
-                  <Copy className="w-4 h-4 text-[#fbbf24]" />
+                  <Copy className="w-4 h-4 text-[#d97706]" />
                   <span>{copiedText ? '✓ Details Copied!' : 'Copy Text Summary'}</span>
                 </button>
 
                 <button
                   onClick={() => setInspectingOrder(null)}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-[#faf8f4] font-bold text-xs hover:opacity-95"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-bold text-xs hover:opacity-95 cursor-pointer shadow-md"
                 >
                   Close Document Viewer
                 </button>
@@ -6517,25 +6518,25 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
          4. ADD NEW SERVICE PACKAGE MODAL
          ───────────────────────────────────────────────────────────── */}
       {showAddServiceModal && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/85 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateNewServicePackage}
-            className="bg-[#1c2541] w-full max-w-xl rounded-3xl border border-[#3a506b] shadow-2xl overflow-hidden relative text-left font-sans text-white p-6 space-y-4"
+            className="bg-white w-full max-w-xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a] p-6 space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-[#3a506b] pb-3">
+            <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <Plus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[#fbbf24]">Add New Service Package</h3>
-                  <p className="text-xs text-slate-300">Create a new astrology consultation package name and pricing</p>
+                  <h3 className="font-serif font-bold text-lg text-[#b45309]">Add New Service Package</h3>
+                  <p className="text-xs text-gray-500">Create a new astrology consultation package name and pricing</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddServiceModal(false)}
-                className="p-1.5 text-gray-400 hover:text-white"
+                className="p-1.5 text-gray-400 hover:text-gray-700 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -6544,7 +6545,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             {/* Title & Badge */}
             <div className="grid grid-cols-1 sm:grid-cols-12 gap-3">
               <div className="sm:col-span-8">
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Service Package Name / Title *
                 </label>
                 <input
@@ -6553,12 +6554,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Raj Yoga & Wealth Audit"
                   value={newServiceForm.title}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, title: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
               <div className="sm:col-span-4">
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Tag Badge
                 </label>
                 <input
@@ -6566,7 +6567,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="Popular / New"
                   value={newServiceForm.badge}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, badge: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-extrabold text-xs focus:border-[#d97706] focus:outline-none uppercase"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs focus:border-[#d97706] focus:outline-none uppercase"
                 />
               </div>
             </div>
@@ -6574,7 +6575,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             {/* Client Price & Astrologer Payout Fee */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Client Price (₹) *
                 </label>
                 <input
@@ -6583,12 +6584,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="₹1,499"
                   value={newServiceForm.price}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, price: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Astrologer Payout Fee (₹) *
                 </label>
                 <input
@@ -6597,56 +6598,30 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="900"
                   value={newServiceForm.astroPayoutFee}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, astroPayoutFee: parseInt(e.target.value) || 0 })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-green-400 font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-700 font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
 
-            {/* Overview Description */}
+            {/* Description / Highlights */}
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                Overview Description Copy
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                Description / Highlights Copy *
               </label>
               <textarea
-                rows={2}
+                required
+                rows={3}
+                placeholder="Full birth chart analysis, gemstone recommendations..."
                 value={newServiceForm.description}
                 onChange={(e) => setNewServiceForm({ ...newServiceForm, description: e.target.value })}
-                className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none"
-              />
-            </div>
-
-            {/* 3 Features */}
-            <div className="space-y-2">
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d]">
-                Included Feature Highlights
-              </label>
-              <input
-                type="text"
-                placeholder="Feature 1 (e.g. D1 Lagna & Planetary Analysis)"
-                value={newServiceForm.feature1}
-                onChange={(e) => setNewServiceForm({ ...newServiceForm, feature1: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none"
-              />
-              <input
-                type="text"
-                placeholder="Feature 2 (e.g. Vimshottari Dasha Forecast)"
-                value={newServiceForm.feature2}
-                onChange={(e) => setNewServiceForm({ ...newServiceForm, feature2: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none"
-              />
-              <input
-                type="text"
-                placeholder="Feature 3 (e.g. Personalized Remedial Guidance PDF)"
-                value={newServiceForm.feature3}
-                onChange={(e) => setNewServiceForm({ ...newServiceForm, feature3: e.target.value })}
-                className="w-full h-9 px-3 rounded-lg border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none"
+                className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none"
               />
             </div>
 
             {/* Button CTA Text & Target Link */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Button CTA Label Text
                 </label>
                 <input
@@ -6654,12 +6629,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Book Now"
                   value={newServiceForm.cta}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, cta: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Button Target Link / URL
                 </label>
                 <input
@@ -6667,22 +6642,22 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. /kundli or https://wa.me/..."
                   value={newServiceForm.link}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, link: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#3a506b]">
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
               <button
                 type="button"
                 onClick={() => setShowAddServiceModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 text-xs font-bold border border-[#3a506b]"
+                className="px-5 py-2.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-bold border border-[#fde68a] cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer"
               >
                 + Publish Service Package Live →
               </button>
@@ -6693,25 +6668,25 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
       {/* EDIT CUSTOMER REVIEW MODAL */}
       {editingReview && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/85 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleSaveReviewEdit}
-            className="bg-[#1c2541] w-full max-w-xl rounded-3xl border border-[#3a506b] shadow-2xl overflow-hidden relative text-left font-sans text-white p-6 space-y-4"
+            className="bg-white w-full max-w-xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a] p-6 space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-[#3a506b] pb-3">
+            <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <Edit className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[#fbbf24]">Edit Customer Review</h3>
-                  <p className="text-xs text-slate-300">Modify review details, rating, or approval status</p>
+                  <h3 className="font-serif font-bold text-lg text-[#b45309]">Edit Customer Review</h3>
+                  <p className="text-xs text-gray-500">Modify review details, rating, or approval status</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setEditingReview(null)}
-                className="text-gray-400 hover:text-white p-1"
+                className="text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -6719,7 +6694,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Client Name *
                 </label>
                 <input
@@ -6727,12 +6702,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   required
                   value={editingReview.clientName || ''}
                   onChange={(e) => setEditingReview({ ...editingReview, clientName: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Location / City *
                 </label>
                 <input
@@ -6740,20 +6715,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   required
                   value={editingReview.location || ''}
                   onChange={(e) => setEditingReview({ ...editingReview, location: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Star Rating (1-5)
                 </label>
                 <select
                   value={editingReview.rating || 5}
                   onChange={(e) => setEditingReview({ ...editingReview, rating: Number(e.target.value) })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value={5}>5 Stars (★★★★★)</option>
                   <option value={4}>4 Stars (★★★★☆)</option>
@@ -6764,13 +6739,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Moderation Status
                 </label>
                 <select
                   value={editingReview.status || 'APPROVED'}
                   onChange={(e) => setEditingReview({ ...editingReview, status: e.target.value as any })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-700 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value="APPROVED">🟢 APPROVED (Live on Home)</option>
                   <option value="PENDING">⏳ PENDING APPROVAL</option>
@@ -6836,14 +6811,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <Plus className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[#fbbf24]">Add Verified Client Review</h3>
-                  <p className="text-xs text-slate-300">Manually post a verified customer testimonial</p>
+                  <h3 className="font-serif font-bold text-lg text-[#b45309]">Add Verified Client Review</h3>
+                  <p className="text-xs text-gray-500">Manually post a verified customer testimonial</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowAddReviewModal(false)}
-                className="text-gray-400 hover:text-white p-1"
+                className="text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -6851,7 +6826,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Client Name *
                 </label>
                 <input
@@ -6860,12 +6835,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Tombi Meitei"
                   value={newReviewForm.clientName}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, clientName: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Location / City *
                 </label>
                 <input
@@ -6874,20 +6849,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Imphal West, Manipur"
                   value={newReviewForm.location}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, location: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Star Rating (1-5)
                 </label>
                 <select
                   value={newReviewForm.rating}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, rating: Number(e.target.value) })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value={5}>5 Stars (★★★★★)</option>
                   <option value={4}>4 Stars (★★★★☆)</option>
@@ -6898,13 +6873,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                   Service Consulted
                 </label>
                 <select
                   value={newReviewForm.serviceName}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, serviceName: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value="Kuthi Yengba Consultation">Kuthi Yengba Consultation</option>
                   <option value="Kuthi Iba (কুঠি ইবা)">Kuthi Iba (কুঠি ইবা)</option>
@@ -6916,7 +6891,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
 
             <div>
-              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+              <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                 Detailed Review / Testimonial Copy *
               </label>
               <textarea
@@ -6925,15 +6900,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 placeholder="Enter client testimonial text..."
                 value={newReviewForm.comment}
                 onChange={(e) => setNewReviewForm({ ...newReviewForm, comment: e.target.value })}
-                className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none font-medium"
+                className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none font-medium"
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#3a506b]">
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
               <button
                 type="button"
                 onClick={() => setShowAddReviewModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 text-xs font-bold border border-[#3a506b] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-bold border border-[#fde68a] cursor-pointer"
               >
                 Cancel
               </button>
@@ -6950,43 +6925,43 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
       {/* MANAGE ASTROLOGER TOOL ACCESS PERMISSIONS MODAL */}
       {toolModalAstro && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/85 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] w-full max-w-2xl rounded-3xl border border-[#3a506b] shadow-2xl overflow-hidden relative text-left font-sans text-white p-6 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#3a506b] pb-3">
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a] p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <Sparkles className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[#fbbf24]">Astrologer Tool Access Control</h3>
-                  <p className="text-xs text-slate-300">Grant or restrict specific calculators for {toolModalAstro.name}</p>
+                  <h3 className="font-serif font-bold text-lg text-[#b45309]">Astrologer Tool Access Control</h3>
+                  <p className="text-xs text-gray-500">Grant or restrict specific calculators for {toolModalAstro.name}</p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setToolModalAstro(null)}
-                className="text-gray-400 hover:text-white p-1 cursor-pointer"
+                className="text-gray-400 hover:text-gray-700 p-1 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="flex justify-between items-center bg-[#0b132b] p-3 rounded-2xl border border-[#3a506b] text-xs">
-              <span className="text-gray-300 font-bold">
-                Selected: <strong className="text-[#fbbf24]">{selectedToolIds.length}</strong> / 19 Tools Allowed
+            <div className="flex justify-between items-center bg-[#fefcf6] p-3 rounded-2xl border border-[#fde68a] text-xs">
+              <span className="text-gray-700 font-bold">
+                Selected: <strong className="text-[#b45309]">{selectedToolIds.length}</strong> / 19 Tools Allowed
               </span>
               <div className="flex gap-2">
                 <button
                   type="button"
                   onClick={() => setSelectedToolIds(ALL_TOOL_ITEMS.map((t) => t.id))}
-                  className="px-3 py-1 rounded-lg bg-[#d97706]/30 hover:bg-[#d97706]/50 text-[#fbbf24] font-extrabold text-[11px] border border-[#d97706]/40 cursor-pointer"
+                  className="px-3 py-1 rounded-lg bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] font-extrabold text-[11px] border border-[#fde68a] cursor-pointer"
                 >
                   Select All 19
                 </button>
                 <button
                   type="button"
                   onClick={() => setSelectedToolIds([])}
-                  className="px-3 py-1 rounded-lg bg-gray-800 hover:bg-gray-700 text-gray-300 font-extrabold text-[11px] border border-gray-600 cursor-pointer"
+                  className="px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-extrabold text-[11px] border border-gray-300 cursor-pointer"
                 >
                   Deselect All
                 </button>
@@ -7008,8 +6983,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     }}
                     className={`p-3 rounded-2xl border flex items-center gap-3 cursor-pointer transition-all ${
                       isChecked
-                        ? 'bg-[#0b132b] border-[#d97706] text-white'
-                        : 'bg-[#1c2541] border-[#3a506b]/60 text-gray-400 hover:border-gray-500'
+                        ? 'bg-[#fefcf6] border-[#d97706] text-[#0f172a]'
+                        : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
                     }`}
                   >
                     <input
@@ -7024,11 +6999,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               })}
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#3a506b]">
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
               <button
                 type="button"
                 onClick={() => setToolModalAstro(null)}
-                className="px-5 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 text-xs font-bold border border-[#3a506b] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-bold border border-[#fde68a] cursor-pointer"
               >
                 Cancel
               </button>
@@ -7048,38 +7023,38 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
          MODAL: POST ANNOUNCEMENT / PROMO AD FOR ASTROLOGERS
          ───────────────────────────────────────────────────────────── */}
       {showAddAnnouncementModal && (
-        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] border border-[#3a506b] rounded-3xl p-6 max-w-lg w-full space-y-4 text-xs font-sans text-white shadow-2xl">
-            <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
-              <h4 className="font-serif font-bold text-xl text-[#fbbf24] flex items-center gap-2">
-                <Bell className="w-5 h-5 text-[#fbbf24]" />
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-[#fde68a] rounded-3xl p-6 max-w-lg w-full space-y-4 text-xs font-sans text-[#0f172a] shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
+              <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
+                <Bell className="w-5 h-5 text-[#d97706]" />
                 <span>Post Announcement / Promo Ad for Astrologers</span>
               </h4>
-              <button onClick={() => setShowAddAnnouncementModal(false)} className="text-gray-400 hover:text-white cursor-pointer">
+              <button onClick={() => setShowAddAnnouncementModal(false)} className="text-gray-400 hover:text-gray-700 cursor-pointer">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleCreateAnnouncement} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Notice / Ad Title *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Notice / Ad Title *</label>
                 <input
                   type="text"
                   required
                   placeholder="e.g. 🚀 Mahashivratri Special Bonus Payout Promo!"
                   value={newAnnouncementForm.title}
                   onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, title: e.target.value })}
-                  className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                  className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Notice Type</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Notice Type</label>
                   <select
                     value={newAnnouncementForm.type}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, type: e.target.value as any })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
                   >
                     <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
                     <option value="PROMO_AD">PROMO_AD</option>
@@ -7088,57 +7063,57 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </select>
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Tag Badge Label</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Tag Badge Label</label>
                   <input
                     type="text"
                     placeholder="SPECIAL PROMO"
                     value={newAnnouncementForm.badge}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, badge: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-extrabold text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Message Content *</label>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Message Content *</label>
                 <textarea
                   rows={3}
                   required
                   placeholder="Describe the announcement, promo rules, or policy update..."
                   value={newAnnouncementForm.message}
                   onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, message: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs"
+                  className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">CTA Button Text</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">CTA Button Text</label>
                   <input
                     type="text"
                     placeholder="Check Now"
                     value={newAnnouncementForm.actionText}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, actionText: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">CTA Target Link</label>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">CTA Target Link</label>
                   <input
                     type="text"
                     placeholder="/dashboard/astrologer?tab=wallet"
                     value={newAnnouncementForm.actionUrl}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, actionUrl: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-300 font-mono text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-xs"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-[#3a506b]">
+              <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
                 <button
                   type="button"
                   onClick={() => setShowAddAnnouncementModal(false)}
-                  className="px-5 py-2 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs border border-[#3a506b] cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#fef3c7] text-[#b45309] font-bold text-xs border border-[#fde68a] cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -7156,28 +7131,22 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
       {/* ========================== PROCESS ASTROLOGER PAYOUT MODAL ========================== */}
       {payoutModalAstro && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xs transition-colors ${
-          theme === 'dark' ? 'bg-[#0b132b]/85' : 'bg-slate-900/60'
-        }`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <form
             onSubmit={handleProcessPayoutSubmit}
-            className={`w-full max-w-lg rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-5 text-xs font-sans transition-colors ${
-              theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
-            }`}
+            className="w-full max-w-lg rounded-3xl border border-[#fde68a] shadow-2xl p-6 sm:p-8 space-y-5 text-xs font-sans bg-white text-[#0f172a]"
           >
             {/* Header */}
-            <div className={`flex items-center justify-between border-b pb-4 ${
-              theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
-            }`}>
+            <div className="flex items-center justify-between border-b border-[#fde68a] pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-white flex items-center justify-center font-bold shadow-md">
                   <DollarSign className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className={`font-serif font-bold text-lg ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
+                  <h3 className="font-serif font-bold text-lg text-[#b45309]">
                     Disburse Astrologer Payout & Credit Wallet
                   </h3>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                  <p className="text-xs text-gray-500">
                     Settle earnings for {payoutModalAstro.name}
                   </p>
                 </div>
@@ -7185,40 +7154,32 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <button
                 type="button"
                 onClick={() => setPayoutModalAstro(null)}
-                className={`p-1 cursor-pointer transition-colors ${
-                  theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'
-                }`}
+                className="p-1 cursor-pointer transition-colors text-gray-400 hover:text-gray-700"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Astrologer Info Card */}
-            <div className={`p-4 rounded-2xl border space-y-2 ${
-              theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200 text-slate-900'
-            }`}>
+            <div className="p-4 rounded-2xl border space-y-2 bg-[#fefcf6] border-[#fde68a] text-[#0f172a]">
               <div className="flex justify-between items-center">
-                <span className={`text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Vendor Astrologer</span>
-                <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>{payoutModalAstro.name}</span>
+                <span className="text-[10px] uppercase font-bold text-gray-500">Vendor Astrologer</span>
+                <span className="text-xs font-bold text-[#b45309]">{payoutModalAstro.name}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className={`text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Specialty</span>
-                <span className={theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}>{payoutModalAstro.specialty}</span>
+                <span className="text-[10px] uppercase font-bold text-gray-500">Specialty</span>
+                <span className="text-gray-700">{payoutModalAstro.specialty}</span>
               </div>
-              <div className={`flex justify-between items-center border-t pt-2 ${
-                theme === 'dark' ? 'border-[#3a506b]/60' : 'border-slate-300'
-              }`}>
-                <span className={`text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Current Wallet Balance Pending</span>
-                <strong className="font-mono text-base text-green-600 font-extrabold">₹{payoutModalAstro.pendingPayout.toLocaleString()}</strong>
+              <div className="flex justify-between items-center border-t border-[#fde68a] pt-2">
+                <span className="text-[10px] uppercase font-bold text-gray-500">Current Wallet Balance Pending</span>
+                <strong className="font-mono text-base text-green-700 font-extrabold">₹{payoutModalAstro.pendingPayout.toLocaleString()}</strong>
               </div>
             </div>
 
             {/* Payout Form Fields */}
             <div className="space-y-4">
               <div>
-                <label className={`block font-bold mb-1 uppercase tracking-wider text-[10px] ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
-                }`}>
+                <label className="block font-bold mb-1 uppercase tracking-wider text-[10px] text-[#b45309]">
                   Disbursement Payout Amount (₹) *
                 </label>
                 <input
@@ -7228,25 +7189,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   max={100000}
                   value={payoutForm.amount}
                   onChange={(e) => setPayoutForm({ ...payoutForm, amount: Number(e.target.value) })}
-                  className={`w-full h-11 px-3.5 rounded-xl font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none ${
-                    theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-[#fbbf24]' : 'bg-white border border-slate-300 text-amber-900 shadow-xs'
-                  }`}
+                  className="w-full h-11 px-3.5 rounded-xl font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#b45309]"
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className={`block font-bold mb-1 uppercase tracking-wider text-[10px] ${
-                    theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
-                  }`}>
+                  <label className="block font-bold mb-1 uppercase tracking-wider text-[10px] text-[#b45309]">
                     Payment Settlement Mode *
                   </label>
                   <select
                     value={payoutForm.paymentMethod}
                     onChange={(e) => setPayoutForm({ ...payoutForm, paymentMethod: e.target.value })}
-                    className={`w-full h-11 px-3.5 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none ${
-                      theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
-                    }`}
+                    className="w-full h-11 px-3.5 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#0f172a]"
                   >
                     <option value="GPay / PhonePe UPI">GPay / PhonePe UPI</option>
                     <option value="Paytm Wallet / UPI">Paytm Wallet / UPI</option>
@@ -7256,9 +7211,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 <div>
-                  <label className={`block font-bold mb-1 uppercase tracking-wider text-[10px] ${
-                    theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
-                  }`}>
+                  <label className="block font-bold mb-1 uppercase tracking-wider text-[10px] text-[#b45309]">
                     Transaction UTR / Ref No. *
                   </label>
                   <input
@@ -7267,34 +7220,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="e.g. UPI-20268940129"
                     value={payoutForm.utr}
                     onChange={(e) => setPayoutForm({ ...payoutForm, utr: e.target.value })}
-                    className={`w-full h-11 px-3.5 rounded-xl font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none ${
-                      theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-[#fbbf24]' : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
-                    }`}
+                    className="w-full h-11 px-3.5 rounded-xl font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#b45309]"
                   />
                 </div>
               </div>
 
               <div>
-                <label className={`block font-bold mb-1 uppercase tracking-wider text-[10px] ${
-                  theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
-                }`}>
+                <label className="block font-bold mb-1 uppercase tracking-wider text-[10px] text-[#b45309]">
                   Settlement Remarks / Notes
                 </label>
                 <input
                   type="text"
                   value={payoutForm.notes}
                   onChange={(e) => setPayoutForm({ ...payoutForm, notes: e.target.value })}
-                  className={`w-full h-10 px-3.5 rounded-xl text-xs focus:border-[#d97706] focus:outline-none ${
-                    theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-gray-200' : 'bg-white border border-slate-300 text-slate-800 shadow-xs'
-                  }`}
+                  className="w-full h-10 px-3.5 rounded-xl text-xs focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#0f172a]"
                 />
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className={`flex flex-wrap items-center justify-between gap-3 pt-3 border-t ${
-              theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
-            }`}>
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#fde68a]">
               <a
                 href={`https://wa.me/${payoutModalAstro.whatsappNo.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(payoutModalAstro.name)},%20your%20KangleiAstro%20commission%20payout%20of%20%E2%82%B9${payoutForm.amount}%20has%20been%20processed%20successfully!%20Transaction%20UTR:%20${encodeURIComponent(payoutForm.utr)}`}
                 target="_blank"
@@ -7309,9 +7254,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <button
                   type="button"
                   onClick={() => setPayoutModalAstro(null)}
-                  className={`px-4 py-2.5 rounded-xl font-bold text-xs ${
-                    theme === 'dark' ? 'bg-[#0b132b] text-gray-300 border border-[#3a506b]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-300'
-                  }`}
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs bg-[#fef3c7] text-[#b45309] border border-[#fde68a] cursor-pointer"
                 >
                   Cancel
                 </button>
