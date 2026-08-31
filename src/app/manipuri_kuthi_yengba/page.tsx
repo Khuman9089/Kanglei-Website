@@ -292,8 +292,8 @@ function ManipuriKuthiYengbaContent() {
 
               <form onSubmit={handleStep1Submit} className="space-y-6 text-xs font-sans">
                 
-                {/* 1. NAME, WHATSAPP NO & GENDER SELECTOR */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 1. NAME & WHATSAPP NO */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
                       Your Name<span className="text-red-500">*</span>
@@ -320,37 +320,6 @@ function ManipuriKuthiYengbaContent() {
                       onChange={(e) => setWhatsappNo(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                     />
-                  </div>
-
-                  {/* GENDER / SEX SELECTOR */}
-                  <div>
-                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Gender / Sex<span className="text-red-500">*</span>
-                    </label>
-                    <div className="grid grid-cols-2 gap-2 h-11">
-                      <button
-                        type="button"
-                        onClick={() => setGender('Male')}
-                        className={`rounded-xl font-bold text-xs transition-all border cursor-pointer ${
-                          gender === 'Male'
-                            ? 'bg-[#d97706] text-white border-[#d97706] shadow-sm'
-                            : 'bg-[#fefcf6] text-[#0f172a] border-gray-300 hover:bg-[#fef3c7]'
-                        }`}
-                      >
-                        👦 Male
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setGender('Female')}
-                        className={`rounded-xl font-bold text-xs transition-all border cursor-pointer ${
-                          gender === 'Female'
-                            ? 'bg-[#d97706] text-white border-[#d97706] shadow-sm'
-                            : 'bg-[#fefcf6] text-[#0f172a] border-gray-300 hover:bg-[#fef3c7]'
-                        }`}
-                      >
-                        👧 Female
-                      </button>
-                    </div>
                   </div>
                 </div>
 
@@ -477,7 +446,7 @@ function ManipuriKuthiYengbaContent() {
                           Enter Birth Details Manually
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                           <div>
                             <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
                               Date of Birth<span className="text-red-500">*</span>
@@ -513,6 +482,37 @@ function ManipuriKuthiYengbaContent() {
                               onChange={(e) => setPob(e.target.value)}
                               className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                             />
+                          </div>
+
+                          {/* GENDER / SEX SELECTOR */}
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
+                              Gender / Sex<span className="text-red-500">*</span>
+                            </label>
+                            <div className="grid grid-cols-2 gap-1.5 h-10">
+                              <button
+                                type="button"
+                                onClick={() => setGender('Male')}
+                                className={`rounded-xl font-bold text-xs transition-all border cursor-pointer ${
+                                  gender === 'Male'
+                                    ? 'bg-[#d97706] text-white border-[#d97706] shadow-sm'
+                                    : 'bg-white text-[#0f172a] border-gray-300 hover:bg-[#fef3c7]'
+                                }`}
+                              >
+                                👦 Male
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setGender('Female')}
+                                className={`rounded-xl font-bold text-xs transition-all border cursor-pointer ${
+                                  gender === 'Female'
+                                    ? 'bg-[#d97706] text-white border-[#d97706] shadow-sm'
+                                    : 'bg-white text-[#0f172a] border-gray-300 hover:bg-[#fef3c7]'
+                                }`}
+                              >
+                                👧 Female
+                              </button>
+                            </div>
                           </div>
                         </div>
 
