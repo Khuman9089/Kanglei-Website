@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -209,8 +209,8 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
 ];
 
 export async function GET() {
-  const settings = readPersistentData<AstrologerSectionSettings>('astrologer_settings', DEFAULT_SECTION_SETTINGS);
-  const astrologers = readPersistentData<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
+  const settings = await readPersistentDataAsync<AstrologerSectionSettings>('astrologer_settings', DEFAULT_SECTION_SETTINGS);
+  const astrologers = await readPersistentDataAsync<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
   return NextResponse.json({
     settings,
     astrologers,
@@ -222,17 +222,17 @@ import prisma from '@/lib/db';
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    let currentSettings = readPersistentData<AstrologerSectionSettings>('astrologer_settings', DEFAULT_SECTION_SETTINGS);
-    let currentAstrologers = readPersistentData<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
+    let currentSettings = await readPersistentDataAsync<AstrologerSectionSettings>('astrologer_settings', DEFAULT_SECTION_SETTINGS);
+    let currentAstrologers = await readPersistentDataAsync<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
 
     if (body.settings) {
       currentSettings = { ...currentSettings, ...body.settings };
-      writePersistentData('astrologer_settings', currentSettings);
+      await writePersistentDataAsync('astrologer_settings', currentSettings);
     }
 
     if (body.astrologers && Array.isArray(body.astrologers)) {
       currentAstrologers = body.astrologers;
-      writePersistentData('astrologers', currentAstrologers);
+      await writePersistentDataAsync('astrologers', currentAstrologers);
     }
 
     const astro = body.astrologer || body.updateAstrologer;
@@ -243,7 +243,7 @@ export async function POST(req: Request) {
       } else {
         currentAstrologers.push(astro);
       }
-      writePersistentData('astrologers', currentAstrologers);
+      await writePersistentDataAsync('astrologers', currentAstrologers);
 
       // Persist in Prisma Database if DATABASE_URL is configured
       if (process.env.DATABASE_URL) {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -149,7 +149,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
 ];
 
 export async function GET() {
-  const services = readPersistentData<ServiceItem[]>('services', DEFAULT_SERVICES);
+  const services = await readPersistentDataAsync<ServiceItem[]>('services', DEFAULT_SERVICES);
   return NextResponse.json({ services });
 }
 
@@ -157,7 +157,7 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     if (Array.isArray(body.services)) {
-      writePersistentData<ServiceItem[]>('services', body.services);
+      await writePersistentDataAsync<ServiceItem[]>('services', body.services);
       return NextResponse.json({
         success: true,
         message: 'Service & Pricing settings saved successfully!',
