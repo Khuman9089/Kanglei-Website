@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-
-export const dynamic = 'force-static';
+import { supabase } from '@/lib/supabase';
 
 export interface KuthiOrder {
   id: string;
@@ -43,7 +42,7 @@ export interface KuthiOrder {
   yek?: string;
   gotra?: string;
   deliveryAddress?: string;
-  category?: 'new_born_baby' | 'kuthi_rewrite';
+  category?: string;
   assignedAstrologerId?: string;
   assignedAstrologerName?: string;
   reportReceivedFromAstro?: boolean;
@@ -97,43 +96,43 @@ let KUTHI_ORDERS: KuthiOrder[] = [
     assignedAstrologerId: 'astro-1',
     assignedAstrologerName: 'Acharya Tombi Sharma',
   },
-  {
-    id: 'k-3',
-    orderRef: 'KY-2026-8939',
-    clientName: 'Nganba & Thoibi',
-    sex: 'Couple',
-    mobile: '+91 88374 87801',
-    whatsappNo: '+91 88374 87801',
-    email: 'nganba@example.com',
-    kuthiAttached: false,
-    dob: 'Groom: 1985-03-15 | Bride: 1989-03-21',
-    tob: 'Groom: 18:15 | Bride: 19:16',
-    pob: 'Groom: Imphal | Bride: Imphal',
-    groomDetails: {
-      name: 'Nganba Meitei',
-      dob: '1985-03-15',
-      tob: '18:15',
-      pob: 'Imphal',
-      long: '77.2',
-      lat: '28.6',
-    },
-    brideDetails: {
-      name: 'Thoibi Ningthoujam',
-      dob: '1989-03-21',
-      tob: '19:16',
-      pob: 'Imphal',
-      long: '72.8',
-      lat: '19.0',
-    },
-    utr: '429809112830',
-    submittedAt: 'Today, 04:20 PM',
-    amount: 1299,
-    serviceType: 'Kuthi Matching (পক্ন-ৱাইনবা য়েংবা)',
-    status: 'PENDING',
-  },
 ];
 
 export async function GET() {
+  try {
+    const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
+    if (!error && data && data.length > 0) {
+      const dbOrders: KuthiOrder[] = data.map((d: any) => ({
+        id: d.id,
+        orderRef: d.order_ref || d.id,
+        clientName: d.client_name,
+        sex: d.gender || d.sex || 'Client',
+        mobile: d.mobile || d.whatsapp_no,
+        whatsappNo: d.whatsapp_no || d.mobile,
+        email: d.email || '',
+        kuthiAttached: !!d.kuthi_attached,
+        kuthiFileName: d.kuthi_file_name,
+        dob: d.dob,
+        tob: d.tob,
+        pob: d.pob,
+        utr: d.utr,
+        submittedAt: d.submitted_at || new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        amount: d.amount || d.total_amount || 499,
+        serviceType: d.service_title || d.service_type || 'Kuthi Consultation',
+        status: d.status || 'PENDING',
+        fatherName: d.father_name,
+        motherName: d.mother_name,
+        deliveryAddress: d.delivery_address,
+        category: d.category,
+        assignedAstrologerId: d.assigned_astrologer_id,
+        assignedAstrologerName: d.assigned_astrologer_name,
+      }));
+      return NextResponse.json({ success: true, orders: dbOrders });
+    }
+  } catch (err) {
+    console.warn('Supabase fetch fallback to local:', err);
+  }
+
   return NextResponse.json({ success: true, orders: KUTHI_ORDERS });
 }
 
@@ -143,12 +142,15 @@ export async function POST(req: Request) {
     const { action, order, orderId, astroId, astroName } = body;
 
     if (action === 'CREATE_ORDER' && order) {
+      const newId = 'k-' + Date.now();
+      const orderRef = 'KY-2026-' + Math.floor(1000 + Math.random() * 9000);
+
       const newOrder: KuthiOrder = {
-        id: 'k-' + Date.now(),
-        orderRef: 'KY-2026-' + Math.floor(1000 + Math.random() * 9000),
+        id: newId,
+        orderRef: orderRef,
         clientName: order.clientName,
-        sex: order.sex || 'Client',
-        mobile: order.mobile,
+        sex: order.gender || order.sex || 'Client',
+        mobile: order.mobile || order.whatsappNo,
         whatsappNo: order.whatsappNo || order.mobile,
         email: order.email || '',
         kuthiAttached: !!order.kuthiAttached,
@@ -159,25 +161,59 @@ export async function POST(req: Request) {
         pob: order.pob || '',
         groomDetails: order.groomDetails || undefined,
         brideDetails: order.brideDetails || undefined,
-        question: order.question || '',
-        utr: order.utr,
+        question: order.question || order.notes || '',
+        utr: order.utr || '',
         submittedAt: 'Just Now',
-        amount: order.amount || 899,
-        serviceType: order.serviceType || 'Kuthi Iba (কুঠি ইবা)',
+        amount: order.totalAmount || order.amount || 499,
+        serviceType: order.serviceTitle || order.serviceType || 'Kuthi Yengba',
         status: 'PENDING',
-        fatherName: order.fatherName || '',
-        motherName: order.motherName || '',
-        yek: order.yek || '',
-        gotra: order.gotra || '',
-        deliveryAddress: order.deliveryAddress || '',
-        category: order.category || 'new_born_baby',
+        fatherName: order.fatherName || order.rewriteDetails?.fatherName || '',
+        motherName: order.motherName || order.rewriteDetails?.motherName || '',
+        yek: order.yek || order.rewriteDetails?.yekSalai || '',
+        gotra: order.gotra || order.rewriteDetails?.gotra || '',
+        deliveryAddress: order.deliveryAddress || order.rewriteDetails?.deliveryAddress || '',
+        category: order.category || 'kuthi_yengba',
       };
+
+      // Try inserting into Supabase
+      try {
+        await supabase.from('orders').insert([
+          {
+            id: newOrder.id,
+            order_ref: newOrder.orderRef,
+            client_name: newOrder.clientName,
+            gender: newOrder.sex,
+            mobile: newOrder.mobile,
+            whatsapp_no: newOrder.whatsappNo,
+            email: newOrder.email,
+            kuthi_attached: newOrder.kuthiAttached,
+            kuthi_file_name: newOrder.kuthiFileName,
+            dob: newOrder.dob,
+            tob: newOrder.tob,
+            pob: newOrder.pob,
+            utr: newOrder.utr,
+            amount: newOrder.amount,
+            service_title: newOrder.serviceType,
+            status: newOrder.status,
+            father_name: newOrder.fatherName,
+            mother_name: newOrder.motherName,
+            delivery_address: newOrder.deliveryAddress,
+            category: newOrder.category,
+          },
+        ]);
+      } catch (dbErr) {
+        console.warn('Supabase insert fallback:', dbErr);
+      }
 
       KUTHI_ORDERS = [newOrder, ...KUTHI_ORDERS];
       return NextResponse.json({ success: true, order: newOrder, orders: KUTHI_ORDERS });
     }
 
     if (action === 'ASSIGN_ASTROLOGER' && orderId && astroId) {
+      try {
+        await supabase.from('orders').update({ assigned_astrologer_id: astroId, assigned_astrologer_name: astroName, status: 'ASSIGNED' }).eq('id', orderId);
+      } catch (e) {}
+
       KUTHI_ORDERS = KUTHI_ORDERS.map((o) =>
         o.id === orderId
           ? { ...o, assignedAstrologerId: astroId, assignedAstrologerName: astroName, status: 'ASSIGNED' }
@@ -186,35 +222,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, orders: KUTHI_ORDERS });
     }
 
-    if (action === 'TOGGLE_REPORT_RECEIVED' && orderId) {
-      KUTHI_ORDERS = KUTHI_ORDERS.map((o) =>
-        o.id === orderId
-          ? { ...o, reportReceivedFromAstro: !o.reportReceivedFromAstro, status: !o.reportReceivedFromAstro ? 'REPORT_RECEIVED' : 'ASSIGNED' }
-          : o
-      );
-      return NextResponse.json({ success: true, orders: KUTHI_ORDERS });
-    }
-
-    if (action === 'UPLOAD_REPORT' && orderId) {
-      const { reportFileName, reportFileUrl, reportNotes, uploadedBy } = body;
-      KUTHI_ORDERS = KUTHI_ORDERS.map((o) =>
-        o.id === orderId
-          ? {
-              ...o,
-              status: 'COMPLETED',
-              reportReceivedFromAstro: true,
-              reportFileName: reportFileName || 'Astrological_Remedies_Report.pdf',
-              reportFileUrl: reportFileUrl || '/sample_kuthi_report.pdf',
-              reportUploadedAt: 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-              reportUploadedBy: uploadedBy || o.assignedAstrologerName || 'Acharya Tombi Sharma',
-              reportNotes: reportNotes || 'Detailed Vimshottari Dasha analysis and personalized remedies.',
-            }
-          : o
-      );
-      return NextResponse.json({ success: true, orders: KUTHI_ORDERS });
-    }
-
     if (action === 'MARK_COMPLETED' && orderId) {
+      try {
+        await supabase.from('orders').update({ status: 'COMPLETED' }).eq('id', orderId);
+      } catch (e) {}
+
       KUTHI_ORDERS = KUTHI_ORDERS.map((o) =>
         o.id === orderId ? { ...o, status: 'COMPLETED' } : o
       );

@@ -13,16 +13,17 @@
     "db:studio": "prisma studio"
   },
   "dependencies": {
+    "@prisma/client": "^6",
+    "@supabase/supabase-js": "^2.112.4",
+    "clsx": "^2",
+    "framer-motion": "^12",
+    "lucide-react": "^0.500",
     "next": "16.3.3",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "framer-motion": "^12",
-    "lucide-react": "^0.500",
-    "clsx": "^2",
     "tailwind-merge": "^3",
     "zod": "^3",
-    "zustand": "^5",
-    "@prisma/client": "^6"
+    "zustand": "^5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
@@ -31,8 +32,8 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.3",
+    "prisma": "^6",
     "tailwindcss": "^4",
-    "typescript": "^5",
-    "prisma": "^6"
+    "typescript": "^5"
   }
 }
