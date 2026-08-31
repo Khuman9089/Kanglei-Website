@@ -9,13 +9,6 @@ import {
 import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
 
-function ManipuriKuthiContent() {
-  const [step, setStep] = useState<1 | 2 | 3>(1);
-  const [orderRef, setOrderRef] = useState<string>('');
-
-  // Mode Selection: 'new_born' vs 'rewrite'
-  const [kuthiCategory, setKuthiCategory] = useState<'new_born' | 'rewrite'>('new_born');
-
 export interface KuthiIbaPackage {
   id: string;
   title: string;
