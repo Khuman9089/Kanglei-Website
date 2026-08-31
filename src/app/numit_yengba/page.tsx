@@ -43,6 +43,7 @@ function NumitYengbaContent() {
   // Reasons list (from admin or default)
   const [reasons, setReasons] = useState<NumitReasonOption[]>(DEFAULT_NUMIT_REASONS);
   const [selectedReason, setSelectedReason] = useState<NumitReasonOption>(DEFAULT_NUMIT_REASONS[0]);
+  const [customReason, setCustomReason] = useState('');
 
   // Kuthi Upload Slots (Default 1 slot)
   const [slots, setSlots] = useState<KuthiSlot[]>([
@@ -167,15 +168,18 @@ function NumitYengbaContent() {
 
     setLoading(true);
 
+    const effectiveReason = customReason.trim() ? `${selectedReason.title} (${customReason.trim()})` : selectedReason.title;
+
     const orderPayload = {
       action: 'CREATE_ORDER',
       order: {
         category: 'numit_yengba',
-        serviceTitle: `Numit Yengba — ${selectedReason.title}`,
+        serviceTitle: `Numit Yengba — ${effectiveReason}`,
         clientName,
         whatsappNo,
         gender,
-        reasonTitle: selectedReason.title,
+        reasonTitle: effectiveReason,
+        customReason: customReason.trim(),
         pricePerUnit: selectedReason.price,
         personCount: slots.length,
         noKuthiPaper,
@@ -349,6 +353,20 @@ function NumitYengbaContent() {
                         )}
                       </button>
                     ))}
+                  </div>
+
+                  {/* CUSTOM EVENT / REASON FIELD (IF NOT LISTED ABOVE) */}
+                  <div className="pt-3">
+                    <label className="block text-[11px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                      Other Event / Custom Reason (If not listed in above options)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ear Piercing (Nahutpa), Shradha Puja, Journey, Gold Purchase, Foreign Travel..."
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                      className="w-full h-11 px-3.5 rounded-xl border border-[#fde68a] bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                    />
                   </div>
                 </div>
 
@@ -597,7 +615,9 @@ function NumitYengbaContent() {
                   </div>
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">Numit Yengba Purpose:</span>
-                    <span className="font-bold text-[#b45309]">{selectedReason.title} (₹{selectedReason.price} × {slots.length})</span>
+                    <span className="font-bold text-[#b45309]">
+                      {customReason.trim() ? `${selectedReason.title} — ${customReason.trim()}` : selectedReason.title} (₹{selectedReason.price} × {slots.length})
+                    </span>
                   </div>
 
                   {uploadedFilesCount > 0 ? (
