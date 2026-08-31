@@ -68,6 +68,13 @@ function ManipuriKuthiYengbaContent() {
   const [gotra, setGotra] = useState('Gautama');
   const [deliveryAddress, setDeliveryAddress] = useState('');
 
+  // Physical Parchment Scroll Packages (Loaded from /manipuri_kuthi service)
+  const [physicalPackages, setPhysicalPackages] = useState<KuthiSubServiceOption[]>([
+    { id: 'sub-201', title: 'Standard Handwritten Kuthi Paper (Single Child)', price: 899 },
+    { id: 'sub-202', title: 'Premium Gold-Stamped Traditional Kuthi Scroll', price: 1499 },
+  ]);
+  const [selectedPhysicalPackage, setSelectedPhysicalPackage] = useState<KuthiSubServiceOption>(physicalPackages[0]);
+
   // Payment State
   const [utrNumber, setUtrNumber] = useState('');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
@@ -91,7 +98,17 @@ function ManipuriKuthiYengbaContent() {
             targetService = data.services.find((s: any) => s.id === targetServiceId);
           }
 
-          // If a specific service was targeted via URL param and has subServices
+          // Filter active admin services assigned strictly to /manipuri_kuthi_yengba
+          const matchingServices = data.services.filter((s: any) => 
+            s.active !== false && (
+              s.pageTarget === '/manipuri_kuthi_yengba' ||
+              s.link === '/manipuri_kuthi_yengba' || 
+              (s.link && s.link.startsWith('/manipuri_kuthi_yengba?')) ||
+              (s.link && s.link.startsWith('/manipuri_kuthi_yengba/')) ||
+              s.id === 's-1'
+            )
+          );
+
           if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
             const formattedSubs: KuthiSubServiceOption[] = targetService.subServices.map((sub: any) => ({
               id: sub.id,
@@ -101,17 +118,6 @@ function ManipuriKuthiYengbaContent() {
             setSubServices(formattedSubs);
             setSelectedSubService(formattedSubs[0]);
           } else {
-            // Filter active admin services assigned strictly to /manipuri_kuthi_yengba
-            const matchingServices = data.services.filter((s: any) => 
-              s.active !== false && (
-                s.pageTarget === '/manipuri_kuthi_yengba' ||
-                s.link === '/manipuri_kuthi_yengba' || 
-                (s.link && s.link.startsWith('/manipuri_kuthi_yengba?')) ||
-                (s.link && s.link.startsWith('/manipuri_kuthi_yengba/')) ||
-                s.id === 's-1'
-              )
-            );
-
             const filteredSubs: KuthiSubServiceOption[] = [];
             matchingServices.forEach((s: any) => {
               if (Array.isArray(s.subServices)) {
@@ -129,6 +135,24 @@ function ManipuriKuthiYengbaContent() {
               setSubServices(filteredSubs);
               setSelectedSubService(filteredSubs[0]);
             }
+          }
+
+          // Fetch physical document scroll packages (from /manipuri_kuthi service)
+          const physService = data.services.find((s: any) => 
+            s.pageTarget === '/manipuri_kuthi' ||
+            s.link === '/manipuri_kuthi' || 
+            s.id === 's-2' ||
+            (s.title && s.title.toLowerCase().includes('kuthi iba'))
+          );
+
+          if (physService && Array.isArray(physService.subServices) && physService.subServices.length > 0) {
+            const formattedPhys: KuthiSubServiceOption[] = physService.subServices.map((sub: any) => ({
+              id: sub.id,
+              title: sub.title,
+              price: Number(sub.price) || 899,
+            }));
+            setPhysicalPackages(formattedPhys);
+            setSelectedPhysicalPackage(formattedPhys[0]);
           }
         }
       })
@@ -184,9 +208,9 @@ function ManipuriKuthiYengbaContent() {
     setSlots(slots.map((s) => (s.id === id ? { ...s, file } : s)));
   };
 
-  // Calculate Total Amount (Reading Fee + Optional Rewrite Fee)
+  // Calculate Total Amount (Reading Fee + Optional Physical Scroll Fee)
   const baseReadingAmount = pricePerKuthi * slots.length;
-  const rewriteAmount = wantKuthiRewrite ? (kuthiRewriteFeePerPaper * slots.length) : 0;
+  const rewriteAmount = wantKuthiRewrite ? (selectedPhysicalPackage.price * slots.length) : 0;
   const totalAmount = baseReadingAmount + rewriteAmount;
 
   const uploadedFilesCount = slots.filter((s) => s.file !== null).length;
@@ -658,7 +682,7 @@ function ManipuriKuthiYengbaContent() {
                       onChange={(e) => setWantKuthiRewrite(e.target.checked)}
                       className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
                     />
-                    <span>☑ Want to Rewrite / Create Physical Kuthi Paper? (+₹1,000 per paper for handwritten delivery)</span>
+                    <span>☑ Want to Rewrite / Create Physical Kuthi Paper? (+₹{selectedPhysicalPackage.price} for handwritten delivery)</span>
                   </label>
 
                   {/* Physical Delivery & Ancestral Details Form - Shown ONLY when checkbox checked */}
@@ -673,6 +697,32 @@ function ManipuriKuthiYengbaContent() {
                         <div className="flex items-center gap-2 text-[#78350f] font-bold text-xs uppercase tracking-wider pb-2 border-b border-[#fde68a]">
                           <Truck className="w-4 h-4 text-[#d97706]" />
                           <span>Physical Kuthi Writing & Home Delivery Particulars</span>
+                        </div>
+
+                        {/* CHOOSE PARCHMENT SCROLL PACKAGE */}
+                        <div className="space-y-2 pb-2 border-b border-[#fde68a]">
+                          <label className="block text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
+                            Choose Parchment Scroll Package
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            {physicalPackages.map((pkg) => (
+                              <label
+                                key={pkg.id}
+                                onClick={() => setSelectedPhysicalPackage(pkg)}
+                                className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                                  selectedPhysicalPackage.id === pkg.id
+                                    ? 'bg-white border-[#d97706] font-bold text-[#b45309] shadow-xs ring-2 ring-[#d97706]/20'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <input type="radio" name="phys_pkg_ky" checked={selectedPhysicalPackage.id === pkg.id} readOnly />
+                                  <span>{pkg.title}</span>
+                                </div>
+                                <span className="font-mono font-extrabold text-sm text-[#b45309]">₹{pkg.price}</span>
+                              </label>
+                            ))}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -828,7 +878,7 @@ function ManipuriKuthiYengbaContent() {
 
                   {wantKuthiRewrite && (
                     <div className="flex justify-between border-b border-[#fde68a] pb-2">
-                      <span className="text-gray-500">Physical Kuthi Writing & Delivery Fee:</span>
+                      <span className="text-gray-500">Physical Kuthi ({selectedPhysicalPackage.title}):</span>
                       <span className="font-bold text-green-700">₹{rewriteAmount}</span>
                     </div>
                   )}

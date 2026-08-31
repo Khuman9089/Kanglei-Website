@@ -67,6 +67,13 @@ function NumitLeppaYengbaContent() {
   const [gotra, setGotra] = useState('Gautama');
   const [deliveryAddress, setDeliveryAddress] = useState('');
 
+  // Physical Parchment Scroll Packages (Loaded from /manipuri_kuthi service)
+  const [physicalPackages, setPhysicalPackages] = useState<NumitSubServiceOption[]>([
+    { id: 'sub-201', title: 'Standard Handwritten Kuthi Paper (Single Child)', price: 899 },
+    { id: 'sub-202', title: 'Premium Gold-Stamped Traditional Kuthi Scroll', price: 1499 },
+  ]);
+  const [selectedPhysicalPackage, setSelectedPhysicalPackage] = useState<NumitSubServiceOption>(physicalPackages[0]);
+
   // Payment State
   const [utrNumber, setUtrNumber] = useState('');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
@@ -83,6 +90,31 @@ function NumitLeppaYengbaContent() {
         if (data && data.numitSubServices && data.numitSubServices.length > 0) {
           setSubServices(data.numitSubServices);
           setSelectedSubService(data.numitSubServices[0]);
+        }
+      })
+      .catch(() => {});
+
+    // Fetch physical document scroll packages (from /manipuri_kuthi service)
+    fetch('/api/services')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.services) && data.services.length > 0) {
+          const physService = data.services.find((s: any) => 
+            s.pageTarget === '/manipuri_kuthi' ||
+            s.link === '/manipuri_kuthi' || 
+            s.id === 's-2' ||
+            (s.title && s.title.toLowerCase().includes('kuthi iba'))
+          );
+
+          if (physService && Array.isArray(physService.subServices) && physService.subServices.length > 0) {
+            const formattedPhys: NumitSubServiceOption[] = physService.subServices.map((sub: any) => ({
+              id: sub.id,
+              title: sub.title,
+              price: Number(sub.price) || 899,
+            }));
+            setPhysicalPackages(formattedPhys);
+            setSelectedPhysicalPackage(formattedPhys[0]);
+          }
         }
       })
       .catch(() => {});
@@ -137,7 +169,7 @@ function NumitLeppaYengbaContent() {
 
   // Calculate Total Amount
   const baseServiceAmount = pricePerEvent * slots.length;
-  const deliveryAmount = wantPhysicalDelivery ? (physicalDeliveryFeePerDocument * slots.length) : 0;
+  const deliveryAmount = wantPhysicalDelivery ? (selectedPhysicalPackage.price * slots.length) : 0;
   const totalAmount = baseServiceAmount + deliveryAmount;
 
   const uploadedFilesCount = slots.filter((s) => s.file !== null).length;
@@ -594,7 +626,7 @@ function NumitLeppaYengbaContent() {
                       onChange={(e) => setWantPhysicalDelivery(e.target.checked)}
                       className="rounded text-[#d97706] focus:ring-[#d97706] w-4 h-4"
                     />
-                    <span>☑ Want Physical Written Numit Leppa Document Delivered to Home? (+₹500 for handwritten paper delivery)</span>
+                    <span>☑ Want Physical Written Numit Leppa Document Delivered to Home? (+₹{selectedPhysicalPackage.price} for handwritten paper delivery)</span>
                   </label>
 
                   {/* Physical Delivery Form - Shown ONLY when checkbox checked */}
@@ -609,6 +641,32 @@ function NumitLeppaYengbaContent() {
                         <div className="flex items-center gap-2 text-[#78350f] font-bold text-xs uppercase tracking-wider pb-2 border-b border-[#fde68a]">
                           <Truck className="w-4 h-4 text-[#d97706]" />
                           <span>Physical Document Delivery Address Particulars</span>
+                        </div>
+
+                        {/* CHOOSE PARCHMENT SCROLL PACKAGE */}
+                        <div className="space-y-2 pb-2 border-b border-[#fde68a]">
+                          <label className="block text-[11px] font-bold text-[#78350f] uppercase tracking-wider">
+                            Choose Parchment Scroll Package
+                          </label>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                            {physicalPackages.map((pkg) => (
+                              <label
+                                key={pkg.id}
+                                onClick={() => setSelectedPhysicalPackage(pkg)}
+                                className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                                  selectedPhysicalPackage.id === pkg.id
+                                    ? 'bg-white border-[#d97706] font-bold text-[#b45309] shadow-xs ring-2 ring-[#d97706]/20'
+                                    : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2">
+                                  <input type="radio" name="phys_pkg_nl" checked={selectedPhysicalPackage.id === pkg.id} readOnly />
+                                  <span>{pkg.title}</span>
+                                </div>
+                                <span className="font-mono font-extrabold text-sm text-[#b45309]">₹{pkg.price}</span>
+                              </label>
+                            ))}
+                          </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -758,7 +816,7 @@ function NumitLeppaYengbaContent() {
 
                   {wantPhysicalDelivery && (
                     <div className="flex justify-between border-b border-[#fde68a] pb-2">
-                      <span className="text-gray-500">Physical Document Delivery Fee:</span>
+                      <span className="text-gray-500">Physical Document ({selectedPhysicalPackage.title}):</span>
                       <span className="font-bold text-green-700">₹{deliveryAmount}</span>
                     </div>
                   )}
