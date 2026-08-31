@@ -16,9 +16,28 @@ function ManipuriKuthiContent() {
   // Mode Selection: 'new_born' vs 'rewrite'
   const [kuthiCategory, setKuthiCategory] = useState<'new_born' | 'rewrite'>('new_born');
 
-  // Pricing Package
-  const [packageType, setPackageType] = useState<'standard' | 'deluxe'>('standard');
-  const price = packageType === 'deluxe' ? 1499 : 899;
+export interface KuthiIbaPackage {
+  id: string;
+  title: string;
+  price: number;
+}
+
+const DEFAULT_PACKAGES: KuthiIbaPackage[] = [
+  { id: 'sub-201', title: 'Standard Sacred Parchment', price: 899 },
+  { id: 'sub-202', title: 'Deluxe Gold-Bordered Scroll', price: 1499 },
+];
+
+function ManipuriKuthiContent() {
+  const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [orderRef, setOrderRef] = useState<string>('');
+
+  // Mode Selection: 'new_born' vs 'rewrite'
+  const [kuthiCategory, setKuthiCategory] = useState<'new_born' | 'rewrite'>('new_born');
+
+  // Dynamic Pricing Packages loaded from Admin Services API
+  const [packages, setPackages] = useState<KuthiIbaPackage[]>(DEFAULT_PACKAGES);
+  const [selectedPackage, setSelectedPackage] = useState<KuthiIbaPackage>(DEFAULT_PACKAGES[0]);
+  const price = selectedPackage.price;
 
   // Form Fields
   const [personName, setPersonName] = useState('');
@@ -44,6 +63,29 @@ function ManipuriKuthiContent() {
   useEffect(() => {
     const ref = 'KI-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
+
+    // Fetch live service packages from Admin API /api/services
+    fetch('/api/services')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.services) && data.services.length > 0) {
+          const urlParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+          const targetServiceId = urlParams ? urlParams.get('service') : 's-2';
+
+          let targetService = data.services.find((s: any) => s.id === targetServiceId) || data.services.find((s: any) => s.id === 's-2');
+
+          if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
+            const formatted: KuthiIbaPackage[] = targetService.subServices.map((sub: any) => ({
+              id: sub.id,
+              title: sub.title,
+              price: Number(sub.price) || 899,
+            }));
+            setPackages(formatted);
+            setSelectedPackage(formatted[0]);
+          }
+        }
+      })
+      .catch((err) => console.error('Error fetching admin Kuthi Iba packages:', err));
   }, []);
 
   const handleAddressToggle = (checked: boolean) => {
@@ -120,7 +162,7 @@ function ManipuriKuthiContent() {
         question: `[Kuthi Iba - ${kuthiCategory === 'new_born' ? 'Newly Born Baby' : 'Rewrite Kuthi'}] Notes: ${notes}`,
         utr: utrNumber,
         amount: price,
-        serviceType: `Kuthi Iba (${packageType === 'deluxe' ? 'Gold Scroll' : 'Standard Scroll'})`,
+        serviceType: `Kuthi Iba (${selectedPackage.title})`,
       },
     };
 
@@ -266,37 +308,29 @@ function ManipuriKuthiContent() {
                 </div>
               </div>
 
-              {/* 2. PAPER QUALITY PACKAGE SELECTION */}
+              {/* 2. PAPER QUALITY PACKAGE SELECTION FROM ADMIN SERVICES */}
               <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-2">
                 <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
                   Choose Parchment Scroll Package
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                  <label
-                    onClick={() => setPackageType('standard')}
-                    className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer ${
-                      packageType === 'standard' ? 'bg-white border-[#d97706] font-bold text-[#b45309] shadow-xs' : 'bg-white border-gray-200 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <input type="radio" name="pkg" checked={packageType === 'standard'} readOnly />
-                      <span>Standard Sacred Parchment</span>
-                    </div>
-                    <span className="font-mono font-extrabold text-sm">₹899</span>
-                  </label>
-
-                  <label
-                    onClick={() => setPackageType('deluxe')}
-                    className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer ${
-                      packageType === 'deluxe' ? 'bg-white border-[#d97706] font-bold text-[#b45309] shadow-xs' : 'bg-white border-gray-200 text-gray-700'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <input type="radio" name="pkg" checked={packageType === 'deluxe'} readOnly />
-                      <span>Deluxe Gold-Bordered Scroll</span>
-                    </div>
-                    <span className="font-mono font-extrabold text-sm">₹1,499</span>
-                  </label>
+                  {packages.map((pkg) => (
+                    <label
+                      key={pkg.id}
+                      onClick={() => setSelectedPackage(pkg)}
+                      className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all ${
+                        selectedPackage.id === pkg.id
+                          ? 'bg-white border-[#d97706] font-bold text-[#b45309] shadow-xs ring-2 ring-[#d97706]/20'
+                          : 'bg-white border-gray-200 text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2">
+                        <input type="radio" name="pkg" checked={selectedPackage.id === pkg.id} readOnly />
+                        <span>{pkg.title}</span>
+                      </div>
+                      <span className="font-mono font-extrabold text-sm text-[#b45309]">₹{pkg.price}</span>
+                    </label>
+                  ))}
                 </div>
               </div>
 
@@ -535,7 +569,7 @@ function ManipuriKuthiContent() {
                   </div>
                   <div>
                     <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Parchment Scroll</span>
-                    <span className="font-bold text-[#b45309] text-sm">{packageType === 'deluxe' ? 'Deluxe Gold-Bordered Scroll' : 'Standard Sacred Parchment'}</span>
+                    <span className="font-bold text-[#b45309] text-sm">{selectedPackage.title}</span>
                   </div>
                   <div>
                     <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Name</span>
