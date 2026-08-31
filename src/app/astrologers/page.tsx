@@ -34,6 +34,8 @@ export default function AstrologersDirectoryPage() {
     title: "Talk to Manipur's",
     highlightText: "Top Rated",
     subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
+    showRateOnHome: true,
+    actionButtonType: 'both' as 'both' | 'chat_only' | 'call_only',
   });
 
   // Filter & Search State
@@ -54,17 +56,23 @@ export default function AstrologersDirectoryPage() {
   };
 
   useEffect(() => {
-    fetch('/api/astrologers')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.astrologers && Array.isArray(data.astrologers)) {
-          setAstrologers(data.astrologers.filter((a: any) => a.active !== false));
-        }
-        if (data.settings) {
-          setSettings(data.settings);
-        }
-      })
-      .catch((err) => console.error('Error fetching astrologers directory:', err));
+    const fetchAstroData = () => {
+      fetch('/api/astrologers')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.astrologers && Array.isArray(data.astrologers)) {
+            setAstrologers(data.astrologers.filter((a: any) => a.active !== false));
+          }
+          if (data.settings) {
+            setSettings((prev) => ({ ...prev, ...data.settings }));
+          }
+        })
+        .catch((err) => console.error('Error fetching astrologers directory:', err));
+    };
+
+    fetchAstroData();
+    const interval = setInterval(fetchAstroData, 2500);
+    return () => clearInterval(interval);
   }, []);
 
   // Filtered & Sorted Astrologers
@@ -100,7 +108,7 @@ export default function AstrologersDirectoryPage() {
         {/* Page Header */}
         <div className="text-center sm:text-left">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-serif font-bold text-[#0f172a] leading-tight">
-            Talk to Manipur's <span className="text-[#c69214] font-serif">Top Rated</span> Astrologers
+            {settings.title} <span className="text-[#c69214] font-serif">{settings.highlightText}</span> Astrologers
           </h1>
           <p className="text-gray-600 text-xs sm:text-sm mt-2 max-w-2xl">
             {settings.subtitleTagline}
@@ -265,31 +273,52 @@ export default function AstrologersDirectoryPage() {
                           <span className="font-extrabold text-[#0f172a]">{astro.rating.toFixed(1)}</span>
                           <span className="text-gray-400 text-[10px]">· {astro.consultationsCount}</span>
                         </div>
-                        <div className="text-right">
-                          <span className="font-extrabold text-sm text-[#0f172a]">₹{astro.pricePerMin}</span>
-                          <span className="text-[10px] text-gray-500 font-medium">/min</span>
-                        </div>
+
+                        {settings.showRateOnHome !== false && (
+                          <div className="text-right">
+                            <span className="font-extrabold text-sm text-[#0f172a]">₹{astro.pricePerMin}</span>
+                            <span className="text-[10px] text-gray-500 font-medium">/min</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
-                    {/* TWO Pill Buttons: Chat & Call (Matching Reference Image) */}
-                    <div className="flex items-center gap-2 pt-1">
+                    {/* Action Buttons Mode Controlled from Admin Settings */}
+                    {settings.actionButtonType === 'chat_only' ? (
                       <button
                         onClick={() => handleOpenConsultation(astro, 'CHAT')}
-                        className="flex-1 py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                        className="w-full py-2.5 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                       >
-                        <MessageCircle className="w-3.5 h-3.5" />
-                        <span>Chat</span>
+                        <MessageCircle className="w-4 h-4" />
+                        <span>Chat Now</span>
                       </button>
-
+                    ) : settings.actionButtonType === 'call_only' ? (
                       <button
                         onClick={() => handleOpenConsultation(astro, 'CALL')}
-                        className="flex-1 py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                        className="w-full py-2.5 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                       >
-                        <Phone className="w-3.5 h-3.5" />
-                        <span>Call</span>
+                        <Phone className="w-4 h-4" />
+                        <span>Call Now</span>
                       </button>
-                    </div>
+                    ) : (
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          onClick={() => handleOpenConsultation(astro, 'CHAT')}
+                          className="flex-1 py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                        >
+                          <MessageCircle className="w-3.5 h-3.5" />
+                          <span>Chat</span>
+                        </button>
+
+                        <button
+                          onClick={() => handleOpenConsultation(astro, 'CALL')}
+                          className="flex-1 py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
+                        >
+                          <Phone className="w-3.5 h-3.5" />
+                          <span>Call</span>
+                        </button>
+                      </div>
+                    )}
                   </motion.div>
                 ))}
               </div>
@@ -338,24 +367,42 @@ export default function AstrologersDirectoryPage() {
                           {astro.specialties.slice(0, 2).join(' · ')}
                         </p>
                         <div className="text-[11px] text-[#b45309] font-bold font-mono mt-0.5">
-                          ★ {astro.rating.toFixed(1)} · ₹{astro.pricePerMin}/min
+                          ★ {astro.rating.toFixed(1)} {settings.showRateOnHome !== false ? `· ₹${astro.pricePerMin}/min` : ''}
                         </div>
                       </div>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
-                      <button
-                        onClick={() => handleOpenConsultation(astro, 'CHAT')}
-                        className="px-2.5 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors"
-                      >
-                        Chat
-                      </button>
-                      <button
-                        onClick={() => handleOpenConsultation(astro, 'CALL')}
-                        className="px-2.5 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors"
-                      >
-                        Call
-                      </button>
+                      {settings.actionButtonType === 'call_only' ? (
+                        <button
+                          onClick={() => handleOpenConsultation(astro, 'CALL')}
+                          className="px-3 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors cursor-pointer"
+                        >
+                          Call
+                        </button>
+                      ) : settings.actionButtonType === 'chat_only' ? (
+                        <button
+                          onClick={() => handleOpenConsultation(astro, 'CHAT')}
+                          className="px-3 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors cursor-pointer"
+                        >
+                          Chat
+                        </button>
+                      ) : (
+                        <>
+                          <button
+                            onClick={() => handleOpenConsultation(astro, 'CHAT')}
+                            className="px-2.5 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors cursor-pointer"
+                          >
+                            Chat
+                          </button>
+                          <button
+                            onClick={() => handleOpenConsultation(astro, 'CALL')}
+                            className="px-2.5 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors cursor-pointer"
+                          >
+                            Call
+                          </button>
+                        </>
+                      )}
                     </div>
                   </div>
                 ))}

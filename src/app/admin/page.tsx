@@ -4382,11 +4382,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                 </div>
 
-                {/* Homepage Rate & Action Button Controls */}
+                {/* Homepage & Astrologers Directory Rate & Action Button Controls */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-[#fde68a]">
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Show Per-Minute Rates on Homepage Cards?
+                      Show Per-Minute Rates on Website Cards (Home & Astrologers Page)?
                     </label>
                     <div className="flex items-center gap-3">
                       <button
@@ -4398,14 +4398,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             : 'bg-gray-100 text-gray-600 border-gray-300'
                         }`}
                       >
-                        {astrologerSectionSettings.showRateOnHome !== false ? '🟢 Display Rates (e.g. ₹35/min)' : '⚪ Hide Rates on Homepage'}
+                        {astrologerSectionSettings.showRateOnHome !== false ? '🟢 Display Rates (e.g. ₹35/min)' : '⚪ Hide Rates on Website'}
                       </button>
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Homepage Action Buttons Mode
+                      Action Buttons Mode (Homepage & Astrologers Page)
                     </label>
                     <select
                       value={astrologerSectionSettings.actionButtonType || 'both'}
