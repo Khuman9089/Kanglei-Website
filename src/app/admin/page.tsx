@@ -1002,14 +1002,6 @@ export default function AdminDashboardPage() {
     handleSaveTickerSettings(updated);
   };
 
-  // Top Rated Astrologers Section CMS State
-  const [astrologerSectionSettings, setAstrologerSectionSettings] = useState({
-    title: "Talk to Manipur's",
-    highlightText: "Top Rated",
-    subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
-    showRateOnHome: true,
-  });
-
   // Navbar Navigation Manager State & Handlers
   const [navConfig, setNavConfig] = useState<any>({
     items: [
