@@ -42,6 +42,7 @@ function ManipuriKuthiYengbaContent() {
   const [clientName, setClientName] = useState('');
   const [whatsappNo, setWhatsappNo] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
+  const [clientRequirement, setClientRequirement] = useState('');
 
   // Price per person / Kuthi
   const pricePerKuthi = selectedSubService.price;
@@ -238,6 +239,7 @@ function ManipuriKuthiYengbaContent() {
         clientName,
         whatsappNo,
         gender,
+        clientRequirement,
         personCount: slots.length,
         uploadedFiles: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
         noKuthiPaper,
@@ -411,6 +413,20 @@ function ManipuriKuthiYengbaContent() {
                       ))}
                     </select>
                   </div>
+                </div>
+
+                {/* 1B. CLIENT REQUIREMENT / SPECIAL SERVICE SPECIFICATION */}
+                <div>
+                  <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                    Client Requirement / Special Service Details
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Specify your custom requirements, special services needed, or specific questions for the astrologer..."
+                    value={clientRequirement}
+                    onChange={(e) => setClientRequirement(e.target.value)}
+                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                  />
                 </div>
 
                 {/* 2. HOW MANY PERSON SELECTOR (1, 2, 3, 4, 5) */}
@@ -789,6 +805,12 @@ function ManipuriKuthiYengbaContent() {
                     <span className="text-gray-500">Sub-Category Service:</span>
                     <span className="font-bold text-[#b45309]">{selectedSubService.title} (₹{selectedSubService.price} × {slots.length})</span>
                   </div>
+                  {clientRequirement && (
+                    <div className="flex justify-between border-b border-[#fde68a] pb-2">
+                      <span className="text-gray-500">Client Requirement / Details:</span>
+                      <span className="font-bold text-[#0f172a]">{clientRequirement}</span>
+                    </div>
+                  )}
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">Reading Fee ({slots.length} Paper):</span>
                     <span className="font-bold text-[#0f172a]">₹{baseReadingAmount}</span>
