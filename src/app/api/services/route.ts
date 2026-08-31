@@ -71,7 +71,7 @@ const DEFAULT_SERVICES: ServiceItem[] = [
     ],
     price: '₹899',
     cta: 'Order Kuthi Iba',
-    link: '/manipuri_kuthi_yengba?service=s-2',
+    link: '/manipuri_kuthi',
     active: true,
     subServices: [
       {

@@ -57,7 +57,7 @@ function ManipuriKuthiContent() {
     const ref = 'KI-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
 
-    // Fetch live sub-categories from Admin services API (sharing /manipuri_kuthi_yengba sub-categories)
+    // Fetch live sub-categories from Admin services API linked strictly with /manipuri_kuthi
     fetch('/api/services')
       .then((res) => res.json())
       .then((data) => {
@@ -70,13 +70,15 @@ function ManipuriKuthiContent() {
             targetService = data.services.find((s: any) => s.id === targetServiceId);
           }
 
-          // Search for /manipuri_kuthi_yengba service or Kuthi services (s-2 or s-1)
-          if (!targetService) {
-            targetService = data.services.find((s: any) => 
-              s.link === '/manipuri_kuthi_yengba' || 
-              (s.link && s.link.includes('/manipuri_kuthi_yengba'))
-            ) || data.services.find((s: any) => s.id === 's-2' || s.id === 's-1');
-          }
+          // Search specifically for admin services linked strictly to /manipuri_kuthi
+          const matchingServices = data.services.filter((s: any) => 
+            s.active !== false && (
+              s.link === '/manipuri_kuthi' || 
+              (s.link && s.link.startsWith('/manipuri_kuthi?')) ||
+              (s.link && s.link.startsWith('/manipuri_kuthi/')) ||
+              s.id === 's-2'
+            )
+          );
 
           if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
             const formatted: KuthiIbaPackage[] = targetService.subServices.map((sub: any) => ({
@@ -87,12 +89,12 @@ function ManipuriKuthiContent() {
             setPackages(formatted);
             setSelectedPackage(formatted[0]);
           } else {
-            // Aggregate all sub-categories defined across active admin services
-            const allAdminSubs: KuthiIbaPackage[] = [];
-            data.services.forEach((s: any) => {
-              if (s.active !== false && Array.isArray(s.subServices)) {
+            // Aggregate sub-categories strictly from /manipuri_kuthi services
+            const filteredSubs: KuthiIbaPackage[] = [];
+            matchingServices.forEach((s: any) => {
+              if (Array.isArray(s.subServices)) {
                 s.subServices.forEach((sub: any) => {
-                  allAdminSubs.push({
+                  filteredSubs.push({
                     id: sub.id,
                     title: sub.title,
                     price: Number(sub.price) || 899,
@@ -100,9 +102,10 @@ function ManipuriKuthiContent() {
                 });
               }
             });
-            if (allAdminSubs.length > 0) {
-              setPackages(allAdminSubs);
-              setSelectedPackage(allAdminSubs[0]);
+
+            if (filteredSubs.length > 0) {
+              setPackages(filteredSubs);
+              setSelectedPackage(filteredSubs[0]);
             }
           }
         }

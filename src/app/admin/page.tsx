@@ -270,7 +270,7 @@ const INITIAL_SERVICES: ManagedService[] = [
     price: '₹899',
     astroPayoutFee: 550,
     cta: 'Order Kuthi Iba',
-    link: '/manipuri_kuthi_yengba?service=s-2',
+    link: '/manipuri_kuthi',
     active: true,
     subServices: [
       { id: 'sub-201', title: 'Standard Handwritten Kuthi Paper (Single Child)', price: 899, description: 'Traditional handwritten birth scroll on sacred parchment.' },

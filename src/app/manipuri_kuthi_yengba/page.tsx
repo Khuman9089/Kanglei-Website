@@ -91,7 +91,7 @@ function ManipuriKuthiYengbaContent() {
             targetService = data.services.find((s: any) => s.id === targetServiceId);
           }
 
-          // If a specific service was targeted and has subServices
+          // If a specific service was targeted via URL param and has subServices
           if (targetService && Array.isArray(targetService.subServices) && targetService.subServices.length > 0) {
             const formattedSubs: KuthiSubServiceOption[] = targetService.subServices.map((sub: any) => ({
               id: sub.id,
@@ -101,12 +101,21 @@ function ManipuriKuthiYengbaContent() {
             setSubServices(formattedSubs);
             setSelectedSubService(formattedSubs[0]);
           } else {
-            // Aggregate all active subServices defined across all admin services
-            const allAdminSubs: KuthiSubServiceOption[] = [];
-            data.services.forEach((s: any) => {
-              if (s.active !== false && Array.isArray(s.subServices)) {
+            // Filter active admin services linked strictly with /manipuri_kuthi_yengba
+            const matchingServices = data.services.filter((s: any) => 
+              s.active !== false && (
+                s.link === '/manipuri_kuthi_yengba' || 
+                (s.link && s.link.startsWith('/manipuri_kuthi_yengba?')) ||
+                (s.link && s.link.startsWith('/manipuri_kuthi_yengba/')) ||
+                s.id === 's-1'
+              )
+            );
+
+            const filteredSubs: KuthiSubServiceOption[] = [];
+            matchingServices.forEach((s: any) => {
+              if (Array.isArray(s.subServices)) {
                 s.subServices.forEach((sub: any) => {
-                  allAdminSubs.push({
+                  filteredSubs.push({
                     id: sub.id,
                     title: sub.title,
                     price: Number(sub.price) || 499,
@@ -115,9 +124,9 @@ function ManipuriKuthiYengbaContent() {
               }
             });
 
-            if (allAdminSubs.length > 0) {
-              setSubServices(allAdminSubs);
-              setSelectedSubService(allAdminSubs[0]);
+            if (filteredSubs.length > 0) {
+              setSubServices(filteredSubs);
+              setSelectedSubService(filteredSubs[0]);
             }
           }
         }
