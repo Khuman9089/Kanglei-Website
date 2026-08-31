@@ -68,11 +68,11 @@ function NumitLeppaYengbaContent() {
   const [deliveryAddress, setDeliveryAddress] = useState('');
 
   // Physical Parchment Scroll Packages (Loaded from /manipuri_kuthi service)
-  const [physicalPackages, setPhysicalPackages] = useState<NumitSubServiceOption[]>([
+  const [physicalPackages, setPhysicalPackages] = useState<NumitLeppaSubServiceOption[]>([
     { id: 'sub-201', title: 'Standard Handwritten Kuthi Paper (Single Child)', price: 899 },
     { id: 'sub-202', title: 'Premium Gold-Stamped Traditional Kuthi Scroll', price: 1499 },
   ]);
-  const [selectedPhysicalPackage, setSelectedPhysicalPackage] = useState<NumitSubServiceOption>(physicalPackages[0]);
+  const [selectedPhysicalPackage, setSelectedPhysicalPackage] = useState<NumitLeppaSubServiceOption>(physicalPackages[0]);
 
   // Payment State
   const [utrNumber, setUtrNumber] = useState('');
@@ -107,7 +107,7 @@ function NumitLeppaYengbaContent() {
           );
 
           if (physService && Array.isArray(physService.subServices) && physService.subServices.length > 0) {
-            const formattedPhys: NumitSubServiceOption[] = physService.subServices.map((sub: any) => ({
+            const formattedPhys: NumitLeppaSubServiceOption[] = physService.subServices.map((sub: any) => ({
               id: sub.id,
               title: sub.title,
               price: Number(sub.price) || 899,
