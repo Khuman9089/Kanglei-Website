@@ -15,9 +15,28 @@ interface KuthiSlot {
   file: File | null;
 }
 
+export interface KuthiSubServiceOption {
+  id: string;
+  title: string;
+  price: number;
+}
+
+const DEFAULT_SUB_SERVICES: KuthiSubServiceOption[] = [
+  { id: 'sub-1', title: 'Standard Kuthi Reading', price: 499 },
+  { id: 'sub-2', title: 'Full Life & Dasha Analysis', price: 799 },
+  { id: 'sub-3', title: 'Career & Financial Consultation', price: 599 },
+  { id: 'sub-4', title: 'Health & Remedial Jyotish', price: 599 },
+  { id: 'sub-5', title: 'Marriage & Relationship Reading', price: 699 },
+  { id: 'sub-6', title: 'Yearly Transit & Sade Sati Report', price: 499 },
+];
+
 function ManipuriKuthiYengbaContent() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [orderRef, setOrderRef] = useState<string>('');
+
+  // Sub-Category Services State
+  const [subServices, setSubServices] = useState<KuthiSubServiceOption[]>(DEFAULT_SUB_SERVICES);
+  const [selectedSubService, setSelectedSubService] = useState<KuthiSubServiceOption>(DEFAULT_SUB_SERVICES[0]);
 
   // Primary Contact Info
   const [clientName, setClientName] = useState('');
@@ -25,7 +44,7 @@ function ManipuriKuthiYengbaContent() {
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
 
   // Price per person / Kuthi
-  const pricePerKuthi = 499;
+  const pricePerKuthi = selectedSubService.price;
   const kuthiRewriteFeePerPaper = 1000;
 
   // Kuthi Slots (Default 1 slot)
@@ -166,6 +185,8 @@ function ManipuriKuthiYengbaContent() {
       action: 'CREATE_ORDER',
       order: {
         category: 'kuthi_yengba',
+        serviceTitle: `Kuthi Yengba — ${selectedSubService.title}`,
+        subServiceTitle: selectedSubService.title,
         clientName,
         whatsappNo,
         gender,
@@ -292,8 +313,8 @@ function ManipuriKuthiYengbaContent() {
 
               <form onSubmit={handleStep1Submit} className="space-y-6 text-xs font-sans">
                 
-                {/* 1. NAME & WHATSAPP NO */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* 1. NAME, WHATSAPP NO & SUB-CATEGORY DROPDOWN */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
                       Your Name<span className="text-red-500">*</span>
@@ -320,6 +341,27 @@ function ManipuriKuthiYengbaContent() {
                       onChange={(e) => setWhatsappNo(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                     />
+                  </div>
+
+                  {/* SUB-CATEGORY DROPDOWN SELECTION */}
+                  <div>
+                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                      Select Sub-Category<span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={selectedSubService.id}
+                      onChange={(e) => {
+                        const found = subServices.find((s) => s.id === e.target.value);
+                        if (found) setSelectedSubService(found);
+                      }}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none cursor-pointer"
+                    >
+                      {subServices.map((sub) => (
+                        <option key={sub.id} value={sub.id}>
+                          {sub.title} (₹{sub.price})
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
@@ -694,6 +736,10 @@ function ManipuriKuthiYengbaContent() {
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">WhatsApp Number:</span>
                     <span className="font-bold text-[#0f172a]">{whatsappNo}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-[#fde68a] pb-2">
+                    <span className="text-gray-500">Sub-Category Service:</span>
+                    <span className="font-bold text-[#b45309]">{selectedSubService.title} (₹{selectedSubService.price} × {slots.length})</span>
                   </div>
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">Reading Fee ({slots.length} Paper):</span>
