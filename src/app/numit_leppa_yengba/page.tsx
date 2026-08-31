@@ -4,22 +4,22 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Phone, Calendar, Clock, MapPin, FileText, CheckCircle2, 
-  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, MessageSquare, Sun, Truck 
+  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, Sun, ChevronDown, MessageSquare, Truck 
 } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
-
-interface NumitSlot {
-  id: string;
-  label: string;
-  file: File | null;
-}
 
 export interface NumitLeppaSubServiceOption {
   id: string;
   title: string;
   price: number;
   description?: string;
+}
+
+interface KuthiSlot {
+  id: string;
+  label: string;
+  file: File | null;
 }
 
 const DEFAULT_NUMIT_SUB_SERVICES: NumitLeppaSubServiceOption[] = [
@@ -35,22 +35,19 @@ function NumitLeppaYengbaContent() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
   const [orderRef, setOrderRef] = useState<string>('');
 
-  // Sub-Category Services State
-  const [subServices, setSubServices] = useState<NumitLeppaSubServiceOption[]>(DEFAULT_NUMIT_SUB_SERVICES);
-  const [selectedSubService, setSelectedSubService] = useState<NumitLeppaSubServiceOption>(DEFAULT_NUMIT_SUB_SERVICES[0]);
-
   // Primary Contact Info
   const [clientName, setClientName] = useState('');
   const [whatsappNo, setWhatsappNo] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
 
-  // Price per person / event
-  const pricePerEvent = selectedSubService.price;
-  const physicalDeliveryFeePerDocument = 500;
+  // Reasons list (from admin API or default)
+  const [reasons, setReasons] = useState<NumitLeppaSubServiceOption[]>(DEFAULT_NUMIT_SUB_SERVICES);
+  const [selectedReason, setSelectedReason] = useState<NumitLeppaSubServiceOption>(DEFAULT_NUMIT_SUB_SERVICES[0]);
+  const [customReason, setCustomReason] = useState('');
 
-  // Event Slots (Default 1 slot)
-  const [slots, setSlots] = useState<NumitSlot[]>([
-    { id: 'slot-1', label: 'Event / Person Kuthi #1', file: null },
+  // Kuthi Upload Slots (Default 1 slot)
+  const [slots, setSlots] = useState<KuthiSlot[]>([
+    { id: 'slot-1', label: 'Kuthi Paper #1', file: null },
   ]);
 
   // Checkbox: I don't have Kuthi paper
@@ -116,8 +113,8 @@ function NumitLeppaYengbaContent() {
               price: Number(sub.price) || 501,
               description: sub.description || 'Auspicious muhurat alignment',
             }));
-            setSubServices(formattedSubs);
-            setSelectedSubService(formattedSubs[0]);
+            setReasons(formattedSubs);
+            setSelectedReason(formattedSubs[0]);
           } else {
             const filteredSubs: NumitLeppaSubServiceOption[] = [];
             matchingServices.forEach((s: any) => {
@@ -134,8 +131,8 @@ function NumitLeppaYengbaContent() {
             });
 
             if (filteredSubs.length > 0) {
-              setSubServices(filteredSubs);
-              setSelectedSubService(filteredSubs[0]);
+              setReasons(filteredSubs);
+              setSelectedReason(filteredSubs[0]);
             }
           }
 
@@ -166,11 +163,11 @@ function NumitLeppaYengbaContent() {
     setErrorMsg('');
     const currentCount = slots.length;
     if (count > currentCount) {
-      const newSlots: NumitSlot[] = [];
+      const newSlots: KuthiSlot[] = [];
       for (let i = currentCount + 1; i <= count; i++) {
         newSlots.push({
           id: `slot-${Date.now()}-${i}`,
-          label: `Event / Person Kuthi #${i}`,
+          label: `Kuthi Paper #${i}`,
           file: null,
         });
       }
@@ -187,7 +184,7 @@ function NumitLeppaYengbaContent() {
       ...slots,
       {
         id: `slot-${Date.now()}-${nextNum}`,
-        label: `Event / Person Kuthi #${nextNum}`,
+        label: `Kuthi Paper #${nextNum}`,
         file: null,
       },
     ]);
@@ -198,7 +195,7 @@ function NumitLeppaYengbaContent() {
     if (slots.length <= 1) return;
     const updated = slots.filter((s) => s.id !== id).map((s, idx) => ({
       ...s,
-      label: `Event / Person Kuthi #${idx + 1}`,
+      label: `Kuthi Paper #${idx + 1}`,
     }));
     setSlots(updated);
   };
@@ -208,8 +205,8 @@ function NumitLeppaYengbaContent() {
     setSlots(slots.map((s) => (s.id === id ? { ...s, file } : s)));
   };
 
-  // Calculate Total Amount
-  const baseServiceAmount = pricePerEvent * slots.length;
+  // Total Amount Calculation
+  const baseServiceAmount = selectedReason.price * slots.length;
   const deliveryAmount = wantPhysicalDelivery ? (selectedPhysicalPackage.price * slots.length) : 0;
   const totalAmount = baseServiceAmount + deliveryAmount;
 
@@ -234,6 +231,9 @@ function NumitLeppaYengbaContent() {
         setErrorMsg('Please enter Date of Birth, Time of Birth, and Place of Birth.');
         return;
       }
+    } else if (uploadedFilesCount === 0) {
+      setErrorMsg('Please upload your Kuthi paper file(s) or check "I don\'t have a Kuthi paper".');
+      return;
     }
 
     if (wantPhysicalDelivery) {
@@ -261,17 +261,20 @@ function NumitLeppaYengbaContent() {
 
     setLoading(true);
 
+    const effectiveReason = customReason.trim() ? `${selectedReason.title} (${customReason.trim()})` : selectedReason.title;
+
     const orderPayload = {
       action: 'CREATE_ORDER',
       order: {
         category: 'numit_leppa_yengba',
-        serviceTitle: `Numit Leppa Yengba — ${selectedSubService.title}`,
-        subServiceTitle: selectedSubService.title,
+        serviceTitle: `Numit Yengba — ${effectiveReason}`,
         clientName,
         whatsappNo,
         gender,
+        reasonTitle: effectiveReason,
+        customReason: customReason.trim(),
+        pricePerUnit: selectedReason.price,
         personCount: slots.length,
-        uploadedFiles: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
         noKuthiPaper,
         dob,
         tob,
@@ -284,7 +287,11 @@ function NumitLeppaYengbaContent() {
           yekSalai,
           gotra,
           deliveryAddress,
+          packageName: selectedPhysicalPackage.title,
+          packagePrice: selectedPhysicalPackage.price,
         } : null,
+        filesCount: uploadedFilesCount,
+        fileNames: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
         baseServiceAmount,
         deliveryAmount,
         totalAmount,
@@ -315,21 +322,18 @@ function NumitLeppaYengbaContent() {
         {/* Progress Tracker */}
         <div className="mb-6 text-center">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fef3c7] border border-[#fde68a] text-[#b45309] text-xs font-bold uppercase tracking-wider mb-2">
-            <Sun className="w-4 h-4 text-[#d97706] fill-[#d97706]" />
-            Manipuri Numit Leppa Yengba Portal
+            <Sun className="w-4 h-4 text-[#d97706]" />
+            Manipuri Numit Yengba (Auspicious Date Selection)
           </div>
           <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#0f172a]">
-            Numit Leppa Yengba <span className="text-[#b45309]">Intake Form</span>
+            Numit Yengba <span className="text-[#b45309]">Consultation Form</span>
           </h1>
-          <p className="text-xs sm:text-sm text-gray-600 mt-1 max-w-xl mx-auto">
-            Calculate auspicious dates & shubha muhurat for Yum Sangba, Luhongba, Swasti Puja, Business & Vehicle Purchase.
-          </p>
 
           <div className="flex items-center justify-between max-w-md mx-auto mt-6 relative">
             <div className="absolute top-1/2 left-0 right-0 h-0.5 bg-[#f3e8d2] -translate-y-1/2 z-0" />
             
             {[
-              { num: 1, label: 'Select Event & Details' },
+              { num: 1, label: 'Form & Reason' },
               { num: 2, label: 'UPI Summary & Payment' },
               { num: 3, label: 'Order Confirmation' },
             ].map((s) => (
@@ -362,7 +366,7 @@ function NumitLeppaYengbaContent() {
 
         <AnimatePresence mode="wait">
           
-          {/* STEP 1: INTAKE FORM */}
+          {/* STEP 1: NUMIT YENGBA FORM */}
           {step === 1 && (
             <motion.div
               key="step1"
@@ -376,11 +380,11 @@ function NumitLeppaYengbaContent() {
               <div className="flex items-center justify-between border-b border-[#fde68a]/50 pb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706]">
-                    <Sun className="w-5 h-5 fill-[#d97706]" />
+                    <Sun className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-serif font-bold text-xl text-[#0f172a]">Auspicious Date Consultation Form</h3>
-                    <p className="text-xs text-gray-500 font-sans">Fill in your event details, upload Kuthi, or enter birth data</p>
+                    <h3 className="font-serif font-bold text-xl text-[#0f172a]">Auspicious Date (Numit Yengba) Details</h3>
+                    <p className="text-xs text-gray-500 font-sans">Select purpose and provide contact information</p>
                   </div>
                 </div>
 
@@ -396,16 +400,16 @@ function NumitLeppaYengbaContent() {
 
               <form onSubmit={handleStep1Submit} className="space-y-6 text-xs font-sans">
                 
-                {/* 1. NAME & WHATSAPP NUMBER */}
+                {/* 1. NAME & WHATSAPP NO */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Your Name<span className="text-red-500">*</span>
+                      Your Full Name<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
                       required
-                      placeholder="Enter your full name"
+                      placeholder="Enter your name"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
@@ -414,7 +418,7 @@ function NumitLeppaYengbaContent() {
 
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      WhatsApp Number<span className="text-red-500">*</span>
+                      WhatsApp Mobile Number<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -427,72 +431,58 @@ function NumitLeppaYengbaContent() {
                   </div>
                 </div>
 
-                {/* SELECT REASON FOR NUMIT YENGBA (AUSPICIOUS DATE) GRID CARDS */}
-                <div className="space-y-2 pt-2">
-                  <label className="block font-bold text-[#0f172a] uppercase tracking-wider text-xs">
-                    SELECT REASON FOR NUMIT YENGBA (AUSPICIOUS DATE)<span className="text-red-500">*</span>
-                  </label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                    {subServices.map((sub) => {
-                      const isSelected = selectedSubService.id === sub.id;
-                      return (
-                        <div
-                          key={sub.id}
-                          onClick={() => setSelectedSubService(sub)}
-                          className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
-                            isSelected
-                              ? 'bg-[#fef3c7]/60 border-[#d97706] shadow-sm ring-2 ring-[#d97706]/20 font-bold'
-                              : 'bg-[#fffdfa] border-[#fde68a] hover:bg-[#fef3c7]/30 text-gray-700'
-                          }`}
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <span className="font-extrabold text-[#0f172a] text-xs sm:text-sm">
-                              {sub.title}
-                            </span>
-                            <span className="font-mono font-black text-xs sm:text-sm text-[#b45309] shrink-0">
-                              ₹{sub.price}
-                            </span>
-                          </div>
-                          {sub.description && (
-                            <p className="text-[11px] text-gray-500 font-medium mt-1">
-                              {sub.description}
-                            </p>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-
-                {/* 2. HOW MANY EVENT DATES SELECTOR (1, 2, 3, 4, 5) */}
+                {/* 2. REASON FOR CONSULTATION / LOOKING DATE (DYNAMIC MENU) */}
                 <div className="space-y-2 pt-2">
                   <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
-                    How Many Event Dates to Check?<span className="text-red-500">*</span>
+                    SELECT REASON FOR NUMIT YENGBA (AUSPICIOUS DATE)<span className="text-red-500">*</span>
                   </label>
                   
-                  <div className="grid grid-cols-5 gap-2 sm:gap-3">
-                    {[1, 2, 3, 4, 5].map((num) => (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    {reasons.map((r) => (
                       <button
-                        key={num}
+                        key={r.id}
                         type="button"
-                        onClick={() => handleCountSelect(num)}
-                        className={`py-3 rounded-2xl font-black text-sm transition-all border cursor-pointer ${
-                          slots.length === num
-                            ? 'bg-[#d97706] text-white border-[#d97706] shadow-md ring-2 ring-[#d97706]/30 scale-[1.02]'
-                            : 'bg-[#fefcf6] text-[#0f172a] border-[#fde68a] hover:bg-[#fef3c7]'
+                        onClick={() => setSelectedReason(r)}
+                        className={`p-4 rounded-2xl text-left border-2 transition-all cursor-pointer flex flex-col justify-between ${
+                          selectedReason.id === r.id
+                            ? 'bg-[#fef3c7] border-[#d97706] shadow-md ring-2 ring-[#d97706]/30 font-bold'
+                            : 'bg-[#fefcf6] border-[#fde68a] hover:bg-[#fef3c7]/60 text-gray-700'
                         }`}
                       >
-                        {num}
+                        <div className="flex justify-between items-start">
+                          <span className="font-extrabold text-[#0f172a] text-xs sm:text-sm">{r.title}</span>
+                          <span className="font-mono font-black text-xs sm:text-sm text-[#b45309]">₹{r.price}</span>
+                        </div>
+                        {r.description && (
+                          <span className="text-[11px] text-gray-500 mt-1 block font-medium">{r.description}</span>
+                        )}
                       </button>
                     ))}
                   </div>
+
+                  {/* CUSTOM EVENT / REASON FIELD (IF NOT LISTED ABOVE) */}
+                  <div className="pt-3">
+                    <label className="block text-[11px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                      Other Event / Custom Reason (If not listed in above options)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Ear Piercing (Nahutpa), Shradha Puja, Journey, Gold Purchase, Foreign Travel..."
+                      value={customReason}
+                      onChange={(e) => setCustomReason(e.target.value)}
+                      className="w-full h-11 px-3.5 rounded-xl border border-[#fde68a] bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                    />
+                  </div>
                 </div>
 
-                {/* 3. UPLOAD KUTHI / HOROSCOPE FILE BOXES */}
+                {/* 3. COMPULSORY KUTHI FILE UPLOAD SLOTS & + ADD MORE BUTTON */}
                 <div className="space-y-4 pt-2">
-                  <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
-                    Upload Kuthi / Horoscope Files (Optional, {slots.length} {slots.length === 1 ? 'Slot' : 'Slots'})
-                  </label>
+                  <div className="flex justify-between items-center">
+                    <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
+                      Upload Kuthi / Kundli Paper Photos {!noKuthiPaper && <span className="text-red-500">* (COMPULSORY)</span>}
+                    </label>
+                    <span className="text-[10px] text-gray-500">{slots.length} {slots.length === 1 ? 'Paper Slot' : 'Paper Slots'}</span>
+                  </div>
 
                   <div className="space-y-3">
                     {slots.map((slot, index) => (
@@ -539,7 +529,7 @@ function NumitLeppaYengbaContent() {
                               type="button"
                               onClick={() => handleRemoveSlot(slot.id)}
                               className="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
-                              title="Remove slot"
+                              title="Remove Kuthi slot"
                             >
                               <Trash2 className="w-4 h-4" />
                             </button>
@@ -549,7 +539,7 @@ function NumitLeppaYengbaContent() {
                     ))}
                   </div>
 
-                  {/* + ADD MORE EVENT DATE BUTTON BELOW */}
+                  {/* + ADD MORE KUTHI FILE BUTTON BELOW */}
                   <div className="pt-1 flex justify-center">
                     <button
                       type="button"
@@ -557,7 +547,7 @@ function NumitLeppaYengbaContent() {
                       className="px-5 py-2.5 rounded-xl bg-white border-2 border-dashed border-[#d97706] text-[#b45309] font-bold text-xs hover:bg-[#fef3c7] transition-all flex items-center gap-1.5 shadow-xs cursor-pointer"
                     >
                       <Plus className="w-4 h-4" />
-                      <span>+ Add More Event Date Request</span>
+                      <span>+ Add More Kuthi File (+₹{selectedReason.price})</span>
                     </button>
                   </div>
                 </div>
@@ -659,11 +649,11 @@ function NumitLeppaYengbaContent() {
 
                         <div>
                           <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                            Target Month / Preferred Date Window for Event (Optional)
+                            Specific Preferred Timeframe or Event Details (Optional)
                           </label>
                           <textarea
                             rows={2}
-                            placeholder="Enter any preferred timeframe (e.g. November 2026, auspicious weekend dates)"
+                            placeholder="Enter any preferred month, week, or notes for the astrologer"
                             value={notes}
                             onChange={(e) => setNotes(e.target.value)}
                             className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
@@ -814,7 +804,7 @@ function NumitLeppaYengbaContent() {
                     type="submit"
                     className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Proceed to UPI Payment Summary (₹{totalAmount})</span>
+                    <span>Proceed to UPI Payment (₹{totalAmount})</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -845,7 +835,7 @@ function NumitLeppaYengbaContent() {
 
                 <div className="flex justify-between items-center pb-4 border-b border-[#fde68a]/50">
                   <div>
-                    <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Numit Leppa Order Summary</h3>
+                    <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Numit Yengba Order Summary</h3>
                     <p className="text-xs text-gray-500 font-sans">Order Ref: <span className="font-mono font-bold text-[#b45309]">{orderRef}</span></p>
                   </div>
                   <span className="px-3.5 py-1.5 rounded-xl bg-[#fef3c7] text-[#b45309] font-extrabold text-sm border border-[#fde68a]">
@@ -853,7 +843,7 @@ function NumitLeppaYengbaContent() {
                   </span>
                 </div>
 
-                <div className="space-y-2.5 bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] text-xs font-sans text-gray-700">
+                <div className="space-y-2 bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] text-xs font-sans text-gray-700">
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">Name:</span>
                     <span className="font-bold text-[#0f172a]">{clientName} ({gender})</span>
@@ -863,12 +853,10 @@ function NumitLeppaYengbaContent() {
                     <span className="font-bold text-[#0f172a]">{whatsappNo}</span>
                   </div>
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
-                    <span className="text-gray-500">Selected Event Purpose:</span>
-                    <span className="font-bold text-[#b45309]">{selectedSubService.title} (₹{selectedSubService.price} × {slots.length})</span>
-                  </div>
-                  <div className="flex justify-between border-b border-[#fde68a] pb-2">
-                    <span className="text-gray-500">Consultation Fee ({slots.length} Event):</span>
-                    <span className="font-bold text-[#0f172a]">₹{baseServiceAmount}</span>
+                    <span className="text-gray-500">Numit Yengba Purpose:</span>
+                    <span className="font-bold text-[#b45309]">
+                      {customReason.trim() ? `${selectedReason.title} — ${customReason.trim()}` : selectedReason.title} (₹{selectedReason.price} × {slots.length})
+                    </span>
                   </div>
 
                   {wantPhysicalDelivery && (
@@ -880,7 +868,7 @@ function NumitLeppaYengbaContent() {
 
                   {uploadedFilesCount > 0 ? (
                     <div className="pt-1">
-                      <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Attached Kuthi Files:</span>
+                      <span className="text-gray-400 uppercase tracking-wider block text-[10px] font-bold">Attached Kuthi Files ({uploadedFilesCount}):</span>
                       <ul className="list-disc list-inside space-y-1 font-semibold text-[#0f172a] mt-1">
                         {slots.filter((s) => s.file !== null).map((s) => (
                           <li key={s.id}>{s.label}: {s.file?.name}</li>
@@ -979,11 +967,11 @@ function NumitLeppaYengbaContent() {
               </div>
 
               <h2 className="text-3xl sm:text-4xl font-serif font-bold text-[#0f172a] mb-3">
-                🙏 Numit Leppa Order Successfully Submitted!
+                🙏 Numit Yengba Order Successfully Submitted!
               </h2>
 
               <div className="bg-[#fefcf6] p-6 rounded-2xl border border-[#fde68a] text-xs sm:text-sm text-[#78350f] leading-relaxed mb-8 font-medium shadow-xs">
-                Your Numit Leppa request for <strong className="font-bold">{selectedSubService.title} ({slots.length} Date Request)</strong> has been assigned to our Acharyas. Calculated auspicious dates & muhurat guidance will be delivered to your WhatsApp:
+                Your Numit Yengba request for <strong className="font-bold">{selectedReason.title} ({slots.length} Kuthi Paper)</strong> has been assigned to our Acharyas. Detailed auspicious date report & voice guidance will be delivered to your WhatsApp:
                 <strong className="block text-base text-[#b45309] font-bold mt-2 font-mono">
                   {whatsappNo}
                 </strong>
@@ -995,7 +983,7 @@ function NumitLeppaYengbaContent() {
                 )}
 
                 <span className="inline-block mt-3 px-3 py-1 bg-green-600 text-white text-xs font-bold rounded-full">
-                  ⚡ Digital Delivery: Within 24 Hours on WhatsApp
+                  ⚡ Delivery: Within 24 Hours on WhatsApp
                 </span>
               </div>
 
@@ -1007,6 +995,10 @@ function NumitLeppaYengbaContent() {
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Client Name:</span>
                   <span className="font-bold text-[#0f172a]">{clientName} ({gender})</span>
+                </div>
+                <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
+                  <span className="text-gray-500">Purpose:</span>
+                  <span className="font-bold text-[#0f172a]">{selectedReason.title}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Submitted UTR:</span>
@@ -1023,7 +1015,7 @@ function NumitLeppaYengbaContent() {
                 </Link>
 
                 <a
-                  href={`https://wa.me/919876543210?text=Hello%20KuthiYengpham,%20I%20have%20submitted%20my%20Numit%20Leppa%20order%20${orderRef}`}
+                  href={`https://wa.me/919876543210?text=Hello%20KuthiYengpham,%20I%20have%20submitted%20my%20Numit%20Yengba%20order%20${orderRef}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-green-600 text-white font-bold text-xs hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
@@ -1044,7 +1036,7 @@ function NumitLeppaYengbaContent() {
 
 export default function NumitLeppaYengbaPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#fffdfa] pt-20 text-center text-[#0f172a]">Loading Numit Leppa Yengba Form...</div>}>
+    <Suspense fallback={<div className="min-h-screen bg-[#fffdfa] pt-20 text-center text-[#0f172a]">Loading Numit Yengba Form...</div>}>
       <NumitLeppaYengbaContent />
     </Suspense>
   );
