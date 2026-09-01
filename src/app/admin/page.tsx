@@ -2349,10 +2349,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <LayoutDashboard className="w-4 h-4" />
-                    <span>Overview & Analytics</span>
-                  </div>
+                  <LayoutDashboard className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Overview & Analytics</span>
                 </button>
 
                 {/* 2. Kuthi Orders Hub */}
@@ -2364,11 +2362,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <FileText className="w-4 h-4 text-[#d97706]" />
-                    <span>Kuthi Orders Hub</span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f] text-[10px] font-extrabold border border-[#fde68a]">
+                  <FileText className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Kuthi Orders Hub</span>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f] text-[10px] font-extrabold border border-[#fde68a]">
                     {orders.filter(o => o.status !== 'COMPLETED').length}
                   </span>
                 </button>
@@ -2392,11 +2388,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-[#d97706]" />
-                    <span>Website Astrologers</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Sparkles className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Website Astrologers</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
                   }`}>
                     CMS Display
@@ -2412,11 +2406,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Tag className="w-4 h-4 text-[#d97706]" />
-                    <span>Website Services</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Tag className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Website Services</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
                   }`}>
                     {services.length} Services
@@ -2432,11 +2424,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Menu className="w-4 h-4 text-[#d97706]" />
-                    <span>Navbar Menu Manager</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Menu className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Navbar Menu Manager</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
                   }`}>
                     Top Menu
@@ -2462,11 +2452,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Award className="w-4 h-4 text-[#d97706]" />
-                    <span>All Jyotishs</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Award className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">All Jyotishs</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
                   }`}>
                     {astrologers.length} Gurus
@@ -2482,16 +2470,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <DollarSign className="w-4 h-4 text-green-600" />
-                    <span>Payout Request</span>
-                  </div>
+                  <DollarSign className="w-4 h-4 text-green-600 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Payout Request</span>
                   {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
                       ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
                     </span>
                   ) : (
-                    <span className="px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-extrabold border border-green-200">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-extrabold border border-green-200">
                       Settled
                     </span>
                   )}
@@ -2506,11 +2492,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <UserCheck className="w-4 h-4 text-sky-600" />
-                    <span>Assign List</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <UserCheck className="w-4 h-4 text-sky-600 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Assign List</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-800 border-sky-200'
                   }`}>
                     {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length} Assigned
@@ -2522,11 +2506,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   onClick={() => setShowAddAstroModal(true)}
                   className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold bg-[#fef3c7] text-[#b45309] hover:bg-[#fde68a] transition-all border border-[#fde68a] cursor-pointer"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Plus className="w-4 h-4 text-[#d97706]" />
-                    <span>+ Add Jyotish</span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-white text-[#d97706] text-[10px] font-extrabold border border-[#fde68a]">
+                  <Plus className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">+ Add Jyotish</span>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-white text-[#d97706] text-[10px] font-extrabold border border-[#fde68a]">
                     New Guru
                   </span>
                 </button>
@@ -2550,11 +2532,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <ShoppingBag className="w-4 h-4 text-amber-500" />
-                    <span>E-Store Orders & UTR</span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-green-500/20 text-green-700 text-[10px] font-extrabold border border-green-500/30">
+                  <ShoppingBag className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">E-Store Orders & UTR</span>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-green-500/20 text-green-700 text-[10px] font-extrabold border border-green-500/30">
                     {shopOrders.length}
                   </span>
                 </button>
@@ -2568,11 +2548,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Package className="w-4 h-4 text-amber-500" />
-                    <span>Add & Edit Products</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Package className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Add & Edit Products</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
                     {shopProducts.length} Items
@@ -2588,16 +2566,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Award className="w-4 h-4 text-purple-500" />
-                    <span>Astrologer Products</span>
-                  </div>
+                  <Award className="w-4 h-4 text-purple-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Astrologer Products</span>
                   {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER' && p.status === 'PENDING_APPROVAL').length > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-900 text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-slate-900 text-[10px] font-extrabold animate-pulse">
                       {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER' && p.status === 'PENDING_APPROVAL').length} Pending
                     </span>
                   ) : (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                       theme === 'dark' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-purple-100 text-purple-900 border-purple-300'
                     }`}>
                       {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER').length} Vendor
@@ -2614,11 +2590,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Truck className="w-4 h-4 text-sky-500" />
-                    <span>Assign Delivery</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Truck className="w-4 h-4 text-sky-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Assign Delivery</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
                   }`}>
                     Courier
@@ -2634,11 +2608,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <Tag className="w-4 h-4 text-emerald-500" />
-                    <span>Promo Coupons</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Promo Coupons</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                   }`}>
                     {shopCoupons.length} Vouchers
@@ -2662,11 +2634,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <Bell className="w-4 h-4 text-[#d97706]" />
-                  <span>Astrologer Announcements</span>
-                </div>
-                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                <Bell className="w-4 h-4 text-[#d97706] shrink-0" />
+                <span className="flex-1 text-center font-bold px-2 leading-tight">Astrologer Announcements</span>
+                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                   theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                 }`}>
                   {announcements.length} Ads
@@ -2691,11 +2661,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Users className="w-4 h-4 text-sky-400" />
-                    <span>Client Base Directory</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Users className="w-4 h-4 text-sky-400 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Client Base Directory</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
                   }`}>
                     {clientBase.length} Users
@@ -2711,11 +2679,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Tag className="w-4 h-4 text-amber-500" />
-                    <span>Service Rate Card Matrix</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Tag className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Service Rate Card Matrix</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
                     {services.length} Rates
@@ -2740,11 +2706,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <BookOpen className="w-4 h-4" />
-                    <span>Blog & Articles CMS</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <BookOpen className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Blog & Articles CMS</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
                     {blogPosts.length}
@@ -2759,16 +2723,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Star className="w-4 h-4 text-amber-500 fill-amber-500" />
-                    <span>Client Reviews CMS</span>
-                  </div>
+                  <Star className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Client Reviews CMS</span>
                   {reviews.filter((r) => r.status === 'PENDING').length > 0 ? (
-                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
                       {reviews.filter((r) => r.status === 'PENDING').length} New
                     </span>
                   ) : (
-                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                       theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                     }`}>
                       {reviews.length}
@@ -2784,11 +2746,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Megaphone className="w-4 h-4" />
-                    <span>970x90 Ad Banner CMS</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${bannerAd.active ? 'bg-green-500/20 text-green-700 border-green-500/30' : 'bg-gray-200 text-gray-700 border-gray-300'}`}>
+                  <Megaphone className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">970x90 Ad Banner CMS</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${bannerAd.active ? 'bg-green-500/20 text-green-700 border-green-500/30' : 'bg-gray-200 text-gray-700 border-gray-300'}`}>
                     {bannerAd.active ? 'LIVE' : 'OFF'}
                   </span>
                 </button>
@@ -2801,11 +2761,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Sparkles className="w-4 h-4 text-[#d97706]" />
-                    <span>Live Activity Ticker CMS</span>
-                  </div>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <Sparkles className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Live Activity Ticker CMS</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
                     {tickerSettings.speedSeconds}s
@@ -2830,10 +2788,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Users className="w-4 h-4" />
-                    <span>Client Directory</span>
-                  </div>
+                  <Users className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Client Directory</span>
                 </button>
 
                 <button
@@ -2844,11 +2800,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : 'text-gray-300 hover:bg-[#1e293b]'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <Settings className="w-4 h-4" />
-                    <span>Site Settings & Services</span>
-                  </div>
-                  <span className="px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
+                  <Settings className="w-4 h-4 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Site Settings & Services</span>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
                     Services & Pricing
                   </span>
                 </button>
