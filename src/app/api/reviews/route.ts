@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -88,7 +88,7 @@ const DEFAULT_REVIEWS: CustomerReview[] = [
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const approvedOnly = searchParams.get('approvedOnly') === 'true';
-  const reviews = readPersistentData<CustomerReview[]>('reviews', DEFAULT_REVIEWS);
+  const reviews = await readPersistentDataAsync<CustomerReview[]>('reviews', DEFAULT_REVIEWS);
 
   if (approvedOnly) {
     const approved = reviews.filter((r) => r.status === 'APPROVED');
@@ -102,7 +102,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { action, review, reviewId } = body;
-    let reviews = readPersistentData<CustomerReview[]>('reviews', DEFAULT_REVIEWS);
+    let reviews = await readPersistentDataAsync<CustomerReview[]>('reviews', DEFAULT_REVIEWS);
 
     // 1. SUBMIT_REVIEW (From Client Dashboard)
     if (action === 'SUBMIT_REVIEW' && review) {
@@ -120,7 +120,7 @@ export async function POST(req: Request) {
       };
 
       reviews = [newReview, ...reviews];
-      writePersistentData('reviews', reviews);
+      await writePersistentDataAsync('reviews', reviews);
       return NextResponse.json({ success: true, message: 'Review submitted successfully for admin approval!', review: newReview });
     }
 
@@ -129,7 +129,7 @@ export async function POST(req: Request) {
       reviews = reviews.map((r) =>
         r.id === reviewId ? { ...r, status: 'APPROVED', isVerified: true } : r
       );
-      writePersistentData('reviews', reviews);
+      await writePersistentDataAsync('reviews', reviews);
       return NextResponse.json({ success: true, message: 'Review approved and published live!', reviews });
     }
 
@@ -138,7 +138,7 @@ export async function POST(req: Request) {
       reviews = reviews.map((r) =>
         r.id === reviewId ? { ...r, status: 'REJECTED' } : r
       );
-      writePersistentData('reviews', reviews);
+      await writePersistentDataAsync('reviews', reviews);
       return NextResponse.json({ success: true, message: 'Review rejected.', reviews });
     }
 
@@ -157,7 +157,7 @@ export async function POST(req: Request) {
       };
 
       reviews = [newReview, ...reviews];
-      writePersistentData('reviews', reviews);
+      await writePersistentDataAsync('reviews', reviews);
       return NextResponse.json({ success: true, message: 'New verified review added!', reviews });
     }
 
@@ -176,14 +176,14 @@ export async function POST(req: Request) {
             }
           : r
       );
-      writePersistentData('reviews', reviews);
+      await writePersistentDataAsync('reviews', reviews);
       return NextResponse.json({ success: true, message: 'Review updated successfully!', reviews });
     }
 
     // 6. DELETE_REVIEW (Admin Action)
     if (action === 'DELETE_REVIEW' && reviewId) {
       reviews = reviews.filter((r) => r.id !== reviewId);
-      writePersistentData('reviews', reviews);
+      await writePersistentDataAsync('reviews', reviews);
       return NextResponse.json({ success: true, message: 'Review deleted.', reviews });
     }
 

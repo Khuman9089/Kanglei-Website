@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,17 +24,17 @@ const DEFAULT_BANNER: BannerAdConfig = {
 };
 
 export async function GET() {
-  const banner = readPersistentData<BannerAdConfig>('banner', DEFAULT_BANNER);
+  const banner = await readPersistentDataAsync<BannerAdConfig>('banner', DEFAULT_BANNER);
   return NextResponse.json({ banner });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    let currentBanner = readPersistentData<BannerAdConfig>('banner', DEFAULT_BANNER);
+    let currentBanner = await readPersistentDataAsync<BannerAdConfig>('banner', DEFAULT_BANNER);
     if (body.banner) {
       currentBanner = { ...currentBanner, ...body.banner };
-      writePersistentData('banner', currentBanner);
+      await writePersistentDataAsync('banner', currentBanner);
     }
     return NextResponse.json({ success: true, banner: currentBanner });
   } catch (error: any) {

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -106,14 +106,14 @@ A score above 18 points is considered favorable, while scores above 28 indicate 
 ];
 
 export async function GET() {
-  const posts = readPersistentData<BlogPost[]>('blog_posts', DEFAULT_POSTS);
+  const posts = await readPersistentDataAsync<BlogPost[]>('blog_posts', DEFAULT_POSTS);
   return NextResponse.json({ posts });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    let posts = readPersistentData<BlogPost[]>('blog_posts', DEFAULT_POSTS);
+    let posts = await readPersistentDataAsync<BlogPost[]>('blog_posts', DEFAULT_POSTS);
 
     if (body.action === 'CREATE' || body.action === 'UPDATE') {
       const post: BlogPost = body.post;
@@ -123,7 +123,7 @@ export async function POST(request: Request) {
       } else {
         posts.unshift(post);
       }
-      writePersistentData('blog_posts', posts);
+      await writePersistentDataAsync('blog_posts', posts);
       return NextResponse.json({ success: true, message: 'Blog post saved successfully!', posts });
     }
 
@@ -131,14 +131,14 @@ export async function POST(request: Request) {
       const index = posts.findIndex((p) => p.id === body.id);
       if (index >= 0) {
         posts[index].likes += 1;
-        writePersistentData('blog_posts', posts);
+        await writePersistentDataAsync('blog_posts', posts);
       }
       return NextResponse.json({ success: true, likes: posts[index]?.likes || 0 });
     }
 
     if (body.action === 'DELETE') {
       posts = posts.filter((p) => p.id !== body.id);
-      writePersistentData('blog_posts', posts);
+      await writePersistentDataAsync('blog_posts', posts);
       return NextResponse.json({ success: true, message: 'Blog post deleted successfully!', posts });
     }
 

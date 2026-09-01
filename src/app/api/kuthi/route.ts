@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -138,7 +138,7 @@ export async function GET() {
     console.warn('Supabase fetch fallback to local:', err);
   }
 
-  const orders = readPersistentData<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
+  const orders = await readPersistentDataAsync<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
   return NextResponse.json({ success: true, orders });
 }
 
@@ -146,7 +146,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { action, order, orderId, astroId, astroName } = body;
-    let orders = readPersistentData<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
+    let orders = await readPersistentDataAsync<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
 
     if (action === 'CREATE_ORDER' && order) {
       const newId = 'k-' + Date.now();
@@ -215,7 +215,7 @@ export async function POST(req: Request) {
       }
 
       orders = [newOrder, ...orders];
-      writePersistentData('kuthi_orders', orders);
+      await writePersistentDataAsync('kuthi_orders', orders);
       return NextResponse.json({ success: true, order: newOrder, orders });
     }
 
@@ -229,7 +229,7 @@ export async function POST(req: Request) {
           ? { ...o, assignedAstrologerId: astroId, assignedAstrologerName: astroName, status: 'ASSIGNED' }
           : o
       );
-      writePersistentData('kuthi_orders', orders);
+      await writePersistentDataAsync('kuthi_orders', orders);
       return NextResponse.json({ success: true, orders });
     }
 
@@ -241,7 +241,7 @@ export async function POST(req: Request) {
       orders = orders.map((o) =>
         o.id === orderId ? { ...o, status: 'COMPLETED' } : o
       );
-      writePersistentData('kuthi_orders', orders);
+      await writePersistentDataAsync('kuthi_orders', orders);
       return NextResponse.json({ success: true, orders });
     }
 

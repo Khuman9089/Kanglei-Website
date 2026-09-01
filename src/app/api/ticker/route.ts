@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,20 +33,20 @@ const DEFAULT_TICKER: TickerSettings = {
 };
 
 export async function GET() {
-  const ticker = readPersistentData<TickerSettings>('ticker', DEFAULT_TICKER);
+  const ticker = await readPersistentDataAsync<TickerSettings>('ticker', DEFAULT_TICKER);
   return NextResponse.json({ ticker });
 }
 
 export async function POST(req: Request) {
   try {
     const body = await req.json();
-    let currentTicker = readPersistentData<TickerSettings>('ticker', DEFAULT_TICKER);
+    let currentTicker = await readPersistentDataAsync<TickerSettings>('ticker', DEFAULT_TICKER);
     if (body.ticker) {
       currentTicker = {
         ...currentTicker,
         ...body.ticker,
       };
-      writePersistentData('ticker', currentTicker);
+      await writePersistentDataAsync('ticker', currentTicker);
     }
     return NextResponse.json({ success: true, ticker: currentTicker });
   } catch (error) {

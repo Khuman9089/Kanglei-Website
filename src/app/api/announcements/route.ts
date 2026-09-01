@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
+import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -57,7 +57,7 @@ const DEFAULT_ANNOUNCEMENTS: AdminAnnouncement[] = [
 ];
 
 export async function GET() {
-  const announcements = readPersistentData<AdminAnnouncement[]>('announcements', DEFAULT_ANNOUNCEMENTS);
+  const announcements = await readPersistentDataAsync<AdminAnnouncement[]>('announcements', DEFAULT_ANNOUNCEMENTS);
   return NextResponse.json({
     success: true,
     announcements,
@@ -67,7 +67,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    let announcements = readPersistentData<AdminAnnouncement[]>('announcements', DEFAULT_ANNOUNCEMENTS);
+    let announcements = await readPersistentDataAsync<AdminAnnouncement[]>('announcements', DEFAULT_ANNOUNCEMENTS);
 
     if (body.action === 'CREATE') {
       const newAnn: AdminAnnouncement = {
@@ -85,7 +85,7 @@ export async function POST(request: Request) {
       };
 
       announcements.unshift(newAnn);
-      writePersistentData('announcements', announcements);
+      await writePersistentDataAsync('announcements', announcements);
       return NextResponse.json({
         success: true,
         message: 'Announcement published live for Astrologers!',
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       const idx = announcements.findIndex((a) => a.id === body.announcement.id);
       if (idx >= 0) {
         announcements[idx] = { ...announcements[idx], ...body.announcement };
-        writePersistentData('announcements', announcements);
+        await writePersistentDataAsync('announcements', announcements);
       }
       return NextResponse.json({
         success: true,
@@ -108,7 +108,7 @@ export async function POST(request: Request) {
 
     if (body.action === 'DELETE') {
       announcements = announcements.filter((a) => a.id !== body.id);
-      writePersistentData('announcements', announcements);
+      await writePersistentDataAsync('announcements', announcements);
       return NextResponse.json({
         success: true,
         message: 'Announcement removed.',
@@ -120,7 +120,7 @@ export async function POST(request: Request) {
       const ann = announcements.find((a) => a.id === body.id);
       if (ann) {
         ann.isActive = !ann.isActive;
-        writePersistentData('announcements', announcements);
+        await writePersistentDataAsync('announcements', announcements);
       }
       return NextResponse.json({
         success: true,
