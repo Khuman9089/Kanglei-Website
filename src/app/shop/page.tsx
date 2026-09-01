@@ -2,51 +2,19 @@
 
 import React, { useState, useEffect } from 'react';
 import { 
-  ShoppingBag, Search, Star, ShieldCheck, Sparkles, ArrowRight, CheckCircle2, 
-  Plus, Minus, X, CreditCard, QrCode, Truck, Tag, BookOpen, Gem, Check
+  ShoppingBag, Search, Star, Sparkles, ArrowRight, CheckCircle2, 
+  ShieldCheck, Filter, ChevronDown, SlidersHorizontal, ArrowUpDown
 } from 'lucide-react';
 import Link from 'next/link';
-
-interface ProductItem {
-  id: string;
-  title: string;
-  category: string;
-  price: number;
-  originalPrice: number;
-  rating: number;
-  reviewsCount: number;
-  image: string;
-  badge: string;
-  stock: number;
-  description: string;
-  features: string[];
-}
-
-interface CartItem {
-  product: ProductItem;
-  quantity: number;
-}
+import { ProductItem } from '@/app/api/shop/route';
 
 export default function ShopPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [categories, setCategories] = useState<string[]>(['All', 'Gemstones', 'Astrology Books', 'Yantras & Mala', 'Puja Items']);
+  const [categories, setCategories] = useState<string[]>(['All', 'Gemstones', 'Astrology Books', 'Yantras & Mala', 'Puja Items', 'Consecrated Remedies']);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
-  
-  // Shopping Cart & Checkout State
-  const [cart, setCart] = useState<CartItem[]>([]);
-  const [isCartOpen, setIsCartOpen] = useState(false);
-  const [isCheckoutStep, setIsCheckoutStep] = useState(false);
-  const [orderConfirmed, setOrderConfirmed] = useState(false);
-
-  // Form Fields
-  const [buyerName, setBuyerName] = useState('');
-  const [mobile, setMobile] = useState('');
-  const [whatsappNo, setWhatsappNo] = useState('');
-  const [address, setAddress] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [utr, setUtr] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [priceFilter, setPriceFilter] = useState<string>('ALL'); // 'ALL' | 'UNDER_1000' | '1000_5000' | 'ABOVE_5000'
+  const [sortBy, setSortBy] = useState<string>('FEATURED'); // 'FEATURED' | 'PRICE_LOW' | 'PRICE_HIGH' | 'RATING'
 
   useEffect(() => {
     fetch('/api/shop')
@@ -62,134 +30,159 @@ export default function ShopPage() {
       .catch((err) => console.error('Error loading products:', err));
   }, []);
 
-  const addToCart = (product: ProductItem) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
+  const handleAddToCart = (product: ProductItem) => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('kanglei_cart');
+      let cartItems: any[] = [];
+      if (stored) {
+        try {
+          cartItems = JSON.parse(stored);
+        } catch (e) {
+          cartItems = [];
+        }
       }
-      return [...prev, { product, quantity: 1 }];
-    });
-    setIsCartOpen(true);
-  };
 
-  const updateQuantity = (productId: string, delta: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => {
-          if (item.product.id === productId) {
-            const newQty = item.quantity + delta;
-            return newQty > 0 ? { ...item, quantity: newQty } : null;
-          }
-          return item;
-        })
-        .filter(Boolean) as CartItem[]
-    );
-  };
-
-  const totalCartAmount = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0);
-
-  const handlePlaceShopOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!buyerName || !mobile || !address || !pincode || !utr) return;
-
-    setIsSubmitting(true);
-
-    const orderPayload = {
-      action: 'PLACE_ORDER',
-      buyerName,
-      mobile,
-      whatsappNo: whatsappNo || mobile,
-      address,
-      pincode,
-      items: cart.map((c) => ({
-        productId: c.product.id,
-        title: c.product.title,
-        price: c.product.price,
-        quantity: c.quantity,
-      })),
-      totalAmount: totalCartAmount,
-      utr,
-    };
-
-    try {
-      const res = await fetch('/api/shop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setOrderConfirmed(true);
-        setCart([]);
+      const existingIndex = cartItems.findIndex((it) => it.id === product.id);
+      if (existingIndex >= 0) {
+        cartItems[existingIndex].quantity += 1;
+      } else {
+        cartItems.push({
+          id: product.id,
+          productId: product.id,
+          title: product.title,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          image: product.image,
+          quantity: 1,
+        });
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
+
+      localStorage.setItem('kanglei_cart', JSON.stringify(cartItems));
+      window.dispatchEvent(new Event('cart-updated'));
+      window.dispatchEvent(new Event('open-cart-drawer'));
     }
   };
 
-  const filteredProducts = products.filter((p) => {
-    const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) || p.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-    return matchesSearch && matchesCategory;
-  });
+  // Filter & Sort Products
+  const filteredProducts = products
+    .filter((p) => {
+      const matchesSearch = p.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                            p.description.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
+      
+      let matchesPrice = true;
+      if (priceFilter === 'UNDER_1000') matchesPrice = p.price < 1000;
+      else if (priceFilter === '1000_5000') matchesPrice = p.price >= 1000 && p.price <= 5000;
+      else if (priceFilter === 'ABOVE_5000') matchesPrice = p.price > 5000;
+
+      return matchesSearch && matchesCategory && matchesPrice;
+    })
+    .sort((a, b) => {
+      if (sortBy === 'PRICE_LOW') return a.price - b.price;
+      if (sortBy === 'PRICE_HIGH') return b.price - a.price;
+      if (sortBy === 'RATING') return b.rating - a.rating;
+      return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
+    });
 
   return (
-    <div className="min-h-screen bg-[#0f172a] text-[#faf8f4] flex flex-col font-sans antialiased">
-      <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-12">
+    <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans antialiased">
+      <main className="flex-1 pt-6 sm:pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-10">
         
-        {/* 1. HERO HEADER */}
-        <div className="text-center pt-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#fef3c7]/10 border border-[#fbbf24]/30 text-[#fbbf24] text-xs font-bold uppercase tracking-wider mb-3">
-            <Sparkles className="w-4 h-4 text-[#fbbf24]" />
-            100% Certified Vedic Remedies & Authentic Literature
-          </div>
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-serif font-bold text-white tracking-tight">
-            KangleiAstro <span className="text-[#fbbf24]">Vedic E-Store</span>
-          </h1>
-          <p className="text-slate-300 text-sm md:text-base mt-3 max-w-2xl mx-auto">
-            Shop lab-certified gemstones, authentic Vedic hardcover books, energized 3D Shree Yantras, and Nepali Rudraksha beads.
-          </p>
+        {/* 1. HERO BANNER */}
+        <div className="bg-gradient-to-r from-[#0b132b] via-[#1c2541] to-[#0b132b] text-white p-8 sm:p-12 rounded-3xl border-2 border-[#b45309] shadow-xl relative overflow-hidden text-center">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+          
+          <div className="max-w-3xl mx-auto space-y-4">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#b45309]/30 border border-[#fbbf24] text-[#fbbf24] text-xs font-extrabold uppercase tracking-wider">
+              <Sparkles className="w-4 h-4 text-[#fbbf24]" />
+              Authentic Manipuri & Vedic Consecrated Store
+            </div>
+            
+            <h1 className="text-3xl sm:text-5xl font-serif font-black text-white tracking-tight leading-tight">
+              Sacred Vedic Remedies & <br />
+              <span className="text-[#fbbf24] underline decoration-[#b45309]">
+                Lab-Certified Gemstones
+              </span>
+            </h1>
 
-          {/* Cart Floating Indicator */}
-          <div className="mt-6 flex items-center justify-center">
-            <button
-              onClick={() => setIsCartOpen(true)}
-              className="px-6 py-2.5 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-lg hover:opacity-95 flex items-center gap-2"
-            >
-              <ShoppingBag className="w-4 h-4" />
-              <span>View Shopping Cart ({cart.reduce((s, c) => s + c.quantity, 0)})</span>
-              {totalCartAmount > 0 && <span className="font-mono bg-[#0b132b] px-2 py-0.5 rounded-md text-[#fbbf24] text-[11px]">₹{totalCartAmount}</span>}
-            </button>
+            <p className="text-slate-200 text-sm sm:text-base font-serif italic max-w-2xl mx-auto">
+              Explore 100% genuine Ceylon Yellow Sapphires, traditional Kuthi reading books, 24k gold Shree Yantras, and Nepali Rudraksha beads consecrated by Master Pandits.
+            </p>
+
+            <div className="pt-2 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-300 font-medium">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-[#fbbf24]" />
+                <span>100% Lab Certified</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-green-400" />
+                <span>Pran Pratishta Energized</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <ShoppingBag className="w-4 h-4 text-[#fbbf24]" />
+                <span>Free Nationwide Delivery ₹499+</span>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* 2. SEARCH & CATEGORY TABS */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="relative w-full md:w-80">
-            <Search className="w-4 h-4 text-gray-400 absolute left-4 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Search gemstones, Parashara Hora, Yantras..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-11 pr-4 py-2.5 rounded-2xl border border-[#3a506b] bg-[#1c2541] text-xs font-medium text-white placeholder-gray-400 focus:border-[#d97706] focus:outline-none"
-            />
+        {/* 2. SEARCH, CATEGORIES & FILTERS BAR */}
+        <div className="space-y-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-[#f3e8d2] shadow-xs">
+            {/* Search Input */}
+            <div className="relative w-full md:w-80">
+              <Search className="w-4 h-4 text-[#b45309] absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search gemstones, scriptures, Yantras..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-medium text-[#0f172a] placeholder-gray-400 focus:border-[#d97706] focus:outline-none"
+              />
+            </div>
+
+            {/* Price Filter & Sort Dropdowns */}
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 font-bold shrink-0">
+                <Filter className="w-4 h-4 text-[#d97706]" />
+                <select
+                  value={priceFilter}
+                  onChange={(e) => setPriceFilter(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none cursor-pointer"
+                >
+                  <option value="ALL">All Prices</option>
+                  <option value="UNDER_1000">Under ₹1,000</option>
+                  <option value="1000_5000">₹1,000 – ₹5,000</option>
+                  <option value="ABOVE_5000">Above ₹5,000</option>
+                </select>
+              </div>
+
+              <div className="flex items-center gap-1.5 text-xs text-gray-600 font-bold shrink-0">
+                <ArrowUpDown className="w-4 h-4 text-[#d97706]" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value)}
+                  className="px-3 py-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none cursor-pointer"
+                >
+                  <option value="FEATURED">Featured Items</option>
+                  <option value="PRICE_LOW">Price: Low to High</option>
+                  <option value="PRICE_HIGH">Price: High to Low</option>
+                  <option value="RATING">Highest Rated</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          {/* Category Tabs */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
             {categories.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                className={`px-4 py-2 rounded-xl text-xs font-extrabold whitespace-nowrap transition-all cursor-pointer ${
                   selectedCategory === cat
                     ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                    : 'bg-[#1c2541] text-gray-300 hover:text-white border border-[#3a506b]'
+                    : 'bg-white text-gray-700 hover:text-[#b45309] border border-[#f3e8d2] hover:border-[#d97706]'
                 }`}
               >
                 {cat}
@@ -199,304 +192,129 @@ export default function ShopPage() {
         </div>
 
         {/* 3. PRODUCT CATALOG GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProducts.map((product) => {
-            const discountPct = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+        {filteredProducts.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-3xl border border-[#f3e8d2] space-y-3">
+            <ShoppingBag className="w-12 h-12 text-[#d97706] mx-auto opacity-40" />
+            <h3 className="font-serif font-bold text-xl text-[#0f172a]">No Products Found</h3>
+            <p className="text-xs text-gray-500 max-w-sm mx-auto">
+              Try adjusting your search keywords or switching product category filters.
+            </p>
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('All');
+                setPriceFilter('ALL');
+              }}
+              className="px-5 py-2 rounded-xl bg-[#d97706] text-white font-bold text-xs"
+            >
+              Reset Filters
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {filteredProducts.map((product) => {
+              const discountPct = product.originalPrice > product.price
+                ? Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100)
+                : 0;
 
-            return (
-              <div
-                key={product.id}
-                className="bg-[#1c2541] rounded-3xl border border-[#3a506b]/50 shadow-md hover:border-[#d97706] transition-all hover:-translate-y-1 flex flex-col justify-between overflow-hidden group"
-              >
-                {/* Image Header with Badge Overlay */}
-                <div className="h-56 bg-cover bg-center relative" style={{ backgroundImage: `url(${product.image})` }}>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#1c2541] via-transparent to-transparent opacity-90" />
-                  
-                  <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-                    <span className="px-3 py-1 rounded-full bg-[#0b132b]/90 backdrop-blur-xs text-[#fbbf24] text-[10px] font-extrabold uppercase border border-[#3a506b]">
-                      {product.badge}
-                    </span>
+              return (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-3xl border border-[#f3e8d2] shadow-md hover:shadow-xl hover:border-[#d97706] transition-all hover:-translate-y-1 flex flex-col justify-between overflow-hidden group"
+                >
+                  {/* Image Container with Badge Overlay */}
+                  <div className="h-60 bg-slate-100 relative overflow-hidden">
+                    <img
+                      src={product.image}
+                      alt={product.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
 
-                    {discountPct > 0 && (
-                      <span className="px-2.5 py-1 rounded-full bg-green-600 text-white font-extrabold text-[10px]">
-                        {discountPct}% OFF
+                    <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+                      <span className="px-2.5 py-1 rounded-lg bg-[#0f172a]/90 text-[#fbbf24] text-[10px] font-extrabold uppercase tracking-wider backdrop-blur-xs border border-[#fbbf24]/40">
+                        {product.badge || 'AUTHENTIC'}
                       </span>
-                    )}
-                  </div>
-                </div>
 
-                {/* Product Info */}
-                <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
-                  <div>
-                    <div className="flex items-center justify-between text-xs text-amber-400 mb-1">
-                      <div className="flex items-center gap-1 font-bold">
-                        <Star className="w-3.5 h-3.5 fill-amber-400" />
-                        <span>{product.rating}</span>
-                        <span className="text-gray-400 font-normal">({product.reviewsCount} reviews)</span>
-                      </div>
-                      <span className="text-[10px] text-green-400 font-bold">{product.stock} in stock</span>
+                      {discountPct > 0 && (
+                        <span className="px-2.5 py-1 rounded-lg bg-green-600 text-white font-black text-[10px] shadow-sm">
+                          {discountPct}% OFF
+                        </span>
+                      )}
                     </div>
-
-                    <h3 className="font-serif font-bold text-xl text-white mb-2 leading-snug group-hover:text-[#fbbf24] transition-colors">
-                      {product.title}
-                    </h3>
-                    
-                    <p className="text-slate-300 text-xs leading-relaxed line-clamp-2 mb-4">
-                      {product.description}
-                    </p>
-
-                    {/* Features list */}
-                    <ul className="space-y-1.5 pt-3 border-t border-[#3a506b]/40 mb-4">
-                      {product.features.map((feat, fIdx) => (
-                        <li key={fIdx} className="flex items-start gap-1.5 text-[11px] text-slate-300">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-green-400 shrink-0 mt-0.5" />
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
 
-                  {/* Price & Action Buttons */}
-                  <div className="pt-4 border-t border-[#3a506b]/40 flex items-center justify-between">
+                  {/* Product Metadata */}
+                  <div className="p-6 flex-1 flex flex-col justify-between space-y-4">
                     <div>
-                      <span className="text-2xl font-black text-[#fbbf24] font-mono">₹{product.price.toLocaleString()}</span>
-                      <span className="text-xs text-gray-400 line-through block font-mono">₹{product.originalPrice.toLocaleString()}</span>
+                      <div className="flex items-center justify-between text-xs mb-1.5">
+                        <div className="flex items-center gap-1 font-bold text-amber-600">
+                          <Star className="w-3.5 h-3.5 fill-amber-500 text-amber-500" />
+                          <span>{product.rating}</span>
+                          <span className="text-gray-400 font-normal">({product.reviewsCount})</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                          {product.stock > 0 ? `${product.stock} In Stock` : 'Out of Stock'}
+                        </span>
+                      </div>
+
+                      <Link href={`/shop/${product.id}`} className="block group">
+                        <h3 className="font-serif font-bold text-lg text-[#0f172a] leading-snug group-hover:text-[#d97706] transition-colors line-clamp-2">
+                          {product.title}
+                        </h3>
+                      </Link>
+
+                      <p className="text-gray-600 text-xs mt-2 line-clamp-2 leading-relaxed font-sans">
+                        {product.description}
+                      </p>
+
+                      {/* Features */}
+                      {product.features && product.features.length > 0 && (
+                        <ul className="space-y-1 pt-3 mt-3 border-t border-gray-100 text-[11px] text-gray-600">
+                          {product.features.slice(0, 2).map((feat, fIdx) => (
+                            <li key={fIdx} className="flex items-center gap-1.5">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-[#d97706] shrink-0" />
+                              <span className="truncate">{feat}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
                     </div>
 
-                    <button
-                      onClick={() => addToCart(product)}
-                      className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 transition-opacity flex items-center gap-1.5"
-                    >
-                      <ShoppingBag className="w-3.5 h-3.5" />
-                      <span>Add to Cart</span>
-                    </button>
+                    {/* Price & Action Buttons */}
+                    <div className="pt-4 border-t border-[#fde68a]/60 flex items-center justify-between gap-2">
+                      <div>
+                        <span className="text-2xl font-black text-[#b45309] font-mono">₹{product.price.toLocaleString()}</span>
+                        {product.originalPrice > product.price && (
+                          <span className="text-xs text-gray-400 line-through block font-mono">₹{product.originalPrice.toLocaleString()}</span>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/shop/${product.id}`}
+                          className="px-3 py-2.5 rounded-xl border border-gray-300 text-gray-700 hover:text-[#d97706] font-extrabold text-xs transition-colors"
+                        >
+                          Details
+                        </Link>
+                        
+                        <button
+                          onClick={() => handleAddToCart(product)}
+                          className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-1.5 transition-transform hover:scale-105 cursor-pointer"
+                        >
+                          <ShoppingBag className="w-3.5 h-3.5" />
+                          <span>Add to Cart</span>
+                        </button>
+                      </div>
+                    </div>
+
                   </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
       </main>
-
-      {/* ─────────────────────────────────────────────────────────────
-         4. SHOPPING CART & UPI CHECKOUT MODAL DRAWER
-         ───────────────────────────────────────────────────────────── */}
-      {isCartOpen && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/80 backdrop-blur-xs flex justify-end">
-          <div className="bg-[#1c2541] w-full max-w-md h-full flex flex-col justify-between border-l border-[#3a506b] shadow-2xl text-white font-sans p-6 overflow-y-auto">
-            
-            {/* Header */}
-            <div>
-              <div className="flex items-center justify-between pb-4 border-b border-[#3a506b]">
-                <div className="flex items-center gap-2">
-                  <ShoppingBag className="w-5 h-5 text-[#fbbf24]" />
-                  <h3 className="font-serif font-bold text-xl text-white">Your Shopping Cart</h3>
-                </div>
-                <button
-                  onClick={() => {
-                    setIsCartOpen(false);
-                    setIsCheckoutStep(false);
-                    setOrderConfirmed(false);
-                  }}
-                  className="p-1.5 text-gray-400 hover:text-white"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* STEP 1: CART ITEMS VIEW */}
-              {!isCheckoutStep && !orderConfirmed && (
-                <div className="py-6 space-y-4">
-                  {cart.length === 0 ? (
-                    <div className="text-center py-12 text-gray-400 space-y-3">
-                      <ShoppingBag className="w-12 h-12 mx-auto text-gray-500" />
-                      <p className="text-sm font-bold">Your cart is currently empty</p>
-                      <button
-                        onClick={() => setIsCartOpen(false)}
-                        className="px-4 py-2 rounded-xl bg-[#d97706] text-white text-xs font-bold"
-                      >
-                        Browse Astrology Shop
-                      </button>
-                    </div>
-                  ) : (
-                    cart.map((item) => (
-                      <div key={item.product.id} className="p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b] flex items-center justify-between gap-3 text-xs">
-                        <div className="flex-1">
-                          <h4 className="font-bold text-white leading-snug">{item.product.title}</h4>
-                          <span className="text-[#fbbf24] font-mono font-bold">₹{item.product.price.toLocaleString()}</span>
-                        </div>
-
-                        <div className="flex items-center gap-2 border border-[#3a506b] rounded-lg p-1 bg-[#1c2541]">
-                          <button onClick={() => updateQuantity(item.product.id, -1)} className="p-1 text-gray-300 hover:text-white">
-                            <Minus className="w-3 h-3" />
-                          </button>
-                          <span className="font-bold px-2">{item.quantity}</span>
-                          <button onClick={() => updateQuantity(item.product.id, 1)} className="p-1 text-gray-300 hover:text-white">
-                            <Plus className="w-3 h-3" />
-                          </button>
-                        </div>
-                      </div>
-                    ))
-                  )}
-                </div>
-              )}
-
-              {/* STEP 2: CHECKOUT & UPI PAYMENT FORM */}
-              {isCheckoutStep && !orderConfirmed && (
-                <form onSubmit={handlePlaceShopOrder} className="py-6 space-y-4 text-xs">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                      Full Name<span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. Laishram Surjit"
-                      value={buyerName}
-                      onChange={(e) => setBuyerName(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                        Mobile No.<span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="+91 98620 00000"
-                        value={mobile}
-                        onChange={(e) => setMobile(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                        WhatsApp No.
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Same as mobile"
-                        value={whatsappNo}
-                        onChange={(e) => setWhatsappNo(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                      Delivery Address & Landmark<span className="text-red-400">*</span>
-                    </label>
-                    <textarea
-                      rows={2}
-                      required
-                      placeholder="House No, Colony, City..."
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                      Pincode<span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="795001"
-                      value={pincode}
-                      onChange={(e) => setPincode(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono font-bold text-xs"
-                    />
-                  </div>
-
-                  {/* UPI QR & UTR Box */}
-                  <div className="p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-3 text-center">
-                    <span className="text-[10px] font-bold text-[#fbbf24] uppercase block">Scan & Pay via Any UPI App</span>
-                    <div className="w-32 h-32 mx-auto bg-white p-2 rounded-xl border border-[#fbbf24]">
-                      <div className="w-full h-full bg-[#0f172a] text-[#fbbf24] flex items-center justify-center font-bold text-xs font-mono">
-                        UPI QR Code
-                      </div>
-                    </div>
-                    <span className="text-xs text-gray-300 font-mono block">UPI ID: <strong>kangleiastro@upi</strong></span>
-
-                    <div className="pt-2 border-t border-[#3a506b]/40 text-left">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                        12-Digit UPI Transaction Ref (UTR)<span className="text-red-400">*</span>
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. 429810998120"
-                        value={utr}
-                        onChange={(e) => setUtr(e.target.value)}
-                        className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#1c2541] text-[#fbbf24] font-mono font-bold text-xs"
-                      />
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95"
-                  >
-                    {isSubmitting ? 'Confirming Order...' : `Complete Order & Pay ₹${totalCartAmount}`}
-                  </button>
-                </form>
-              )}
-
-              {/* STEP 3: ORDER CONFIRMED THANK YOU SCREEN */}
-              {orderConfirmed && (
-                <div className="py-8 text-center space-y-4">
-                  <div className="w-16 h-16 rounded-full bg-green-500/20 text-green-400 border border-green-500/40 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-8 h-8" />
-                  </div>
-                  <h4 className="font-serif font-bold text-2xl text-[#fbbf24]">Order Confirmed!</h4>
-                  <p className="text-xs text-slate-200 leading-relaxed">
-                    Thank you for your order! Your payment UTR has been logged. Our team is preparing your authentic Vedic items for shipment.
-                  </p>
-                  <div className="p-4 rounded-xl bg-[#0b132b] border border-[#3a506b] text-xs font-bold text-green-300">
-                    🚚 Order tracking link will be sent to your WhatsApp within 12 Hours!
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsCartOpen(false);
-                      setIsCheckoutStep(false);
-                      setOrderConfirmed(false);
-                    }}
-                    className="w-full py-3 rounded-xl bg-[#d97706] text-white font-bold text-xs"
-                  >
-                    Back to E-Store
-                  </button>
-                </div>
-              )}
-            </div>
-
-            {/* Footer Summary */}
-            {cart.length > 0 && !isCheckoutStep && !orderConfirmed && (
-              <div className="pt-4 border-t border-[#3a506b] space-y-3">
-                <div className="flex justify-between text-sm font-bold">
-                  <span>Grand Total:</span>
-                  <span className="text-[#fbbf24] font-mono text-xl">₹{totalCartAmount.toLocaleString()}</span>
-                </div>
-                <button
-                  onClick={() => setIsCheckoutStep(true)}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95"
-                >
-                  Proceed to UPI Checkout →
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
-
     </div>
   );
 }

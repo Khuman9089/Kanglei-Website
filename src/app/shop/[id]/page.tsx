@@ -1,408 +1,387 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
+import React, { useState, useEffect, use } from 'react';
 import { 
-  ShoppingBag, Star, ShieldCheck, Sparkles, ArrowLeft, ArrowRight, CheckCircle2, 
-  Truck, Award, RotateCcw, Lock, CreditCard, X, Check
+  ShoppingBag, Star, ShieldCheck, Sparkles, ArrowRight, CheckCircle2, 
+  ArrowLeft, Truck, Award, Heart, Share2, Plus, Minus, Tag, Check
 } from 'lucide-react';
+import Link from 'next/link';
+import { ProductItem, ProductVariant } from '@/app/api/shop/route';
 
-interface ProductItem {
-  id: string;
-  title: string;
-  category: string;
-  price: number;
-  originalPrice: number;
-  rating: number;
-  reviewsCount: number;
-  image: string;
-  badge: string;
-  stock: number;
-  description: string;
-  features: string[];
-}
-
-export default function ProductDetailPage() {
-  const params = useParams();
-  const router = useRouter();
-  const productId = params?.id as string;
+export default function ProductDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const resolvedParams = use(params);
+  const productId = resolvedParams.id;
 
   const [product, setProduct] = useState<ProductItem | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedImage, setSelectedImage] = useState<string>('');
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(null);
   const [quantity, setQuantity] = useState(1);
-
-  // Instant Checkout Modal
-  const [showCheckoutModal, setShowCheckoutModal] = useState(false);
-  const [buyerName, setBuyerName] = useState('');
-  const [mobile, setMobile] = useState('');
-  const [whatsappNo, setWhatsappNo] = useState('');
-  const [address, setAddress] = useState('');
-  const [pincode, setPincode] = useState('');
-  const [utr, setUtr] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [orderConfirmed, setOrderConfirmed] = useState(false);
+  const [activeTab, setActiveTab] = useState<'OVERVIEW' | 'ENERGIZATION' | 'HOW_TO_WEAR' | 'ASTROLOGER'>('OVERVIEW');
+  const [addedNotice, setAddedNotice] = useState(false);
 
   useEffect(() => {
     fetch('/api/shop')
       .then((res) => res.json())
       .then((data) => {
         if (data.products && Array.isArray(data.products)) {
-          const found = data.products.find((p: ProductItem) => p.id === productId);
-          setProduct(found || data.products[0]);
+          const found = data.products.find((p: any) => p.id === productId);
+          if (found) {
+            setProduct(found);
+            setSelectedImage(found.image);
+            if (found.variants && found.variants.length > 0) {
+              setSelectedVariant(found.variants[0]);
+            }
+          }
         }
+        setLoading(false);
       })
-      .catch((err) => console.error(err))
-      .finally(() => setLoading(false));
-  }, [productId]);
-
-  const handlePlaceOrder = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!product || !buyerName || !mobile || !address || !pincode || !utr) return;
-
-    setIsSubmitting(true);
-
-    const orderPayload = {
-      action: 'PLACE_ORDER',
-      buyerName,
-      mobile,
-      whatsappNo: whatsappNo || mobile,
-      address,
-      pincode,
-      items: [
-        {
-          productId: product.id,
-          title: product.title,
-          price: product.price,
-          quantity,
-        },
-      ],
-      totalAmount: product.price * quantity,
-      utr,
-    };
-
-    try {
-      const res = await fetch('/api/shop', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(orderPayload),
+      .catch((err) => {
+        console.error('Error fetching product:', err);
+        setLoading(false);
       });
-      const data = await res.json();
-      if (data.success) {
-        setOrderConfirmed(true);
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  }, [productId]);
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex items-center justify-center pt-6 pb-20">
+      <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex items-center justify-center font-sans">
         <div className="text-center space-y-3">
           <div className="w-12 h-12 rounded-full border-4 border-[#d97706] border-t-transparent animate-spin mx-auto" />
-          <p className="font-serif font-bold text-lg text-[#0f172a]">Loading Product Details...</p>
+          <h3 className="font-serif font-bold text-lg text-[#0f172a]">Loading Sacred Product Details...</h3>
         </div>
       </div>
     );
   }
 
-  if (!product) return null;
+  if (!product) {
+    return (
+      <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex items-center justify-center font-sans p-6">
+        <div className="text-center space-y-4 max-w-md bg-white p-8 rounded-3xl border border-[#f3e8d2] shadow-xl">
+          <ShoppingBag className="w-16 h-16 text-[#d97706] mx-auto opacity-40" />
+          <h2 className="font-serif font-bold text-2xl text-[#0f172a]">Product Not Found</h2>
+          <p className="text-xs text-gray-600">The product you are looking for may have been updated or removed.</p>
+          <Link
+            href="/shop"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#d97706] text-white font-bold text-xs"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to E-Store</span>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
-  const discountPct = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
+  const imagesList = product.images && product.images.length > 0 ? product.images : [product.image];
+  const currentPrice = selectedVariant ? selectedVariant.price : product.price;
+  const discountPct = product.originalPrice > currentPrice
+    ? Math.round(((product.originalPrice - currentPrice) / product.originalPrice) * 100)
+    : 0;
+
+  const handleAddToCart = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('kanglei_cart');
+      let cartItems: any[] = [];
+      if (stored) {
+        try {
+          cartItems = JSON.parse(stored);
+        } catch (e) {
+          cartItems = [];
+        }
+      }
+
+      const cartItemId = selectedVariant ? `${product.id}-${selectedVariant.id}` : product.id;
+
+      const existingIndex = cartItems.findIndex((it) => it.id === cartItemId);
+      if (existingIndex >= 0) {
+        cartItems[existingIndex].quantity += quantity;
+      } else {
+        cartItems.push({
+          id: cartItemId,
+          productId: product.id,
+          variantId: selectedVariant?.id,
+          variantName: selectedVariant?.name,
+          title: product.title,
+          price: currentPrice,
+          originalPrice: product.originalPrice,
+          image: selectedImage || product.image,
+          quantity: quantity,
+        });
+      }
+
+      localStorage.setItem('kanglei_cart', JSON.stringify(cartItems));
+      window.dispatchEvent(new Event('cart-updated'));
+      window.dispatchEvent(new Event('open-cart-drawer'));
+
+      setAddedNotice(true);
+      setTimeout(() => setAddedNotice(false), 3000);
+    }
+  };
 
   return (
-    <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] font-sans pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto space-y-8">
+    <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] font-sans antialiased">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
         
-        {/* Back Link */}
-        <Link
-          href="/shop"
-          className="inline-flex items-center gap-2 text-xs font-bold text-[#b45309] hover:text-[#d97706] transition-colors"
-        >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to E-Store Directory</span>
-        </Link>
+        {/* Back Link Breadcrumb */}
+        <div className="flex items-center justify-between">
+          <Link
+            href="/shop"
+            className="inline-flex items-center gap-2 text-xs font-extrabold text-[#b45309] hover:underline"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to All Products</span>
+          </Link>
+          <span className="text-xs text-gray-500 font-medium">Category: <strong className="font-bold text-[#0f172a]">{product.category}</strong></span>
+        </div>
 
-        {/* Product Details 2-Column Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        {/* 1. TOP PRODUCT SHOWCASE (2 Columns) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 sm:gap-12 items-start">
           
-          {/* Left Column: Product Image Gallery */}
+          {/* LEFT: MULTI-IMAGE GALLERY (col-span-6) */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="w-full h-[420px] rounded-3xl bg-cover bg-center border border-[#f3e8d2] shadow-[0_10px_40px_rgba(217,119,6,0.08)] relative overflow-hidden" style={{ backgroundImage: `url(${product.image})` }}>
-              <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
-                <span className="px-3.5 py-1.5 rounded-full bg-[#0f172a]/90 backdrop-blur-xs text-[#fbbf24] text-xs font-extrabold uppercase border border-[#fbbf24]/30">
-                  {product.badge}
+            {/* Main Featured Display Image */}
+            <div className="w-full h-80 sm:h-100 rounded-3xl overflow-hidden border-2 border-[#f3e8d2] shadow-lg relative bg-white flex items-center justify-center">
+              <img
+                src={selectedImage}
+                alt={product.title}
+                className="w-full h-full object-cover"
+              />
+              <span className="absolute top-4 left-4 px-3 py-1 rounded-xl bg-[#0f172a]/90 text-[#fbbf24] text-xs font-extrabold uppercase tracking-wider backdrop-blur-xs border border-[#fbbf24]/30">
+                {product.badge || 'AUTHENTIC VEDIC'}
+              </span>
+              {discountPct > 0 && (
+                <span className="absolute top-4 right-4 px-3 py-1 rounded-xl bg-green-600 text-white text-xs font-black shadow-md">
+                  {discountPct}% OFF
                 </span>
-
-                {discountPct > 0 && (
-                  <span className="px-3 py-1 rounded-full bg-green-600 text-white font-extrabold text-xs shadow-md">
-                    {discountPct}% OFF
-                  </span>
-                )}
-              </div>
+              )}
             </div>
 
-            {/* Trust Badges Bar */}
-            <div className="grid grid-cols-3 gap-3 text-center text-xs">
-              <div className="p-3 rounded-2xl bg-white border border-[#f3e8d2] space-y-1">
-                <Award className="w-5 h-5 text-[#d97706] mx-auto" />
-                <span className="font-bold text-[#0f172a] block text-[11px]">Lab Certified</span>
+            {/* Thumbnail Carousel Selector */}
+            {imagesList.length > 1 && (
+              <div className="flex items-center gap-3 overflow-x-auto pb-2">
+                {imagesList.map((imgUrl, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setSelectedImage(imgUrl)}
+                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white shrink-0 ${
+                      selectedImage === imgUrl ? 'border-[#d97706] ring-2 ring-[#d97706]/30 scale-105' : 'border-gray-200 opacity-70 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                  </button>
+                ))}
               </div>
-              <div className="p-3 rounded-2xl bg-white border border-[#f3e8d2] space-y-1">
-                <Truck className="w-5 h-5 text-[#d97706] mx-auto" />
-                <span className="font-bold text-[#0f172a] block text-[11px]">Fast Delivery</span>
-              </div>
-              <div className="p-3 rounded-2xl bg-white border border-[#f3e8d2] space-y-1">
-                <ShieldCheck className="w-5 h-5 text-[#d97706] mx-auto" />
-                <span className="font-bold text-[#0f172a] block text-[11px]">Puja Consecrated</span>
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* Right Column: Specifications & Checkout Action */}
-          <div className="lg:col-span-6 space-y-6">
+          {/* RIGHT: DETAILS, VARIANTS & BUY ACTIONS (col-span-6) */}
+          <div className="lg:col-span-6 space-y-6 bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl">
             
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="px-3 py-1 rounded-md bg-[#fef3c7] text-[#b45309] text-xs font-bold uppercase border border-[#fde68a]">
-                  {product.category}
-                </span>
-                <div className="flex items-center gap-1 text-xs text-amber-500 font-bold ml-auto">
-                  <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-                  <span>{product.rating}</span>
-                  <span className="text-gray-400 font-normal">({product.reviewsCount} verified reviews)</span>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-600">
+                <div className="flex items-center">
+                  <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
+                  <span className="ml-1 text-sm font-black">{product.rating}</span>
                 </div>
+                <span className="text-gray-400 font-normal">({product.reviewsCount} customer reviews)</span>
+                <span className="mx-2 text-gray-300">•</span>
+                <span className="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 text-[11px] font-extrabold">
+                  {product.stock > 0 ? `In Stock (${product.stock} units)` : 'Out of Stock'}
+                </span>
               </div>
 
-              <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#0f172a] leading-tight mb-3">
+              <h1 className="font-serif font-black text-2xl sm:text-3xl text-[#0f172a] leading-tight">
                 {product.title}
               </h1>
 
-              <div className="flex items-baseline gap-3">
-                <span className="text-3xl font-extrabold text-[#b45309] font-mono">₹{product.price.toLocaleString()}</span>
-                <span className="text-base text-gray-400 line-through font-mono">₹{product.originalPrice.toLocaleString()}</span>
-                <span className="text-xs text-emerald-600 font-extrabold ml-auto">In Stock ({product.stock} items remaining)</span>
-              </div>
+              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-sans">
+                {product.description}
+              </p>
             </div>
 
-            {/* Description */}
-            <div className="p-5 rounded-2xl bg-white border border-[#f3e8d2] space-y-2">
-              <span className="text-xs font-bold text-[#b45309] uppercase tracking-wider block">Description & Vedic Benefits</span>
-              <p className="text-gray-700 text-sm leading-relaxed font-medium">{product.description}</p>
-            </div>
-
-            {/* Included Features */}
-            <div className="space-y-2.5">
-              <span className="text-xs font-bold text-[#0f172a] uppercase tracking-wider block">Key Specifications & Guarantee</span>
-              {product.features.map((feat, idx) => (
-                <div key={idx} className="flex items-start gap-2.5 text-xs text-gray-700 font-medium bg-white p-3 rounded-xl border border-[#f3e8d2]">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                  <span>{feat}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Quantity & Buy Button */}
-            <div className="pt-4 border-t border-[#f3e8d2] space-y-4">
-              <div className="flex items-center gap-4">
-                <label className="text-xs font-bold text-[#0f172a] uppercase tracking-wider">Quantity:</label>
-                <div className="flex items-center border border-[#f3e8d2] rounded-xl bg-white p-1">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-8 h-8 rounded-lg bg-gray-100 text-[#0f172a] font-bold text-sm hover:bg-gray-200"
-                  >
-                    -
-                  </button>
-                  <span className="w-12 text-center font-bold font-mono text-sm">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-8 h-8 rounded-lg bg-gray-100 text-[#0f172a] font-bold text-sm hover:bg-gray-200"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div className="ml-auto text-right">
-                  <span className="text-[10px] text-gray-500 font-bold block uppercase">Subtotal</span>
-                  <span className="text-xl font-extrabold text-[#b45309] font-mono">₹{(product.price * quantity).toLocaleString()}</span>
+            {/* Price Box */}
+            <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] flex items-center justify-between">
+              <div>
+                <span className="text-xs text-gray-500 uppercase font-bold block">Current Price</span>
+                <div className="flex items-baseline gap-3">
+                  <span className="text-3xl font-black text-[#b45309] font-mono">₹{currentPrice.toLocaleString()}</span>
+                  {product.originalPrice > currentPrice && (
+                    <span className="text-sm text-gray-400 line-through font-mono">₹{product.originalPrice.toLocaleString()}</span>
+                  )}
                 </div>
               </div>
 
-              <button
-                onClick={() => setShowCheckoutModal(true)}
-                className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-sm tracking-wide shadow-lg hover:shadow-xl hover:opacity-95 transition-all flex items-center justify-center gap-2"
-              >
-                <ShoppingBag className="w-5 h-5" />
-                <span>Buy Now & Pay via UPI (₹{(product.price * quantity).toLocaleString()})</span>
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-
-      {/* ─────────────────────────────────────────────────────────────
-         INSTANT CHECKOUT MODAL
-         ───────────────────────────────────────────────────────────── */}
-      {showCheckoutModal && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/80 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] w-full max-w-lg rounded-3xl border border-[#3a506b] shadow-2xl overflow-hidden relative text-left font-sans text-white p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            
-            <div className="flex items-center justify-between border-b border-[#3a506b] pb-3">
-              <div className="flex items-center gap-2">
-                <ShoppingBag className="w-5 h-5 text-[#fbbf24]" />
-                <div>
-                  <h3 className="font-serif font-bold text-lg text-white">Direct Order & UPI Checkout</h3>
-                  <p className="text-xs text-slate-300">{product.title} (x{quantity})</p>
-                </div>
+              <div className="text-right">
+                <span className="text-[11px] text-green-700 font-extrabold uppercase block">Nationwide Delivery</span>
+                <span className="text-xs font-bold text-gray-700">Dispatched in 24 Hours</span>
               </div>
-              <button onClick={() => setShowCheckoutModal(false)} className="text-gray-400 hover:text-white p-1">
-                <X className="w-5 h-5" />
-              </button>
             </div>
 
-            {!orderConfirmed ? (
-              <form onSubmit={handlePlaceOrder} className="space-y-4 text-xs">
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                    Buyer Name<span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="Enter full name"
-                    value={buyerName}
-                    onChange={(e) => setBuyerName(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
-                  />
+            {/* Product Variants (if applicable) */}
+            {product.variants && product.variants.length > 0 && (
+              <div className="space-y-2">
+                <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
+                  Select Weight / Carat Option<span className="text-red-500">*</span>
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {product.variants.map((vrt) => (
+                    <button
+                      key={vrt.id}
+                      onClick={() => setSelectedVariant(vrt)}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer ${
+                        selectedVariant?.id === vrt.id
+                          ? 'border-[#d97706] bg-[#fef3c7] text-[#78350f] shadow-xs'
+                          : 'border-gray-200 bg-[#fefcf6] text-gray-700 hover:border-[#d97706]'
+                      }`}
+                    >
+                      <div className="font-extrabold">{vrt.name}</div>
+                      <div className="text-[11px] font-mono text-[#b45309] mt-0.5">₹{vrt.price.toLocaleString()}</div>
+                    </button>
+                  ))}
                 </div>
-
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                      Mobile No.<span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="+91 98620 00000"
-                      value={mobile}
-                      onChange={(e) => setMobile(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                      WhatsApp No.
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Same as mobile"
-                      value={whatsappNo}
-                      onChange={(e) => setWhatsappNo(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                    Shipping Address & Landmark<span className="text-red-400">*</span>
-                  </label>
-                  <textarea
-                    rows={2}
-                    required
-                    placeholder="House No, Colony, City, State..."
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                    Pincode<span className="text-red-400">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder="795001"
-                    value={pincode}
-                    onChange={(e) => setPincode(e.target.value)}
-                    className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono font-bold text-xs"
-                  />
-                </div>
-
-                {/* UPI QR Box */}
-                <div className="p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-2 text-center">
-                  <span className="text-[10px] font-bold text-[#fbbf24] uppercase block">Scan & Pay via GPay / PhonePe / Paytm</span>
-                  <div className="w-28 h-28 mx-auto bg-white p-2 rounded-xl border border-[#fbbf24]">
-                    <div className="w-full h-full bg-[#0f172a] text-[#fbbf24] flex items-center justify-center font-bold text-[10px] font-mono">
-                      UPI QR Code
-                    </div>
-                  </div>
-                  <span className="text-xs text-gray-300 font-mono block">UPI ID: <strong>kangleiastro@upi</strong></span>
-
-                  <div className="pt-2 border-t border-[#3a506b]/40 text-left">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                      12-Digit UPI Transaction Ref (UTR)<span className="text-red-400">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 429810998120"
-                      value={utr}
-                      onChange={(e) => setUtr(e.target.value)}
-                      className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#1c2541] text-[#fbbf24] font-mono font-bold text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setShowCheckoutModal(false)}
-                    className="px-4 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95"
-                  >
-                    {isSubmitting ? 'Confirming Order...' : `Confirm & Pay ₹${(product.price * quantity).toLocaleString()}`}
-                  </button>
-                </div>
-              </form>
-            ) : (
-              <div className="py-8 text-center space-y-4">
-                <div className="w-16 h-16 rounded-full bg-green-500/20 text-green-400 border border-green-500/40 flex items-center justify-center mx-auto">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
-                <h4 className="font-serif font-bold text-2xl text-[#fbbf24]">Order Placed Successfully!</h4>
-                <p className="text-xs text-slate-200 leading-relaxed">
-                  Thank you! Your order reference and tracking updates will be dispatched to your phone/WhatsApp.
-                </p>
-                <button
-                  onClick={() => router.push('/shop')}
-                  className="px-6 py-3 rounded-xl bg-[#d97706] text-white font-bold text-xs"
-                >
-                  Return to E-Store
-                </button>
               </div>
             )}
 
+            {/* Quantity Selector & Add to Cart */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-4">
+                <div className="flex items-center border border-gray-300 rounded-xl bg-[#fefcf6] overflow-hidden">
+                  <button
+                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                    className="p-3 hover:bg-gray-100 font-bold text-gray-700 cursor-pointer"
+                  >
+                    <Minus className="w-4 h-4" />
+                  </button>
+                  <span className="px-4 font-bold text-sm font-mono text-[#0f172a]">{quantity}</span>
+                  <button
+                    onClick={() => setQuantity(quantity + 1)}
+                    className="p-3 hover:bg-gray-100 font-bold text-gray-700 cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleAddToCart}
+                  className="flex-1 py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-xl transition-all flex items-center justify-center gap-2 hover:scale-[1.01] cursor-pointer"
+                >
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Add {quantity} to Shopping Cart</span>
+                </button>
+              </div>
+
+              {addedNotice && (
+                <div className="p-3 rounded-xl bg-green-50 border border-green-300 text-green-800 text-xs font-bold flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  <span>Item added to your cart! Slide-out drawer opened.</span>
+                </div>
+              )}
+            </div>
+
+            {/* Trust Badges */}
+            <div className="pt-4 border-t border-gray-200 grid grid-cols-2 gap-3 text-xs text-gray-600 font-medium">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#d97706]" />
+                <span>100% Original Govt. Lab Certificate</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Award className="w-4 h-4 text-[#d97706]" />
+                <span>Pandit Consecrated & Energized</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Truck className="w-4 h-4 text-[#d97706]" />
+                <span>Express Insured Courier Shipping</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#d97706]" />
+                <span>Instant WhatsApp Dispatch Alert</span>
+              </div>
+            </div>
+
           </div>
         </div>
-      )}
 
+        {/* 2. RITUAL & SPECIFICATION TABS */}
+        <div className="bg-white rounded-3xl border border-[#f3e8d2] shadow-lg p-6 sm:p-8 space-y-6">
+          <div className="flex items-center gap-3 border-b border-gray-200 overflow-x-auto">
+            {[
+              { id: 'OVERVIEW', label: '🌟 Product Overview & Features' },
+              { id: 'ENERGIZATION', label: '✨ Pran Pratishta & Consecration' },
+              { id: 'HOW_TO_WEAR', label: '📜 How to Wear / Wearing Rituals' },
+              { id: 'ASTROLOGER', label: '🔮 Astrologer Guidance' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`pb-3 text-xs font-extrabold whitespace-nowrap border-b-2 transition-colors cursor-pointer ${
+                  activeTab === tab.id
+                    ? 'border-[#d97706] text-[#b45309]'
+                    : 'border-transparent text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-xs sm:text-sm text-gray-700 leading-relaxed font-sans space-y-4">
+            {activeTab === 'OVERVIEW' && (
+              <div className="space-y-4">
+                <p>{product.description}</p>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-[#0f172a] uppercase text-xs">Key Product Features:</h4>
+                  <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {product.features?.map((feat, idx) => (
+                      <li key={idx} className="flex items-center gap-2 p-2.5 rounded-xl bg-[#fefcf6] border border-[#fde68a]">
+                        <CheckCircle2 className="w-4 h-4 text-[#d97706] shrink-0" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'ENERGIZATION' && (
+              <div className="space-y-3">
+                <h4 className="font-serif font-bold text-lg text-[#0f172a]">Vedic Consecration Process</h4>
+                <p>
+                  Every gemstone and sacred item ordered from KuthiYengpham undergoes rigorous 8-stage Vedic purification (*Panchamrut Shuddhi*) and *Pran Pratishta* rituals at our dedicated altar by Acharya Tombi Sharma and panel pandits.
+                </p>
+                <div className="p-4 rounded-2xl bg-[#fef3c7]/60 border border-[#fde68a] font-bold text-[#78350f]">
+                  ✦ Consecrated with targeted planetary Beej Mantras prior to dispatch to ensure maximum positive energy alignment.
+                </div>
+              </div>
+            )}
+
+            {activeTab === 'HOW_TO_WEAR' && (
+              <div className="space-y-3">
+                <h4 className="font-serif font-bold text-lg text-[#0f172a]">Auspicious Muhurat & Wearing Instructions</h4>
+                <p>
+                  {product.wearingRituals || 'Wear on Thursday morning during Shukla Paksha Muhurat after dipping in unpasteurized milk and Gangajal. Chant the corresponding planetary Beej Mantra 108 times before placing on the specified finger.'}
+                </p>
+              </div>
+            )}
+
+            {activeTab === 'ASTROLOGER' && (
+              <div className="space-y-3">
+                <h4 className="font-serif font-bold text-lg text-[#0f172a]">Seller & Astrologer Information</h4>
+                <p>
+                  Seller: <strong>{product.sellerName || 'KangleiAstro Store'}</strong> ({product.sellerType || 'PLATFORM'}).
+                </p>
+                <p>
+                  Need personalized advice on whether this gemstone or remedy is suitable for your birth chart? Book a live consultation with our empaneled Vedic astrologers at <Link href="/astrologers" className="text-[#b45309] font-bold underline">Astrologer Bureau</Link>.
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+      </main>
     </div>
   );
 }

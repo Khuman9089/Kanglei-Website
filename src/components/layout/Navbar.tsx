@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Moon, Phone, Mail, Headphones, Menu, X, Calendar, User, LogOut, ChevronDown, 
-  LayoutDashboard, Sparkles, Sun, ExternalLink 
+  LayoutDashboard, Sparkles, Sun, ExternalLink, ShoppingBag 
 } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -134,6 +134,7 @@ export function Navbar() {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [activeDropdownId, setActiveDropdownId] = useState<string | null>(null);
   const [mobileExpandedId, setMobileExpandedId] = useState<string | null>(null);
+  const [cartCount, setCartCount] = useState(0);
 
   // Dynamic Navigation Configuration
   const [navConfig, setNavConfig] = useState<NavbarConfig>(DEFAULT_NAVBAR_CONFIG);
@@ -158,29 +159,53 @@ export function Navbar() {
         }
       })
       .catch(() => {});
+  }, []);
 
-    const loadUser = () => {
-      if (typeof window !== 'undefined') {
-        const stored = localStorage.getItem('kanglei_user');
-        if (stored) {
-          try {
-            setUser(JSON.parse(stored));
-          } catch (e) {
-            setUser(null);
-          }
-        } else {
+  const loadUser = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('kanglei_user');
+      if (stored) {
+        try {
+          setUser(JSON.parse(stored));
+        } catch (e) {
           setUser(null);
         }
+      } else {
+        setUser(null);
       }
-    };
+    }
+  };
 
+  const updateCartCount = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('kanglei_cart');
+      if (stored) {
+        try {
+          const items = JSON.parse(stored);
+          const count = items.reduce((acc: number, it: any) => acc + (it.quantity || 1), 0);
+          setCartCount(count);
+        } catch (e) {
+          setCartCount(0);
+        }
+      } else {
+        setCartCount(0);
+      }
+    }
+  };
+
+  useEffect(() => {
     loadUser();
+    updateCartCount();
 
     window.addEventListener('user-login-change', loadUser);
+    window.addEventListener('cart-updated', updateCartCount);
     window.addEventListener('storage', loadUser);
+    window.addEventListener('storage', updateCartCount);
     return () => {
       window.removeEventListener('user-login-change', loadUser);
+      window.removeEventListener('cart-updated', updateCartCount);
       window.removeEventListener('storage', loadUser);
+      window.removeEventListener('storage', updateCartCount);
     };
   }, []);
 
@@ -442,6 +467,20 @@ export function Navbar() {
                 <span>{navConfig.cbs.kuthiIbaBtnText || 'Kuthi Iba'}</span>
               </Link>
             )}
+
+            {/* Shopping Cart Drawer Trigger */}
+            <button
+              onClick={() => window.dispatchEvent(new Event('open-cart-drawer'))}
+              className="p-2.5 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] text-[#78350f] font-bold transition-all relative border border-[#fde68a] cursor-pointer"
+              title="View Shopping Cart"
+            >
+              <ShoppingBag className="w-5 h-5 text-[#b45309]" />
+              {cartCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-white font-extrabold text-[10px] flex items-center justify-center shadow-md animate-pulse">
+                  {cartCount}
+                </span>
+              )}
+            </button>
 
             <button
               onClick={() => setIsOpen(!isOpen)}

@@ -3,19 +3,31 @@ import { readPersistentData, writePersistentData } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
 
+export interface ProductVariant {
+  id: string;
+  name: string;
+  price: number;
+  stock: number;
+}
+
 export interface ProductItem {
   id: string;
   title: string;
   category: string;
+  subCategory?: string;
   price: number;
   originalPrice: number;
   rating: number;
   reviewsCount: number;
   image: string;
+  images?: string[];
   badge: string;
   stock: number;
   description: string;
   features: string[];
+  variants?: ProductVariant[];
+  vedicSignificance?: string;
+  wearingRituals?: string;
   // Astrologer Seller Marketplace Fields
   sellerType?: 'PLATFORM' | 'ASTROLOGER';
   sellerId?: string;
@@ -35,9 +47,12 @@ export interface ShopOrder {
   pincode: string;
   items: {
     productId: string;
+    variantId?: string;
+    variantName?: string;
     title: string;
     price: number;
     quantity: number;
+    image?: string;
     sellerType?: 'PLATFORM' | 'ASTROLOGER';
     sellerId?: string;
     sellerName?: string;
@@ -45,9 +60,13 @@ export interface ShopOrder {
     adminCommissionAmount?: number;
     astroPayoutAmount?: number;
   }[];
+  subtotalAmount?: number;
+  discountAmount?: number;
+  couponCode?: string;
+  shippingFee?: number;
   totalAmount: number;
   utr: string;
-  status: 'PAYMENT_PENDING' | 'PAID' | 'DISPATCHED' | 'DELIVERED';
+  status: 'PAYMENT_PENDING' | 'PAID' | 'ENERGIZING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
   adminConfirmed?: boolean;
   orderedAt: string;
   // Delivery Logistics
@@ -360,6 +379,10 @@ export async function POST(request: Request) {
         address: body.address,
         pincode: body.pincode,
         items: enrichedItems,
+        subtotalAmount: body.subtotalAmount || body.totalAmount,
+        discountAmount: body.discountAmount || 0,
+        couponCode: body.couponCode || '',
+        shippingFee: body.shippingFee || 0,
         totalAmount: body.totalAmount,
         utr: body.utr,
         status: 'PAID',
@@ -369,10 +392,16 @@ export async function POST(request: Request) {
       orders.unshift(newOrder);
       writePersistentData('shop_orders', orders);
 
-      // Deduct stock
+      // Deduct product and variant stock
       body.items.forEach((item: any) => {
         const p = products.find((sp) => sp.id === item.productId);
-        if (p) p.stock = Math.max(0, p.stock - item.quantity);
+        if (p) {
+          p.stock = Math.max(0, p.stock - item.quantity);
+          if (item.variantId && Array.isArray(p.variants)) {
+            const v = p.variants.find((vrt) => vrt.id === item.variantId);
+            if (v) v.stock = Math.max(0, v.stock - item.quantity);
+          }
+        }
       });
       writePersistentData('shop_products', products);
 

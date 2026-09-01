@@ -7,6 +7,8 @@ import JsonLd from "@/components/seo/JsonLd";
 
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
 
+import CartDrawer from "@/components/shop/CartDrawer";
+
 const baseUrl = 'https://benevolent-ganache-baa904.netlify.app';
 
 export const metadata: Metadata = {
@@ -147,6 +149,7 @@ export default function RootLayout({
         <main className="flex-1 w-full">{children}</main>
         <Footer />
         <MobileBottomNav />
+        <CartDrawer />
       </body>
     </html>
   );
