@@ -18,6 +18,7 @@ interface BengaliChartProps {
   title?: string;
   width?: number;
   height?: number;
+  theme?: 'light' | 'dark';
   className?: string;
 }
 
@@ -57,8 +58,11 @@ export function BengaliChart({
   title = 'D1 Rashi Chart',
   width = 600,
   height = 380,
+  theme = 'light',
   className = '',
 }: BengaliChartProps) {
+  const isLight = theme === 'light';
+
   // Map planets & Lagna to target sign index (0..11)
   const signItems: Record<number, { name: string; bName: string; isRetro: boolean }[]> = {};
   for (let i = 0; i < 12; i++) {
@@ -84,35 +88,44 @@ export function BengaliChart({
     });
   });
 
+  const frameBg = isLight ? '#fffdf7' : '#0b132b';
+  const strokeColor = isLight ? '#b45309' : '#c69214';
+  const centerBoxBg = isLight ? '#fef3c7' : '#1c2541';
+  const titleColor = isLight ? '#b45309' : '#fbbf24';
+  const subtitleColor = isLight ? '#92400e' : '#e0a96d';
+  const rashiTagColor = isLight ? '#64748b' : '#94a3b8';
+
   return (
-    <div className={`w-full max-w-[620px] aspect-[600/380] bg-[#0b132b] rounded-2xl p-2 border border-[#c69214] shadow-xl ${className}`}>
+    <div className={`w-full max-w-[620px] aspect-[600/380] rounded-2xl p-2 border shadow-sm transition-colors ${
+      isLight ? 'bg-[#fffdf7] border-[#d97706]/40' : 'bg-[#0b132b] border-[#c69214]'
+    } ${className}`}>
       <svg
         viewBox="0 0 600 380"
         width={width}
         height={height}
         className="w-full h-full select-none font-sans"
       >
-        {/* Dark Background Frame */}
-        <rect x="2" y="2" width="596" height="376" fill="#0b132b" stroke="#c69214" strokeWidth="2.5" />
+        {/* Outer Frame */}
+        <rect x="2" y="2" width="596" height="376" fill={frameBg} stroke={strokeColor} strokeWidth="2.5" />
 
         {/* 3x3 Grid Lines */}
-        <line x1="200" y1="2" x2="200" y2="378" stroke="#c69214" strokeWidth="1.5" />
-        <line x1="400" y1="2" x2="400" y2="378" stroke="#c69214" strokeWidth="1.5" />
-        <line x1="2" y1="126.67" x2="598" y2="126.67" stroke="#c69214" strokeWidth="1.5" />
-        <line x1="2" y1="253.33" x2="598" y2="253.33" stroke="#c69214" strokeWidth="1.5" />
+        <line x1="200" y1="2" x2="200" y2="378" stroke={strokeColor} strokeWidth="1.5" />
+        <line x1="400" y1="2" x2="400" y2="378" stroke={strokeColor} strokeWidth="1.5" />
+        <line x1="2" y1="126.67" x2="598" y2="126.67" stroke={strokeColor} strokeWidth="1.5" />
+        <line x1="2" y1="253.33" x2="598" y2="253.33" stroke={strokeColor} strokeWidth="1.5" />
 
         {/* 4 Corner Cell Diagonals (Bengali Traditional Rashi Chakra Layout) */}
-        <line x1="2" y1="2" x2="200" y2="126.67" stroke="#c69214" strokeWidth="1.5" />
-        <line x1="400" y1="126.67" x2="598" y2="2" stroke="#c69214" strokeWidth="1.5" />
-        <line x1="2" y1="378" x2="200" y2="253.33" stroke="#c69214" strokeWidth="1.5" />
-        <line x1="400" y1="253.33" x2="598" y2="378" stroke="#c69214" strokeWidth="1.5" />
+        <line x1="2" y1="2" x2="200" y2="126.67" stroke={strokeColor} strokeWidth="1.5" />
+        <line x1="400" y1="126.67" x2="598" y2="2" stroke={strokeColor} strokeWidth="1.5" />
+        <line x1="2" y1="378" x2="200" y2="253.33" stroke={strokeColor} strokeWidth="1.5" />
+        <line x1="400" y1="253.33" x2="598" y2="378" stroke={strokeColor} strokeWidth="1.5" />
 
         {/* Center Title Box */}
-        <rect x="202" y="128.67" width="196" height="122.66" fill="#1c2541" stroke="#c69214" strokeWidth="1.5" />
+        <rect x="202" y="128.67" width="196" height="122.66" fill={centerBoxBg} stroke={strokeColor} strokeWidth="1.5" />
         <text
           x="300"
-          y="182"
-          fill="#fbbf24"
+          y="180"
+          fill={titleColor}
           fontSize="18"
           fontWeight="bold"
           textAnchor="middle"
@@ -123,8 +136,8 @@ export function BengaliChart({
         </text>
         <text
           x="300"
-          y="208"
-          fill="#e0a96d"
+          y="206"
+          fill={subtitleColor}
           fontSize="11"
           fontWeight="bold"
           textAnchor="middle"
@@ -145,8 +158,8 @@ export function BengaliChart({
                 x={cfg.titleX}
                 y={cfg.titleY - 14}
                 textAnchor="middle"
-                fill="#64748b"
-                fontSize="10"
+                fill={rashiTagColor}
+                fontSize="11"
                 fontWeight="bold"
               >
                 {cfg.name}
@@ -158,20 +171,25 @@ export function BengaliChart({
                   x={cfg.titleX}
                   y={cfg.titleY + 6}
                   textAnchor="middle"
-                  fill="#f5f0e8"
                   className="font-bold text-sm sm:text-base leading-snug"
                 >
                   <tspan x={cfg.titleX} dy="0">
-                    {items.map((item, idx) => (
-                      <tspan
-                        key={idx}
-                        dx={idx > 0 ? 4 : 0}
-                        fill={item.name === 'Ascendant' ? '#fbbf24' : item.isRetro ? '#ef4444' : '#f4d58d'}
-                        className="font-black"
-                      >
-                        {item.bName}{item.isRetro ? '(ব)' : ''}
-                      </tspan>
-                    ))}
+                    {items.map((item, idx) => {
+                      let itemFill = isLight ? '#0f172a' : '#f5f0e8';
+                      if (item.name === 'Ascendant') itemFill = isLight ? '#b45309' : '#fbbf24';
+                      else if (item.isRetro) itemFill = '#dc2626';
+
+                      return (
+                        <tspan
+                          key={idx}
+                          dx={idx > 0 ? 4 : 0}
+                          fill={itemFill}
+                          className="font-black"
+                        >
+                          {item.bName}{item.isRetro ? '(ব)' : ''}
+                        </tspan>
+                      );
+                    })}
                   </tspan>
                 </text>
               )}

@@ -1,8 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, ChevronDown } from 'lucide-react';
+import { ArrowLeft, ChevronRight } from 'lucide-react';
 
 export interface DashaPeriod {
   id: string;
@@ -17,80 +16,196 @@ interface DashaTimelineProps {
   currentDate?: string;
 }
 
-const planetColors: Record<string, string> = {
-  Sun: 'text-orange-500',
-  Moon: 'text-gray-300',
-  Mars: 'text-red-500',
-  Mercury: 'text-green-500',
-  Jupiter: 'text-yellow-500',
-  Venus: 'text-pink-400',
-  Saturn: 'text-blue-500',
-  Rahu: 'text-gray-500',
-  Ketu: 'text-amber-800'
+const PLANET_SYMBOLS: Record<string, string> = {
+  Ketu: 'KE',
+  Venus: 'VE',
+  Sun: 'SU',
+  Moon: 'MO',
+  Mars: 'MA',
+  Rahu: 'RA',
+  Jupiter: 'JU',
+  Saturn: 'SA',
+  Mercury: 'ME',
 };
 
-const DashaNode = ({ period, level = 0, isCurrent = false }: { period: DashaPeriod, level?: number, isCurrent?: boolean }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  const hasChildren = period.subPeriods && period.subPeriods.length > 0;
-  const colorClass = planetColors[period.planet] || 'text-[#c69214]';
+export function DashaTimeline({ dashas }: DashaTimelineProps) {
+  // Navigation stack for drilldown levels: 1 = Mahadasha, 2 = Antardasha, 3 = Pratyantar, 4 = Sookshma
+  const [level, setLevel] = useState<number>(1);
+  const [selectedMaha, setSelectedMaha] = useState<DashaPeriod | null>(null);
+  const [selectedAntar, setSelectedAntar] = useState<DashaPeriod | null>(null);
+  const [selectedPratyantar, setSelectedPratyantar] = useState<DashaPeriod | null>(null);
+
+  // Get current list of periods based on level
+  const getCurrentPeriods = (): DashaPeriod[] => {
+    if (level === 1) return dashas;
+    if (level === 2 && selectedMaha) return selectedMaha.subPeriods || generateSubPeriods(selectedMaha, 5);
+    if (level === 3 && selectedAntar) return selectedAntar.subPeriods || generateSubPeriods(selectedAntar, 2);
+    if (level === 4 && selectedPratyantar) return selectedPratyantar.subPeriods || generateSubPeriods(selectedPratyantar, 0.5);
+    return dashas;
+  };
+
+  const handleDrillIn = (period: DashaPeriod) => {
+    if (level === 1) {
+      setSelectedMaha(period);
+      setLevel(2);
+    } else if (level === 2) {
+      setSelectedAntar(period);
+      setLevel(3);
+    } else if (level === 3) {
+      setSelectedPratyantar(period);
+      setLevel(4);
+    }
+  };
+
+  const handleBack = () => {
+    if (level === 4) {
+      setSelectedPratyantar(null);
+      setLevel(3);
+    } else if (level === 3) {
+      setSelectedAntar(null);
+      setLevel(2);
+    } else if (level === 2) {
+      setSelectedMaha(null);
+      setLevel(1);
+    }
+  };
+
+  const currentList = getCurrentPeriods();
 
   return (
-    <div className="flex flex-col w-full">
-      <div 
-        className={`flex items-center py-2 px-3 hover:bg-[#1c2541] rounded-md cursor-pointer transition-colors ${level > 0 ? 'ml-6' : ''}`}
-        onClick={() => hasChildren && setIsExpanded(!isExpanded)}
-      >
-        <div className="w-6 flex items-center justify-center mr-2">
-          {hasChildren && (
-            isExpanded ? <ChevronDown size={16} className="text-[#e0a96d]" /> : <ChevronRight size={16} className="text-[#e0a96d]" />
-          )}
+    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 sm:p-6 space-y-5">
+      {/* Title & Subtitle */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+        <div>
+          <h3 className="font-sans font-bold text-base sm:text-lg text-slate-900">
+            Vimshottari Dasha
+          </h3>
+          <p className="text-xs text-slate-500 mt-0.5 font-normal">
+            Tap any period to drill down through Mahadasha → Antardasha → Pratyantar → Sookshma.
+          </p>
         </div>
-        <div className="flex-1 flex justify-between items-center">
-          <div className="flex items-center space-x-2">
-            {isCurrent && (
-              <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#c69214] opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-[#c69214]"></span>
-              </span>
-            )}
-            <span className={`font-semibold ${colorClass}`}>{period.planet}</span>
-          </div>
-          <div className="text-sm text-[#e0a96d]">
-            {period.startDate} - {period.endDate}
-          </div>
-        </div>
-      </div>
-      
-      <AnimatePresence>
-        {isExpanded && hasChildren && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            className="overflow-hidden border-l border-[#3a506b] ml-6"
+
+        {level > 1 && (
+          <button
+            onClick={handleBack}
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs sm:text-sm border border-amber-300 transition-all cursor-pointer"
           >
-            {period.subPeriods!.map((sub) => (
-              <DashaNode key={sub.id} period={sub} level={level + 1} />
-            ))}
-          </motion.div>
+            <ArrowLeft className="w-4 h-4" />
+            <span>Back to Level {level - 1}</span>
+          </button>
         )}
-      </AnimatePresence>
-    </div>
-  );
-};
+      </div>
 
-export function DashaTimeline({ dashas, currentDate }: DashaTimelineProps) {
-  return (
-    <div className="w-full bg-[#0b132b] border border-[#3a506b] rounded-lg p-4">
-      <h3 className="text-xl font-serif text-[#c69214] mb-4">Vimshottari Dasha</h3>
-      <div className="space-y-1">
-        {dashas.map(dasha => (
-          <DashaNode key={dasha.id} period={dasha} />
-        ))}
+      {/* 4-Step Stepper Header */}
+      <div className="flex items-center justify-between gap-2 sm:gap-4 overflow-x-auto scrollbar-none py-1">
+        {[
+          { num: 1, name: 'Mahadasha' },
+          { num: 2, name: 'Antardasha' },
+          { num: 3, name: 'Pratyantar' },
+          { num: 4, name: 'Sookshma' },
+        ].map((step, idx) => {
+          const isActive = level === step.num;
+          const isDone = level > step.num;
+
+          return (
+            <React.Fragment key={step.num}>
+              <div className="flex items-center gap-2 shrink-0">
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs sm:text-sm transition-all ${
+                  isActive
+                    ? 'bg-[#facc15] text-slate-900 shadow-xs font-black'
+                    : isDone
+                    ? 'bg-amber-200 text-amber-900 font-extrabold'
+                    : 'bg-slate-100 text-slate-400 font-semibold'
+                }`}>
+                  {step.num}
+                </span>
+                <span className={`text-xs sm:text-sm font-bold ${
+                  isActive ? 'text-slate-900 font-black' : isDone ? 'text-amber-900 font-semibold' : 'text-slate-400'
+                }`}>
+                  {step.name}
+                </span>
+              </div>
+
+              {idx < 3 && (
+                <div className={`h-[1.5px] flex-1 min-w-[20px] sm:min-w-[40px] ${
+                  level > step.num ? 'bg-amber-300' : 'bg-slate-200'
+                }`} />
+              )}
+            </React.Fragment>
+          );
+        })}
+      </div>
+
+      {/* Dasha Period Table */}
+      <div className="w-full overflow-x-auto">
+        <table className="w-full text-left text-sm font-sans border-collapse">
+          <thead>
+            <tr className="border-b border-slate-200 text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              <th className="py-3 px-3.5">PLANET</th>
+              <th className="py-3 px-3.5">START DATE</th>
+              <th className="py-3 px-3.5">END DATE</th>
+              <th className="py-3 px-3.5 text-right">ACTION</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+            {currentList.map((period, idx) => {
+              const symbol = PLANET_SYMBOLS[period.planet] || period.planet.substring(0, 2).toUpperCase();
+
+              return (
+                <tr key={idx} className="hover:bg-amber-50/50 transition-colors">
+                  <td className="py-3.5 px-3.5 font-bold text-slate-900 text-sm sm:text-base">
+                    <span className="font-black text-slate-900 uppercase mr-1">{symbol}</span>
+                    <span className="font-medium text-slate-500">({period.planet.toUpperCase()})</span>
+                  </td>
+                  <td className="py-3.5 px-3.5 text-slate-800 text-sm sm:text-base">{period.startDate}</td>
+                  <td className="py-3.5 px-3.5 text-slate-800 text-sm sm:text-base">{period.endDate}</td>
+                  <td className="py-3.5 px-3.5 text-right">
+                    {level < 4 ? (
+                      <button
+                        onClick={() => handleDrillIn(period)}
+                        className="inline-flex items-center gap-1 px-3.5 py-1.5 rounded-full bg-[#fef08a]/80 hover:bg-[#fde047] text-slate-900 font-bold text-xs sm:text-sm border border-[#facc15] shadow-xs transition-all cursor-pointer shrink-0"
+                      >
+                        <span>Drill in</span>
+                        <ChevronRight className="w-4 h-4 text-slate-800" />
+                      </button>
+                    ) : (
+                      <span className="text-xs text-slate-400 font-normal">End Level</span>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
     </div>
   );
 }
 
-export default DashaTimeline;
+// Fallback generator for nested subperiods if none provided
+function generateSubPeriods(parent: DashaPeriod, durationYears: number): DashaPeriod[] {
+  const planetsOrder = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'];
+  const pIdx = planetsOrder.indexOf(parent.planet);
+  const reordered = [...planetsOrder.slice(pIdx >= 0 ? pIdx : 0), ...planetsOrder.slice(0, pIdx >= 0 ? pIdx : 0)];
 
+  let startYr = 2026;
+  try {
+    const yrMatch = parent.startDate.match(/\d{4}/);
+    if (yrMatch) startYr = parseInt(yrMatch[0], 10);
+  } catch (e) {}
+
+  const stepYr = durationYears / 9;
+
+  return reordered.map((p, i) => {
+    const sYr = (startYr + i * stepYr).toFixed(0);
+    const eYr = (startYr + (i + 1) * stepYr).toFixed(0);
+    return {
+      id: `${parent.id}-sub-${i}`,
+      planet: p,
+      startDate: `01-Jan-${sYr}`,
+      endDate: `31-Dec-${eYr}`,
+    };
+  });
+}
+
+export default DashaTimeline;

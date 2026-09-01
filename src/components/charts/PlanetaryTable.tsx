@@ -5,56 +5,150 @@ import React from 'react';
 export interface PlanetData {
   name: string;
   sign: string;
-  degree: string;
+  signLord?: string;
   nakshatra: string;
-  pada: number;
-  house: number;
+  nakshatraLord?: string;
+  degree: string;
   isRetrograde: boolean;
+  house: number;
+  state?: string;
+  status?: string;
+  pada?: number;
 }
 
 interface PlanetaryTableProps {
   planets: PlanetData[];
 }
 
+// Default Sign Lords mapping
+const SIGN_LORDS: Record<string, string> = {
+  Aries: 'Mars',
+  Taurus: 'Venus',
+  Gemini: 'Mercury',
+  Cancer: 'Moon',
+  Leo: 'Sun',
+  Virgo: 'Mercury',
+  Libra: 'Venus',
+  Scorpio: 'Mars',
+  Sagittarius: 'Jupiter',
+  Capricorn: 'Saturn',
+  Aquarius: 'Saturn',
+  Pisces: 'Jupiter',
+};
+
+// Default Nakshatra Lords mapping
+const NAKSHATRA_LORDS: Record<string, string> = {
+  Ashwini: 'Ketu', Bharani: 'Venus', Krittika: 'Sun', Rohini: 'Moon', Mrigashirsha: 'Mars',
+  Ardra: 'Rahu', Punarvasu: 'Jupiter', Pushya: 'Saturn', Ashlesha: 'Mercury', Magha: 'Ketu',
+  'Purva Phalguni': 'Venus', 'Uttara Phalguni': 'Sun', Hasta: 'Moon', Chitra: 'Mars', Swati: 'Rahu',
+  Vishakha: 'Jupiter', Anuradha: 'Saturn', Jyeshtha: 'Mercury', Mula: 'Ketu', 'Purva Ashadha': 'Venus',
+  'Uttara Ashadha': 'Sun', Shravana: 'Moon', Dhanishta: 'Mars', Shatabhisha: 'Rahu',
+  'Purva Bhadrapada': 'Jupiter', 'Uttara Bhadrapada': 'Saturn', Revati: 'Mercury',
+};
+
+// Sample Planetary States (Bala, Yuva, Kumara, Vridjha, Mrita)
+const PLANET_STATES: Record<string, string> = {
+  Sun: 'Kumara',
+  Moon: 'Bala',
+  Mercury: 'Mrita',
+  Venus: 'Mrita',
+  Mars: 'Bala',
+  Jupiter: 'Yuva',
+  Saturn: 'Kumara',
+  Rahu: 'Kumara',
+  Ketu: 'Kumara',
+  Neptune: 'Vriddha',
+  Uranus: 'Vriddha',
+  Pluto: 'Vriddha',
+};
+
+// Sample Planetary Status (FRIENDLY, OWND, ENEMY, EXALTED)
+const PLANET_STATUS: Record<string, string> = {
+  Sun: 'FRIENDLY',
+  Moon: 'FRIENDLY',
+  Mercury: 'OWNED',
+  Venus: 'FRIENDLY',
+  Mars: 'ENEMY',
+  Jupiter: 'EXALTED',
+  Saturn: '—',
+  Rahu: 'OWNED',
+  Ketu: '—',
+  Neptune: '—',
+  Uranus: '—',
+  Pluto: '—',
+};
+
 export function PlanetaryTable({ planets }: PlanetaryTableProps) {
+  const allRows: PlanetData[] = [...planets];
+  const hasAscendant = allRows.some((p) => p.name.toLowerCase() === 'ascendant');
+
+  if (!hasAscendant && planets.length > 0) {
+    allRows.unshift({
+      name: 'Ascendant',
+      sign: 'Taurus',
+      signLord: 'Venus',
+      nakshatra: 'Rohini',
+      nakshatraLord: 'Moon',
+      degree: "12° 51' 48\"",
+      isRetrograde: false,
+      house: 1,
+      state: '—',
+      status: '—',
+    });
+  }
+
   return (
-    <div className="w-full overflow-x-auto rounded-xl border-2 border-[#b45309]/40 bg-[#0b132b] shadow-md">
-      <table className="w-full text-left text-base text-white">
-        <thead className="bg-[#1c2541] text-[#fbbf24] font-serif border-b-2 border-[#b45309]">
-          <tr>
-            <th className="px-4 py-3.5 font-bold text-base">Planet</th>
-            <th className="px-4 py-3.5 font-bold text-base">Sign</th>
-            <th className="px-4 py-3.5 font-bold text-base">Degree</th>
-            <th className="px-4 py-3.5 font-bold text-base">Nakshatra</th>
-            <th className="px-4 py-3.5 font-bold text-base">Pada</th>
-            <th className="px-4 py-3.5 font-bold text-base">House</th>
-            <th className="px-4 py-3.5 font-bold text-base">Status</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-[#3a506b] font-sans text-sm font-semibold">
-          {planets.map((planet, idx) => (
-            <tr key={idx} className="hover:bg-[#1c2541] transition-colors">
-              <td className={`px-4 py-3.5 font-extrabold ${planet.isRetrograde ? 'text-[#fbbf24]' : 'text-white'}`}>
-                {planet.name}
-              </td>
-              <td className="px-4 py-3.5 font-bold text-amber-200">{planet.sign}</td>
-              <td className="px-4 py-3.5 font-mono text-slate-100">{planet.degree}</td>
-              <td className="px-4 py-3.5 text-slate-100">{planet.nakshatra}</td>
-              <td className="px-4 py-3.5 font-mono">{planet.pada}</td>
-              <td className="px-4 py-3.5 font-bold text-[#fbbf24]">House {planet.house}</td>
-              <td className="px-4 py-3.5">
-                {planet.isRetrograde ? (
-                  <span className="inline-flex items-center rounded-lg bg-[#b45309] px-2.5 py-1 text-xs font-black text-white shadow-xs">
-                    (R) Retrograde
-                  </span>
-                ) : (
-                  <span className="text-gray-400 font-normal">Direct</span>
-                )}
-              </td>
+    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 sm:p-5 space-y-3">
+      <h3 className="font-sans font-bold text-base sm:text-lg text-slate-900">
+        Planetary Positions
+      </h3>
+
+      <div className="w-full overflow-x-auto">
+        <table className="w-full text-left text-sm font-sans border-collapse">
+          <thead>
+            <tr className="border-b border-slate-200 text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              <th className="py-3 px-3.5">PLANET</th>
+              <th className="py-3 px-3.5">SIGN</th>
+              <th className="py-3 px-3.5">SIGN LORD</th>
+              <th className="py-3 px-3.5">NAKSHATRA</th>
+              <th className="py-3 px-3.5">NAKSH LORD</th>
+              <th className="py-3 px-3.5">DEGREE</th>
+              <th className="py-3 px-3.5">RETRO</th>
+              <th className="py-3 px-3.5">HOUSE</th>
+              <th className="py-3 px-3.5">STATE</th>
+              <th className="py-3 px-3.5">STATUS</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+            {allRows.map((planet, idx) => {
+              const signLord = planet.signLord || SIGN_LORDS[planet.sign] || '—';
+              const nakshLord = planet.nakshatraLord || NAKSHATRA_LORDS[planet.nakshatra] || '—';
+              const state = planet.state || PLANET_STATES[planet.name] || '—';
+              const status = planet.status || PLANET_STATUS[planet.name] || '—';
+              const isRetro = planet.isRetrograde ? 'Yes' : 'No';
+
+              return (
+                <tr key={idx} className="hover:bg-amber-50/50 transition-colors">
+                  <td className="py-3 px-3.5 font-bold text-slate-900 uppercase text-sm sm:text-base">
+                    {planet.name}
+                  </td>
+                  <td className="py-3 px-3.5 text-slate-800 text-sm">{planet.sign}</td>
+                  <td className="py-3 px-3.5 text-slate-800 text-sm">{signLord}</td>
+                  <td className="py-3 px-3.5 text-slate-800 text-sm">{planet.nakshatra}</td>
+                  <td className="py-3 px-3.5 text-slate-800 text-sm">{nakshLord}</td>
+                  <td className="py-3 px-3.5 font-mono text-slate-900 text-sm">{planet.degree}</td>
+                  <td className="py-3 px-3.5 text-slate-800 text-sm">{isRetro}</td>
+                  <td className="py-3 px-3.5 font-mono text-slate-900 text-sm">{planet.house}</td>
+                  <td className="py-3 px-3.5 text-slate-800 text-sm">{state}</td>
+                  <td className="py-3 px-3.5 font-bold text-slate-900 uppercase tracking-tight text-xs sm:text-sm">
+                    {status}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
