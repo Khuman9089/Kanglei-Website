@@ -2941,6 +2941,194 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           </div>
         </header>
 
+        {/* Top Horizontal Category Navigation Bar (3-Section Alignment) */}
+        <div className={`px-6 py-2.5 border-b sticky top-16 z-20 transition-colors duration-300 ${
+          theme === 'dark' ? 'bg-[#0f172a]/95 border-[#1e293b] backdrop-blur-md' : 'bg-[#fefcf6]/95 border-[#fde68a] backdrop-blur-md shadow-xs'
+        }`}>
+          <div className="flex items-center justify-between gap-4 overflow-x-auto scrollbar-none py-0.5">
+            
+            {/* 1. LEFT ALIGNED: Core Operations */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] font-black uppercase tracking-wider text-[#b45309] mr-1 hidden lg:inline">Operations:</span>
+              
+              <button
+                onClick={() => setActiveTab('dashboard')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'dashboard'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <LayoutDashboard className="w-3.5 h-3.5" />
+                <span>Dashboard</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('kuthi')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'kuthi'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <FileText className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>Kuthi Orders</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('shop_orders')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'shop_orders' || activeTab === 'shop'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <ShoppingBag className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>E-Store Orders</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('shop_products')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'shop_products'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Package className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>Products</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('shop_coupons')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'shop_coupons'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Tag className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Coupons</span>
+              </button>
+            </div>
+
+            {/* 2. CENTER ALIGNED: Content & Astrologers */}
+            <div className="flex items-center justify-center gap-1.5 mx-auto shrink-0 border-x border-[#fde68a]/50 px-4">
+              <button
+                onClick={() => setActiveTab('astrologers')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'astrologers'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Award className="w-3.5 h-3.5 text-purple-400" />
+                <span>Astrologers</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('astro_payouts')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'astro_payouts'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <DollarSign className="w-3.5 h-3.5 text-green-500" />
+                <span>Payouts</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('astro_services')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'astro_services' || activeTab === 'astro_rates'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Tag className="w-3.5 h-3.5 text-amber-500" />
+                <span>Services</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('blog')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'blog'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <BookOpen className="w-3.5 h-3.5 text-sky-400" />
+                <span>Blog</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('announcements')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'announcements'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Bell className="w-3.5 h-3.5 text-amber-500" />
+                <span>Announcements</span>
+              </button>
+            </div>
+
+            {/* 3. RIGHT ALIGNED: Admin Tools & Controls */}
+            <div className="flex items-center gap-1.5 shrink-0">
+              <button
+                onClick={() => setActiveTab('shop_delivery')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'shop_delivery'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Truck className="w-3.5 h-3.5 text-sky-500" />
+                <span>Logistics</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('clients')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'clients'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Users className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Clients</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('navbar')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'navbar'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Menu className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>Navbar Manager</span>
+              </button>
+
+              <button
+                onClick={() => setActiveTab('settings')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'settings'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Settings className="w-3.5 h-3.5 text-slate-400" />
+                <span>Settings</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+
         {/* Dashboard Main Workspace */}
         <main className="p-6 md:p-8 space-y-6">
 
