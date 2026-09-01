@@ -12,8 +12,9 @@ export default function HeroSection() {
   const [day, setDay] = useState('15');
   const [month, setMonth] = useState('05');
   const [year, setYear] = useState('1995');
-  const [hour, setHour] = useState('10');
+  const [hour12, setHour12] = useState('10');
   const [minute, setMinute] = useState('30');
+  const [period, setPeriod] = useState<'AM' | 'PM'>('AM');
   const [pob, setPob] = useState('Imphal, Manipur');
   const [lat, setLat] = useState('24.8170');
   const [long, setLong] = useState('93.9368');
@@ -73,11 +74,23 @@ export default function HeroSection() {
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
+
+    let h24 = parseInt(hour12, 10);
+    if (period === 'PM' && h24 !== 12) {
+      h24 += 12;
+    } else if (period === 'AM' && h24 === 12) {
+      h24 = 0;
+    }
+    const formattedTob = `${String(h24).padStart(2, '0')}:${minute}`;
+
     const query = new URLSearchParams({
       name,
       gender,
       dob: `${year}-${month}-${day}`,
-      tob: `${hour}:${minute}`,
+      tob: formattedTob,
+      hour12,
+      minute,
+      period,
       pob,
       lat,
       long,
@@ -108,7 +121,7 @@ export default function HeroSection() {
     { value: '12', label: 'Dec' },
   ];
   const years = Array.from({ length: 80 }, (_, i) => String(2026 - i));
-  const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+  const hours12 = Array.from({ length: 12 }, (_, i) => String(i + 1).padStart(2, '0'));
   const minutes = Array.from({ length: 60 }, (_, i) => String(i).padStart(2, '0'));
 
   return (
@@ -360,15 +373,15 @@ export default function HeroSection() {
               <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
                 
                 {/* DOB Selects */}
-                <div className="md:col-span-7">
+                <div className="md:col-span-6">
                   <label className="block text-xs font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
                     Date of Birth<span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     <select
                       value={day}
                       onChange={(e) => setDay(e.target.value)}
-                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
                       {days.map((d) => (
                         <option key={d} value={d}>Day: {d}</option>
@@ -378,7 +391,7 @@ export default function HeroSection() {
                     <select
                       value={month}
                       onChange={(e) => setMonth(e.target.value)}
-                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
                       {months.map((m) => (
                         <option key={m.value} value={m.value}>{m.label}</option>
@@ -388,7 +401,7 @@ export default function HeroSection() {
                     <select
                       value={year}
                       onChange={(e) => setYear(e.target.value)}
-                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
                       {years.map((y) => (
                         <option key={y} value={y}>{y}</option>
@@ -397,30 +410,39 @@ export default function HeroSection() {
                   </div>
                 </div>
 
-                {/* Time Selects */}
-                <div className="md:col-span-5">
+                {/* Time of Birth Selects (12-Hour AM/PM Format) */}
+                <div className="md:col-span-6">
                   <label className="block text-xs font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
                     Time of Birth<span className="text-red-500">*</span>
                   </label>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-3 gap-1.5">
                     <select
-                      value={hour}
-                      onChange={(e) => setHour(e.target.value)}
-                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                      value={hour12}
+                      onChange={(e) => setHour12(e.target.value)}
+                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
-                      {hours.map((h) => (
-                        <option key={h} value={h}>Hour: {h}</option>
+                      {hours12.map((h) => (
+                        <option key={h} value={h}>{h} Hr</option>
                       ))}
                     </select>
 
                     <select
                       value={minute}
                       onChange={(e) => setMinute(e.target.value)}
-                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
                       {minutes.map((m) => (
-                        <option key={m} value={m}>Min: {m}</option>
+                        <option key={m} value={m}>{m} Min</option>
                       ))}
+                    </select>
+
+                    <select
+                      value={period}
+                      onChange={(e) => setPeriod(e.target.value as 'AM' | 'PM')}
+                      className="w-full h-10 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-extrabold text-[#b45309] focus:border-[#d97706] focus:outline-none cursor-pointer"
+                    >
+                      <option value="AM">AM</option>
+                      <option value="PM">PM</option>
                     </select>
                   </div>
                 </div>
