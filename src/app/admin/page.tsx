@@ -8327,6 +8327,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Confirm Payout & Update Wallet</span>
                 </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+
       {/* MODAL: CREATE / EDIT PROMO COUPON */}
       {showCouponModal && editingCoupon && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
