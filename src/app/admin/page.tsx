@@ -98,9 +98,13 @@ interface ShopOrder {
     adminCommissionAmount?: number;
     astroPayoutAmount?: number;
   }[];
+  subtotalAmount?: number;
+  discountAmount?: number;
+  couponCode?: string;
+  shippingFee?: number;
   totalAmount: number;
   utr: string;
-  status: 'PAYMENT_PENDING' | 'PAID' | 'DISPATCHED' | 'DELIVERED';
+  status: 'PAYMENT_PENDING' | 'PAID' | 'ENERGIZING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
   adminConfirmed?: boolean;
   orderedAt: string;
   courierPartner?: string;
@@ -108,6 +112,17 @@ interface ShopOrder {
   deliveryAgentPhone?: string;
   expectedDeliveryDate?: string;
   dispatchedAt?: string;
+}
+
+interface CouponItem {
+  id: string;
+  code: string;
+  type: 'PERCENTAGE' | 'FLAT' | 'FREE_SHIPPING';
+  value: number;
+  minOrderAmount: number;
+  active: boolean;
+  expiryDate?: string;
+  usageCount: number;
 }
 
 interface BlogPost {
@@ -586,7 +601,11 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+
+  const [shopCoupons, setShopCoupons] = useState<CouponItem[]>([]);
+  const [editingCoupon, setEditingCoupon] = useState<Partial<CouponItem> | null>(null);
+  const [showCouponModal, setShowCouponModal] = useState(false);
 
   const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
@@ -1298,6 +1317,15 @@ export default function AdminDashboardPage() {
       })
       .catch((err) => console.error('Error fetching shop catalog:', err));
 
+    fetch('/api/shop/coupons')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.coupons && Array.isArray(data.coupons)) {
+          setShopCoupons(data.coupons);
+        }
+      })
+      .catch((err) => console.error('Error fetching shop coupons:', err));
+
     fetch('/api/announcements')
       .then((res) => res.json())
       .then((data) => {
@@ -1779,6 +1807,77 @@ export default function AdminDashboardPage() {
       if (data.categories) {
         setShopCategories(data.categories);
         setSaveAlert(`Category "${catName}" removed.`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingCoupon || !editingCoupon.code) return;
+
+    const couponToSave: CouponItem = {
+      id: editingCoupon.id || 'c-' + Date.now(),
+      code: editingCoupon.code.toUpperCase().trim(),
+      type: editingCoupon.type || 'PERCENTAGE',
+      value: Number(editingCoupon.value) || 0,
+      minOrderAmount: Number(editingCoupon.minOrderAmount) || 0,
+      active: editingCoupon.active !== false,
+      usageCount: editingCoupon.usageCount || 0,
+    };
+
+    try {
+      const res = await fetch('/api/shop/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'CREATE_COUPON', coupon: couponToSave }),
+      });
+      const data = await res.json();
+      if (data.coupons) {
+        setShopCoupons(data.coupons);
+        setEditingCoupon(null);
+        setShowCouponModal(false);
+        setSaveAlert(`✅ Promo Coupon ${couponToSave.code} saved!`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error('Error saving coupon:', err);
+    }
+  };
+
+  const handleToggleCouponActive = async (coupon: CouponItem) => {
+    const updated = { ...coupon, active: !coupon.active };
+    try {
+      const res = await fetch('/api/shop/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'UPDATE_COUPON', coupon: updated }),
+      });
+      const data = await res.json();
+      if (data.coupons) {
+        setShopCoupons(data.coupons);
+        setSaveAlert(`Coupon ${coupon.code} is now ${updated.active ? 'ACTIVE' : 'INACTIVE'}.`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteCoupon = async (id: string, code: string) => {
+    if (!confirm(`Are you sure you want to delete promo coupon "${code}"?`)) return;
+    try {
+      const res = await fetch('/api/shop/coupons', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'DELETE_COUPON', id }),
+      });
+      const data = await res.json();
+      if (data.coupons) {
+        setShopCoupons(data.coupons);
+        setSaveAlert(`Promo coupon "${code}" deleted.`);
         setTimeout(() => setSaveAlert(''), 3000);
       }
     } catch (err) {
@@ -2523,6 +2622,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
                   }`}>
                     Courier
+                  </span>
+                </button>
+
+                {/* 5. Promo Coupons & Discounts */}
+                <button
+                  onClick={() => setActiveTab('shop_coupons')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'shop_coupons'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Tag className="w-4 h-4 text-emerald-500" />
+                    <span>Promo Coupons</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                  }`}>
+                    {shopCoupons.length} Vouchers
                   </span>
                 </button>
               </div>
@@ -3920,6 +4039,156 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               </div>
 
+            </div>
+          )}
+
+          {/* TAB 4D: PROMO COUPONS & DISCOUNTS MANAGER */}
+          {activeTab === 'shop_coupons' && (
+            <div className="space-y-6">
+              {/* Header Banner */}
+              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4 shadow-xl">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-extrabold uppercase mb-2 border border-emerald-500/30">
+                    <Tag className="w-3.5 h-3.5 text-emerald-400" />
+                    E-Store Promo Coupons & Discount Vouchers
+                  </div>
+                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                    Promo Coupons Engine & Offer Management
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Create percentage discounts, flat cash back vouchers, and free shipping codes for your store buyers.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setEditingCoupon({
+                      code: '',
+                      type: 'PERCENTAGE',
+                      value: 10,
+                      minOrderAmount: 499,
+                      active: true,
+                    });
+                    setShowCouponModal(true);
+                  }}
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Create Promo Coupon</span>
+                </button>
+              </div>
+
+              {/* Stats Bar */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="p-5 rounded-2xl bg-[#1c2541] border border-[#3a506b] space-y-1 shadow-md">
+                  <span className="text-xs text-gray-400 font-bold uppercase block">Total Promo Codes</span>
+                  <span className="text-2xl font-black text-[#fbbf24] font-mono">{shopCoupons.length}</span>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[#1c2541] border border-emerald-500/40 space-y-1 shadow-md">
+                  <span className="text-xs text-emerald-400 font-bold uppercase block">Active Vouchers</span>
+                  <span className="text-2xl font-black text-emerald-400 font-mono">
+                    {shopCoupons.filter((c) => c.active !== false).length}
+                  </span>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-[#1c2541] border border-sky-500/40 space-y-1 shadow-md">
+                  <span className="text-xs text-sky-400 font-bold uppercase block">Total Times Redeemed</span>
+                  <span className="text-2xl font-black text-sky-400 font-mono">
+                    {shopCoupons.reduce((sum, c) => sum + (c.usageCount || 0), 0)} Redemptions
+                  </span>
+                </div>
+              </div>
+
+              {/* COUPONS DIRECTORY TABLE */}
+              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-[#3a506b] flex justify-between items-center">
+                  <h4 className="font-serif font-bold text-xl text-emerald-300">
+                    Active & Available Vouchers ({shopCoupons.length})
+                  </h4>
+                  <span className="text-xs text-gray-400">Validated live on checkout drawer & cart</span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase">
+                        <th className="p-4">Coupon Code</th>
+                        <th className="p-4">Discount Benefit</th>
+                        <th className="p-4">Minimum Order (₹)</th>
+                        <th className="p-4">Times Redeemed</th>
+                        <th className="p-4 text-center">Active Status</th>
+                        <th className="p-4 text-center">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-[#3a506b]/50">
+                      {shopCoupons.length === 0 ? (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-gray-400 font-medium">
+                            No promo coupons configured yet. Click "+ Create Promo Coupon" to add one.
+                          </td>
+                        </tr>
+                      ) : (
+                        shopCoupons.map((coupon) => (
+                          <tr key={coupon.id} className="hover:bg-[#0b132b]/40">
+                            <td className="p-4">
+                              <code className="px-3 py-1 rounded-xl bg-[#0b132b] border border-[#d97706] text-[#fbbf24] font-mono font-black text-sm tracking-wider">
+                                {coupon.code}
+                              </code>
+                            </td>
+                            <td className="p-4 font-bold text-white">
+                              {coupon.type === 'PERCENTAGE' && (
+                                <span className="text-emerald-400">{coupon.value}% OFF Subtotal</span>
+                              )}
+                              {coupon.type === 'FLAT' && (
+                                <span className="text-amber-400">₹{coupon.value} FLAT Cash Discount</span>
+                              )}
+                              {coupon.type === 'FREE_SHIPPING' && (
+                                <span className="text-sky-400">FREE Nationwide Express Delivery</span>
+                              )}
+                            </td>
+                            <td className="p-4 font-mono font-bold text-gray-300">
+                              ₹{coupon.minOrderAmount}
+                            </td>
+                            <td className="p-4 font-mono text-gray-400">
+                              {coupon.usageCount || 0} times
+                            </td>
+                            <td className="p-4 text-center">
+                              <button
+                                onClick={() => handleToggleCouponActive(coupon)}
+                                className={`px-3 py-1 rounded-full text-[10px] font-extrabold border transition-all cursor-pointer ${
+                                  coupon.active !== false
+                                    ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40'
+                                    : 'bg-red-500/20 text-red-300 border-red-500/40'
+                                }`}
+                              >
+                                {coupon.active !== false ? 'ACTIVE' : 'INACTIVE'}
+                              </button>
+                            </td>
+                            <td className="p-4 text-center space-x-2">
+                              <button
+                                onClick={() => {
+                                  setEditingCoupon(coupon);
+                                  setShowCouponModal(true);
+                                }}
+                                className="px-3 py-1.5 rounded-xl bg-[#3a506b] hover:bg-[#4a6585] text-white font-bold text-xs cursor-pointer"
+                              >
+                                Edit
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCoupon(coupon.id, coupon.code)}
+                                className="px-3 py-1.5 rounded-xl bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white font-bold text-xs cursor-pointer"
+                              >
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           )}
 
@@ -8058,9 +8327,113 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <CheckCircle2 className="w-4 h-4" />
                   <span>Confirm Payout & Update Wallet</span>
                 </button>
-              </div>
+      {/* MODAL: CREATE / EDIT PROMO COUPON */}
+      {showCouponModal && editingCoupon && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1c2541] w-full max-w-md rounded-3xl border border-[#3a506b] shadow-2xl p-6 sm:p-8 space-y-5 text-white relative">
+            <div className="flex justify-between items-center border-b border-[#3a506b] pb-3">
+              <h3 className="font-serif font-bold text-xl text-[#fbbf24]">
+                {editingCoupon.id ? 'Edit Promo Coupon' : 'Create New Promo Coupon'}
+              </h3>
+              <button
+                onClick={() => setShowCouponModal(false)}
+                className="text-gray-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
             </div>
-          </form>
+
+            <form onSubmit={handleSaveCoupon} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Coupon Code (Uppercase) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. KANGLEI20"
+                  value={editingCoupon.code || ''}
+                  onChange={(e) => setEditingCoupon({ ...editingCoupon, code: e.target.value.toUpperCase() })}
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-black text-sm uppercase tracking-wider focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Discount Type *
+                </label>
+                <select
+                  value={editingCoupon.type || 'PERCENTAGE'}
+                  onChange={(e) => setEditingCoupon({ ...editingCoupon, type: e.target.value as any })}
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                >
+                  <option value="PERCENTAGE">PERCENTAGE (% Off Subtotal)</option>
+                  <option value="FLAT">FLAT (Flat ₹ Amount Off)</option>
+                  <option value="FREE_SHIPPING">FREE_SHIPPING (Free Delivery Fee)</option>
+                </select>
+              </div>
+
+              {editingCoupon.type !== 'FREE_SHIPPING' && (
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    Discount Value ({editingCoupon.type === 'PERCENTAGE' ? '% Percentage' : '₹ Amount'}) *
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={1}
+                    placeholder={editingCoupon.type === 'PERCENTAGE' ? '20' : '100'}
+                    value={editingCoupon.value ?? ''}
+                    onChange={(e) => setEditingCoupon({ ...editingCoupon, value: Number(e.target.value) })}
+                    className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-mono font-extrabold text-sm focus:outline-none"
+                  />
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Minimum Cart Subtotal Threshold (₹) *
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={0}
+                  placeholder="499"
+                  value={editingCoupon.minOrderAmount ?? ''}
+                  onChange={(e) => setEditingCoupon({ ...editingCoupon, minOrderAmount: Number(e.target.value) })}
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:outline-none"
+                />
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-2 text-xs font-bold text-gray-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editingCoupon.active !== false}
+                    onChange={(e) => setEditingCoupon({ ...editingCoupon, active: e.target.checked })}
+                    className="rounded border-gray-600 text-emerald-500 focus:ring-emerald-500"
+                  />
+                  <span>Activate Coupon for public use immediately</span>
+                </label>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowCouponModal(false)}
+                  className="flex-1 py-3 rounded-xl border border-[#3a506b] text-gray-300 font-bold text-xs hover:bg-[#0b132b]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-extrabold text-xs shadow-md hover:opacity-95"
+                >
+                  Save Promo Coupon
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
