@@ -1,0 +1,24 @@
+# ─────────────────────────────────────────────────────────────
+# Hostinger LiteSpeed / Apache Reverse Proxy Configuration for Next.js
+# ─────────────────────────────────────────────────────────────
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Preserve HTTPS protocol header
+  RewriteCond %{HTTPS} off
+  RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 2. Serve static files directly if existing
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
+
+  # 3. Proxy all dynamic routes to Node.js PM2 / Next.js server on port 3000
+  RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
+</IfModule>
+
+# Fix 403 Forbidden directory index error
+DirectoryIndex index.html index.php disabled
+Options -Indexes +FollowSymLinks
