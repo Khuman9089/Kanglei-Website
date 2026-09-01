@@ -1,0 +1,226 @@
+[
+  {
+    "id": "astro-1",
+    "name": "Acharya Tombi Sharma",
+    "badge": "Celebrity",
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80",
+    "specialties": [
+      "Kuthi Yengba",
+      "Vedic",
+      "Matching"
+    ],
+    "categoryTags": [
+      "Marriage",
+      "Career",
+      "Love"
+    ],
+    "languages": "Manipuri · English · Hindi",
+    "experienceYears": 15,
+    "rating": 5,
+    "consultationsCount": "50k+",
+    "pricePerMin": 35,
+    "whatsappPhone": "+919862099881",
+    "email": "tombi.sharma@kangleiastro.com",
+    "bio": "Master Vedic Astrologer with 15+ years of expertise in Kuthi Yengba, Dasha remedies, and marital compatibility.",
+    "isTrending": true,
+    "active": true,
+    "online": true,
+    "showOnHome": true
+  },
+  {
+    "id": "astro-2",
+    "name": "Saanvi Sharma",
+    "badge": "Celebrity",
+    "avatar": "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=300&q=80",
+    "specialties": [
+      "Tarot",
+      "Life Coach",
+      "Numerology"
+    ],
+    "categoryTags": [
+      "Love",
+      "Health",
+      "Education"
+    ],
+    "languages": "Manipuri · English",
+    "experienceYears": 8,
+    "rating": 4.9,
+    "consultationsCount": "10k+",
+    "pricePerMin": 28,
+    "whatsappPhone": "+919862099881",
+    "email": "saanvi.sharma@kangleiastro.com",
+    "bio": "Specialist in intuitive Tarot reading, relationship counseling, and psychological birth chart insights.",
+    "isTrending": true,
+    "active": true,
+    "online": true,
+    "showOnHome": true
+  },
+  {
+    "id": "astro-3",
+    "name": "Pandit Ningthem Meitei",
+    "badge": "Top Choice",
+    "avatar": "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=300&q=80",
+    "specialties": [
+      "Vedic",
+      "Face Reading",
+      "Gun Milan"
+    ],
+    "categoryTags": [
+      "Marriage",
+      "Wealth",
+      "Career"
+    ],
+    "languages": "Manipuri · Hindi",
+    "experienceYears": 12,
+    "rating": 5,
+    "consultationsCount": "25k+",
+    "pricePerMin": 30,
+    "whatsappPhone": "+919774033411",
+    "email": "ningthem.meitei@kangleiastro.com",
+    "bio": "Senior Jyotish Scholar specializing in 36-Gun Ashtakoot matching, Manglik remedies, and business timing.",
+    "isTrending": true,
+    "active": true,
+    "online": true,
+    "showOnHome": true
+  },
+  {
+    "id": "astro-4",
+    "name": "Gurumayum Sharma",
+    "badge": "Celebrity",
+    "avatar": "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300&q=80",
+    "specialties": [
+      "Numerology",
+      "Dasha Remedies",
+      "Palmistry"
+    ],
+    "categoryTags": [
+      "Career",
+      "Education",
+      "Wealth"
+    ],
+    "languages": "Manipuri · English",
+    "experienceYears": 10,
+    "rating": 5,
+    "consultationsCount": "15k+",
+    "pricePerMin": 25,
+    "whatsappPhone": "+919856177122",
+    "email": "gurumayum.sharma@kangleiastro.com",
+    "bio": "Numerology and Palmistry specialist providing practical gemstones, Mantras, and life alignment remedies.",
+    "isTrending": true,
+    "active": true,
+    "online": true,
+    "showOnHome": true
+  },
+  {
+    "id": "astro-5",
+    "name": "Lokamayi Devi",
+    "badge": "Top Choice",
+    "avatar": "https://images.unsplash.com/photo-1548142813-c348350df52b?w=300&q=80",
+    "specialties": [
+      "Tarot",
+      "Life Coach",
+      "Face Reading"
+    ],
+    "categoryTags": [
+      "Love",
+      "Health",
+      "Marriage"
+    ],
+    "languages": "Manipuri · English · Hindi",
+    "experienceYears": 7,
+    "rating": 4.9,
+    "consultationsCount": "12k+",
+    "pricePerMin": 34,
+    "whatsappPhone": "+919862099881",
+    "email": "lokamayi.devi@kangleiastro.com",
+    "bio": "Renowned Face Reading expert and spiritual healer focusing on love guidance and career clarity.",
+    "isTrending": false,
+    "active": true,
+    "online": true,
+    "showOnHome": false
+  },
+  {
+    "id": "astro-6",
+    "name": "Astro Amarmani",
+    "badge": "Top Choice",
+    "avatar": "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=300&q=80",
+    "specialties": [
+      "Vedic",
+      "Numerology",
+      "Vastu"
+    ],
+    "categoryTags": [
+      "Wealth",
+      "Career",
+      "Education"
+    ],
+    "languages": "Manipuri · English · Hindi",
+    "experienceYears": 20,
+    "rating": 4.8,
+    "consultationsCount": "35k+",
+    "pricePerMin": 45,
+    "whatsappPhone": "+919862099881",
+    "email": "amarmani@kangleiastro.com",
+    "bio": "Vastu Shastra and corporate astrology advisor with 20 years of experience guiding property and investment choices.",
+    "isTrending": false,
+    "active": true,
+    "online": true,
+    "showOnHome": false
+  },
+  {
+    "id": "astro-7",
+    "name": "Raghuvardas",
+    "badge": "Verified",
+    "avatar": "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=300&q=80",
+    "specialties": [
+      "Vedic",
+      "Face Reading",
+      "Psychic"
+    ],
+    "categoryTags": [
+      "Health",
+      "Career",
+      "Wealth"
+    ],
+    "languages": "Manipuri · Hindi",
+    "experienceYears": 14,
+    "rating": 5,
+    "consultationsCount": "40k+",
+    "pricePerMin": 40,
+    "whatsappPhone": "+919862099881",
+    "email": "raghuvardas@kangleiastro.com",
+    "bio": "Prashna Kundli expert offering instant precise answers to immediate burning life questions.",
+    "isTrending": true,
+    "active": true,
+    "online": true,
+    "showOnHome": false
+  },
+  {
+    "id": "astro-8",
+    "name": "Abhas Sharma",
+    "badge": "Verified",
+    "avatar": "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=300&q=80",
+    "specialties": [
+      "Vedic",
+      "Nadi",
+      "Face Reading"
+    ],
+    "categoryTags": [
+      "Education",
+      "Love",
+      "Marriage"
+    ],
+    "languages": "Manipuri · English",
+    "experienceYears": 9,
+    "rating": 5,
+    "consultationsCount": "18k+",
+    "pricePerMin": 32,
+    "whatsappPhone": "+919862099881",
+    "email": "abhas.sharma@kangleiastro.com",
+    "bio": "Nadi astrology practitioner specializing in karmic patterns and precise planetary timing.",
+    "isTrending": true,
+    "active": true,
+    "online": true,
+    "showOnHome": false
+  }
+]

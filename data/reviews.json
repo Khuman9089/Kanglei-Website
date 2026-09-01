@@ -1,0 +1,68 @@
+[
+  {
+    "id": "rev-1",
+    "clientName": "Priya S.",
+    "location": "Mumbai, Maharashtra",
+    "rating": 5,
+    "comment": "The accuracy of the predictions was remarkable. The career guidance helped me make a crucial decision.",
+    "serviceName": "Career & Financial Outlook",
+    "status": "APPROVED",
+    "isVerified": true,
+    "createdAt": "12 January 2026"
+  },
+  {
+    "id": "rev-2",
+    "clientName": "Rahul M.",
+    "location": "Delhi, NCR",
+    "rating": 5,
+    "comment": "I was skeptical at first, but the detailed birth chart analysis changed my perspective completely.",
+    "serviceName": "Kuthi Yengba Consultation",
+    "status": "APPROVED",
+    "isVerified": true,
+    "createdAt": "28 January 2026"
+  },
+  {
+    "id": "rev-3",
+    "clientName": "Ananya K.",
+    "location": "Bangalore, Karnataka",
+    "rating": 5,
+    "comment": "The marriage compatibility report was incredibly detailed and accurate. Highly recommended!",
+    "serviceName": "Marriage Matching (পক্ন-ৱাইনবা য়েংবা)",
+    "status": "APPROVED",
+    "isVerified": true,
+    "createdAt": "05 February 2026"
+  },
+  {
+    "id": "rev-4",
+    "clientName": "Vikram P.",
+    "location": "Hyderabad, Telangana",
+    "rating": 5,
+    "comment": "Best astrology consultation I've ever had. The remedies suggested actually worked!",
+    "serviceName": "Kuthi Yengba Consultation",
+    "status": "APPROVED",
+    "isVerified": true,
+    "createdAt": "14 February 2026"
+  },
+  {
+    "id": "rev-5",
+    "clientName": "Meera R.",
+    "location": "Chennai, Tamil Nadu",
+    "rating": 5,
+    "comment": "The Vimshottari Dasha analysis was spot-on. Every prediction matched my life events.",
+    "serviceName": "30-Page Kuthi Report",
+    "status": "APPROVED",
+    "isVerified": true,
+    "createdAt": "20 February 2026"
+  },
+  {
+    "id": "rev-6",
+    "clientName": "Thoibi Ningthoujam",
+    "location": "Imphal East, Manipur",
+    "rating": 5,
+    "comment": "Hand-written Kuthi Iba (কুঠি ইবা) was delivered within 24 hours on WhatsApp and physical hardcopy! Excellent service.",
+    "serviceName": "Kuthi Iba (কুঠি ইবা)",
+    "status": "APPROVED",
+    "isVerified": true,
+    "createdAt": "25 February 2026"
+  }
+]

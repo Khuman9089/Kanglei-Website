@@ -1,0 +1,140 @@
+[
+  {
+    "id": "prod-1",
+    "title": "Natural Ceylon Yellow Sapphire (Pukhraj) 5.25 Ratti",
+    "category": "Gemstones",
+    "price": 6999,
+    "originalPrice": 8999,
+    "rating": 4.9,
+    "reviewsCount": 84,
+    "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop",
+    "badge": "Lab Certified 100% Original",
+    "stock": 8,
+    "description": "Unheated and untreated natural Ceylon Yellow Sapphire for Jupiter (Guru) strengthening, career promotions, and spiritual wisdom.",
+    "features": [
+      "Govt. Lab Tested Certificate Included",
+      "Unheated & Untreated Natural Gemstone",
+      "Energized with Vedic Mantras before dispatch"
+    ],
+    "sellerType": "PLATFORM",
+    "sellerId": "platform-admin",
+    "sellerName": "KangleiAstro Store",
+    "status": "APPROVED",
+    "adminCommissionPct": 0
+  },
+  {
+    "id": "prod-2",
+    "title": "Brihat Parashara Hora Shastra (2-Volume Deluxe Hardcover Set)",
+    "category": "Astrology Books",
+    "price": 1499,
+    "originalPrice": 1999,
+    "rating": 5,
+    "reviewsCount": 120,
+    "image": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop",
+    "badge": "Classic Vedic Scripture",
+    "stock": 25,
+    "description": "The foundational encyclopedic text of Vedic astrology authored by Sage Parashara with Sanskrit shlokas and English translations.",
+    "features": [
+      "Complete 2-Volume Hardcover Collector Edition",
+      "Detailed planetary Yogas, Dashas, & remedies",
+      "Sanskrit text with word-by-word commentary"
+    ],
+    "sellerType": "PLATFORM",
+    "sellerId": "platform-admin",
+    "sellerName": "KangleiAstro Store",
+    "status": "APPROVED",
+    "adminCommissionPct": 0
+  },
+  {
+    "id": "prod-3",
+    "title": "Traditional Manipuri Kuthi Yengba Guide & Panchang Reader",
+    "category": "Astrology Books",
+    "price": 799,
+    "originalPrice": 999,
+    "rating": 4.8,
+    "reviewsCount": 62,
+    "image": "https://images.unsplash.com/photo-1512820790803-83ca734da794?q=80&w=800&auto=format&fit=crop",
+    "badge": "Regional Vedic Guide",
+    "stock": 40,
+    "description": "Comprehensive guidebook detailing traditional Manipuri Kuthi chart calculation, Meitei horoscope symbols, and planetary remedies.",
+    "features": [
+      "Step-by-step Kuthi paper calculation methodology",
+      "Meitei astrological terminology explained",
+      "Includes 2026-2027 transit tables"
+    ],
+    "sellerType": "PLATFORM",
+    "sellerId": "platform-admin",
+    "sellerName": "KangleiAstro Store",
+    "status": "APPROVED",
+    "adminCommissionPct": 0
+  },
+  {
+    "id": "prod-4",
+    "title": "Sacred 24k Gold Plated Shree Yantra (3D Meru)",
+    "category": "Yantras & Mala",
+    "price": 2499,
+    "originalPrice": 3200,
+    "rating": 4.9,
+    "reviewsCount": 95,
+    "image": "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop",
+    "badge": "Energized Heavy Brass",
+    "stock": 12,
+    "description": "Authentic 3D Meru Shree Yantra crafted in heavy brass with 24k gold foil plating for financial abundance and house Vaastu harmony.",
+    "features": [
+      "3D Pyramid Meru Sacred Geometry",
+      "24k Gold foil electroplating",
+      "Consecrated by Master Pandits"
+    ],
+    "sellerType": "PLATFORM",
+    "sellerId": "platform-admin",
+    "sellerName": "KangleiAstro Store",
+    "status": "APPROVED",
+    "adminCommissionPct": 0
+  },
+  {
+    "id": "prod-5",
+    "title": "Natural 5 Mukhi Nepal Rudraksha Mala (108+1 Beads)",
+    "category": "Yantras & Mala",
+    "price": 999,
+    "originalPrice": 1499,
+    "rating": 4.9,
+    "reviewsCount": 140,
+    "image": "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop",
+    "badge": "Original Nepalese Beads",
+    "stock": 30,
+    "description": "Authentic 5 Mukhi Nepal Rudraksha rosary for meditation, mental calm, blood pressure balance, and Lord Shiva protection.",
+    "features": [
+      "108+1 High quality Nepali Rudraksha beads",
+      "Includes testing certificate & silk pouch",
+      "Purified with Panchamrut Puja"
+    ],
+    "sellerType": "PLATFORM",
+    "sellerId": "platform-admin",
+    "sellerName": "KangleiAstro Store",
+    "status": "APPROVED",
+    "adminCommissionPct": 0
+  },
+  {
+    "id": "prod-6",
+    "title": "Consecrated Parad (Mercury) Shivlinga 150g",
+    "category": "Consecrated Remedies",
+    "price": 1899,
+    "originalPrice": 2499,
+    "rating": 5,
+    "reviewsCount": 38,
+    "image": "https://images.unsplash.com/photo-1545232979-fbfd42e000b5?q=80&w=800&auto=format&fit=crop",
+    "badge": "Pandit Consecrated",
+    "stock": 6,
+    "description": "Purified 8-stage Samskara Parad (Mercury) Shivlinga for Kundali Dosh Nivaran & house peace consecrated personally by Acharya Tombi.",
+    "features": [
+      "Authentic 8-Stage Purified Parad",
+      "Consecrated at Mahadev Puja Altars",
+      "Removes Rahu-Ketu & Graha Dosha"
+    ],
+    "sellerType": "ASTROLOGER",
+    "sellerId": "astro-1",
+    "sellerName": "Acharya Tombi Sharma",
+    "status": "APPROVED",
+    "adminCommissionPct": 15
+  }
+]
