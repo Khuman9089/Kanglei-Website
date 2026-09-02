@@ -57,7 +57,7 @@ export default function BannerAd970x90() {
   }[banner.theme || 'gold'];
 
   return (
-    <aside aria-label="Advertisement & Quick Services Bar" className="w-full bg-[#fffdfa] pt-20 md:pt-30 pb-3 px-4 print:hidden flex flex-col justify-center items-center relative z-20">
+    <aside aria-label="Advertisement & Quick Services Bar" className="w-full bg-[#fffdfa] py-3 px-4 print:hidden flex flex-col justify-center items-center relative z-20">
       
       {/* 1. Exact 970px x 90px Standard Leaderboard Container (If active & not dismissed) */}
       {!dismissed && banner && banner.active && (

@@ -124,7 +124,7 @@ export default function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] font-sans antialiased">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 md:pt-10 pb-20 space-y-8">
         
         {/* Back Link Breadcrumb */}
         <div className="flex items-center justify-between">

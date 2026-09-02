@@ -105,6 +105,8 @@ export interface ShopSliderItem {
   ctaText: string;
   ctaLink: string;
   bgColor?: string;
+  glowColor?: string;
+  accentColor?: string;
   active: boolean;
   displayOrder: number;
   price?: string;

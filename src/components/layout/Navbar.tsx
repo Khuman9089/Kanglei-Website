@@ -230,7 +230,7 @@ export function Navbar() {
     .sort((a, b) => (a.order || 0) - (b.order || 0));
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 transition-all duration-300">
+    <header className="sticky top-0 z-50 transition-all duration-300 bg-white shadow-xs">
       {/* 1. TOP UTILITY BAR (Bright Warm Gold Theme - Hidden on Mobile, Desktop Only) */}
       <div className="hidden md:block bg-[#fef3c7] text-[#78350f] text-xs border-b border-[#fde68a]">
         <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-2">
