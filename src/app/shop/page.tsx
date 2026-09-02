@@ -85,7 +85,7 @@ export default function ShopPage() {
     .sort((a, b) => {
       if (sortBy === 'PRICE_LOW') return a.price - b.price;
       if (sortBy === 'PRICE_HIGH') return b.price - a.price;
-      if (sortBy === 'RATING') return b.rating - a.rating;
+      if (sortBy === 'RATING') return (b.rating || 0) - (a.rating || 0);
       return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
     });
 
