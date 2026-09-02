@@ -77,6 +77,20 @@ export interface ShopOrder {
   dispatchedAt?: string;
 }
 
+export interface ShopSliderItem {
+  id: string;
+  badge: string;
+  title: string;
+  highlightText: string;
+  subtitle: string;
+  image: string;
+  ctaText: string;
+  ctaLink: string;
+  bgColor?: string;
+  active: boolean;
+  displayOrder: number;
+}
+
 const DEFAULT_CATEGORIES: string[] = ['Gemstones', 'Astrology Books', 'Yantras & Mala', 'Puja Items', 'Consecrated Remedies'];
 
 const DEFAULT_COMMISSION_SETTINGS = {
@@ -155,6 +169,48 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
   },
 ];
 
+const DEFAULT_SHOP_SLIDERS: ShopSliderItem[] = [
+  {
+    id: 'slider-1',
+    badge: '✨ AUTHENTIC MANIPURI & VEDIC CONSECRATED STORE',
+    title: 'Sacred Vedic Remedies &',
+    highlightText: 'Lab-Certified Gemstones',
+    subtitle: 'Explore 100% genuine Ceylon Yellow Sapphires, traditional Kuthi reading books, 24k gold Shree Yantras, and Nepali Rudraksha beads consecrated by Master Pandits.',
+    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+    ctaText: 'Shop Consecrated Gemstones',
+    ctaLink: '/shop',
+    bgColor: 'from-[#0b132b] via-[#1c2541] to-[#0b132b]',
+    active: true,
+    displayOrder: 1,
+  },
+  {
+    id: 'slider-2',
+    badge: '📜 TRADITIONAL MANIPURI SCRIPTURES & KUTHI BOOKS',
+    title: 'Authentic Meitei Astrology',
+    highlightText: 'Kuthi Reading Books & Scriptures',
+    subtitle: 'Discover handwritten and printed Manipuri Meitei Puya, Jyotish books, and astrological guides directly from Kangleipak scholars.',
+    image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop',
+    ctaText: 'Explore Astrological Scriptures',
+    ctaLink: '/shop?category=Astrology%20Books',
+    bgColor: 'from-[#1e1b4b] via-[#312e81] to-[#1e1b4b]',
+    active: true,
+    displayOrder: 2,
+  },
+  {
+    id: 'slider-3',
+    badge: '📿 ENERGIZED SPIRITUAL MALA & YANTRAS',
+    title: 'Pandit Blessed 24K Gold',
+    highlightText: 'Shree Yantras & Nepal Rudraksha',
+    subtitle: 'Attract Mahalakshmi grace, remove home Vastu Dosh, and bring long-term financial stability with lab-certified consecrated items.',
+    image: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?q=80&w=800&auto=format&fit=crop',
+    ctaText: 'Buy Energized Yantras',
+    ctaLink: '/shop?category=Yantras%20%26%20Mala',
+    bgColor: 'from-[#14532d] via-[#166534] to-[#064e3b]',
+    active: true,
+    displayOrder: 3,
+  },
+];
+
 const DEFAULT_SHOP_ORDERS: ShopOrder[] = [];
 
 export async function GET() {
@@ -162,12 +218,14 @@ export async function GET() {
   const orders = await readPersistentDataAsync<ShopOrder[]>('shop_orders', DEFAULT_SHOP_ORDERS);
   const categories = await readPersistentDataAsync<string[]>('shop_categories', DEFAULT_CATEGORIES);
   const commissionSettings = await readPersistentDataAsync('shop_commission', DEFAULT_COMMISSION_SETTINGS);
+  const sliders = await readPersistentDataAsync<ShopSliderItem[]>('shop_sliders', DEFAULT_SHOP_SLIDERS);
 
   return NextResponse.json({
     products,
     orders,
     categories,
     commissionSettings,
+    sliders,
   });
 }
 
@@ -178,6 +236,7 @@ export async function POST(request: Request) {
     let orders = await readPersistentDataAsync<ShopOrder[]>('shop_orders', DEFAULT_SHOP_ORDERS);
     let categories = await readPersistentDataAsync<string[]>('shop_categories', DEFAULT_CATEGORIES);
     let commissionSettings = await readPersistentDataAsync('shop_commission', DEFAULT_COMMISSION_SETTINGS);
+    let sliders = await readPersistentDataAsync<ShopSliderItem[]>('shop_sliders', DEFAULT_SHOP_SLIDERS);
 
     if (body.action === 'UPDATE_COMMISSION') {
       if (typeof body.defaultCommissionPct === 'number') {
@@ -189,6 +248,38 @@ export async function POST(request: Request) {
         message: `Platform Commission Rate updated to ${commissionSettings.defaultCommissionPct}%!`,
         commissionSettings,
       });
+    }
+
+    // SLIDER ACTIONS
+    if (body.action === 'CREATE_SLIDER' || body.action === 'UPDATE_SLIDER' || body.action === 'SAVE_SLIDER') {
+      const slider: ShopSliderItem = body.slider;
+      const idx = sliders.findIndex((s) => s.id === slider.id);
+      if (idx >= 0) {
+        sliders[idx] = { ...sliders[idx], ...slider };
+      } else {
+        sliders.push({
+          ...slider,
+          id: slider.id || 'slider-' + Date.now(),
+          displayOrder: sliders.length + 1,
+        });
+      }
+      await writePersistentDataAsync('shop_sliders', sliders);
+      return NextResponse.json({ success: true, message: 'Shop Banner Slider saved live!', sliders });
+    }
+
+    if (body.action === 'TOGGLE_SLIDER') {
+      const idx = sliders.findIndex((s) => s.id === body.id);
+      if (idx >= 0) {
+        sliders[idx].active = !sliders[idx].active;
+        await writePersistentDataAsync('shop_sliders', sliders);
+      }
+      return NextResponse.json({ success: true, message: 'Slider status toggled!', sliders });
+    }
+
+    if (body.action === 'DELETE_SLIDER') {
+      sliders = sliders.filter((s) => s.id !== body.id);
+      await writePersistentDataAsync('shop_sliders', sliders);
+      return NextResponse.json({ success: true, message: 'Slider banner deleted!', sliders });
     }
 
     if (body.action === 'CREATE_CATEGORY') {

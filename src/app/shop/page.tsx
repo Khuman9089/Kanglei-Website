@@ -6,10 +6,12 @@ import {
   ShieldCheck, Filter, ChevronDown, SlidersHorizontal, ArrowUpDown
 } from 'lucide-react';
 import Link from 'next/link';
-import { ProductItem } from '@/app/api/shop/route';
+import ShopHeroSlider from '@/components/shop/ShopHeroSlider';
+import { ProductItem, ShopSliderItem } from '@/app/api/shop/route';
 
 export default function ShopPage() {
   const [products, setProducts] = useState<ProductItem[]>([]);
+  const [sliders, setSliders] = useState<ShopSliderItem[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [categories, setCategories] = useState<string[]>(['All', 'Gemstones', 'Astrology Books', 'Yantras & Mala', 'Puja Items', 'Consecrated Remedies']);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
@@ -26,8 +28,11 @@ export default function ShopPage() {
         if (data.categories && Array.isArray(data.categories)) {
           setCategories(['All', ...data.categories]);
         }
+        if (data.sliders && Array.isArray(data.sliders)) {
+          setSliders(data.sliders);
+        }
       })
-      .catch((err) => console.error('Error loading products:', err));
+      .catch((err) => console.error('Error loading products & sliders:', err));
   }, []);
 
   const handleAddToCart = (product: ProductItem) => {
@@ -88,43 +93,8 @@ export default function ShopPage() {
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans antialiased">
       <main className="flex-1 pt-6 sm:pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-10">
         
-        {/* 1. HERO BANNER */}
-        <div className="bg-gradient-to-r from-[#0b132b] via-[#1c2541] to-[#0b132b] text-white p-8 sm:p-12 rounded-3xl border-2 border-[#b45309] shadow-xl relative overflow-hidden text-center">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
-          
-          <div className="max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#b45309]/30 border border-[#fbbf24] text-[#fbbf24] text-xs font-extrabold uppercase tracking-wider">
-              <Sparkles className="w-4 h-4 text-[#fbbf24]" />
-              Authentic Manipuri & Vedic Consecrated Store
-            </div>
-            
-            <h1 className="text-3xl sm:text-5xl font-serif font-black text-white tracking-tight leading-tight">
-              Sacred Vedic Remedies & <br />
-              <span className="text-[#fbbf24] underline decoration-[#b45309]">
-                Lab-Certified Gemstones
-              </span>
-            </h1>
-
-            <p className="text-slate-200 text-sm sm:text-base font-serif italic max-w-2xl mx-auto">
-              Explore 100% genuine Ceylon Yellow Sapphires, traditional Kuthi reading books, 24k gold Shree Yantras, and Nepali Rudraksha beads consecrated by Master Pandits.
-            </p>
-
-            <div className="pt-2 flex flex-wrap items-center justify-center gap-6 text-xs text-slate-300 font-medium">
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-[#fbbf24]" />
-                <span>100% Lab Certified</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-green-400" />
-                <span>Pran Pratishta Energized</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <ShoppingBag className="w-4 h-4 text-[#fbbf24]" />
-                <span>Free Nationwide Delivery ₹499+</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        {/* 1. ANIMATED PRODUCT HERO SLIDER */}
+        <ShopHeroSlider sliders={sliders} />
 
         {/* 2. SEARCH, CATEGORIES & FILTERS BAR */}
         <div className="space-y-4">

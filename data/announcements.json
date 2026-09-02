@@ -1,0 +1,38 @@
+[
+  {
+    "id": "ann-1",
+    "title": "🛒 Astrologer E-Store Marketplace is Live!",
+    "message": "You can now list your own consecrated remedies, energised rosaries, and yantras to sell on the KangleiAstro Store. Submit items under \"My Products & Stock\" for fast Admin approval.",
+    "type": "ANNOUNCEMENT",
+    "badge": "NEW FEATURE",
+    "actionText": "Add Product Now",
+    "actionUrl": "/dashboard/astrologer?tab=astro_products",
+    "imageUrl": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?q=80&w=800&auto=format&fit=crop",
+    "createdAt": "2026-09-02",
+    "targetAudience": "ALL_ASTROLOGERS",
+    "isActive": true
+  },
+  {
+    "id": "ann-2",
+    "title": "🔥 Mahashivratri Special Bonus Payout Promo!",
+    "message": "Empaneled astrologers get an extra 5% bonus credit on all Kuthi consultations completed between 1st & 15th next month. Keep your online availability updated!",
+    "type": "PROMO_AD",
+    "badge": "SPECIAL PROMO",
+    "actionText": "View Earnings",
+    "actionUrl": "/dashboard/astrologer?tab=wallet",
+    "imageUrl": "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=800&auto=format&fit=crop",
+    "createdAt": "2026-09-02",
+    "targetAudience": "ALL_ASTROLOGERS",
+    "isActive": true
+  },
+  {
+    "id": "ann-3",
+    "title": "📌 Standard Operating Guidelines for Kuthi Reports",
+    "message": "Please double-check birth details (Sakabta, Bengali Date, Lahiri Ayanamsa) and ensure PDFs are clear before marking orders as COMPLETED.",
+    "type": "URGENT_NOTICE",
+    "badge": "IMPORTANT",
+    "createdAt": "2026-09-02",
+    "targetAudience": "ALL_ASTROLOGERS",
+    "isActive": true
+  }
+]

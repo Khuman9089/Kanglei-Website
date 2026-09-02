@@ -125,6 +125,20 @@ interface CouponItem {
   usageCount: number;
 }
 
+interface ShopSliderItem {
+  id: string;
+  badge: string;
+  title: string;
+  highlightText: string;
+  subtitle: string;
+  image: string;
+  ctaText: string;
+  ctaLink: string;
+  bgColor?: string;
+  active: boolean;
+  displayOrder: number;
+}
+
 interface BlogPost {
   id: string;
   slug: string;
@@ -601,11 +615,15 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
 
   const [shopCoupons, setShopCoupons] = useState<CouponItem[]>([]);
   const [editingCoupon, setEditingCoupon] = useState<Partial<CouponItem> | null>(null);
   const [showCouponModal, setShowCouponModal] = useState(false);
+
+  const [shopSliders, setShopSliders] = useState<ShopSliderItem[]>([]);
+  const [editingSlider, setEditingSlider] = useState<Partial<ShopSliderItem> | null>(null);
+  const [showSliderModal, setShowSliderModal] = useState(false);
 
   const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
@@ -1310,6 +1328,7 @@ export default function AdminDashboardPage() {
         if (data.products) setShopProducts(data.products);
         if (data.orders) setShopOrders(data.orders);
         if (data.categories) setShopCategories(data.categories);
+        if (data.sliders) setShopSliders(data.sliders);
         if (data.commissionSettings) {
           setCommissionSettings(data.commissionSettings);
           setEditingCommissionPct(data.commissionSettings.defaultCommissionPct ?? 15);
@@ -1878,6 +1897,80 @@ export default function AdminDashboardPage() {
       if (data.coupons) {
         setShopCoupons(data.coupons);
         setSaveAlert(`Promo coupon "${code}" deleted.`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleSaveSlider = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingSlider || !editingSlider.title) return;
+
+    const sliderToSave: ShopSliderItem = {
+      id: editingSlider.id || 'slider-' + Date.now(),
+      badge: editingSlider.badge || '✨ AUTHENTIC MANIPURI & VEDIC CONSECRATED STORE',
+      title: editingSlider.title,
+      highlightText: editingSlider.highlightText || '',
+      subtitle: editingSlider.subtitle || '',
+      image: editingSlider.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+      ctaText: editingSlider.ctaText || 'Shop Now',
+      ctaLink: editingSlider.ctaLink || '/shop',
+      bgColor: editingSlider.bgColor || 'from-[#0b132b] via-[#1c2541] to-[#0b132b]',
+      active: editingSlider.active !== undefined ? editingSlider.active : true,
+      displayOrder: editingSlider.displayOrder || (shopSliders.length + 1),
+    };
+
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'SAVE_SLIDER', slider: sliderToSave }),
+      });
+      const data = await res.json();
+      if (data.sliders) {
+        setShopSliders(data.sliders);
+        setEditingSlider(null);
+        setShowSliderModal(false);
+        setSaveAlert(`✅ Shop Hero Slider "${sliderToSave.title}" saved live!`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error('Error saving slider:', err);
+    }
+  };
+
+  const handleToggleSlider = async (id: string) => {
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'TOGGLE_SLIDER', id }),
+      });
+      const data = await res.json();
+      if (data.sliders) {
+        setShopSliders(data.sliders);
+        setSaveAlert(`Slider banner status updated.`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleDeleteSlider = async (id: string, title: string) => {
+    if (!confirm(`Are you sure you want to delete slider banner "${title}"?`)) return;
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'DELETE_SLIDER', id }),
+      });
+      const data = await res.json();
+      if (data.sliders) {
+        setShopSliders(data.sliders);
+        setSaveAlert(`Slider banner "${title}" deleted.`);
         setTimeout(() => setSaveAlert(''), 3000);
       }
     } catch (err) {
@@ -2614,6 +2707,24 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-900 border-emerald-300'
                   }`}>
                     {shopCoupons.length} Vouchers
+                  </span>
+                </button>
+
+                {/* 6. Product Sliders CMS */}
+                <button
+                  onClick={() => setActiveTab('shop_sliders')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'shop_sliders'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <ImageIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Shop Sliders CMS</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  }`}>
+                    {shopSliders.length} Banners
                   </span>
                 </button>
               </div>
@@ -4330,6 +4441,148 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </tbody>
                   </table>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 4E: ANIMATED SHOP HERO SLIDERS CMS */}
+          {activeTab === 'shop_sliders' && (
+            <div className="space-y-6">
+              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4 shadow-xl">
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#b45309]/30 text-[#fbbf24] text-xs font-extrabold uppercase mb-2 border border-[#fbbf24]">
+                    <ImageIcon className="w-3.5 h-3.5 text-[#fbbf24]" />
+                    E-Store Hero Sliders &amp; Product Banners
+                  </div>
+                  <h3 className="font-serif font-bold text-2xl text-white">
+                    Shop Hero Banner &amp; Product Sliders CMS
+                  </h3>
+                  <p className="text-xs text-gray-400">
+                    Control animated product hero slider banners displayed at the top of /shop. Add images, badges, titles, descriptions &amp; CTA links.
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => {
+                    setEditingSlider({
+                      badge: '✨ AUTHENTIC MANIPURI & VEDIC CONSECRATED STORE',
+                      title: '',
+                      highlightText: '',
+                      subtitle: '',
+                      image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+                      ctaText: 'Shop Consecrated Gemstones',
+                      ctaLink: '/shop',
+                      bgColor: 'from-[#0b132b] via-[#1c2541] to-[#0b132b]',
+                      active: true,
+                      displayOrder: shopSliders.length + 1,
+                    });
+                    setShowSliderModal(true);
+                  }}
+                  className="px-5 py-2.5 rounded-full bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:opacity-95 text-white font-extrabold text-xs flex items-center gap-2 shadow-lg cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Create New Hero Slider</span>
+                </button>
+              </div>
+
+              {/* SLIDERS LIST GRID */}
+              <div className="grid grid-cols-1 gap-6">
+                {shopSliders.length === 0 ? (
+                  <div className="p-12 text-center bg-[#1c2541] rounded-3xl border border-[#3a506b] space-y-3">
+                    <ImageIcon className="w-12 h-12 text-[#d97706] mx-auto opacity-50" />
+                    <h4 className="font-serif font-bold text-xl text-white">No Shop Hero Sliders Found</h4>
+                    <p className="text-xs text-gray-400 max-w-md mx-auto">
+                      Click &quot;+ Create New Hero Slider&quot; to add your first animated product hero slide to /shop.
+                    </p>
+                  </div>
+                ) : (
+                  shopSliders.map((slider, idx) => (
+                    <div
+                      key={slider.id || idx}
+                      className={`relative rounded-3xl border overflow-hidden p-6 sm:p-8 space-y-4 shadow-xl transition-all ${
+                        slider.active
+                          ? 'bg-[#1c2541] border-[#d97706]'
+                          : 'bg-[#0b132b] border-[#3a506b] opacity-60'
+                      }`}
+                    >
+                      {/* Top Header info */}
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#3a506b] pb-4">
+                        <div className="flex items-center gap-3">
+                          <span className="px-3 py-1 rounded-full bg-[#0b132b] border border-[#d97706] text-[#fbbf24] text-xs font-mono font-black">
+                            SLIDE #{slider.displayOrder || (idx + 1)}
+                          </span>
+                          <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
+                            slider.active
+                              ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                              : 'bg-red-500/20 text-red-400 border-red-500/30'
+                          }`}>
+                            {slider.active ? '● LIVE ON /SHOP' : '○ DISABLED (HIDDEN)'}
+                          </span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={() => handleToggleSlider(slider.id)}
+                            className={`px-3 py-1.5 rounded-xl text-xs font-extrabold cursor-pointer border transition-colors ${
+                              slider.active
+                                ? 'bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border-amber-500/40'
+                                : 'bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border-emerald-500/40'
+                            }`}
+                          >
+                            {slider.active ? 'Disable Slide' : 'Enable Slide'}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setEditingSlider(slider);
+                              setShowSliderModal(true);
+                            }}
+                            className="px-4 py-1.5 rounded-xl bg-[#3a506b] hover:bg-[#4a6585] text-white font-bold text-xs cursor-pointer"
+                          >
+                            Edit Slide
+                          </button>
+                          <button
+                            onClick={() => handleDeleteSlider(slider.id, slider.title)}
+                            className="px-3 py-1.5 rounded-xl bg-red-600/30 hover:bg-red-600 text-red-300 hover:text-white font-bold text-xs cursor-pointer"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Content Preview */}
+                      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+                        <div className="md:col-span-8 space-y-2">
+                          <div className="inline-block px-3 py-1 rounded-md bg-[#b45309]/30 text-[#fbbf24] text-[10px] font-extrabold uppercase">
+                            {slider.badge}
+                          </div>
+                          <h4 className="font-serif font-black text-xl sm:text-2xl text-white">
+                            {slider.title}{' '}
+                            <span className="text-[#fbbf24] underline decoration-[#b45309]">
+                              {slider.highlightText}
+                            </span>
+                          </h4>
+                          <p className="text-xs text-gray-300 font-serif italic max-w-xl">
+                            {slider.subtitle}
+                          </p>
+                          <div className="pt-2 flex items-center gap-3 text-xs text-amber-400 font-mono font-bold">
+                            <span>Button: &quot;{slider.ctaText}&quot;</span>
+                            <span>→</span>
+                            <span className="text-sky-300">{slider.ctaLink}</span>
+                          </div>
+                        </div>
+
+                        {slider.image && (
+                          <div className="md:col-span-4 flex justify-end">
+                            <div className="w-32 h-32 rounded-2xl overflow-hidden border-2 border-[#fbbf24] shadow-lg bg-slate-900 shrink-0">
+                              <img src={slider.image} alt={slider.title} className="w-full h-full object-cover" />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           )}
@@ -8578,6 +8831,177 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   className="flex-1 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 text-white font-extrabold text-xs shadow-md hover:opacity-95"
                 >
                   Save Promo Coupon
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: CREATE / EDIT SHOP HERO SLIDER */}
+      {showSliderModal && editingSlider && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1c2541] w-full max-w-lg rounded-3xl border border-[#3a506b] shadow-2xl p-6 sm:p-8 space-y-5 text-white relative max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center border-b border-[#3a506b] pb-3">
+              <h3 className="font-serif font-bold text-xl text-[#fbbf24]">
+                {editingSlider.id ? 'Edit Shop Hero Slider' : 'Create New Shop Hero Slider'}
+              </h3>
+              <button
+                onClick={() => setShowSliderModal(false)}
+                className="text-gray-400 hover:text-white cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveSlider} className="space-y-4">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Top Badge Pill Text *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="✨ AUTHENTIC MANIPURI & VEDIC CONSECRATED STORE"
+                  value={editingSlider.badge || ''}
+                  onChange={(e) => setEditingSlider({ ...editingSlider, badge: e.target.value })}
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-bold text-xs focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Main Headline Title *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Sacred Vedic Remedies &"
+                  value={editingSlider.title || ''}
+                  onChange={(e) => setEditingSlider({ ...editingSlider, title: e.target.value })}
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-serif font-bold text-sm focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Highlight Text (Gold Underline)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Lab-Certified Gemstones"
+                  value={editingSlider.highlightText || ''}
+                  onChange={(e) => setEditingSlider({ ...editingSlider, highlightText: e.target.value })}
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-serif font-bold text-sm focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Subtitle / Description Paragraph *
+                </label>
+                <textarea
+                  rows={3}
+                  required
+                  placeholder="Explore 100% genuine Ceylon Yellow Sapphires, traditional Kuthi reading books, 24k gold Shree Yantras..."
+                  value={editingSlider.subtitle || ''}
+                  onChange={(e) => setEditingSlider({ ...editingSlider, subtitle: e.target.value })}
+                  className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 font-serif text-xs focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Featured Product Image URL *
+                </label>
+                <div className="flex gap-3 items-center">
+                  <input
+                    type="url"
+                    required
+                    placeholder="https://images.unsplash.com/photo-..."
+                    value={editingSlider.image || ''}
+                    onChange={(e) => setEditingSlider({ ...editingSlider, image: e.target.value })}
+                    className="flex-1 h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono text-xs focus:outline-none"
+                  />
+                  {editingSlider.image && (
+                    <div className="w-11 h-11 rounded-xl border border-[#fbbf24] overflow-hidden bg-slate-900 shrink-0">
+                      <img src={editingSlider.image} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    CTA Button Text *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Shop Consecrated Gemstones"
+                    value={editingSlider.ctaText || ''}
+                    onChange={(e) => setEditingSlider({ ...editingSlider, ctaText: e.target.value })}
+                    className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                    CTA Target Link URL *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="/shop?category=Gemstones"
+                    value={editingSlider.ctaLink || ''}
+                    onChange={(e) => setEditingSlider({ ...editingSlider, ctaLink: e.target.value })}
+                    className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono text-xs focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                  Background Color Theme *
+                </label>
+                <select
+                  value={editingSlider.bgColor || 'from-[#0b132b] via-[#1c2541] to-[#0b132b]'}
+                  onChange={(e) => setEditingSlider({ ...editingSlider, bgColor: e.target.value })}
+                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:outline-none"
+                >
+                  <option value="from-[#0b132b] via-[#1c2541] to-[#0b132b]">Midnight Navy (Default)</option>
+                  <option value="from-[#1e1b4b] via-[#312e81] to-[#1e1b4b]">Royal Indigo</option>
+                  <option value="from-[#14532d] via-[#166534] to-[#064e3b]">Emerald Forest</option>
+                  <option value="from-[#450a0a] via-[#7f1d1d] to-[#450a0a]">Deep Maroon</option>
+                </select>
+              </div>
+
+              <div className="pt-2">
+                <label className="flex items-center gap-2 text-xs font-bold text-gray-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editingSlider.active !== false}
+                    onChange={(e) => setEditingSlider({ ...editingSlider, active: e.target.checked })}
+                    className="rounded border-gray-600 text-amber-500 focus:ring-amber-500"
+                  />
+                  <span>Publish slide live on /shop hero slider</span>
+                </label>
+              </div>
+
+              <div className="pt-4 flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowSliderModal(false)}
+                  className="flex-1 py-3 rounded-xl border border-[#3a506b] text-gray-300 font-bold text-xs hover:bg-[#0b132b]"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95"
+                >
+                  Save Hero Slider
                 </button>
               </div>
             </form>
