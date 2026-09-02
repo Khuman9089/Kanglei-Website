@@ -91,7 +91,7 @@ export default function ShopPage() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans antialiased">
-      <main className="flex-1 pt-6 sm:pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-10">
+      <main className="flex-1 pt-20 sm:pt-24 md:pt-28 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
         
         {/* 1. ANIMATED PRODUCT HERO SLIDER */}
         <ShopHeroSlider sliders={sliders} />
