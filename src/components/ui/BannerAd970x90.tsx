@@ -41,8 +41,8 @@ export default function BannerAd970x90() {
       .catch((err) => console.error('Error loading banner ad:', err));
   }, []);
 
-  // Do NOT show banner ad or mobile buttons on admin pages or astrologer dashboard
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/astrologer')) {
+  // Do NOT show banner ad or mobile buttons on admin pages, astrologer dashboard, or shop pages
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/astrologer') || pathname?.startsWith('/shop')) {
     return null;
   }
 
