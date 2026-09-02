@@ -137,6 +137,9 @@ interface ShopSliderItem {
   bgColor?: string;
   active: boolean;
   displayOrder: number;
+  price?: string;
+  originalPrice?: string;
+  rating?: number;
 }
 
 interface BlogPost {

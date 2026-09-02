@@ -89,6 +89,9 @@ export interface ShopSliderItem {
   bgColor?: string;
   active: boolean;
   displayOrder: number;
+  price?: string;
+  originalPrice?: string;
+  rating?: number;
 }
 
 const DEFAULT_CATEGORIES: string[] = ['Gemstones', 'Astrology Books', 'Yantras & Mala', 'Puja Items', 'Consecrated Remedies'];
