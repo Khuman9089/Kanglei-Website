@@ -12,23 +12,41 @@ export interface ProductVariant {
 
 export interface ProductItem {
   id: string;
+  sku?: string;
   title: string;
   category: string;
-  subCategory?: string;
+  rulingPlanet?: string;
+  zodiacRashi?: string;
+  caratWeight?: number;
+  rattiWeight?: number;
+  origin?: string;
+  color?: string;
+  cutShape?: string;
+  treatment?: string;
+  certification?: string;
+  recommendedMetal?: string;
+  wearingFinger?: string;
+  wearingDayTime?: string;
+  vedicMantra?: string;
+  shortDescription?: string;
+  description: string;
   price: number;
   originalPrice: number;
-  rating: number;
-  reviewsCount: number;
-  image: string;
-  images?: string[];
-  badge: string;
   stock: number;
-  description: string;
-  features: string[];
+  image: string;
+  seoMetaTitle?: string;
+  seoMetaDescription?: string;
+  
+  // Standard fields
+  subCategory?: string;
+  rating?: number;
+  reviewsCount?: number;
+  images?: string[];
+  badge?: string;
+  features?: string[];
   variants?: ProductVariant[];
   vedicSignificance?: string;
   wearingRituals?: string;
-  // Astrologer Seller Marketplace Fields
   sellerType?: 'PLATFORM' | 'ASTROLOGER';
   sellerId?: string;
   sellerName?: string;
@@ -326,6 +344,29 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: true,
         message: prod.status === 'PENDING_APPROVAL' ? 'Product submitted for Admin approval!' : 'Product saved & published!',
+        products,
+        categories,
+      });
+    if (body.action === 'IMPORT_PRODUCTS' || body.action === 'BULK_IMPORT_PRODUCTS') {
+      const importedList: ProductItem[] = body.products || [];
+      if (importedList.length > 0) {
+        importedList.forEach((newProd) => {
+          if (newProd.category && !categories.includes(newProd.category)) {
+            categories.push(newProd.category);
+          }
+          const existingIdx = products.findIndex((p: ProductItem) => p.id === newProd.id || (p.sku && p.sku === newProd.sku));
+          if (existingIdx >= 0) {
+            products[existingIdx] = { ...products[existingIdx], ...newProd };
+          } else {
+            products.push(newProd);
+          }
+        });
+        await writePersistentDataAsync('shop_products', products);
+        await writePersistentDataAsync('shop_categories', categories);
+      }
+      return NextResponse.json({
+        success: true,
+        message: `Successfully imported ${importedList.length} products!`,
         products,
         categories,
       });

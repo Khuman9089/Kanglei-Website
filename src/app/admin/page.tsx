@@ -2000,6 +2000,210 @@ export default function AdminDashboardPage() {
     }
   };
 
+  // Helper to parse CSV/TSV lines taking quotes into account
+  const parseCSVOrTSV = (text: string) => {
+    const lines = text.split(/\r?\n/).filter((l) => l.trim() !== '');
+    if (lines.length === 0) return [];
+
+    const isTSV = lines[0].includes('\t');
+    const separator = isTSV ? '\t' : ',';
+
+    const parseLine = (line: string) => {
+      const result: string[] = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+        } else if (char === separator && !inQuotes) {
+          result.push(current.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+          current = '';
+        } else {
+          current += char;
+        }
+      }
+      result.push(current.trim().replace(/^"|"$/g, '').replace(/""/g, '"'));
+      return result;
+    };
+
+    const headers = parseLine(lines[0]).map((h) => h.trim().toLowerCase().replace(/[^a-z0-9_]/g, '_'));
+    const rows: Record<string, string>[] = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const values = parseLine(lines[i]);
+      if (values.length < 2) continue;
+      const rowObj: Record<string, string> = {};
+      headers.forEach((h, idx) => {
+        rowObj[h] = values[idx] || '';
+      });
+      rows.push(rowObj);
+    }
+    return rows;
+  };
+
+  const handleImportCSVFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (evt) => {
+      const content = evt.target?.result as string;
+      if (!content) return;
+
+      try {
+        const rows = parseCSVOrTSV(content);
+        if (rows.length === 0) {
+          alert('⚠️ No valid product rows found in the uploaded CSV/TSV file.');
+          return;
+        }
+
+        const importedProducts: ProductItem[] = rows.map((r, idx) => {
+          const sku = r['sku'] || r['product_sku'] || `AG-GEM-${Date.now()}-${idx}`;
+          const title = r['product_title'] || r['title'] || r['name'] || `Astrological Product ${idx + 1}`;
+          const category = r['category'] || 'Precious Gemstones';
+          const rulingPlanet = r['ruling_planet'] || r['rulingplanet'];
+          const zodiacRashi = r['zodiac_rashi'] || r['zodiacrashi'];
+          const caratWeight = Number(r['carat_weight'] || r['caratweight']) || undefined;
+          const rattiWeight = Number(r['ratti_weight'] || r['rattiweight']) || undefined;
+          const origin = r['origin'];
+          const color = r['color'];
+          const cutShape = r['cut_shape'] || r['cutshape'];
+          const treatment = r['treatment'];
+          const certification = r['certification'];
+          const recommendedMetal = r['recommended_metal'] || r['recommendedmetal'];
+          const wearingFinger = r['wearing_finger'] || r['wearingfinger'];
+          const wearingDayTime = r['wearing_day_time'] || r['wearingdaytime'];
+          const vedicMantra = r['vedic_mantra'] || r['vedicmantra'];
+          const shortDescription = r['short_description'] || r['shortdescription'];
+          const description = r['long_description'] || r['description'] || shortDescription || title;
+          const price = Number(r['price_inr'] || r['price']) || 4999;
+          const stock = Number(r['stock_quantity'] || r['stock']) || 5;
+          const image = r['image_placeholder_url'] || r['image_url'] || r['image'] || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop';
+          const seoMetaTitle = r['seo_meta_title'] || r['seometatitle'];
+          const seoMetaDescription = r['seo_meta_description'] || r['seometadescription'];
+
+          return {
+            id: sku,
+            sku,
+            title,
+            category,
+            rulingPlanet,
+            zodiacRashi,
+            caratWeight,
+            rattiWeight,
+            origin,
+            color,
+            cutShape,
+            treatment,
+            certification,
+            recommendedMetal,
+            wearingFinger,
+            wearingDayTime,
+            vedicMantra,
+            shortDescription,
+            description,
+            price,
+            originalPrice: Math.round(price * 1.25),
+            stock,
+            image,
+            seoMetaTitle,
+            seoMetaDescription,
+            rating: 4.9,
+            reviewsCount: 30 + idx,
+            sellerType: 'PLATFORM',
+            sellerName: 'KangleiAstro Store',
+            status: 'APPROVED',
+            badge: category.split('>')[0].trim().toUpperCase() || 'AUTHENTIC',
+            features: [
+              ...(rulingPlanet ? [`Ruling Planet: ${rulingPlanet}`] : []),
+              ...(origin ? [`Origin: ${origin}`] : []),
+              ...(certification ? [`Lab Certified: ${certification}`] : []),
+            ],
+          };
+        });
+
+        const res = await fetch('/api/shop', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'IMPORT_PRODUCTS', products: importedProducts }),
+        });
+        const data = await res.json();
+        if (data.products) {
+          setShopProducts(data.products);
+          if (data.categories) setShopCategories(data.categories);
+          setSaveAlert(`✅ Successfully imported ${importedProducts.length} astrological products into E-Store catalog!`);
+          setTimeout(() => setSaveAlert(''), 4000);
+        }
+      } catch (err) {
+        console.error('Error importing CSV:', err);
+        alert('❌ Failed to parse CSV file. Please check formatting.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleExportProductsCSV = () => {
+    if (!shopProducts || shopProducts.length === 0) {
+      alert('⚠️ No products available to export.');
+      return;
+    }
+
+    const headers = [
+      'SKU', 'Product_Title', 'Category', 'Ruling_Planet', 'Zodiac_Rashi',
+      'Carat_Weight', 'Ratti_Weight', 'Origin', 'Color', 'Cut_Shape',
+      'Treatment', 'Certification', 'Recommended_Metal', 'Wearing_Finger',
+      'Wearing_Day_Time', 'Vedic_Mantra', 'Short_Description', 'Long_Description',
+      'Price_INR', 'Stock_Quantity', 'Image_Placeholder_URL', 'SEO_Meta_Title', 'SEO_Meta_Description'
+    ];
+
+    const escapeCell = (val: any) => {
+      if (val === undefined || val === null) return '""';
+      const str = String(val).replace(/"/g, '""');
+      return `"${str}"`;
+    };
+
+    const csvRows = [
+      headers.join('\t'),
+      ...shopProducts.map((p) => [
+        escapeCell(p.sku || p.id),
+        escapeCell(p.title),
+        escapeCell(p.category),
+        escapeCell(p.rulingPlanet || ''),
+        escapeCell(p.zodiacRashi || ''),
+        escapeCell(p.caratWeight || ''),
+        escapeCell(p.rattiWeight || ''),
+        escapeCell(p.origin || ''),
+        escapeCell(p.color || ''),
+        escapeCell(p.cutShape || ''),
+        escapeCell(p.treatment || ''),
+        escapeCell(p.certification || ''),
+        escapeCell(p.recommendedMetal || ''),
+        escapeCell(p.wearingFinger || ''),
+        escapeCell(p.wearingDayTime || ''),
+        escapeCell(p.vedicMantra || ''),
+        escapeCell(p.shortDescription || ''),
+        escapeCell(p.description || ''),
+        escapeCell(p.price),
+        escapeCell(p.stock),
+        escapeCell(p.image),
+        escapeCell(p.seoMetaTitle || ''),
+        escapeCell(p.seoMetaDescription || ''),
+      ].join('\t'))
+    ];
+
+    const csvContent = csvRows.join('\n');
+    const blob = new Blob([csvContent], { type: 'text/tab-separated-values;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', `kangleiastro_products_export_${new Date().toISOString().split('T')[0]}.tsv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleApproveProduct = async (productId: string) => {
     try {
       const res = await fetch('/api/shop', {
@@ -3813,33 +4017,51 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <label className="px-4 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-sm">
+                    <Download className="w-4 h-4 rotate-180" />
+                    <span>📥 Import CSV/TSV</span>
+                    <input
+                      type="file"
+                      accept=".csv,.tsv,.txt"
+                      onChange={handleImportCSVFile}
+                      className="hidden"
+                    />
+                  </label>
+
+                  <button
+                    onClick={handleExportProductsCSV}
+                    className="px-4 py-3 rounded-xl bg-[#0b132b] hover:bg-[#1c2541] text-amber-300 border border-[#d97706] font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-sm"
+                  >
+                    <Download className="w-4 h-4 text-amber-400" />
+                    <span>📤 Export CSV</span>
+                  </button>
+
                   <button
                     onClick={() => setShowCategoryManagerModal(true)}
                     className="px-4 py-3 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] border border-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <Tag className="w-4 h-4 text-[#d97706]" />
-                    <span>Manage Categories ({shopCategories.length})</span>
+                    <span>Categories ({shopCategories.length})</span>
                   </button>
 
                   <button
                     onClick={() =>
                       setEditingProduct({
                         title: '',
-                        category: shopCategories[0] || 'Gemstones',
-                        price: 1499,
-                        originalPrice: 1999,
-                        stock: 10,
-                        badge: 'Lab Certified 100% Original',
+                        category: shopCategories[0] || 'Precious Gemstones > Ruby',
+                        price: 45000,
+                        originalPrice: 55000,
+                        stock: 5,
+                        badge: '100% NATURAL',
                         image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
-                        description: 'Authentic Vedic remedy certified by government lab.',
-                        features: ['Lab Tested Certificate Included', 'Consecrated by Master Pandits'],
+                        description: 'Authentic unheated natural gemstone certified for Vedic astrology.',
                       })
                     }
                     className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
-                    <span>+ Add New Product</span>
+                    <span>+ Add Product</span>
                   </button>
                 </div>
               </div>

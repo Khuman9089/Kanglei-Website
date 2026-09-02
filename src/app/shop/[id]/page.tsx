@@ -221,6 +221,83 @@ export default function ProductDetailPage({
               </div>
             </div>
 
+            {/* ASTROLOGICAL & GEMSTONE SPECIFICATIONS GRID */}
+            {(product.rulingPlanet || product.zodiacRashi || product.origin || product.rattiWeight) && (
+              <div className="p-4 sm:p-5 rounded-2xl bg-[#0b132b] text-white border-2 border-[#d97706] space-y-3 shadow-lg">
+                <div className="flex items-center justify-between border-b border-[#3a506b] pb-2">
+                  <span className="text-xs font-black text-[#fbbf24] uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-4 h-4 text-[#fbbf24]" />
+                    Vedic Planetary Specifications
+                  </span>
+                  {product.sku && (
+                    <span className="px-2 py-0.5 rounded bg-[#1c2541] border border-[#d97706] font-mono text-[10px] text-amber-300">
+                      SKU: {product.sku}
+                    </span>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  {product.rulingPlanet && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Ruling Planet</span>
+                      <span className="font-bold text-amber-300">🪐 {product.rulingPlanet}</span>
+                    </div>
+                  )}
+                  {product.zodiacRashi && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Zodiac Rashi</span>
+                      <span className="font-bold text-amber-300">♈ {product.zodiacRashi}</span>
+                    </div>
+                  )}
+                  {(product.rattiWeight || product.caratWeight) && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Weight (Carat / Ratti)</span>
+                      <span className="font-bold text-white font-mono">⚖️ {product.caratWeight ? `${product.caratWeight} Ct` : ''} ({product.rattiWeight} Ratti)</span>
+                    </div>
+                  )}
+                  {product.origin && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Origin</span>
+                      <span className="font-bold text-white">🌍 {product.origin}</span>
+                    </div>
+                  )}
+                  {product.color && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Color &amp; Hue</span>
+                      <span className="font-bold text-slate-200">💎 {product.color}</span>
+                    </div>
+                  )}
+                  {product.certification && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Lab Certification</span>
+                      <span className="font-bold text-emerald-400">🔬 {product.certification}</span>
+                    </div>
+                  )}
+                  {product.recommendedMetal && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Recommended Metal</span>
+                      <span className="font-bold text-amber-200">🪙 {product.recommendedMetal}</span>
+                    </div>
+                  )}
+                  {product.wearingFinger && (
+                    <div>
+                      <span className="text-gray-400 text-[10px] font-bold block uppercase">Wearing Finger</span>
+                      <span className="font-bold text-slate-200">🖐️ {product.wearingFinger}</span>
+                    </div>
+                  )}
+                </div>
+
+                {product.vedicMantra && (
+                  <div className="pt-2 border-t border-[#3a506b] space-y-0.5">
+                    <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block">Consecration Vedic Mantra:</span>
+                    <p className="text-xs font-serif italic text-emerald-300 font-bold bg-[#070d1e] p-2 rounded-xl border border-emerald-500/30">
+                      📿 &quot;{product.vedicMantra}&quot;
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Product Variants (if applicable) */}
             {product.variants && product.variants.length > 0 && (
               <div className="space-y-2">
