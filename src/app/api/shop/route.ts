@@ -347,6 +347,8 @@ export async function POST(request: Request) {
         products,
         categories,
       });
+    }
+
     if (body.action === 'IMPORT_PRODUCTS' || body.action === 'BULK_IMPORT_PRODUCTS') {
       const importedList: ProductItem[] = body.products || [];
       if (importedList.length > 0) {
