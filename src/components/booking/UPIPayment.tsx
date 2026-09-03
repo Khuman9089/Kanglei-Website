@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { QrCode, Copy, Check, Upload, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 
@@ -23,8 +23,26 @@ export default function UPIPayment({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'kangleiastro@upi';
-  const holderName = process.env.NEXT_PUBLIC_UPI_HOLDER_NAME || 'KangleiAstro Consultations';
+  const [upiSettings, setUpiSettings] = useState({
+    upiId: 'kangleiastro@upi',
+    payeeName: 'KangleiAstro Services',
+    qrImageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=kangleiastro@upi&pn=KangleiAstro%20Services',
+    qrNotes: 'Scan with GPay, PhonePe, Paytm, BHIM or any UPI app',
+  });
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.upiSettings) {
+          setUpiSettings((prev) => ({ ...prev, ...data.upiSettings }));
+        }
+      })
+      .catch((err) => console.error('Error fetching UPI settings:', err));
+  }, []);
+
+  const upiId = upiSettings.upiId || 'kangleiastro@upi';
+  const holderName = upiSettings.payeeName || 'KangleiAstro Services';
 
   const handleCopyUPI = () => {
     navigator.clipboard.writeText(upiId);
@@ -94,12 +112,16 @@ export default function UPIPayment({
 
       {/* UPI Details & QR Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 items-center bg-[#1c2541]/40 rounded-xl p-4 border border-[#3a506b]/30">
-        {/* QR Code Placeholder / Display */}
+        {/* QR Code Display */}
         <div className="flex flex-col items-center justify-center p-4 bg-white rounded-lg text-center">
           <div className="w-36 h-36 bg-gray-100 border border-gray-300 rounded flex items-center justify-center relative overflow-hidden">
-            <QrCode className="w-28 h-28 text-[#0b132b]" />
+            {upiSettings.qrImageUrl ? (
+              <img src={upiSettings.qrImageUrl} alt="Merchant UPI QR Code" className="w-full h-full object-contain p-1" />
+            ) : (
+              <QrCode className="w-28 h-28 text-[#0b132b]" />
+            )}
           </div>
-          <span className="text-[10px] text-gray-500 mt-2 font-mono">Scan with any UPI App</span>
+          <span className="text-[10px] text-gray-500 mt-2 font-mono">{upiSettings.qrNotes || 'Scan with any UPI App'}</span>
         </div>
 
         {/* UPI Details */}

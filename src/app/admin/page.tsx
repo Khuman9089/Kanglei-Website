@@ -7,7 +7,8 @@ import {
   ArrowDownRight, MessageSquare, ExternalLink, ShieldCheck, Lock,
   TrendingUp, BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, UserCheck, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
-  BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon
+  BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon,
+  Headphones, Mail, Phone, Camera
 } from 'lucide-react';
 import Link from 'next/link';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
@@ -15,14 +16,29 @@ import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
 interface Astrologer {
   id: string;
   name: string;
+  avatar?: string;
   username?: string;
   specialty: string;
   phone: string;
   whatsappNo: string;
+  sameAsWhatsapp?: boolean;
+  email?: string;
+  streetLane?: string;
+  cityDistrict?: string;
+  state?: string;
+  pincode?: string;
   address?: string;
   experienceYears?: number;
+  languages?: string[];
   password?: string;
   status?: 'ACTIVE' | 'ON_HOLD' | 'SUSPENDED';
+  upiId?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNo?: string;
+  ifscCode?: string;
+  payoutMethod?: 'UPI' | 'BANK';
+  planTier?: 'BASIC' | 'ADVANCE' | 'PRO';
   completedCount: number;
   pendingPayout: number;
   totalEarnings?: number;
@@ -122,6 +138,7 @@ interface ShopOrder {
   totalAmount: number;
   utr: string;
   status: 'PAYMENT_PENDING' | 'PAID' | 'ENERGIZING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
+  paymentStatus?: 'PAYMENT_RECEIVED' | 'PAYMENT_NOT_RECEIVED' | 'VERIFICATION_PENDING';
   adminConfirmed?: boolean;
   orderedAt: string;
   courierPartner?: string;
@@ -212,6 +229,7 @@ interface KuthiOrder {
   amount: number;
   serviceType?: string;
   status: 'PENDING' | 'ASSIGNED' | 'IN_ANALYSIS' | 'REPORT_RECEIVED' | 'COMPLETED';
+  paymentStatus?: 'PAYMENT_RECEIVED' | 'PAYMENT_NOT_RECEIVED' | 'VERIFICATION_PENDING';
   fatherName?: string;
   motherName?: string;
   yek?: string;
@@ -635,7 +653,11 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'add_astro' | 'astro_profile' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+
+  const [selectedAstrologer, setSelectedAstrologer] = useState<Astrologer | null>(null);
+  const [showPasswordUpdateModal, setShowPasswordUpdateModal] = useState(false);
+  const [newPasswordInput, setNewPasswordInput] = useState('');
 
   const [shopCoupons, setShopCoupons] = useState<CouponItem[]>([]);
   const [editingCoupon, setEditingCoupon] = useState<Partial<CouponItem> | null>(null);
@@ -644,6 +666,79 @@ export default function AdminDashboardPage() {
   const [shopSliders, setShopSliders] = useState<ShopSliderItem[]>([]);
   const [editingSlider, setEditingSlider] = useState<Partial<ShopSliderItem> | null>(null);
   const [showSliderModal, setShowSliderModal] = useState(false);
+
+  // Site Settings & Payment UPI QR State
+  const [siteSettings, setSiteSettings] = useState({
+    headerSettings: {
+      supportTiming: 'Live Support (9:30 AM – 6:00 PM IST)',
+      supportEmail: 'ccare@kangleiastro.com',
+      supportPhone: '+91 98765 43210',
+    },
+    upiSettings: {
+      upiId: 'kangleiastro@upi',
+      payeeName: 'KangleiAstro Services',
+      qrImageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=kangleiastro@upi&pn=KangleiAstro%20Services',
+      qrNotes: 'Scan with GPay, PhonePe, Paytm, BHIM or any UPI app',
+    },
+  });
+  const [savingSettings, setSavingSettings] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.headerSettings || data.upiSettings) {
+          setSiteSettings((prev) => ({
+            headerSettings: { ...prev.headerSettings, ...(data.headerSettings || {}) },
+            upiSettings: { ...prev.upiSettings, ...(data.upiSettings || {}) },
+          }));
+        }
+      })
+      .catch((err) => console.error('Error fetching site settings in admin:', err));
+  }, []);
+
+  const handleSaveSiteSettings = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setSavingSettings(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(siteSettings),
+      });
+      const data = await res.json();
+      setSavingSettings(false);
+      if (data.success) {
+        setSaveAlert('✅ Top Support Header & Payment UPI QR Settings saved live!');
+        setTimeout(() => setSaveAlert(''), 4000);
+      }
+    } catch (err) {
+      setSavingSettings(false);
+      alert('Failed to save settings');
+    }
+  };
+
+  const handleQRImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert('File size exceeds 5MB limit. Please select a smaller photo.');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setSiteSettings((prev) => ({
+          ...prev,
+          upiSettings: {
+            ...prev.upiSettings,
+            qrImageUrl: event.target?.result as string,
+          },
+        }));
+      }
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleToggleHoldAstrologer = async (id: string, currentStatus?: string) => {
     const nextStatus = currentStatus === 'ON_HOLD' ? 'ACTIVE' : 'ON_HOLD';
@@ -704,7 +799,7 @@ export default function AdminDashboardPage() {
     address: 'Imphal West, Manipur',
   });
 
-  const handleRegisterNewClient = (e: React.FormEvent) => {
+  const handleRegisterNewClient = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClientForm.name.trim() || !newClientForm.email.trim()) return;
 
@@ -725,59 +820,167 @@ export default function AdminDashboardPage() {
     };
 
     setClientBase([newClient, ...clientBase]);
+    try {
+      await fetch('/api/clients', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'REGISTER_CLIENT', client: newClient }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
     setSaveAlert(`✅ New Client "${newClient.name}" registered & verified in database!`);
     setShowAddClientModal(false);
     setNewClientForm({ name: '', email: '', phone: '', whatsappNo: '', sex: 'Male', address: 'Imphal West, Manipur' });
     setTimeout(() => setSaveAlert(''), 3500);
   };
 
-  // Add Jyotish / Astrologer Guru State
-  const [showAddAstroModal, setShowAddAstroModal] = useState(false);
-  const [newAstroForm, setNewAstroForm] = useState({
+  // Add / Edit Jyotish / Astrologer Guru State
+  const DEFAULT_ASTRO_FORM = {
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
     name: '',
-    specialty: 'Kuthi Yengba & Vedic Astrology',
+    username: '',
     phone: '',
     whatsappNo: '',
+    sameAsWhatsapp: true,
+    email: '',
+    specialty: 'Kuthi Yengba & Vedic Astrology',
     experienceYears: 10,
-    username: '',
+    languages: ['Manipuri (Meiteilon)', 'English'],
+    streetLane: 'Uripok Bachaspati Leikai',
+    cityDistrict: 'Imphal West',
+    state: 'Manipur',
+    pincode: '795001',
+    address: 'Imphal West, Manipur',
+    payoutMethod: 'UPI' as 'UPI' | 'BANK',
+    upiId: '',
+    bankName: 'State Bank of India (SBI)',
+    accountHolder: '',
+    accountNo: '',
+    ifscCode: 'SBIN0001234',
+    planTier: 'ADVANCE' as 'BASIC' | 'ADVANCE' | 'PRO',
+    allowedTools: [
+      'kuthi-generator',
+      'dasha-yengpham',
+      'shani-sade-sati',
+      'kaal-sarp-dosh',
+      'astrology-yoga',
+      'match-making',
+      'kuthi-iba',
+      'numit-leppa',
+    ],
     password: '',
-    address: 'Imphal, Manipur',
-  });
+    status: 'ACTIVE' as 'ACTIVE' | 'ON_HOLD' | 'SUSPENDED',
+  };
 
-  const handleRegisterNewAstro = (e: React.FormEvent) => {
+  const [editingAstroId, setEditingAstroId] = useState<string | null>(null);
+  const [showAddAstroModal, setShowAddAstroModal] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [newAstroForm, setNewAstroForm] = useState(DEFAULT_ASTRO_FORM);
+
+  const handleRegisterNewAstro = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newAstroForm.name.trim() || !newAstroForm.whatsappNo.trim()) return;
+    const finalPhone = newAstroForm.phone.trim() || newAstroForm.whatsappNo.trim();
+    const finalWhatsapp = newAstroForm.sameAsWhatsapp ? finalPhone : (newAstroForm.whatsappNo.trim() || finalPhone);
 
-    const newGuru: Astrologer = {
-      id: 'astro-' + Date.now(),
+    if (!newAstroForm.name.trim() || !finalPhone) {
+      alert('Please fill in Full Name and Contact Mobile Number.');
+      return;
+    }
+
+    const compiledAddress = `${newAstroForm.streetLane ? newAstroForm.streetLane + ', ' : ''}${newAstroForm.cityDistrict ? newAstroForm.cityDistrict + ', ' : ''}${newAstroForm.state || 'Manipur'}${newAstroForm.pincode ? ' - ' + newAstroForm.pincode : ''}`;
+
+    const astroPayload: Astrologer = {
+      id: editingAstroId || 'astro-' + Date.now(),
       name: newAstroForm.name,
-      username: newAstroForm.username || newAstroForm.name.toLowerCase().replace(/\s+/g, ''),
-      specialty: newAstroForm.specialty,
-      phone: newAstroForm.phone || newAstroForm.whatsappNo,
-      whatsappNo: newAstroForm.whatsappNo,
+      avatar: newAstroForm.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
+      username: newAstroForm.username || newAstroForm.name.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+      specialty: newAstroForm.specialty || 'Kuthi Yengba & Vedic Astrology',
+      phone: finalPhone,
+      whatsappNo: finalWhatsapp,
+      sameAsWhatsapp: newAstroForm.sameAsWhatsapp,
+      email: newAstroForm.email,
+      streetLane: newAstroForm.streetLane,
+      cityDistrict: newAstroForm.cityDistrict,
+      state: newAstroForm.state,
+      pincode: newAstroForm.pincode,
+      address: compiledAddress,
       experienceYears: Number(newAstroForm.experienceYears) || 10,
+      languages: newAstroForm.languages,
       password: newAstroForm.password || 'guru123',
-      status: 'ACTIVE',
-      completedCount: 0,
-      pendingPayout: 0,
-      totalEarnings: 0,
-      totalPaidOut: 0,
+      status: newAstroForm.status,
+      payoutMethod: newAstroForm.payoutMethod,
+      upiId: newAstroForm.upiId,
+      bankName: newAstroForm.bankName,
+      accountHolder: newAstroForm.accountHolder || newAstroForm.name,
+      accountNo: newAstroForm.accountNo,
+      ifscCode: newAstroForm.ifscCode,
+      planTier: newAstroForm.planTier,
+      allowedTools: newAstroForm.allowedTools,
+      completedCount: editingAstroId ? (astrologers.find(a => a.id === editingAstroId)?.completedCount || 0) : 0,
+      pendingPayout: editingAstroId ? (astrologers.find(a => a.id === editingAstroId)?.pendingPayout || 0) : 0,
       showOnHome: true,
     };
 
-    setAstrologers([newGuru, ...astrologers]);
+    if (editingAstroId) {
+      setAstrologers((prev) => prev.map((a) => (a.id === editingAstroId ? { ...a, ...astroPayload } : a)));
+      try {
+        await fetch('/api/astrologers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'UPDATE_ASTROLOGER', astrologer: astroPayload }),
+        });
+      } catch (err) {
+        console.error(err);
+      }
+      setSaveAlert(`✅ Astrologer profile for "${astroPayload.name}" updated successfully!`);
+    } else {
+      setAstrologers([astroPayload, ...astrologers]);
+      try {
+        await fetch('/api/astrologers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'REGISTER_ASTROLOGER', astrologer: astroPayload }),
+        });
+      } catch (err) {
+        console.error(err);
+      }
+      setSaveAlert(`🙏 ${astroPayload.name} added successfully as a registered Jyotish Guru!`);
+    }
+
     setShowAddAstroModal(false);
-    setSaveAlert(`🙏 ${newGuru.name} added successfully as a registered Jyotish Guru!`);
-    setNewAstroForm({
-      name: '',
-      specialty: 'Kuthi Yengba & Vedic Astrology',
-      phone: '',
-      whatsappNo: '',
-      experienceYears: 10,
-      username: '',
-      password: '',
-      address: 'Imphal, Manipur',
-    });
+    setEditingAstroId(null);
+    setNewAstroForm(DEFAULT_ASTRO_FORM);
+    setTimeout(() => setSaveAlert(''), 3500);
+  };
+
+  const handleUpdateAstrologerPassword = async (astroId: string, newPwd: string) => {
+    if (!newPwd.trim()) return;
+
+    setAstrologers((prev) =>
+      prev.map((a) => (a.id === astroId ? { ...a, password: newPwd } : a))
+    );
+
+    if (selectedAstrologer && selectedAstrologer.id === astroId) {
+      setSelectedAstrologer((prev) => (prev ? { ...prev, password: newPwd } : null));
+    }
+
+    try {
+      await fetch('/api/astrologers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'UPDATE_ASTROLOGER',
+          astrologer: { id: astroId, password: newPwd },
+        }),
+      });
+    } catch (err) {
+      console.error(err);
+    }
+
+    setShowPasswordUpdateModal(false);
+    setNewPasswordInput('');
+    setSaveAlert('🔒 Astrologer portal login password updated & saved successfully!');
     setTimeout(() => setSaveAlert(''), 3500);
   };
   // Theme State (Dark / Light) - Default to Dark for high-contrast celestial UI
@@ -1393,6 +1596,15 @@ export default function AdminDashboardPage() {
         console.error('Error fetching reviews in admin:', err);
         setLoadingReviews(false);
       });
+
+    fetch('/api/clients')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.clients && Array.isArray(data.clients)) {
+          setClientBase(data.clients);
+        }
+      })
+      .catch((err) => console.error('Error fetching client base:', err));
   }, []);
 
   const handleApproveReview = async (reviewId: string) => {
@@ -2434,6 +2646,42 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleUpdateShopOrderPaymentStatus = async (id: string, paymentStatus: string) => {
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'UPDATE_PAYMENT_STATUS', id, paymentStatus }),
+      });
+      const data = await res.json();
+      if (data.orders) {
+        setShopOrders(data.orders);
+        setSaveAlert(`✅ Shop Order Payment Status updated to ${paymentStatus}!`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const handleUpdateKuthiOrderPaymentStatus = async (orderId: string, paymentStatus: string) => {
+    try {
+      const res = await fetch('/api/kuthi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'UPDATE_PAYMENT_STATUS', orderId, paymentStatus }),
+      });
+      const data = await res.json();
+      if (data.orders) {
+        setOrders(data.orders);
+        setSaveAlert(`✅ Kuthi Order Payment Status updated to ${paymentStatus}!`);
+        setTimeout(() => setSaveAlert(''), 3000);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleAssignDelivery = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!assignDeliveryModalOrder) return;
@@ -2820,8 +3068,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                 {/* 4. Add Jyotish */}
                 <button
-                  onClick={() => setShowAddAstroModal(true)}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold bg-[#fef3c7] text-[#b45309] hover:bg-[#fde68a] transition-all border border-[#fde68a] cursor-pointer"
+                  onClick={() => {
+                    setEditingAstroId(null);
+                    setNewAstroForm(DEFAULT_ASTRO_FORM);
+                    setActiveTab('add_astro');
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'add_astro'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : 'bg-[#fef3c7] text-[#b45309] hover:bg-[#fde68a] border border-[#fde68a]'
+                  }`}
                 >
                   <Plus className="w-4 h-4 text-[#d97706] shrink-0" />
                   <span className="flex-1 text-center font-bold px-2 leading-tight">+ Add Jyotish</span>
@@ -2987,24 +3243,6 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 Management & Settings
               </span>
               <div className="space-y-1">
-                {/* Client Base Directory */}
-                <button
-                  onClick={() => setActiveTab('clients')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'clients'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
-                  }`}
-                >
-                  <Users className="w-4 h-4 text-sky-400 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Client Base Directory</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
-                  }`}>
-                    {clientBase.length} Users
-                  </span>
-                </button>
-
                 {/* Service Rate Card Matrix */}
                 <button
                   onClick={() => setActiveTab('astro_rates')}
@@ -3123,22 +3361,27 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <Users className="w-4 h-4 shrink-0" />
+                  <Users className="w-4 h-4 text-sky-500 shrink-0" />
                   <span className="flex-1 text-center font-bold px-2 leading-tight">Client Directory</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
+                  }`}>
+                    {clientBase.length} Users
+                  </span>
                 </button>
 
                 <button
-                  onClick={() => setActiveTab('settings')}
+                  onClick={() => setActiveTab('upi')}
                   className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'settings'
+                    activeTab === 'upi' || activeTab === 'settings'
                       ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : 'text-gray-300 hover:bg-[#1e293b]'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
                   }`}
                 >
-                  <Settings className="w-4 h-4 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Site Settings & Services</span>
-                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-300 text-[10px] font-bold border border-blue-500/30">
-                    Services & Pricing
+                  <QrCode className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Header Support & UPI QR</span>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
+                    Live Config
                   </span>
                 </button>
               </div>
@@ -3403,15 +3646,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </button>
 
               <button
-                onClick={() => setActiveTab('settings')}
+                onClick={() => setActiveTab('upi')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'settings'
+                  activeTab === 'upi' || activeTab === 'settings'
                     ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
                     : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
                 }`}
               >
-                <Settings className="w-3.5 h-3.5 text-slate-400" />
-                <span>Settings</span>
+                <QrCode className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>Header & UPI Config</span>
               </button>
             </div>
 
@@ -3536,7 +3779,27 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                       return (
                         <tr key={o.id} className="hover:bg-[#fefcf6] transition-colors">
-                          <td className="px-6 py-4 font-mono font-bold text-[#b45309] text-sm">{o.orderRef}</td>
+                          <td className="px-6 py-4 space-y-1.5">
+                            <div className="font-mono font-bold text-[#b45309] text-sm">{o.orderRef}</div>
+                            <div className="text-[10px] text-gray-500 font-mono">UTR: {o.utr}</div>
+                            <div className="pt-1">
+                              <select
+                                value={o.paymentStatus || (o.status === 'COMPLETED' ? 'PAYMENT_RECEIVED' : 'VERIFICATION_PENDING')}
+                                onChange={(e) => handleUpdateKuthiOrderPaymentStatus(o.id, e.target.value)}
+                                className={`w-full px-2 py-0.5 rounded text-[10px] font-extrabold border focus:outline-none ${
+                                  o.paymentStatus === 'PAYMENT_RECEIVED' || o.status === 'COMPLETED'
+                                    ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                                    : o.paymentStatus === 'PAYMENT_NOT_RECEIVED'
+                                    ? 'bg-red-100 text-red-900 border-red-400'
+                                    : 'bg-amber-100 text-amber-900 border-amber-400'
+                                }`}
+                              >
+                                <option value="PAYMENT_RECEIVED">🟢 Payment Received (Verified)</option>
+                                <option value="PAYMENT_NOT_RECEIVED">🔴 Payment Not Received</option>
+                                <option value="VERIFICATION_PENDING">🟡 Verification Pending</option>
+                              </select>
+                            </div>
+                          </td>
                           <td className="px-6 py-4 font-bold text-[#0f172a]">{o.clientName} ({o.sex})</td>
                           <td className="px-6 py-4">
                             <button
@@ -3847,25 +4110,47 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               <div className="font-mono font-extrabold text-emerald-400 text-sm">₹{ord.totalAmount.toLocaleString()}</div>
                               <div className="text-gray-400 text-[10px] font-mono">UTR: {ord.utr}</div>
                             </td>
-                            <td className="p-4">
-                              <select
-                                value={ord.status}
-                                onChange={(e) => handleUpdateShopOrderStatus(ord.id, e.target.value)}
-                                className={`px-2.5 py-1 rounded-lg text-[11px] font-extrabold border focus:outline-none ${
-                                  ord.status === 'PAID'
-                                    ? 'bg-green-500/20 text-green-300 border-green-500/40'
-                                    : ord.status === 'DISPATCHED'
-                                    ? 'bg-blue-500/20 text-blue-300 border-blue-500/40'
-                                    : ord.status === 'DELIVERED'
-                                    ? 'bg-purple-500/20 text-purple-300 border-purple-500/40'
-                                    : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
-                                }`}
-                              >
-                                <option value="PAID">PAID (UTR Verified)</option>
-                                <option value="DISPATCHED">DISPATCHED (In Transit)</option>
-                                <option value="DELIVERED">DELIVERED</option>
-                                <option value="PAYMENT_PENDING">PAYMENT PENDING</option>
-                              </select>
+                            <td className="p-4 space-y-2">
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-bold text-gray-600 uppercase block">Delivery Status</span>
+                                <select
+                                  value={ord.status}
+                                  onChange={(e) => handleUpdateShopOrderStatus(ord.id, e.target.value)}
+                                  className={`w-full px-2 py-1 rounded-lg text-[11px] font-extrabold border focus:outline-none ${
+                                    ord.status === 'PAID'
+                                      ? 'bg-green-100 text-green-900 border-green-300'
+                                      : ord.status === 'DISPATCHED'
+                                      ? 'bg-blue-100 text-blue-900 border-blue-300'
+                                      : ord.status === 'DELIVERED'
+                                      ? 'bg-purple-100 text-purple-900 border-purple-300'
+                                      : 'bg-amber-100 text-amber-900 border-amber-300'
+                                  }`}
+                                >
+                                  <option value="PAID">PAID (Order Confirmed)</option>
+                                  <option value="DISPATCHED">DISPATCHED (In Transit)</option>
+                                  <option value="DELIVERED">DELIVERED</option>
+                                  <option value="PAYMENT_PENDING">PAYMENT PENDING</option>
+                                </select>
+                              </div>
+
+                              <div className="space-y-1">
+                                <span className="text-[9px] font-bold text-[#b45309] uppercase block">Payment Verification</span>
+                                <select
+                                  value={ord.paymentStatus || (ord.status === 'PAID' || ord.status === 'DELIVERED' || ord.status === 'DISPATCHED' ? 'PAYMENT_RECEIVED' : 'VERIFICATION_PENDING')}
+                                  onChange={(e) => handleUpdateShopOrderPaymentStatus(ord.id, e.target.value)}
+                                  className={`w-full px-2 py-1 rounded-lg text-[11px] font-extrabold border focus:outline-none ${
+                                    ord.paymentStatus === 'PAYMENT_RECEIVED' || (ord.status === 'PAID' || ord.status === 'DELIVERED' || ord.status === 'DISPATCHED')
+                                      ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                                      : ord.paymentStatus === 'PAYMENT_NOT_RECEIVED'
+                                      ? 'bg-red-100 text-red-900 border-red-400'
+                                      : 'bg-amber-100 text-amber-900 border-amber-400'
+                                  }`}
+                                >
+                                  <option value="PAYMENT_RECEIVED">🟢 Payment Received (Verified)</option>
+                                  <option value="PAYMENT_NOT_RECEIVED">🔴 Payment Not Received</option>
+                                  <option value="VERIFICATION_PENDING">🟡 Verification Pending</option>
+                                </select>
+                              </div>
                             </td>
                             <td className="p-4 text-center space-y-1">
                               <button
@@ -5210,102 +5495,17 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <p className="text-xs text-gray-500 font-sans font-medium">Manage registered Astrologers, edit profiles, hold/suspend access, or delete accounts</p>
                 </div>
                 <button
-                  onClick={() => setEditingAstrologer({ name: '', specialty: 'Vedic Horoscope Specialist', whatsappNo: '', pendingPayout: 0, completedCount: 0 })}
+                  onClick={() => {
+                    setEditingAstroId(null);
+                    setNewAstroForm(DEFAULT_ASTRO_FORM);
+                    setActiveTab('add_astro');
+                  }}
                   className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-md cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
                   <span>+ Register New Astrologer</span>
                 </button>
               </div>
-
-              {/* ASTROLOGER REGISTRATION / EDIT MODAL */}
-              {editingAstrologer && (
-                <form onSubmit={handleSaveAstrologer} className="p-5 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-3 font-sans text-xs text-[#0f172a]">
-                  <h4 className="font-bold text-[#b45309] text-sm">Register / Edit Empaneled Astrologer Account & Password</h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-                    <div>
-                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Full Name *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="Astrologer Full Name"
-                        value={editingAstrologer.name || ''}
-                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, name: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Assign Username *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="e.g. tombi_guru"
-                        value={editingAstrologer.username || ''}
-                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, username: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Specialty</label>
-                      <input
-                        type="text"
-                        placeholder="Specialty (e.g. Navamsha D9)"
-                        value={editingAstrologer.specialty || ''}
-                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, specialty: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">WhatsApp / Phone *</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="+91 98620 00000"
-                        value={editingAstrologer.whatsappNo || ''}
-                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, whatsappNo: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Manipur Address / Location *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Uripok, Imphal West, Manipur"
-                        value={editingAstrologer.address || ''}
-                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, address: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-medium text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Experience (Years)</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={60}
-                        placeholder="15"
-                        value={editingAstrologer.experienceYears || ''}
-                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, experienceYears: Number(e.target.value) })}
-                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-bold text-xs"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Assign Portal Password *</label>
-                      <input
-                        type="password"
-                        required
-                        placeholder="Set portal password"
-                        value={editingAstrologer.password || ''}
-                        onChange={(e) => setEditingAstrologer({ ...editingAstrologer, password: e.target.value })}
-                        className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                  <div className="flex justify-end gap-2 pt-1 border-t border-[#fde68a]">
-                    <button type="button" onClick={() => setEditingAstrologer(null)} className="px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold cursor-pointer">Cancel</button>
-                    <button type="submit" className="px-6 py-2 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold cursor-pointer">Save Astrologer Account →</button>
-                  </div>
-                </form>
-              )}
 
               {/* ASTROLOGER ACCOUNTS MANAGEMENT TABLE */}
               <div className={`rounded-3xl border overflow-hidden shadow-2xl transition-colors ${
@@ -5336,18 +5536,30 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               : (theme === 'dark' ? 'hover:bg-[#1c2541] odd:bg-[#0b132b] even:bg-[#0f172a]/60' : 'hover:bg-amber-50/80 odd:bg-white even:bg-slate-50')
                           }`}>
                             {/* 1. Guru Name & Handle */}
-                            <td className="p-4">
-                              <div className={`font-serif font-extrabold text-base ${
-                                theme === 'dark' ? 'text-white' : 'text-slate-900'
-                              }`}>
-                                {astro.name}
-                              </div>
-                              <div className="inline-block mt-1">
-                                <span className={`text-xs font-mono font-extrabold px-2.5 py-0.5 rounded-md shadow-xs border ${
-                                  theme === 'dark' ? 'text-sky-300 bg-sky-950 border-sky-400/60' : 'text-sky-900 bg-sky-100 border-sky-400'
-                                }`}>
-                                  @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
-                                </span>
+                            <td className="p-4 cursor-pointer" onClick={() => {
+                              setSelectedAstrologer(astro);
+                              setActiveTab('astro_profile');
+                            }}>
+                              <div className="flex items-center gap-3">
+                                <img
+                                  src={astro.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                                  alt={astro.name}
+                                  className="w-10 h-10 rounded-full object-cover border-2 border-amber-400 shrink-0 shadow-sm"
+                                />
+                                <div>
+                                  <div className={`font-serif font-extrabold text-base hover:text-[#d97706] transition-colors ${
+                                    theme === 'dark' ? 'text-white' : 'text-slate-900'
+                                  }`}>
+                                    {astro.name}
+                                  </div>
+                                  <div className="inline-block mt-0.5">
+                                    <span className={`text-[11px] font-mono font-extrabold px-2 py-0.5 rounded-md shadow-xs border ${
+                                      theme === 'dark' ? 'text-sky-300 bg-sky-950 border-sky-400/60' : 'text-sky-900 bg-sky-100 border-sky-400'
+                                    }`}>
+                                      @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                                    </span>
+                                  </div>
+                                </div>
                               </div>
                             </td>
 
@@ -5413,7 +5625,50 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <td className="p-4 text-right">
                               <div className="flex items-center justify-end gap-2">
                                 <button
-                                  onClick={() => setEditingAstrologer(astro)}
+                                  onClick={() => {
+                                    setSelectedAstrologer(astro);
+                                    setActiveTab('astro_profile');
+                                  }}
+                                  className="px-3.5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-md"
+                                  title="View Full Profile Dossier"
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>Profile</span>
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    setEditingAstroId(astro.id);
+                                    setNewAstroForm({
+                                      ...DEFAULT_ASTRO_FORM,
+                                      avatar: astro.avatar || DEFAULT_ASTRO_FORM.avatar,
+                                      name: astro.name || '',
+                                      specialty: astro.specialty || '',
+                                      phone: astro.phone || astro.whatsappNo || '',
+                                      whatsappNo: astro.whatsappNo || '',
+                                      sameAsWhatsapp: astro.sameAsWhatsapp ?? true,
+                                      email: astro.email || '',
+                                      streetLane: astro.streetLane || '',
+                                      cityDistrict: astro.cityDistrict || 'Imphal West',
+                                      state: astro.state || 'Manipur',
+                                      pincode: astro.pincode || '795001',
+                                      experienceYears: astro.experienceYears || 10,
+                                      languages: astro.languages || ['Manipuri (Meiteilon)', 'English'],
+                                      username: astro.username || '',
+                                      password: astro.password || 'guru123',
+                                      address: astro.address || 'Imphal West, Manipur',
+                                      upiId: astro.upiId || '',
+                                      bankName: astro.bankName || 'State Bank of India (SBI)',
+                                      accountHolder: astro.accountHolder || astro.name,
+                                      accountNo: astro.accountNo || '',
+                                      ifscCode: astro.ifscCode || 'SBIN0001234',
+                                      payoutMethod: astro.payoutMethod || 'UPI',
+                                      planTier: astro.planTier || 'ADVANCE',
+                                      allowedTools: astro.allowedTools || DEFAULT_ASTRO_FORM.allowedTools,
+                                      status: astro.status || 'ACTIVE',
+                                    });
+                                    setActiveTab('add_astro');
+                                  }}
                                   className="px-3.5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs inline-flex items-center gap-1.5 cursor-pointer transition-all shadow-md"
                                   title="Edit Full Name, Username, Phone, Manipur Address, & Password"
                                 >
@@ -5448,6 +5703,927 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       })}
                     </tbody>
                   </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 5B: REGISTER / EDIT EMPANELED ASTROLOGER ACCOUNT & PASSWORD */}
+          {activeTab === 'add_astro' && (
+            <div className="bg-white rounded-3xl border border-[#f3e8d2] shadow-xl p-6 sm:p-8 space-y-6 text-[#0f172a]">
+              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#fde68a] gap-4">
+                <div>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
+                    {editingAstroId ? 'Edit Empaneled Jyotish Guru Account' : 'Register New Empaneled Jyotish Guru'}
+                  </h3>
+                  <p className="text-xs text-gray-500 font-sans font-medium">
+                    Create login credentials, assign specialty, phone number, Manipur address & portal password
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('astrologers')}
+                  className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs cursor-pointer border border-gray-300"
+                >
+                  ← Back to All Jyotishs
+                </button>
+              </div>
+
+              <form onSubmit={(e) => {
+                handleRegisterNewAstro(e);
+                setActiveTab('astrologers');
+              }} className="p-6 sm:p-8 rounded-3xl bg-[#fefcf6] border border-[#fde68a] space-y-7 font-sans text-xs text-[#0f172a] shadow-sm">
+                
+                {/* SECTION 1: PERSONAL & CONTACT INFORMATION */}
+                <div className="space-y-4">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-[#d97706]" />
+                    <span>1. Personal Particulars & Contact Information</span>
+                  </h4>
+
+                  {/* PROFILE PHOTO / AVATAR UPLOADER */}
+                  <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-white border border-[#fde68a] shadow-xs">
+                    <div className="relative shrink-0">
+                      <img
+                        src={newAstroForm.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                        alt="Guru Profile Preview"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-[#d97706] shadow-md bg-amber-50"
+                      />
+                      <span className="absolute bottom-0 right-0 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white" title="Active Status Preview" />
+                    </div>
+
+                    <div className="flex-1 space-y-2 text-center sm:text-left">
+                      <div>
+                        <h5 className="font-bold text-[#0f172a] text-xs">Jyotish Guru Profile Photo / Avatar</h5>
+                        <p className="text-[11px] text-gray-500">Upload a portrait photo or paste an image URL to display on the portal & website listing</p>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-3 justify-center sm:justify-start">
+                        <label className="px-3.5 py-1.5 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs cursor-pointer inline-flex items-center gap-1.5 shadow-xs transition-colors">
+                          <Camera className="w-3.5 h-3.5" />
+                          <span>Upload Photo...</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  if (typeof reader.result === 'string') {
+                                    setNewAstroForm({ ...newAstroForm, avatar: reader.result });
+                                  }
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                          />
+                        </label>
+
+                        <div className="flex-1 min-w-[200px]">
+                          <input
+                            type="url"
+                            placeholder="Or paste image URL (https://...)"
+                            value={newAstroForm.avatar || ''}
+                            onChange={(e) => setNewAstroForm({ ...newAstroForm, avatar: e.target.value })}
+                            className="w-full h-8 px-3 rounded-lg border border-gray-300 text-[11px] font-mono focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Acharya Tombi Sharma"
+                        value={newAstroForm.name}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, name: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Assign Portal Username *
+                      </label>
+                      <div className="relative">
+                        <span className="absolute left-3.5 top-3 font-mono font-bold text-gray-400">@</span>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. tombi_guru"
+                          value={newAstroForm.username}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, username: e.target.value })}
+                          className="w-full h-11 pl-8 pr-3.5 rounded-xl border border-gray-300 bg-[#eff6ff] text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Contact Mobile Number *
+                      </label>
+                      <input
+                        type="tel"
+                        required
+                        placeholder="e.g. +91 98620 12345"
+                        value={newAstroForm.phone}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewAstroForm({
+                            ...newAstroForm,
+                            phone: val,
+                            whatsappNo: newAstroForm.sameAsWhatsapp ? val : newAstroForm.whatsappNo
+                          });
+                        }}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-center">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider">
+                          WhatsApp Mobile Number *
+                        </label>
+                        <label className="flex items-center gap-1.5 cursor-pointer text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                          <input
+                            type="checkbox"
+                            checked={newAstroForm.sameAsWhatsapp}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setNewAstroForm({
+                                ...newAstroForm,
+                                sameAsWhatsapp: checked,
+                                whatsappNo: checked ? newAstroForm.phone : newAstroForm.whatsappNo
+                              });
+                            }}
+                            className="rounded text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <span>Same as Mobile</span>
+                        </label>
+                      </div>
+                      <input
+                        type="tel"
+                        required
+                        disabled={newAstroForm.sameAsWhatsapp}
+                        placeholder="+91 98620 12345"
+                        value={newAstroForm.sameAsWhatsapp ? newAstroForm.phone : newAstroForm.whatsappNo}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, whatsappNo: e.target.value })}
+                        className={`w-full h-11 px-3.5 rounded-xl border border-gray-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none ${
+                          newAstroForm.sameAsWhatsapp ? 'bg-gray-100 text-gray-600' : 'bg-white text-emerald-700'
+                        }`}
+                      />
+                    </div>
+
+                    <div className="sm:col-span-2">
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Official Email Address
+                      </label>
+                      <input
+                        type="email"
+                        placeholder="e.g. guru.tombi@kangleiastro.com"
+                        value={newAstroForm.email}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, email: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 2: SPECIALTY & QUALIFICATIONS */}
+                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-[#d97706]" />
+                    <span>2. Astrological Specialty & Qualifications</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Primary Specialty Focus *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Kuthi Yengba, Dasha & Vedic Remedies"
+                        value={newAstroForm.specialty}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, specialty: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none mb-2"
+                      />
+                      
+                      {/* Clickable Quick Specialty Tag Badges */}
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="text-[10px] text-gray-500 font-bold">Quick Presets:</span>
+                        {['Kuthi Yengba', 'Kuthi Iba', 'Numit Leppa', 'Navamsha D9', 'Gemstone Remedy', 'Gun Milan'].map((preset) => (
+                          <button
+                            key={preset}
+                            type="button"
+                            onClick={() => {
+                              const current = newAstroForm.specialty;
+                              const updated = current ? `${current}, ${preset}` : preset;
+                              setNewAstroForm({ ...newAstroForm, specialty: updated });
+                            }}
+                            className="px-2.5 py-0.5 rounded-full bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-[10px] border border-amber-300 transition-colors cursor-pointer"
+                          >
+                            + {preset}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Experience (Years)
+                      </label>
+                      <input
+                        type="number"
+                        min={1}
+                        max={60}
+                        placeholder="15"
+                        value={newAstroForm.experienceYears}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, experienceYears: Number(e.target.value) })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 3: FULL RESIDENTIAL & MANIPUR LOCATION ADDRESS */}
+                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-[#d97706]" />
+                    <span>3. Residential Address & Location Details</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Street / Lane / Leikai Address *
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Uripok Bachaspati Leikai"
+                        value={newAstroForm.streetLane}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, streetLane: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-medium text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        City / District / Location *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. Imphal West"
+                        value={newAstroForm.cityDistrict}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, cityDistrict: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Pincode / Zip Code
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="795001"
+                        value={newAstroForm.pincode}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, pincode: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 4: FINANCIAL PAYOUT & BANK / UPI DETAILS */}
+                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
+                  <div className="flex flex-wrap items-center justify-between border-b border-[#fde68a] pb-2 gap-2">
+                    <h4 className="font-serif font-bold text-lg text-[#b45309] flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-green-600" />
+                      <span>4. Financial Payout & Bank Settlement Details</span>
+                    </h4>
+                    
+                    <div className="flex items-center gap-4 bg-amber-50 px-3 py-1 rounded-xl border border-amber-200">
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="payoutMethod"
+                          value="UPI"
+                          checked={newAstroForm.payoutMethod === 'UPI'}
+                          onChange={() => setNewAstroForm({ ...newAstroForm, payoutMethod: 'UPI' })}
+                          className="text-[#d97706] focus:ring-[#d97706]"
+                        />
+                        <span>UPI VPA ID</span>
+                      </label>
+                      <label className="flex items-center gap-1.5 text-xs font-bold text-gray-800 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="payoutMethod"
+                          value="BANK"
+                          checked={newAstroForm.payoutMethod === 'BANK'}
+                          onChange={() => setNewAstroForm({ ...newAstroForm, payoutMethod: 'BANK' })}
+                          className="text-[#d97706] focus:ring-[#d97706]"
+                        />
+                        <span>Direct Bank Transfer</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-green-800 uppercase tracking-wider mb-1">
+                        Merchant / Payee UPI VPA ID
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. tombi@ybl or 9862012345@upi"
+                        value={newAstroForm.upiId}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, upiId: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#f0fdf4] text-green-800 font-mono font-bold text-xs focus:border-green-600 focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Bank Name
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. State Bank of India (SBI)"
+                        value={newAstroForm.bankName}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, bankName: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Account Number
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 30847291823"
+                        value={newAstroForm.accountNo}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, accountNo: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Bank IFSC Code
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. SBIN0001234"
+                        value={newAstroForm.ifscCode}
+                        onChange={(e) => setNewAstroForm({ ...newAstroForm, ifscCode: e.target.value.toUpperCase() })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-blue-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 5: EMPANELMENT PLAN TIER & TOOL ACCESS PERMISSIONS */}
+                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-[#d97706]" />
+                    <span>5. Empanelment Plan Tier & Tool Access Permissions</span>
+                  </h4>
+
+                  {/* Plan Tier Selection Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    {[
+                      { id: 'BASIC', title: 'Basic Guru', split: '70% Payout Share', badge: 'Standard Access', color: 'border-slate-300 bg-slate-50' },
+                      { id: 'ADVANCE', title: 'Advance Guru', split: '80% Payout Share', badge: 'Priority Orders', color: 'border-amber-400 bg-amber-50/60' },
+                      { id: 'PRO', title: 'Pro Master Guru', split: '90% Payout Share', badge: 'Featured Badge', color: 'border-purple-400 bg-purple-50/60' }
+                    ].map((tier) => (
+                      <label
+                        key={tier.id}
+                        onClick={() => setNewAstroForm({ ...newAstroForm, planTier: tier.id as any })}
+                        className={`p-3.5 rounded-2xl border-2 cursor-pointer transition-all flex items-center justify-between ${
+                          newAstroForm.planTier === tier.id ? 'border-[#d97706] bg-amber-100/70 shadow-sm' : tier.color
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <input
+                              type="radio"
+                              name="planTier"
+                              value={tier.id}
+                              checked={newAstroForm.planTier === tier.id}
+                              onChange={() => setNewAstroForm({ ...newAstroForm, planTier: tier.id as any })}
+                              className="text-[#d97706] focus:ring-[#d97706]"
+                            />
+                            <span className="font-serif font-bold text-sm text-[#0f172a]">{tier.title}</span>
+                          </div>
+                          <span className="text-[11px] font-extrabold text-[#b45309] block ml-5">{tier.split}</span>
+                        </div>
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white border border-[#fde68a] text-amber-900">
+                          {tier.badge}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+
+                  {/* Accessible Tools & Calculators Checkboxes */}
+                  <div className="space-y-2 pt-2">
+                    <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider">
+                      Select Accessible Astrology Calculators & Service Tools:
+                    </label>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5 bg-white p-4 rounded-2xl border border-gray-200">
+                      {[
+                        { id: 'kuthi-generator', label: 'Kuthi Generator (Natal D1/D9)' },
+                        { id: 'dasha-yengpham', label: 'Dasha Yengpham (Vimshottari)' },
+                        { id: 'shani-sade-sati', label: 'Shani Sade Sati & Dhaiya' },
+                        { id: 'kaal-sarp-dosh', label: 'Kaal Sarp Dosh Analysis' },
+                        { id: 'astrology-yoga', label: 'Planetary Yogas Evaluator' },
+                        { id: 'match-making', label: 'Match Making (36-Gun Milan)' },
+                        { id: 'kuthi-iba', label: 'Kuthi Iba (Handwritten Scroll)' },
+                        { id: 'numit-leppa', label: 'Numit Leppa (Auspicious Muhurat)' },
+                        { id: 'estore-vendor', label: 'E-Store Vendor Catalog Access' },
+                      ].map((tool) => {
+                        const isChecked = (newAstroForm.allowedTools || []).includes(tool.id);
+                        return (
+                          <label
+                            key={tool.id}
+                            className={`flex items-center gap-2 p-2.5 rounded-xl border text-xs font-bold cursor-pointer transition-all ${
+                              isChecked ? 'bg-amber-50 border-[#d97706]/50 text-[#b45309]' : 'bg-gray-50 border-gray-200 text-gray-600'
+                            }`}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                const current = newAstroForm.allowedTools || [];
+                                const updated = checked
+                                  ? [...current, tool.id]
+                                  : current.filter((t) => t !== tool.id);
+                                setNewAstroForm({ ...newAstroForm, allowedTools: updated });
+                              }}
+                              className="rounded text-[#d97706] focus:ring-[#d97706]"
+                            />
+                            <span>{tool.label}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
+
+                {/* SECTION 6: PORTAL ACCESS & ACCOUNT STATUS */}
+                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
+                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <Lock className="w-5 h-5 text-[#d97706]" />
+                    <span>6. Portal Login Security & Account Status</span>
+                  </h4>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Assign Portal Login Password *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? 'text' : 'password'}
+                          required
+                          placeholder="••••••••"
+                          value={newAstroForm.password}
+                          onChange={(e) => setNewAstroForm({ ...newAstroForm, password: e.target.value })}
+                          className="w-full h-11 pl-3.5 pr-10 rounded-xl border border-gray-300 bg-[#eff6ff] text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-3 text-gray-500 hover:text-gray-800 text-[10px] font-bold uppercase"
+                        >
+                          {showPassword ? 'Hide' : 'Show'}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold text-[#b45309] uppercase tracking-wider mb-1">
+                        Account Activation Status
+                      </label>
+                      <div className="flex items-center gap-4 h-11 bg-white px-4 rounded-xl border border-gray-300">
+                        <label className="flex items-center gap-1.5 text-xs font-bold text-emerald-800 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="status"
+                            value="ACTIVE"
+                            checked={newAstroForm.status === 'ACTIVE'}
+                            onChange={() => setNewAstroForm({ ...newAstroForm, status: 'ACTIVE' })}
+                            className="text-emerald-600 focus:ring-emerald-500"
+                          />
+                          <span>🟢 ACTIVE & ONLINE</span>
+                        </label>
+                        <label className="flex items-center gap-1.5 text-xs font-bold text-amber-800 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="status"
+                            value="ON_HOLD"
+                            checked={newAstroForm.status === 'ON_HOLD'}
+                            onChange={() => setNewAstroForm({ ...newAstroForm, status: 'ON_HOLD' })}
+                            className="text-amber-600 focus:ring-amber-500"
+                          />
+                          <span>🟡 ON HOLD (Suspended)</span>
+                        </label>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 border-t border-[#fde68a]">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('astrologers')}
+                    className="px-6 py-3 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer"
+                  >
+                    {editingAstroId ? 'Update & Save Astrologer Account →' : 'Save Astrologer Account →'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* TAB 5C: JYOTISH GURU FULL PROFILE DOSSIER & PASSWORD UPDATE */}
+          {activeTab === 'astro_profile' && selectedAstrologer && (
+            <div className="space-y-6 text-[#0f172a] font-sans">
+              {/* TOP NAVIGATION & HEADER */}
+              <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-xl">
+                <div className="flex items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('astrologers')}
+                    className="px-4 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs cursor-pointer border border-gray-300 transition-colors"
+                  >
+                    ← Back to All Jyotishs
+                  </button>
+                  <div>
+                    <h3 className="font-serif font-bold text-xl text-[#0f172a]">Jyotish Guru Profile Dossier</h3>
+                    <p className="text-xs text-gray-500 font-medium">Complete registered credentials, contact information, plan tier & tools permissions</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingAstroId(selectedAstrologer.id);
+                      setNewAstroForm({
+                        ...DEFAULT_ASTRO_FORM,
+                        avatar: selectedAstrologer.avatar || DEFAULT_ASTRO_FORM.avatar,
+                        name: selectedAstrologer.name || '',
+                        specialty: selectedAstrologer.specialty || '',
+                        phone: selectedAstrologer.phone || selectedAstrologer.whatsappNo || '',
+                        whatsappNo: selectedAstrologer.whatsappNo || '',
+                        sameAsWhatsapp: selectedAstrologer.sameAsWhatsapp ?? true,
+                        email: selectedAstrologer.email || '',
+                        streetLane: selectedAstrologer.streetLane || '',
+                        cityDistrict: selectedAstrologer.cityDistrict || 'Imphal West',
+                        state: selectedAstrologer.state || 'Manipur',
+                        pincode: selectedAstrologer.pincode || '795001',
+                        experienceYears: selectedAstrologer.experienceYears || 10,
+                        languages: selectedAstrologer.languages || ['Manipuri (Meiteilon)', 'English'],
+                        username: selectedAstrologer.username || '',
+                        password: selectedAstrologer.password || 'guru123',
+                        address: selectedAstrologer.address || 'Imphal West, Manipur',
+                        upiId: selectedAstrologer.upiId || '',
+                        bankName: selectedAstrologer.bankName || 'State Bank of India (SBI)',
+                        accountHolder: selectedAstrologer.accountHolder || selectedAstrologer.name,
+                        accountNo: selectedAstrologer.accountNo || '',
+                        ifscCode: selectedAstrologer.ifscCode || 'SBIN0001234',
+                        payoutMethod: selectedAstrologer.payoutMethod || 'UPI',
+                        planTier: selectedAstrologer.planTier || 'ADVANCE',
+                        allowedTools: selectedAstrologer.allowedTools || DEFAULT_ASTRO_FORM.allowedTools,
+                        status: selectedAstrologer.status || 'ACTIVE',
+                      });
+                      setActiveTab('add_astro');
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center gap-1.5 transition-colors"
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Edit Full Profile</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* MAIN PROFILE DOSSIER CARD */}
+              <div className="bg-white rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden">
+                {/* BANNER HEADER */}
+                <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0b132b] p-6 sm:p-8 text-white relative">
+                  <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                    {/* PROFILE PHOTO AVATAR */}
+                    <div className="relative shrink-0">
+                      <img
+                        src={selectedAstrologer.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                        alt={selectedAstrologer.name}
+                        className="w-28 h-28 sm:w-32 sm:h-32 rounded-full object-cover border-4 border-[#d97706] shadow-2xl bg-amber-50"
+                      />
+                      <span
+                        className={`absolute bottom-1 right-1 w-6 h-6 rounded-full border-4 border-[#0f172a] ${
+                          selectedAstrologer.status === 'ON_HOLD' ? 'bg-amber-500' : 'bg-emerald-500'
+                        }`}
+                        title={selectedAstrologer.status === 'ON_HOLD' ? 'Account On Hold' : 'Active & Online'}
+                      />
+                    </div>
+
+                    <div className="flex-1 text-center sm:text-left space-y-2">
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                        <h2 className="font-serif font-bold text-2xl sm:text-3xl text-white">{selectedAstrologer.name}</h2>
+                        <span className="px-3 py-0.5 rounded-full bg-amber-500/20 text-[#fbbf24] text-xs font-mono font-extrabold border border-amber-400/40">
+                          @{selectedAstrologer.username || selectedAstrologer.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
+                        </span>
+                      </div>
+
+                      <p className="text-amber-300 text-sm font-semibold">{selectedAstrologer.specialty || 'Kuthi Yengba & Vedic Astrology'}</p>
+
+                      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3 pt-2 text-xs font-medium">
+                        <span className="px-3 py-1 rounded-xl bg-white/10 text-gray-200 border border-white/15">
+                          📍 {selectedAstrologer.address || 'Imphal West, Manipur'}
+                        </span>
+                        <span className="px-3 py-1 rounded-xl bg-white/10 text-amber-300 border border-white/15">
+                          ⭐ {selectedAstrologer.experienceYears || 15} Years Experience
+                        </span>
+                        <span className={`px-3 py-1 rounded-xl font-bold border ${
+                          selectedAstrologer.status === 'ON_HOLD' ? 'bg-amber-500/30 text-amber-200 border-amber-400' : 'bg-emerald-500/30 text-emerald-200 border-emerald-400'
+                        }`}>
+                          {selectedAstrologer.status === 'ON_HOLD' ? '🟡 ON HOLD' : '🟢 ACTIVE & ONLINE'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* DETAILED INFORMATION GRID */}
+                <div className="p-6 sm:p-8 space-y-8 bg-[#fefcf6]">
+                  {/* ROW 1: CONTACT & LOCATION DOSSIER */}
+                  <div className="space-y-3">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                      <Users className="w-4 h-4 text-[#d97706]" />
+                      <span>Contact & Manipur Location Particulars</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                      <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Mobile Phone Number</span>
+                        <span className="font-mono font-bold text-gray-900 block text-sm">📞 {selectedAstrologer.phone || selectedAstrologer.whatsappNo}</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-1">
+                        <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">WhatsApp Direct Contact</span>
+                        <a
+                          href={`https://wa.me/${(selectedAstrologer.whatsappNo || '').replace(/[^0-9]/g, '')}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="font-mono font-bold text-emerald-700 hover:underline block text-sm inline-flex items-center gap-1"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5" />
+                          <span>{selectedAstrologer.whatsappNo}</span>
+                        </a>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Official Email Address</span>
+                        <span className="font-mono font-bold text-gray-800 block truncate">✉️ {selectedAstrologer.email || 'ccare@kangleiastro.com'}</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Full Manipur Address</span>
+                        <span className="font-semibold text-gray-900 block">📍 {selectedAstrologer.address || 'Imphal West, Manipur'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ROW 2: LOGIN CREDENTIALS & PASSWORD UPDATE BOX */}
+                  <div className="space-y-3">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                      <Lock className="w-4 h-4 text-[#d97706]" />
+                      <span>Portal Login Credentials & Security Settings</span>
+                    </h4>
+
+                    <div className="p-4 sm:p-5 rounded-2xl bg-[#eff6ff] border border-blue-200 flex flex-wrap items-center justify-between gap-4">
+                      <div className="space-y-1">
+                        <span className="text-[10px] font-bold text-blue-900 uppercase tracking-wider block">Portal Username & Password</span>
+                        <div className="flex items-center gap-4 text-xs font-mono font-bold text-slate-900">
+                          <span>Username: <strong className="text-blue-800">@{selectedAstrologer.username || selectedAstrologer.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}</strong></span>
+                          <span>•</span>
+                          <span>Password: <strong className="bg-white px-2.5 py-1 rounded border border-blue-300 text-blue-900 font-mono text-sm">{selectedAstrologer.password || '••••••••'}</strong></span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewPasswordInput(selectedAstrologer.password || '');
+                          setShowPasswordUpdateModal(true);
+                        }}
+                        className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-sm cursor-pointer flex items-center gap-1.5 transition-colors"
+                      >
+                        <Lock className="w-3.5 h-3.5" />
+                        <span>🔑 Update Password</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* ROW 3: FINANCIAL PAYOUT & BANK ACCOUNT DETAILS */}
+                  <div className="space-y-3">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                      <DollarSign className="w-4 h-4 text-green-600" />
+                      <span>Financial Payout & Bank Settlement Details</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                      <div className="p-3.5 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+                        <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider block">Payout Preference</span>
+                        <span className="font-bold text-emerald-900 block text-sm">💳 {selectedAstrologer.payoutMethod || 'UPI VPA Handle'}</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Merchant UPI VPA ID</span>
+                        <span className="font-mono font-bold text-green-800 block text-sm">{selectedAstrologer.upiId || 'kangleiastro@upi'}</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Bank & Account No.</span>
+                        <span className="font-bold text-gray-900 block">{selectedAstrologer.bankName || 'State Bank of India'}</span>
+                        <span className="font-mono font-bold text-gray-600 text-[11px] block">{selectedAstrologer.accountNo ? `Acc: ${selectedAstrologer.accountNo}` : 'Acc: 30847291823'}</span>
+                      </div>
+
+                      <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-1">
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Bank IFSC Code</span>
+                        <span className="font-mono font-bold text-blue-700 block text-sm">{selectedAstrologer.ifscCode || 'SBIN0001234'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* ROW 4: PLAN TIER & TOOL ACCESS PERMISSIONS */}
+                  <div className="space-y-3">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                      <ShieldCheck className="w-4 h-4 text-[#d97706]" />
+                      <span>Empanelment Subscription Plan & Tools Access Permissions</span>
+                    </h4>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                      <div className="p-4 rounded-2xl bg-amber-100/60 border border-amber-300 space-y-1">
+                        <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Empanelment Subscription Plan</span>
+                        <span className="font-serif font-bold text-base text-[#0f172a] block">{selectedAstrologer.planTier || 'ADVANCE'} GURU</span>
+                        <span className="text-[11px] font-extrabold text-[#b45309] block">
+                          {selectedAstrologer.planTier === 'PRO' ? '90% Payout Share' : selectedAstrologer.planTier === 'BASIC' ? '70% Payout Share' : '80% Payout Share'}
+                        </span>
+                      </div>
+
+                      <div className="sm:col-span-2 p-4 rounded-2xl bg-white border border-gray-200 space-y-2">
+                        <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">Granted Astrology Calculators & Tools Permissions</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {(selectedAstrologer.allowedTools || DEFAULT_ASTRO_FORM.allowedTools).map((toolId) => (
+                            <span key={toolId} className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-900 text-[11px] font-bold border border-amber-200">
+                              ✓ {toolId}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BOTTOM ACTION BUTTONS BAR */}
+                  <div className="flex flex-wrap justify-between items-center pt-6 border-t border-[#fde68a] gap-4">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('astrologers')}
+                      className="px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer"
+                    >
+                      ← Back to All Jyotishs Directory
+                    </button>
+
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setNewPasswordInput(selectedAstrologer.password || '');
+                          setShowPasswordUpdateModal(true);
+                        }}
+                        className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Lock className="w-4 h-4" />
+                        <span>Update Login Password</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEditingAstroId(selectedAstrologer.id);
+                          setNewAstroForm({
+                            ...DEFAULT_ASTRO_FORM,
+                            avatar: selectedAstrologer.avatar || DEFAULT_ASTRO_FORM.avatar,
+                            name: selectedAstrologer.name || '',
+                            specialty: selectedAstrologer.specialty || '',
+                            phone: selectedAstrologer.phone || selectedAstrologer.whatsappNo || '',
+                            whatsappNo: selectedAstrologer.whatsappNo || '',
+                            sameAsWhatsapp: selectedAstrologer.sameAsWhatsapp ?? true,
+                            email: selectedAstrologer.email || '',
+                            streetLane: selectedAstrologer.streetLane || '',
+                            cityDistrict: selectedAstrologer.cityDistrict || 'Imphal West',
+                            state: selectedAstrologer.state || 'Manipur',
+                            pincode: selectedAstrologer.pincode || '795001',
+                            experienceYears: selectedAstrologer.experienceYears || 10,
+                            languages: selectedAstrologer.languages || ['Manipuri (Meiteilon)', 'English'],
+                            username: selectedAstrologer.username || '',
+                            password: selectedAstrologer.password || 'guru123',
+                            address: selectedAstrologer.address || 'Imphal West, Manipur',
+                            upiId: selectedAstrologer.upiId || '',
+                            bankName: selectedAstrologer.bankName || 'State Bank of India (SBI)',
+                            accountHolder: selectedAstrologer.accountHolder || selectedAstrologer.name,
+                            accountNo: selectedAstrologer.accountNo || '',
+                            ifscCode: selectedAstrologer.ifscCode || 'SBIN0001234',
+                            payoutMethod: selectedAstrologer.payoutMethod || 'UPI',
+                            planTier: selectedAstrologer.planTier || 'ADVANCE',
+                            allowedTools: selectedAstrologer.allowedTools || DEFAULT_ASTRO_FORM.allowedTools,
+                            status: selectedAstrologer.status || 'ACTIVE',
+                          });
+                          setActiveTab('add_astro');
+                        }}
+                        className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Edit className="w-4 h-4" />
+                        <span>Edit Full Profile →</span>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* PASSWORD UPDATE MODAL POPUP */}
+          {showPasswordUpdateModal && selectedAstrologer && (
+            <div className="fixed inset-0 z-50 bg-[#0f172a]/60 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className="bg-white w-full max-w-md rounded-3xl border border-[#f3e8d2] p-6 space-y-4 text-xs font-sans text-[#0f172a] shadow-2xl relative">
+                <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
+                  <div className="flex items-center gap-2">
+                    <Lock className="w-5 h-5 text-blue-600" />
+                    <h4 className="font-serif font-bold text-lg text-[#0f172a]">Update Login Password</h4>
+                  </div>
+                  <button type="button" onClick={() => setShowPasswordUpdateModal(false)} className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  <p className="text-xs text-gray-600 font-medium">
+                    Update portal login password for <strong className="text-blue-900">{selectedAstrologer.name}</strong> (@{selectedAstrologer.username || 'username'}):
+                  </p>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-blue-900 mb-1">
+                      New Portal Login Password *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Enter new password (e.g. guru2026)"
+                      value={newPasswordInput}
+                      onChange={(e) => setNewPasswordInput(e.target.value)}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#eff6ff] text-[#0f172a] font-mono font-bold text-xs focus:border-blue-600 focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswordUpdateModal(false)}
+                    className="px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateAstrologerPassword(selectedAstrologer.id, newPasswordInput)}
+                    className="px-6 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs shadow-md cursor-pointer"
+                  >
+                    Save New Password →
+                  </button>
                 </div>
               </div>
             </div>
@@ -6529,137 +7705,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               )}
 
-              {/* REGISTER NEW JYOTISH GURU MODAL */}
-              {showAddAstroModal && (
-                <div className="fixed inset-0 z-50 bg-[#0f172a]/60 backdrop-blur-xs flex items-center justify-center p-4">
-                  <form onSubmit={handleRegisterNewAstro} className="bg-white w-full max-w-lg rounded-3xl border border-[#f3e8d2] p-6 sm:p-8 space-y-4 text-xs font-sans text-[#0f172a] shadow-2xl relative">
-                    <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
-                      <div className="flex items-center gap-2">
-                        <Award className="w-5 h-5 text-[#d97706]" />
-                        <h4 className="font-serif font-bold text-xl text-[#0f172a]">Register New Jyotish Guru</h4>
-                      </div>
-                      <button type="button" onClick={() => setShowAddAstroModal(false)} className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                          Jyotish Full Name<span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Acharya Tombi Sharma"
-                          value={newAstroForm.name}
-                          onChange={(e) => setNewAstroForm({ ...newAstroForm, name: e.target.value })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                          Specialty / Category<span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Kuthi Yengba, Dasha & Remedies"
-                          value={newAstroForm.specialty}
-                          onChange={(e) => setNewAstroForm({ ...newAstroForm, specialty: e.target.value })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                          WhatsApp Mobile Number<span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="+91 98620 12345"
-                          value={newAstroForm.whatsappNo}
-                          onChange={(e) => setNewAstroForm({ ...newAstroForm, whatsappNo: e.target.value })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                          Experience (Years)
-                        </label>
-                        <input
-                          type="number"
-                          value={newAstroForm.experienceYears}
-                          onChange={(e) => setNewAstroForm({ ...newAstroForm, experienceYears: Number(e.target.value) })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
-                          Astrologer Username
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. tombi_sharma"
-                          value={newAstroForm.username}
-                          onChange={(e) => setNewAstroForm({ ...newAstroForm, username: e.target.value })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
-                          Astrologer Login Password
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="e.g. guru123"
-                          value={newAstroForm.password}
-                          onChange={(e) => setNewAstroForm({ ...newAstroForm, password: e.target.value })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-mono text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-600 mb-1">
-                        Address / Location
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Imphal West, Manipur"
-                        value={newAstroForm.address}
-                        onChange={(e) => setNewAstroForm({ ...newAstroForm, address: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-bold focus:border-[#d97706] focus:outline-none"
-                      />
-                    </div>
-
-                    <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
-                      <button
-                        type="button"
-                        onClick={() => setShowAddAstroModal(false)}
-                        className="px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        type="submit"
-                        className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 cursor-pointer"
-                      >
-                        + Save & Empanel Jyotish Guru →
-                      </button>
-                    </div>
-                  </form>
-                </div>
-              )}
 
               {/* CLIENT BASE TABLE */}
               <div className="bg-white rounded-3xl border border-[#fde68a] shadow-xl overflow-hidden">
@@ -6807,67 +7853,266 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
           )}
 
-          {/* TAB 6: SITE SETTINGS */}
-          {activeTab === 'settings' && (
+          {/* TAB 6: SITE SETTINGS & UPI QR CONFIGURATION */}
+          {(activeTab === 'settings' || activeTab === 'upi') && (
             <div className="space-y-6">
               <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Site Settings & General Configuration</h3>
-                  <p className="text-xs text-gray-500">Manage website platform parameters, UPI merchant handles, helpline numbers, & service rate cards</p>
+                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Header Support Bar & Merchant UPI QR Settings</h3>
+                  <p className="text-xs text-gray-500">Manage website top support header, customer helpline info, UPI merchant handles & payment QR codes</p>
                 </div>
                 <button
-                  onClick={handleSaveServices}
+                  onClick={handleSaveSiteSettings}
+                  disabled={savingSettings}
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>Save All Settings Live</span>
+                  <span>{savingSettings ? 'Saving Settings...' : 'Save Header & UPI QR Settings Live →'}</span>
                 </button>
               </div>
 
-              {/* UNIFIED PLATFORM CONFIGURATION & RATE CARD OVERVIEW */}
+              {/* CARD 1: TOP BAR CUSTOMER SUPPORT HEADER CMS */}
               <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
-                <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2 border-b border-[#fde68a] pb-3">
-                  <Tag className="w-5 h-5 text-[#d97706]" />
-                  <span>Platform Helpline & UPI Merchant Settings</span>
-                </h4>
+                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+                  <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
+                    <Headphones className="w-5 h-5 text-[#d97706]" />
+                    <span>Top Support Header Bar CMS</span>
+                  </h4>
+                  <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 font-extrabold text-[10px] uppercase border border-amber-300">
+                    Live Header Sync
+                  </span>
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Official WhatsApp Booking Helpline
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue="+91 88374 87801"
-                      className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Official Merchant UPI VPA ID
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue="kangleiastro@upi"
-                      className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-green-700 font-mono font-bold text-xs"
-                    />
+                {/* Real-time Simulated Top Bar Preview Box */}
+                <div className="space-y-1.5">
+                  <span className="font-extrabold text-[10px] text-[#b45309] uppercase tracking-wider block">Real-Time Header Preview (As Visitors See It):</span>
+                  <div className="bg-[#fef3c7] text-[#78350f] p-3 rounded-2xl border border-[#fde68a] flex flex-wrap items-center justify-between text-xs font-medium gap-3">
+                    <div className="flex flex-wrap items-center gap-4">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <Headphones className="w-3.5 h-3.5 text-[#b45309]" />
+                        <span>{siteSettings.headerSettings.supportTiming || 'Live Support (9:30 AM – 6:00 PM IST)'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Mail className="w-3.5 h-3.5 text-[#b45309]" />
+                        <span className="underline">{siteSettings.headerSettings.supportEmail || 'ccare@kangleiastro.com'}</span>
+                      </div>
+                      <div className="flex items-center gap-1.5 font-extrabold">
+                        <Phone className="w-3.5 h-3.5 text-[#b45309]" />
+                        <span className="underline">{siteSettings.headerSettings.supportPhone || '+91 98765 43210'}</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-extrabold text-amber-800 bg-amber-200/60 px-2.5 py-0.5 rounded-full">Top Utility Bar</span>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-[#fde68a] space-y-2">
-                  <div className="flex justify-between items-center">
-                    <span className="font-serif font-bold text-base text-[#b45309]">Active Service Catalog ({services.length} Packages)</span>
-                    <button
-                      onClick={() => setShowAddServiceModal(true)}
-                      className="px-3.5 py-1.5 rounded-xl bg-[#fef3c7] text-[#b45309] font-bold text-xs border border-[#fde68a] hover:bg-[#fde68a] flex items-center gap-1.5 cursor-pointer"
-                    >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>+ Add New Service Name</span>
-                    </button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                      Support Timing Text *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Live Support (9:30 AM – 6:00 PM IST)"
+                      value={siteSettings.headerSettings.supportTiming}
+                      onChange={(e) => setSiteSettings({
+                        ...siteSettings,
+                        headerSettings: { ...siteSettings.headerSettings, supportTiming: e.target.value }
+                      })}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                    />
                   </div>
-                  <p className="text-gray-600 text-xs">
-                    All Service Package Titles, Client Prices (₹), Astrologer Payout Fees (₹), and Commission Splits (%) are managed and synchronized live via the rate card matrix in the <strong>Empaneled Astrologers</strong> tab.
-                  </p>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                      Customer Care Email *
+                    </label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="ccare@kangleiastro.com"
+                      value={siteSettings.headerSettings.supportEmail}
+                      onChange={(e) => setSiteSettings({
+                        ...siteSettings,
+                        headerSettings: { ...siteSettings.headerSettings, supportEmail: e.target.value }
+                      })}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                      Helpline Phone / WhatsApp *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="+91 98765 43210"
+                      value={siteSettings.headerSettings.supportPhone}
+                      onChange={(e) => setSiteSettings({
+                        ...siteSettings,
+                        headerSettings: { ...siteSettings.headerSettings, supportPhone: e.target.value }
+                      })}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-green-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* CARD 2: MERCHANT PAYMENT UPI VPA ID & QR CODE UPLOADER CMS */}
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
+                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+                  <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
+                    <QrCode className="w-5 h-5 text-emerald-600" />
+                    <span>Merchant UPI Payment ID & QR Code Image Uploader</span>
+                  </h4>
+                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-extrabold text-[10px] uppercase border border-emerald-300">
+                    UPI Merchant Active
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                  {/* Form Inputs (2 Cols) */}
+                  <div className="lg:col-span-2 space-y-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                          Official Merchant UPI VPA ID *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. kangleiastro@upi or 9862099881@ybl"
+                          value={siteSettings.upiSettings.upiId}
+                          onChange={(e) => setSiteSettings({
+                            ...siteSettings,
+                            upiSettings: { ...siteSettings.upiSettings, upiId: e.target.value }
+                          })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-green-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                          Payee / Account Holder Name *
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. KangleiAstro Services"
+                          value={siteSettings.upiSettings.payeeName}
+                          onChange={(e) => setSiteSettings({
+                            ...siteSettings,
+                            upiSettings: { ...siteSettings.upiSettings, payeeName: e.target.value }
+                          })}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* QR Code Image Uploader */}
+                    <div className="space-y-2">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309]">
+                        Upload Payment QR Code Image File
+                      </label>
+                      
+                      <div className="flex flex-col sm:flex-row items-center gap-3">
+                        <label className="flex-1 w-full px-4 py-3 border-2 border-dashed border-[#d97706]/40 hover:border-[#d97706] bg-[#fefcf6] rounded-2xl cursor-pointer text-center transition-colors">
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleQRImageUpload}
+                            className="hidden"
+                          />
+                          <div className="flex items-center justify-center gap-2 text-xs font-bold text-[#b45309]">
+                            <Upload className="w-4 h-4 text-[#d97706]" />
+                            <span>Click here to upload QR image file from phone / computer</span>
+                          </div>
+                          <span className="text-[10px] text-gray-500 block mt-0.5">Supports PNG, JPG, JPEG, WEBP QR code image scans</span>
+                        </label>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const genUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(`upi://pay?pa=${siteSettings.upiSettings.upiId}&pn=${siteSettings.upiSettings.payeeName}`)}`;
+                            setSiteSettings({
+                              ...siteSettings,
+                              upiSettings: { ...siteSettings.upiSettings, qrImageUrl: genUrl }
+                            });
+                          }}
+                          className="shrink-0 px-4 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-extrabold text-xs border border-[#fde68a] transition-all cursor-pointer flex items-center gap-1.5"
+                        >
+                          <Sparkles className="w-4 h-4 text-[#d97706]" />
+                          <span>Auto-Generate QR</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        QR Code Image URL / Base64 Data
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="https://... or data:image/png;base64,..."
+                        value={siteSettings.upiSettings.qrImageUrl}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          upiSettings: { ...siteSettings.upiSettings, qrImageUrl: e.target.value }
+                        })}
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-600 font-mono text-[11px] focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        UPI QR Code Scan Instruction Note
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="Scan with GPay, PhonePe, Paytm, BHIM or any UPI app"
+                        value={siteSettings.upiSettings.qrNotes}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          upiSettings: { ...siteSettings.upiSettings, qrNotes: e.target.value }
+                        })}
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  {/* QR Code Live Preview Card (1 Col) */}
+                  <div className="bg-[#fefcf6] p-5 rounded-3xl border border-[#fde68a] space-y-3 text-center">
+                    <span className="font-extrabold text-[10px] text-[#b45309] uppercase tracking-wider block">Live Payment QR Preview</span>
+                    
+                    <div className="w-44 h-44 mx-auto bg-white p-2 border-2 border-[#d97706]/40 rounded-2xl shadow-md flex items-center justify-center overflow-hidden relative">
+                      {siteSettings.upiSettings.qrImageUrl ? (
+                        <img src={siteSettings.upiSettings.qrImageUrl} alt="UPI QR Code Preview" className="w-full h-full object-contain" />
+                      ) : (
+                        <QrCode className="w-32 h-32 text-gray-400" />
+                      )}
+                    </div>
+
+                    <div className="space-y-1 pt-1">
+                      <span className="font-serif font-bold text-sm text-[#0f172a] block">{siteSettings.upiSettings.payeeName || 'KangleiAstro Services'}</span>
+                      <span className="font-mono font-bold text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-lg border border-green-200 block truncate">
+                        {siteSettings.upiSettings.upiId || 'kangleiastro@upi'}
+                      </span>
+                      <span className="text-[10px] text-gray-500 block pt-1">{siteSettings.upiSettings.qrNotes}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                  <button
+                    type="button"
+                    onClick={handleSaveSiteSettings}
+                    disabled={savingSettings}
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{savingSettings ? 'Saving Live Settings...' : 'Save Header & UPI QR Settings Live →'}</span>
+                  </button>
                 </div>
               </div>
 

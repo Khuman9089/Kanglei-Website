@@ -8,6 +8,17 @@ import {
 import Link from 'next/link';
 import { CartItem } from '@/components/shop/CartDrawer';
 
+export interface SavedDeliveryAddress {
+  id: string;
+  label: string;
+  recipientName: string;
+  mobile: string;
+  whatsappNo?: string;
+  address: string;
+  pincode: string;
+  isDefault?: boolean;
+}
+
 export default function CheckoutPage() {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null);
@@ -21,6 +32,12 @@ export default function CheckoutPage() {
   const [address, setAddress] = useState('');
   const [pincode, setPincode] = useState('');
   const [utr, setUtr] = useState('');
+
+  // Saved Delivery Addresses & Ship to Different Address Toggle
+  const [savedDeliveryAddresses, setSavedDeliveryAddresses] = useState<SavedDeliveryAddress[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>('custom');
+  const [shipToDifferentAddress, setShipToDifferentAddress] = useState(false);
+  const [saveNewAddressToProfile, setSaveNewAddressToProfile] = useState(true);
 
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -49,17 +66,51 @@ export default function CheckoutPage() {
         }
       }
 
-      // Pre-fill user details if logged in
+      // Pre-fill user details and Saved Delivery Addresses from User Profile / Database
       const storedUser = localStorage.getItem('kanglei_user');
+      let userAddresses: SavedDeliveryAddress[] = [];
+
       if (storedUser) {
         try {
           const u = JSON.parse(storedUser);
-          if (u.name) setBuyerName(u.name);
-          if (u.mobile) {
-            setMobile(u.mobile);
-            setWhatsappNo(u.mobile);
+
+          if (u.savedDeliveryAddresses && Array.isArray(u.savedDeliveryAddresses) && u.savedDeliveryAddresses.length > 0) {
+            userAddresses = u.savedDeliveryAddresses;
+          } else {
+            const nameVal = u.name || '';
+            const mobVal = u.mobile || u.phone || u.whatsappNo || '';
+            const addrVal = u.deliveryAddress || u.address || u.streetAddress || '';
+            const pinVal = u.pincode || u.postalCode || '';
+
+            if (nameVal && (addrVal || mobVal)) {
+              userAddresses = [{
+                id: 'addr-default-1',
+                label: 'Saved Primary Delivery Address',
+                recipientName: nameVal,
+                mobile: mobVal,
+                whatsappNo: mobVal,
+                address: addrVal || 'Imphal West, Manipur',
+                pincode: pinVal || '795001',
+                isDefault: true,
+              }];
+            }
           }
         } catch (e) {}
+      }
+
+      if (userAddresses.length > 0) {
+        setSavedDeliveryAddresses(userAddresses);
+        const def = userAddresses.find((a) => a.isDefault) || userAddresses[0];
+        setSelectedAddressId(def.id);
+        setBuyerName(def.recipientName);
+        setMobile(def.mobile);
+        setWhatsappNo(def.whatsappNo || def.mobile);
+        setAddress(def.address);
+        setPincode(def.pincode);
+        setShipToDifferentAddress(false);
+      } else {
+        setSelectedAddressId('custom');
+        setShipToDifferentAddress(true);
       }
 
       setLoading(false);
@@ -280,13 +331,21 @@ export default function CheckoutPage() {
               
               <form onSubmit={handleSubmitOrder} className="space-y-6">
                 
-                {/* 1. SHIPPING DETAILS CARD */}
-                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-lg space-y-4">
-                  <div className="flex items-center gap-2.5 border-b border-gray-100 pb-4">
-                    <div className="w-8 h-8 rounded-xl bg-[#fef3c7] text-[#d97706] flex items-center justify-center font-black text-sm">
-                      1
+                {/* 1. SHIPPING & CONTACT DETAILS CARD */}
+                <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-lg space-y-5">
+                  <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-[#fef3c7] text-[#d97706] flex items-center justify-center font-black text-sm">
+                        1
+                      </div>
+                      <h3 className="font-serif font-bold text-xl text-[#0f172a]">Shipping Delivery & Contact Details</h3>
                     </div>
-                    <h3 className="font-serif font-bold text-xl text-[#0f172a]">Shipping & Contact Details</h3>
+
+                    {savedDeliveryAddresses.length > 0 && (
+                      <span className="px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[10px] font-extrabold border border-emerald-200">
+                        ✓ {savedDeliveryAddresses.length} Saved {savedDeliveryAddresses.length === 1 ? 'Address' : 'Addresses'}
+                      </span>
+                    )}
                   </div>
 
                   {formError && (
@@ -296,106 +355,216 @@ export default function CheckoutPage() {
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
-                        Full Name<span className="text-red-500">*</span>
+                  {/* SAVED DELIVERY ADDRESSES SELECTOR CARDS */}
+                  {savedDeliveryAddresses.length > 0 && (
+                    <div className="space-y-3">
+                      <label className="block text-[11px] font-bold text-[#b45309] uppercase tracking-wider">
+                        Select from Saved Delivery Addresses:
                       </label>
-                      <div className="relative">
-                        <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. Sanatombi Devi"
-                          value={buyerName}
-                          onChange={(e) => setBuyerName(e.target.value)}
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
-                        />
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        {savedDeliveryAddresses.map((addr) => {
+                          const isSelected = !shipToDifferentAddress && selectedAddressId === addr.id;
+                          return (
+                            <div
+                              key={addr.id}
+                              onClick={() => {
+                                setSelectedAddressId(addr.id);
+                                setShipToDifferentAddress(false);
+                                setBuyerName(addr.recipientName);
+                                setMobile(addr.mobile);
+                                setWhatsappNo(addr.whatsappNo || addr.mobile);
+                                setAddress(addr.address);
+                                setPincode(addr.pincode);
+                              }}
+                              className={`p-4 rounded-2xl border-2 cursor-pointer transition-all space-y-1 text-xs font-sans ${
+                                isSelected ? 'border-[#d97706] bg-amber-50/90 shadow-md' : 'border-gray-200 bg-white hover:border-amber-300'
+                              }`}
+                            >
+                              <div className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                  <input
+                                    type="radio"
+                                    name="savedDeliveryAddress"
+                                    checked={isSelected}
+                                    onChange={() => {}}
+                                    className="text-[#d97706] focus:ring-[#d97706]"
+                                  />
+                                  <span className="font-bold text-[#0f172a]">{addr.label}</span>
+                                </div>
+                                {addr.isDefault && (
+                                  <span className="text-[9px] font-extrabold px-2 py-0.5 rounded bg-amber-200 text-amber-900 uppercase">
+                                    DEFAULT
+                                  </span>
+                                )}
+                              </div>
+                              <div className="font-bold text-slate-900 text-xs pl-6">{addr.recipientName}</div>
+                              <div className="text-gray-600 pl-6 font-mono text-[11px]">📞 {addr.mobile}</div>
+                              <div className="text-gray-700 pl-6 font-medium text-[11px] leading-tight">📍 {addr.address} {addr.pincode ? ` - PIN ${addr.pincode}` : ''}</div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
+                  )}
 
-                    <div className="space-y-1">
-                      <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
-                        Mobile Number<span className="text-red-500">*</span>
-                      </label>
-                      <div className="relative">
-                        <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                        <input
-                          type="tel"
-                          required
-                          placeholder="e.g. 9862011223"
-                          value={mobile}
-                          onChange={(e) => {
-                            setMobile(e.target.value);
-                            if (sameWhatsapp) setWhatsappNo(e.target.value);
-                          }}
-                          className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2 pt-1">
-                    <label className="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
+                  {/* CHECKBOX: SHIP TO A DIFFERENT DELIVERY ADDRESS */}
+                  <div className="pt-1">
+                    <label className="flex items-center gap-2.5 p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 cursor-pointer hover:bg-amber-100/50 transition-colors">
                       <input
                         type="checkbox"
-                        checked={sameWhatsapp}
+                        checked={shipToDifferentAddress}
                         onChange={(e) => {
-                          setSameWhatsapp(e.target.checked);
-                          if (e.target.checked) setWhatsappNo(mobile);
+                          const checked = e.target.checked;
+                          setShipToDifferentAddress(checked);
+                          if (checked) {
+                            setSelectedAddressId('custom');
+                            setBuyerName('');
+                            setMobile('');
+                            setWhatsappNo('');
+                            setAddress('');
+                            setPincode('');
+                          } else if (savedDeliveryAddresses.length > 0) {
+                            const def = savedDeliveryAddresses.find((a) => a.id === selectedAddressId) || savedDeliveryAddresses[0];
+                            setSelectedAddressId(def.id);
+                            setBuyerName(def.recipientName);
+                            setMobile(def.mobile);
+                            setWhatsappNo(def.whatsappNo || def.mobile);
+                            setAddress(def.address);
+                            setPincode(def.pincode);
+                          }
                         }}
-                        className="rounded border-gray-300 text-[#d97706] focus:ring-[#d97706]"
+                        className="w-4 h-4 rounded border-gray-300 text-[#d97706] focus:ring-[#d97706]"
                       />
-                      <span>WhatsApp number same as Mobile Number</span>
+                      <span className="text-xs font-extrabold text-[#b45309]">📦 Ship order to a different delivery address</span>
                     </label>
+                  </div>
 
-                    {!sameWhatsapp && (
+                  {/* INTERACTIVE INPUT FORM (Shown if shipToDifferentAddress is TRUE or NO SAVED DELIVERY ADDRESSES) */}
+                  {(shipToDifferentAddress || savedDeliveryAddresses.length === 0) && (
+                    <div className="space-y-4 pt-3 border-t border-gray-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-bold text-[#b45309] uppercase tracking-wider">
+                          Enter New Shipping Delivery Address Details:
+                        </span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
+                            Recipient Full Name<span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <User className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="text"
+                              required
+                              placeholder="e.g. Sanatombi Devi"
+                              value={buyerName}
+                              onChange={(e) => setBuyerName(e.target.value)}
+                              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="space-y-1">
+                          <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
+                            Delivery Mobile Number<span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <Phone className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                            <input
+                              type="tel"
+                              required
+                              placeholder="e.g. 9862011223"
+                              value={mobile}
+                              onChange={(e) => {
+                                setMobile(e.target.value);
+                                if (sameWhatsapp) setWhatsappNo(e.target.value);
+                              }}
+                              className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2 pt-1">
+                        <label className="flex items-center gap-2 text-xs font-bold text-gray-700 cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={sameWhatsapp}
+                            onChange={(e) => {
+                              setSameWhatsapp(e.target.checked);
+                              if (e.target.checked) setWhatsappNo(mobile);
+                            }}
+                            className="rounded border-gray-300 text-[#d97706] focus:ring-[#d97706]"
+                          />
+                          <span>WhatsApp number same as Mobile Number</span>
+                        </label>
+
+                        {!sameWhatsapp && (
+                          <div className="space-y-1">
+                            <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
+                              WhatsApp Number<span className="text-red-500">*</span>
+                            </label>
+                            <input
+                              type="tel"
+                              required
+                              placeholder="e.g. 9862011223"
+                              value={whatsappNo}
+                              onChange={(e) => setWhatsappNo(e.target.value)}
+                              className="w-full px-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+
                       <div className="space-y-1">
                         <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
-                          WhatsApp Number<span className="text-red-500">*</span>
+                          Complete Shipping Address<span className="text-red-500">*</span>
                         </label>
-                        <input
-                          type="tel"
-                          required
-                          placeholder="e.g. 9862011223"
-                          value={whatsappNo}
-                          onChange={(e) => setWhatsappNo(e.target.value)}
-                          className="w-full px-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
-                        />
+                        <div className="relative">
+                          <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
+                          <textarea
+                            required
+                            rows={3}
+                            placeholder="House / Flat No., Colony / Leikai, Landmark, City, State"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
                       </div>
-                    )}
-                  </div>
 
-                  <div className="space-y-1">
-                    <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
-                      Complete Shipping Address<span className="text-red-500">*</span>
-                    </label>
-                    <div className="relative">
-                      <MapPin className="w-4 h-4 text-gray-400 absolute left-3 top-3" />
-                      <textarea
-                        required
-                        rows={3}
-                        placeholder="House / Flat No., Colony / Leikai, Landmark, City, State"
-                        value={address}
-                        onChange={(e) => setAddress(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
-                      />
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1">
+                          <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
+                            Pincode<span className="text-red-500">*</span>
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            placeholder="e.g. 795001"
+                            value={pincode}
+                            onChange={(e) => setPincode(e.target.value)}
+                            className="w-full px-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none font-mono"
+                          />
+                        </div>
+
+                        <div className="flex items-end">
+                          <label className="flex items-center gap-2 text-xs font-bold text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200 cursor-pointer w-full">
+                            <input
+                              type="checkbox"
+                              checked={saveNewAddressToProfile}
+                              onChange={(e) => setSaveNewAddressToProfile(e.target.checked)}
+                              className="rounded text-emerald-600 focus:ring-emerald-500"
+                            />
+                            <span>Save to my Saved Delivery Addresses</span>
+                          </label>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="w-full sm:w-1/2 space-y-1">
-                    <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
-                      Pincode<span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 795001"
-                      value={pincode}
-                      onChange={(e) => setPincode(e.target.value)}
-                      className="w-full px-3 py-2.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-semibold text-[#0f172a] focus:border-[#d97706] focus:outline-none font-mono"
-                    />
-                  </div>
+                  )}
                 </div>
 
                 {/* 2. UPI PAYMENT STEP CARD */}
@@ -413,40 +582,56 @@ export default function CheckoutPage() {
                     </span>
                   </div>
 
-                  {/* UPI Box */}
-                  <div className="p-5 rounded-2xl bg-[#0b132b] text-white border-2 border-[#b45309] space-y-4">
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                      <div>
-                        <span className="text-[11px] text-[#fbbf24] font-extrabold uppercase tracking-widest block">Official Merchant UPI</span>
-                        <div className="flex items-center gap-2 mt-1">
-                          <code className="text-xl font-mono font-black text-white bg-[#1c2541] px-3 py-1 rounded-xl border border-[#3a506b]">
-                            kangleiastro@upi
-                          </code>
-                          <button
-                            type="button"
-                            onClick={handleCopyUpi}
-                            className="p-2 rounded-xl bg-[#d97706] text-white hover:bg-[#b45309] transition-colors cursor-pointer"
-                            title="Copy UPI ID"
-                          >
-                            {copiedUpi ? <Check className="w-4 h-4 text-green-300" /> : <Copy className="w-4 h-4" />}
-                          </button>
+                  {/* UPI Box Matching Reference Theme with QR Code on Right */}
+                  <div className="p-6 rounded-3xl bg-gradient-to-br from-[#0b132b] via-[#1c2541] to-[#0b132b] text-white border-2 border-[#b45309] space-y-5 shadow-2xl relative overflow-hidden">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                      {/* Left: Merchant UPI & Total Payable */}
+                      <div className="flex-1 space-y-4 text-center md:text-left w-full">
+                        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#3a506b]/60 pb-3">
+                          <span className="text-[11px] text-[#fbbf24] font-extrabold uppercase tracking-widest block">OFFICIAL MERCHANT UPI</span>
+                          <div>
+                            <span className="text-[10px] text-slate-400 font-medium block">Total Payable Amount:</span>
+                            <span className="text-2xl sm:text-3xl font-black text-[#fbbf24] font-mono">₹{finalTotal}</span>
+                          </div>
                         </div>
-                        {copiedUpi && <span className="text-[10px] text-green-400 font-bold block mt-1">UPI ID Copied!</span>}
+
+                        <div className="space-y-1.5">
+                          <div className="flex items-center gap-2 justify-center md:justify-start">
+                            <code className="text-lg sm:text-xl font-mono font-black text-white bg-[#0f172a] px-4 py-2 rounded-2xl border border-[#d97706] tracking-wide shadow-inner">
+                              kuthiyengpham@upi
+                            </code>
+                            <button
+                              type="button"
+                              onClick={handleCopyUpi}
+                              className="p-2.5 rounded-2xl bg-[#d97706] hover:bg-[#b45309] text-white transition-all shadow-md cursor-pointer"
+                              title="Copy Merchant UPI ID"
+                            >
+                              {copiedUpi ? <Check className="w-5 h-5 text-green-300" /> : <Copy className="w-5 h-5" />}
+                            </button>
+                          </div>
+                          {copiedUpi && <span className="text-[11px] text-green-400 font-bold block">✓ Merchant UPI ID Copied!</span>}
+                        </div>
+
+                        <p className="text-xs text-slate-300 leading-relaxed">
+                          Pay via <strong>GPay, PhonePe, Paytm, or BHIM UPI</strong> app to the ID above or scan the QR Code on the right. After successful payment, enter your 12-Digit Reference (UTR) number below.
+                        </p>
                       </div>
 
-                      <div className="text-center sm:text-right">
-                        <span className="text-[10px] text-slate-400 font-medium block">Total Payable Amount:</span>
-                        <span className="text-2xl font-black text-[#fbbf24] font-mono">₹{finalTotal}</span>
+                      {/* Right: Payment QR Code Card */}
+                      <div className="shrink-0 bg-white p-3.5 rounded-2xl border-2 border-[#fbbf24] shadow-2xl text-center space-y-1.5 w-40">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=kuthiyengpham@upi&pn=KuthiYengpham%20Services&am=${finalTotal}`}
+                          alt="KuthiYengpham Merchant Payment QR Code"
+                          className="w-32 h-32 object-contain mx-auto rounded-lg"
+                        />
+                        <span className="text-[10px] font-mono font-black text-[#0f172a] block">SCAN TO PAY ₹{finalTotal}</span>
+                        <span className="text-[9px] font-bold text-[#b45309] block uppercase tracking-wider">All UPI Apps Supported</span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-slate-300 leading-relaxed pt-2 border-t border-[#3a506b]/60">
-                      Pay via <strong>GPay, PhonePe, Paytm, or BHIM UPI</strong> app to the address above. After successful payment, enter your 12-Digit Reference (UTR) number below.
-                    </p>
-
-                    <div className="space-y-1 pt-1">
+                    <div className="space-y-1.5 pt-3 border-t border-[#3a506b]/60">
                       <label className="block text-xs font-bold text-[#fbbf24] uppercase tracking-wider">
-                        12-Digit UPI Transaction Reference Number (UTR)<span className="text-red-400">*</span>
+                        12-DIGIT UPI TRANSACTION REFERENCE NUMBER (UTR)*
                       </label>
                       <input
                         type="text"
@@ -454,7 +639,7 @@ export default function CheckoutPage() {
                         placeholder="e.g. 429810998120"
                         value={utr}
                         onChange={(e) => setUtr(e.target.value)}
-                        className="w-full h-11 px-4 rounded-xl border-2 border-[#d97706] bg-[#1c2541] text-[#fbbf24] font-mono font-black text-sm tracking-wider focus:outline-none"
+                        className="w-full h-12 px-4 rounded-xl border-2 border-[#d97706] bg-[#0f172a] text-[#fbbf24] font-mono font-black text-sm tracking-wider focus:outline-none focus:border-[#fbbf24]"
                       />
                     </div>
                   </div>

@@ -1,1 +1,38 @@
-[]
+[
+  {
+    "id": "order-s1788453508828",
+    "utr": "123456123456",
+    "items": [
+      {
+        "id": "AG-YSAPH-CEYLON-002",
+        "image": "https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=800&auto=format&fit=crop",
+        "price": 68000,
+        "title": "Certified Ceylon Yellow Sapphire (Pukhraj) - 5.50 Ratti",
+        "quantity": 1,
+        "sellerId": "platform-admin",
+        "productId": "AG-YSAPH-CEYLON-002",
+        "sellerName": "KangleiAstro Store",
+        "sellerType": "PLATFORM",
+        "originalPrice": 82000,
+        "astroPayoutAmount": 68000,
+        "adminCommissionPct": 0,
+        "adminCommissionAmount": 0
+      }
+    ],
+    "mobile": "+91 98620 12345",
+    "status": "PAYMENT_PENDING",
+    "address": "Uripok, Imphal West, Manipur, 795001",
+    "pincode": "795001",
+    "orderRef": "ESTORE-2026-447",
+    "buyerName": "Nganba",
+    "orderedAt": "Just Now",
+    "couponCode": "",
+    "whatsappNo": "+91 98620 12345",
+    "shippingFee": 0,
+    "totalAmount": 68000,
+    "paymentStatus": "PAYMENT_NOT_RECEIVED",
+    "adminConfirmed": false,
+    "discountAmount": 0,
+    "subtotalAmount": 68000
+  }
+]

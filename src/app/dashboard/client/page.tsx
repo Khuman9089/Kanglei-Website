@@ -6,7 +6,8 @@ import { motion } from 'framer-motion';
 import { 
   LogOut, FileText, Clock, Download, MapPin, Phone, Mail, 
   Calendar, CreditCard, Plus, Eye, ChevronRight, UserCircle,
-  Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, Star, KeyRound
+  Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, Star, KeyRound,
+  Truck, Ban, Printer, MessageSquare, AlertTriangle, ShieldCheck, Image as ImageIcon, Video
 } from 'lucide-react';
 
 interface KuthiOrder {
@@ -26,6 +27,7 @@ interface KuthiOrder {
   amount: number;
   serviceType: string;
   status: 'PENDING' | 'ASSIGNED' | 'IN_ANALYSIS' | 'REPORT_RECEIVED' | 'COMPLETED';
+  paymentStatus?: 'PAYMENT_RECEIVED' | 'PAYMENT_NOT_RECEIVED' | 'VERIFICATION_PENDING';
   assignedAstrologerId?: string;
   assignedAstrologerName?: string;
   reportReceivedFromAstro?: boolean;
@@ -37,23 +39,102 @@ interface KuthiOrder {
 }
 
 const MOCK_USER = {
-  name: "Client User",
-  email: "client@kangleiastro.com",
-  phone: "+91 98620 99881",
-  whatsapp: "+91 98620 99881",
-  sex: "Client",
-  address: "Imphal West, Manipur, 795001",
+  name: "Nganba Meitei",
+  email: "abc@gmail.com",
+  phone: "+91 90123 45678",
+  whatsapp: "+91 90123 45678",
+  sex: "Male",
+  address: "Uripok, Imphal West, Manipur, 795001",
+  deliveryAddress: "Uripok, Imphal West, Manipur, 795001",
+  sameAsResident: true,
+  deliveryAddresses: [
+    "Uripok Tourangbam Leikai, Imphal West, Manipur - 795001",
+  ],
   memberSince: "2026"
 };
+
+interface ShopOrderItem {
+  productId: string;
+  title: string;
+  price: number;
+  quantity: number;
+  image?: string;
+  sellerName?: string;
+}
+
+interface ShopOrder {
+  id: string;
+  orderRef: string;
+  buyerName: string;
+  mobile: string;
+  address: string;
+  pincode: string;
+  items: ShopOrderItem[];
+  totalAmount: number;
+  utr: string;
+  status: 'PAYMENT_PENDING' | 'PAID' | 'ENERGIZING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
+  paymentStatus?: 'PAYMENT_RECEIVED' | 'PAYMENT_NOT_RECEIVED' | 'VERIFICATION_PENDING';
+  orderedAt: string;
+  courierPartner?: string;
+  trackingNumber?: string;
+  cancelReason?: string;
+  cancelledAt?: string;
+}
+
+const DEFAULT_SHOP_ORDERS: ShopOrder[] = [
+  {
+    id: "shop-order-101",
+    orderRef: "ESTORE-2026-981",
+    buyerName: "Nganba Meitei",
+    mobile: "+91 90123 45678",
+    address: "Uripok Tourangbam Leikai, Imphal West, Manipur - 795001",
+    pincode: "795001",
+    items: [
+      {
+        productId: "prod-1",
+        title: "Natural Ceylon Yellow Sapphire (Pukhraj) 5.25 Ratti",
+        price: 6999,
+        quantity: 1,
+        image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop",
+        sellerName: "Acharya Tombi Sharma",
+      }
+    ],
+    totalAmount: 6999,
+    utr: "928371049281",
+    status: "ENERGIZING",
+    orderedAt: "01 Mar 2026",
+    courierPartner: "BlueDart Express",
+    trackingNumber: "BD-89210492IN",
+  },
+  {
+    id: "shop-order-102",
+    orderRef: "ESTORE-2026-412",
+    buyerName: "Nganba Meitei",
+    mobile: "+91 90123 45678",
+    address: "Uripok, Imphal West, Manipur - 795001",
+    pincode: "795001",
+    items: [
+      {
+        productId: "prod-5",
+        title: "Natural 5 Mukhi Nepal Rudraksha Mala (108+1 Beads)",
+        price: 999,
+        quantity: 1,
+        image: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop",
+        sellerName: "KangleiAstro Store",
+      }
+    ],
+    totalAmount: 999,
+    utr: "881029481029",
+    status: "DELIVERED",
+    orderedAt: "24 Feb 2026",
+    courierPartner: "Delhivery Surface",
+    trackingNumber: "DEL-481920492",
+  }
+];
 
 const KUNDLI_PROFILES = [
   { name: "Nganba Meitei", dob: "15 May 1995", tob: "10:30 AM", place: "Imphal West, Manipur" },
   { name: "Thoibi Ningthoujam", dob: "12 Apr 1996", tob: "08:30 AM", place: "Imphal East, Manipur" },
-];
-
-const DEFAULT_REPORTS = [
-  { name: "30-Page Vedic Kundli Report (Nganba)", date: "15 Jan 2026", type: "PDF", url: "/sample_kuthi_report.pdf" },
-  { name: "Marriage Ashtakoot Compatibility Report", date: "20 Feb 2026", type: "PDF", url: "/sample_kuthi_report.pdf" },
 ];
 
 const getStatusBadge = (status: string) => {
@@ -77,6 +158,24 @@ export default function ClientDashboard() {
   const [showEditProfileModal, setShowEditProfileModal] = useState(false);
   const [editForm, setEditForm] = useState(MOCK_USER);
   const [profileMsg, setProfileMsg] = useState('');
+  const [newDeliveryAddrInput, setNewDeliveryAddrInput] = useState('');
+  const [showNewAddrInput, setShowNewAddrInput] = useState(false);
+
+  // Dashboard Tabs & E-Store Orders State
+  const [activeDashTab, setActiveDashTab] = useState<'consultations' | 'store_orders'>('consultations');
+  const [shopOrders, setShopOrders] = useState<ShopOrder[]>(DEFAULT_SHOP_ORDERS);
+  const [storeFilterStatus, setStoreFilterStatus] = useState<string>('ALL');
+
+  // Cancellation Modal State
+  const [showCancelModal, setShowCancelModal] = useState(false);
+  const [selectedCancelOrder, setSelectedCancelOrder] = useState<ShopOrder | null>(null);
+  const [cancelReason, setCancelReason] = useState('Changed my mind / Ordered by mistake');
+  const [cancelNotes, setCancelNotes] = useState('');
+  const [cancelLoading, setCancelLoading] = useState(false);
+
+  // Invoice Receipt Modal State
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [selectedInvoiceOrder, setSelectedInvoiceOrder] = useState<ShopOrder | null>(null);
 
   // Password Change Modal State
   const [showClientPwdModal, setShowClientPwdModal] = useState(false);
@@ -232,6 +331,52 @@ export default function ClientDashboard() {
       });
   }, []);
 
+  // Fetch live store orders from /api/shop
+  useEffect(() => {
+    fetch('/api/shop')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
+          setShopOrders(data.orders);
+        }
+      })
+      .catch((err) => console.error('Error fetching shop orders:', err));
+  }, []);
+
+  const handleCancelOrderSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedCancelOrder) return;
+
+    setCancelLoading(true);
+    try {
+      const res = await fetch('/api/shop', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CANCEL_ORDER',
+          id: selectedCancelOrder.id,
+          reason: `${cancelReason}${cancelNotes ? ` - ${cancelNotes}` : ''}`,
+        }),
+      });
+      const data = await res.json();
+      setCancelLoading(false);
+
+      if (data.success) {
+        setShopOrders((prev) =>
+          prev.map((o) =>
+            o.id === selectedCancelOrder.id
+              ? { ...o, status: 'CANCELLED', cancelReason: `${cancelReason}${cancelNotes ? ` - ${cancelNotes}` : ''}` }
+              : o
+          )
+        );
+        setShowCancelModal(false);
+        setSelectedCancelOrder(null);
+      }
+    } catch (err) {
+      setCancelLoading(false);
+    }
+  };
+
   const completedCount = orders.filter(o => o.status === 'COMPLETED' || o.status === 'REPORT_RECEIVED' || o.reportFileName).length;
   const totalSpent = orders.reduce((acc, o) => acc + (o.amount || 499), 0);
 
@@ -252,10 +397,10 @@ export default function ClientDashboard() {
             <h1 className="text-3xl md:text-4xl font-serif font-bold text-[#b45309]">My Dashboard</h1>
             <p className="text-gray-600 mt-1">Welcome back, {userProfile.name || 'Client'}</p>
           </div>
-          <div className="flex gap-3">
-            <Link href="/booking" className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b] text-white font-medium rounded-lg hover:shadow-lg transition-all transform hover:-translate-y-0.5">
-              <Plus className="w-5 h-5" />
-              Book Consultation
+          <div className="flex flex-wrap gap-3">
+            <Link href="/profile" className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-100 hover:bg-amber-200 text-[#b45309] font-extrabold text-xs sm:text-sm rounded-xl transition-all shadow-xs">
+              <UserCircle className="w-4 h-4 text-[#d97706]" />
+              My Profile
             </Link>
             <button
               onClick={() => setShowWriteReviewModal(true)}
@@ -295,149 +440,476 @@ export default function ClientDashboard() {
           ))}
         </div>
 
+        {/* Dashboard Section Switcher Tabs */}
+        <div className="flex border-b border-[#f3e8d2] mb-6 gap-2">
+          <button
+            onClick={() => setActiveDashTab('consultations')}
+            className={`px-5 py-3 font-extrabold text-xs sm:text-sm border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeDashTab === 'consultations'
+                ? 'border-[#d97706] text-[#b45309] bg-[#fef3c7]/50 rounded-t-2xl'
+                : 'border-transparent text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            <Clock className="w-4 h-4 text-[#d97706]" />
+            <span>Consultation Orders & Reports ({orders.length})</span>
+          </button>
+
+          <button
+            onClick={() => setActiveDashTab('store_orders')}
+            className={`px-5 py-3 font-extrabold text-xs sm:text-sm border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeDashTab === 'store_orders'
+                ? 'border-[#d97706] text-[#b45309] bg-[#fef3c7]/50 rounded-t-2xl'
+                : 'border-transparent text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            <ShoppingBag className="w-4 h-4 text-[#d97706]" />
+            <span>E-Store Orders & Item Deliveries ({shopOrders.length})</span>
+          </button>
+        </div>
+
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Area */}
           <div className="w-full lg:w-2/3 space-y-8">
             
-            {/* Consultation Orders Table with Report Download Buttons */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-white rounded-2xl border border-[#f3e8d2] shadow-sm overflow-hidden relative"
-            >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
-              <div className="p-6 border-b border-[#f3e8d2] flex justify-between items-center">
-                <h2 className="text-xl font-serif font-bold flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-[#d97706]" />
-                  My Consultation Orders & Uploaded Reports
-                </h2>
-              </div>
+            {/* ================= TAB 1: CONSULTATION ORDERS ================= */}
+            {activeDashTab === 'consultations' && (
+              <>
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 }}
+                  className="bg-white rounded-2xl border border-[#f3e8d2] shadow-sm overflow-hidden relative"
+                >
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+                  <div className="p-6 border-b border-[#f3e8d2] flex justify-between items-center">
+                    <h2 className="text-xl font-serif font-bold flex items-center gap-2">
+                      <Clock className="w-5 h-5 text-[#d97706]" />
+                      My Consultation Orders & Uploaded Reports
+                    </h2>
+                  </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-amber-50/50 border-b border-[#f3e8d2]">
-                      <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Order Ref</th>
-                      <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Service Type</th>
-                      <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Assigned Guru</th>
-                      <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
-                      <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider text-right">Actions / Report</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#f3e8d2]">
-                    {orders.map((order) => {
-                      const isReady = order.status === 'COMPLETED' || order.status === 'REPORT_RECEIVED' || order.reportFileName;
-                      return (
-                        <tr key={order.id} className="hover:bg-amber-50/20 transition-colors">
-                          <td className="p-4 text-sm font-mono font-bold text-[#b45309] whitespace-nowrap">{order.orderRef}</td>
-                          <td className="p-4 text-sm text-gray-900 font-medium">{order.serviceType || 'Kuthi Yengba Consultation'}</td>
-                          <td className="p-4 text-sm text-gray-600 font-medium">
-                            {order.assignedAstrologerName || 'Master Vedic Astrologer'}
-                          </td>
-                          <td className="p-4 whitespace-nowrap">{getStatusBadge(order.status)}</td>
-                          <td className="p-4 text-right whitespace-nowrap">
-                            {isReady ? (
-                              <div className="flex justify-end gap-2">
-                                <button
-                                  onClick={() => setSelectedReportOrder(order)}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-[#b45309] rounded-lg text-xs font-bold transition-colors"
-                                >
-                                  <Eye className="w-3.5 h-3.5" /> View
-                                </button>
-                                <a
-                                  href={order.reportFileUrl || '/sample_kuthi_report.pdf'}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  download
-                                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-xs font-extrabold shadow-sm transition-all"
-                                >
-                                  <Download className="w-3.5 h-3.5" /> Download Report
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="bg-amber-50/50 border-b border-[#f3e8d2]">
+                          <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Order Ref</th>
+                          <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Service Type</th>
+                          <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Assigned Guru</th>
+                          <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider">Status</th>
+                          <th className="p-4 text-xs font-bold text-gray-700 uppercase tracking-wider text-right">Actions / Report</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-[#f3e8d2]">
+                        {orders.map((order) => {
+                          const isReady = order.status === 'COMPLETED' || order.status === 'REPORT_RECEIVED' || order.reportFileName;
+                          return (
+                            <tr key={order.id} className="hover:bg-amber-50/20 transition-colors">
+                              <td className="p-4 text-sm font-mono font-bold text-[#b45309] whitespace-nowrap">{order.orderRef}</td>
+                              <td className="p-4 text-sm text-gray-900 font-medium">{order.serviceType || 'Kuthi Yengba Consultation'}</td>
+                              <td className="p-4 text-sm text-gray-600 font-medium">
+                                {order.assignedAstrologerName || 'Master Vedic Astrologer'}
+                              </td>
+                              <td className="p-4 whitespace-nowrap space-y-1">
+                                <div>{getStatusBadge(order.status)}</div>
+                                <div>
+                                  {order.paymentStatus === 'PAYMENT_RECEIVED' ? (
+                                    <span className="text-[10px] font-extrabold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 block">
+                                      🟢 Payment Received & Verified
+                                    </span>
+                                  ) : order.paymentStatus === 'PAYMENT_NOT_RECEIVED' ? (
+                                    <span className="text-[10px] font-extrabold text-red-800 bg-red-100 px-2 py-0.5 rounded border border-red-200 block">
+                                      🔴 Payment Not Received (Failed)
+                                    </span>
+                                  ) : (
+                                    <span className="text-[10px] font-extrabold text-amber-900 bg-amber-100 px-2 py-0.5 rounded border border-amber-300 block animate-pulse">
+                                      🟡 Verifying UTR Transaction...
+                                    </span>
+                                  )}
+                                </div>
+                              </td>
+                              <td className="p-4 text-right whitespace-nowrap">
+                                {isReady ? (
+                                  <div className="flex justify-end gap-2">
+                                    <button
+                                      onClick={() => setSelectedReportOrder(order)}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-100 hover:bg-amber-200 text-[#b45309] rounded-lg text-xs font-bold transition-colors"
+                                    >
+                                      <Eye className="w-3.5 h-3.5" /> View
+                                    </button>
+                                    <a
+                                      href={order.reportFileUrl || '/sample_kuthi_report.pdf'}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      download
+                                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white rounded-lg text-xs font-extrabold shadow-sm transition-all"
+                                    >
+                                      <Download className="w-3.5 h-3.5" /> Download Report
+                                    </a>
+                                  </div>
+                                ) : (
+                                  <span className="text-xs text-gray-400 italic">Report under preparation</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </motion.div>
+
+                {/* Purchased Reports Section */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-white rounded-2xl border border-[#f3e8d2] shadow-sm relative overflow-hidden"
+                >
+                  <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+                  <div className="p-6 border-b border-[#f3e8d2] flex justify-between items-center">
+                    <h2 className="text-xl font-serif font-bold flex items-center gap-2">
+                      <FileDown className="w-5 h-5 text-[#d97706]" />
+                      My Downloadable Astrological Reports
+                    </h2>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
+                      PDF Download Available
+                    </span>
+                  </div>
+                  <div className="p-6 space-y-4">
+                    {(() => {
+                      const guruReports = orders.filter(o => o.status === 'COMPLETED' || o.status === 'REPORT_RECEIVED' || o.reportFileName);
+                      if (guruReports.length === 0) {
+                        return (
+                          <div className="text-center py-8 px-4 border-2 border-dashed border-[#f3e8d2] rounded-2xl bg-amber-50/20">
+                            <FileText className="w-10 h-10 text-[#d97706]/50 mx-auto mb-2" />
+                            <h4 className="font-serif font-bold text-sm text-[#0f172a]">No Astrologer Reports Uploaded Yet</h4>
+                            <p className="text-xs text-gray-500 max-w-md mx-auto mt-1">
+                              Once your assigned Master Astrologer or Guru completes your consultation and uploads your PDF report, JPEG chart scan, or Video reading, it will appear here for instant viewing & download.
+                            </p>
+                          </div>
+                        );
+                      }
+
+                      return guruReports.map((order) => {
+                        const fileStr = ((order.reportFileName || '') + (order.reportFileUrl || '')).toLowerCase();
+                        const isVideo = fileStr.match(/\.(mp4|webm|mov|m4v|avi)$/) || fileStr.includes('video') || fileStr.includes('recording');
+                        const isImage = fileStr.match(/\.(jpg|jpeg|png|webp|gif)$/) || fileStr.includes('image') || fileStr.includes('photo') || fileStr.includes('chart') || fileStr.includes('scan');
+
+                        const formatBadge = isVideo ? (
+                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-md bg-blue-100 text-blue-800 border border-blue-200 uppercase tracking-wider inline-flex items-center gap-1">
+                            <Video className="w-3 h-3" /> Video Reading
+                          </span>
+                        ) : isImage ? (
+                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-md bg-purple-100 text-purple-800 border border-purple-200 uppercase tracking-wider inline-flex items-center gap-1">
+                            <ImageIcon className="w-3 h-3" /> JPEG / Image Chart
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-md bg-emerald-100 text-emerald-800 border border-emerald-200 uppercase tracking-wider inline-flex items-center gap-1">
+                            <FileText className="w-3 h-3" /> PDF Document
+                          </span>
+                        );
+
+                        const btnGradient = isVideo
+                          ? 'from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500'
+                          : isImage
+                          ? 'from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500'
+                          : 'from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500';
+
+                        const btnText = isVideo ? 'Play / Download Video' : isImage ? 'View / Download Image' : 'Download PDF';
+                        const fileUrl = order.reportFileUrl || '/sample_kuthi_report.pdf';
+
+                        return (
+                          <div key={order.id} className="p-4 border border-[#f3e8d2] rounded-2xl bg-white hover:bg-amber-50/20 transition-all space-y-3">
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                              <div className="flex items-start gap-3.5">
+                                <div className={`w-12 h-12 shrink-0 rounded-2xl flex items-center justify-center ${
+                                  isVideo ? 'bg-blue-100 text-blue-700' : isImage ? 'bg-purple-100 text-purple-700' : 'bg-emerald-100 text-emerald-700'
+                                }`}>
+                                  {isVideo ? <Video className="w-6 h-6" /> : isImage ? <ImageIcon className="w-6 h-6" /> : <FileText className="w-6 h-6" />}
+                                </div>
+                                <div>
+                                  <div className="flex items-center gap-2 flex-wrap">
+                                    <h3 className="font-bold text-gray-900 text-sm">{order.reportFileName || `${order.serviceType} Report (${order.clientName})`}</h3>
+                                    {formatBadge}
+                                  </div>
+                                  <p className="text-xs text-gray-500 mt-0.5">
+                                    Uploaded by Guru: <strong className="text-gray-700">{order.reportUploadedBy || order.assignedAstrologerName || 'Acharya Tombi Sharma'}</strong> • Order {order.orderRef}
+                                  </p>
+                                  {order.reportNotes && (
+                                    <p className="text-xs text-gray-600 italic mt-1.5 bg-[#fefcf6] p-2.5 rounded-xl border border-[#f3e8d2]">
+                                      &ldquo;{order.reportNotes}&rdquo;
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+
+                              <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                download
+                                className={`shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r ${btnGradient} text-white text-xs font-extrabold rounded-xl transition-all shadow-xs`}
+                              >
+                                <Download className="w-4 h-4" />
+                                <span>{btnText}</span>
+                              </a>
+                            </div>
+
+                            {/* Embedded Video Player if Video */}
+                            {isVideo && order.reportFileUrl && (
+                              <div className="pt-2 border-t border-gray-100">
+                                <video controls src={order.reportFileUrl} className="w-full max-h-64 rounded-xl bg-black border border-gray-200" />
+                              </div>
+                            )}
+
+                            {/* Embedded Image Preview if Image */}
+                            {isImage && order.reportFileUrl && (
+                              <div className="pt-2 border-t border-gray-100">
+                                <a href={order.reportFileUrl} target="_blank" rel="noopener noreferrer" className="block max-w-xs">
+                                  <img src={order.reportFileUrl} alt="Astrologer Chart Scan" className="w-full h-36 object-cover rounded-xl border border-gray-200 hover:opacity-90 transition-opacity" />
+                                  <span className="text-[10px] text-purple-700 font-bold mt-1 block">Click image to expand full resolution →</span>
                                 </a>
                               </div>
-                            ) : (
-                              <span className="text-xs text-gray-400 italic">Report under preparation</span>
                             )}
-                          </td>
-                        </tr>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </motion.div>
+              </>
+            )}
+
+            {/* ================= TAB 2: E-STORE ORDERS & DELIVERIES ================= */}
+            {activeDashTab === 'store_orders' && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="space-y-6"
+              >
+                {/* Filter Pills */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1 text-xs">
+                  {['ALL', 'ACTIVE', 'DELIVERED', 'CANCELLED'].map((st) => (
+                    <button
+                      key={st}
+                      onClick={() => setStoreFilterStatus(st)}
+                      className={`px-4 py-2 rounded-xl font-bold transition-all cursor-pointer ${
+                        storeFilterStatus === st
+                          ? 'bg-[#d97706] text-white shadow-xs'
+                          : 'bg-white border border-[#f3e8d2] text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      {st === 'ALL' ? 'All E-Store Orders' : st}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Orders List */}
+                <div className="space-y-6">
+                  {shopOrders
+                    .filter((so) => {
+                      if (storeFilterStatus === 'ACTIVE') return so.status === 'PAID' || so.status === 'ENERGIZING' || so.status === 'DISPATCHED';
+                      if (storeFilterStatus === 'DELIVERED') return so.status === 'DELIVERED';
+                      if (storeFilterStatus === 'CANCELLED') return so.status === 'CANCELLED';
+                      return true;
+                    })
+                    .map((sOrder) => {
+                      const isCancelled = sOrder.status === 'CANCELLED';
+                      const isDelivered = sOrder.status === 'DELIVERED';
+                      const isDispatched = sOrder.status === 'DISPATCHED';
+                      const isEnergizing = sOrder.status === 'ENERGIZING';
+
+                      // Progress Tracker Step Number (1 to 4)
+                      let currentStep = 1;
+                      if (isEnergizing) currentStep = 2;
+                      if (isDispatched) currentStep = 3;
+                      if (isDelivered) currentStep = 4;
+
+                      return (
+                        <div
+                          key={sOrder.id}
+                          className="bg-white rounded-3xl border border-[#f3e8d2] shadow-sm p-6 space-y-5 relative overflow-hidden"
+                        >
+                          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+
+                          {/* Top Header Card */}
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#f3e8d2]">
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-mono font-extrabold text-sm text-[#b45309]">
+                                  {sOrder.orderRef}
+                                </span>
+                                <span className="text-xs text-gray-500 font-medium">• Ordered on {sOrder.orderedAt}</span>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2 mt-1">
+                                <span className="text-xs text-gray-600">Payment Ref (UTR): <strong className="font-mono text-gray-800">{sOrder.utr}</strong></span>
+                                <span className="text-gray-300">•</span>
+                                {sOrder.paymentStatus === 'PAYMENT_RECEIVED' ? (
+                                  <span className="px-2.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300 inline-flex items-center gap-1">
+                                    🟢 Payment Received & Verified
+                                  </span>
+                                ) : sOrder.paymentStatus === 'PAYMENT_NOT_RECEIVED' ? (
+                                  <span className="px-2.5 py-0.5 rounded bg-red-100 text-red-800 text-[10px] font-extrabold border border-red-300 inline-flex items-center gap-1">
+                                    🔴 Payment Not Received (Failed)
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-0.5 rounded bg-amber-100 text-amber-900 text-[10px] font-extrabold border border-amber-300 inline-flex items-center gap-1 animate-pulse">
+                                    🟡 Verifying UTR Transaction...
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              {isCancelled ? (
+                                <span className="px-3.5 py-1.5 rounded-full bg-red-100 text-red-800 font-extrabold text-xs flex items-center gap-1.5">
+                                  <Ban className="w-3.5 h-3.5" /> CANCELLED
+                                </span>
+                              ) : isDelivered ? (
+                                <span className="px-3.5 py-1.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-xs flex items-center gap-1.5">
+                                  <CheckCircle2 className="w-3.5 h-3.5" /> DELIVERED
+                                </span>
+                              ) : isDispatched ? (
+                                <span className="px-3.5 py-1.5 rounded-full bg-blue-100 text-blue-800 font-extrabold text-xs flex items-center gap-1.5">
+                                  <Truck className="w-3.5 h-3.5" /> IN TRANSIT / DISPATCHED
+                                </span>
+                              ) : isEnergizing ? (
+                                <span className="px-3.5 py-1.5 rounded-full bg-amber-100 text-amber-900 font-extrabold text-xs flex items-center gap-1.5 animate-pulse">
+                                  <Sparkles className="w-3.5 h-3.5 text-[#d97706]" /> VEDIC CONSECRATION
+                                </span>
+                              ) : (
+                                <span className="px-3.5 py-1.5 rounded-full bg-green-100 text-green-800 font-extrabold text-xs">
+                                  ORDER CONFIRMED
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Progress Step Bar (If not cancelled) */}
+                          {!isCancelled && (
+                            <div className="bg-[#fefcf6] p-4 rounded-2xl border border-[#f3e8d2] space-y-2">
+                              <div className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">
+                                Order Delivery Tracker
+                              </div>
+                              <div className="grid grid-cols-4 gap-2 text-center text-[11px] font-bold">
+                                <div className={`py-2 px-1 rounded-xl ${currentStep >= 1 ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                  1. Order Placed
+                                </div>
+                                <div className={`py-2 px-1 rounded-xl ${currentStep >= 2 ? 'bg-amber-500 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                  2. Consecration
+                                </div>
+                                <div className={`py-2 px-1 rounded-xl ${currentStep >= 3 ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                  3. Dispatched
+                                </div>
+                                <div className={`py-2 px-1 rounded-xl ${currentStep >= 4 ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'}`}>
+                                  4. Delivered
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Cancellation Note if Cancelled */}
+                          {isCancelled && (
+                            <div className="p-3.5 rounded-2xl bg-red-50 border border-red-200 text-red-800 text-xs font-medium flex items-start gap-2">
+                              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                              <div>
+                                <strong className="font-bold block">Order Cancelled</strong>
+                                <span>Reason: {sOrder.cancelReason || 'Requested by customer'}</span>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Items Grid */}
+                          <div className="space-y-3">
+                            {sOrder.items.map((item, idx) => (
+                              <div key={idx} className="flex items-center justify-between p-3.5 rounded-2xl border border-[#f3e8d2] bg-[#fffdfa]">
+                                <div className="flex items-center gap-3.5">
+                                  {item.image && (
+                                    <img src={item.image} alt={item.title} className="w-14 h-14 object-cover rounded-xl border border-gray-200 shrink-0" />
+                                  )}
+                                  <div>
+                                    <h4 className="font-serif font-bold text-sm text-[#0f172a]">{item.title}</h4>
+                                    <p className="text-xs text-gray-500 mt-0.5">
+                                      Qty: <strong className="text-gray-800">{item.quantity}</strong> • Price: <strong className="text-[#b45309]">₹{item.price.toLocaleString()}</strong>
+                                      {item.sellerName && (
+                                        <span className="block text-[11px] text-gray-400 mt-0.5">Provided by: {item.sellerName}</span>
+                                      )}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="font-serif font-bold text-base text-[#0f172a] shrink-0">
+                                  ₹{(item.price * item.quantity).toLocaleString()}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Logistics & Delivery Address */}
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-[#f8fafc] p-3.5 rounded-2xl border border-gray-200">
+                            <div>
+                              <span className="font-bold text-gray-500 uppercase tracking-wider text-[10px] block">Shipping Address</span>
+                              <p className="text-gray-800 font-medium mt-0.5 leading-snug">{sOrder.address}</p>
+                            </div>
+                            <div>
+                              <span className="font-bold text-gray-500 uppercase tracking-wider text-[10px] block">Courier & Logistics Tracking</span>
+                              {sOrder.trackingNumber ? (
+                                <p className="text-gray-800 font-medium mt-0.5">
+                                  {sOrder.courierPartner || 'Express Logistics'} • AWB: <strong className="font-mono text-[#b45309]">{sOrder.trackingNumber}</strong>
+                                </p>
+                              ) : (
+                                <p className="text-gray-500 italic mt-0.5">Tracking details will update once dispatched</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Action Footer Buttons */}
+                          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#f3e8d2]">
+                            <div className="flex items-center gap-2">
+                              {/* Request Cancellation Button */}
+                              {!isCancelled && !isDelivered && (
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setSelectedCancelOrder(sOrder);
+                                    setShowCancelModal(true);
+                                  }}
+                                  className="px-4 py-2.5 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                                >
+                                  <Ban className="w-3.5 h-3.5" />
+                                  <span>Request Cancellation</span>
+                                </button>
+                              )}
+
+                              {/* Download Invoice / Receipt Button */}
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setSelectedInvoiceOrder(sOrder);
+                                  setShowInvoiceModal(true);
+                                }}
+                                className="px-4 py-2.5 rounded-xl border border-[#f3e8d2] bg-gray-50 hover:bg-amber-50 text-gray-800 hover:text-[#b45309] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                              >
+                                <Printer className="w-3.5 h-3.5 text-[#d97706]" />
+                                <span>Download Invoice</span>
+                              </button>
+                            </div>
+
+                            <a
+                              href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hi KangleiAstro Team, I have a question regarding my E-Store Order ${sOrder.orderRef}`)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors shadow-xs"
+                            >
+                              <MessageSquare className="w-3.5 h-3.5" />
+                              <span>Support Help</span>
+                            </a>
+                          </div>
+                        </div>
                       );
                     })}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
-
-            {/* Purchased Reports Section */}
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-2xl border border-[#f3e8d2] shadow-sm relative overflow-hidden"
-            >
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
-              <div className="p-6 border-b border-[#f3e8d2] flex justify-between items-center">
-                <h2 className="text-xl font-serif font-bold flex items-center gap-2">
-                  <FileDown className="w-5 h-5 text-[#d97706]" />
-                  My Downloadable Astrological Reports
-                </h2>
-                <span className="text-xs font-bold text-emerald-700 bg-emerald-100 px-3 py-1 rounded-full">
-                  PDF Download Available
-                </span>
-              </div>
-              <div className="p-6 space-y-4">
-                {/* Dynamically render completed reports from /api/kuthi + default reports */}
-                {orders.filter(o => o.status === 'COMPLETED' || o.status === 'REPORT_RECEIVED' || o.reportFileName).map((order) => (
-                  <div key={order.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-[#f3e8d2] rounded-xl bg-emerald-50/30 hover:bg-emerald-50/60 transition-colors group gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 shrink-0 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <FileText className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-gray-900">{order.reportFileName || `${order.serviceType} Report (${order.clientName})`}</h3>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          Uploaded by: <strong className="text-gray-700">{order.reportUploadedBy || order.assignedAstrologerName || 'Acharya Tombi Sharma'}</strong> • Order {order.orderRef}
-                        </p>
-                        {order.reportNotes && (
-                          <p className="text-xs text-gray-600 italic mt-1 bg-white p-2 rounded-md border border-emerald-100">
-                            &ldquo;{order.reportNotes}&rdquo;
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                    <a
-                      href={order.reportFileUrl || '/sample_kuthi_report.pdf'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="shrink-0 flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white text-xs font-extrabold rounded-lg transition-colors shadow-sm"
-                    >
-                      <Download className="w-4 h-4" /> Download PDF
-                    </a>
-                  </div>
-                ))}
-
-                {DEFAULT_REPORTS.map((report, i) => (
-                  <div key={i} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-[#f3e8d2] rounded-xl hover:bg-[#fffdfa] transition-colors group gap-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 shrink-0 bg-orange-50 text-[#d97706] rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <FileText className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <h3 className="font-medium text-gray-900">{report.name}</h3>
-                        <p className="text-sm text-gray-500">Generated on {report.date} • {report.type}</p>
-                      </div>
-                    </div>
-                    <a
-                      href={report.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center justify-center p-2.5 text-[#d97706] hover:bg-orange-50 rounded-lg transition-colors border border-[#f3e8d2]"
-                    >
-                      <Download className="w-5 h-5" />
-                    </a>
-                  </div>
-                ))}
-              </div>
-            </motion.div>
+                </div>
+              </motion.div>
+            )}
 
           </div>
 
@@ -481,15 +953,13 @@ export default function ClientDashboard() {
               </div>
 
               <div className="space-y-2">
-                <button
-                  onClick={() => {
-                    setEditForm(userProfile);
-                    setShowEditProfileModal(true);
-                  }}
-                  className="w-full py-2.5 bg-amber-50 hover:bg-amber-100 border border-[#f3e8d2] rounded-xl text-xs font-extrabold text-[#b45309] transition-colors shadow-xs cursor-pointer"
+                <Link
+                  href="/profile"
+                  className="w-full py-2.5 bg-gradient-to-r from-[#b45309] to-[#d97706] text-white hover:opacity-95 rounded-xl text-xs font-extrabold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
                 >
-                  Edit Contact Details & Profile
-                </button>
+                  <UserCircle className="w-4 h-4" />
+                  <span>Manage Profile & Delivery Addresses →</span>
+                </Link>
                 <button
                   onClick={() => setShowClientPwdModal(true)}
                   className="w-full py-2.5 bg-gray-50 hover:bg-amber-50 border border-[#f3e8d2] rounded-xl text-xs font-bold text-gray-700 hover:text-[#b45309] transition-colors cursor-pointer flex items-center justify-center gap-1.5"
@@ -605,14 +1075,14 @@ export default function ClientDashboard() {
       {showEditProfileModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-xs" onClick={() => setShowEditProfileModal(false)} />
-          <div className="relative w-full max-w-md bg-white rounded-3xl border border-[#f3e8d2] shadow-2xl p-6 space-y-4 z-10 text-xs text-[#0f172a]">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl border border-[#f3e8d2] shadow-2xl p-6 space-y-4 z-10 text-xs text-[#0f172a] max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center pb-3 border-b border-[#f3e8d2]">
               <div>
                 <h3 className="font-serif font-bold text-lg text-[#b45309] flex items-center gap-2">
                   <UserCircle className="w-5 h-5 text-[#d97706]" />
                   Edit Profile & Contact Details
                 </h3>
-                <p className="text-gray-500 text-[11px]">Update your name, mobile, email, and delivery address</p>
+                <p className="text-gray-500 text-[11px]">Update your name, mobile, email, residential & delivery address</p>
               </div>
               <button onClick={() => setShowEditProfileModal(false)} className="text-gray-400 hover:text-gray-700 p-1 cursor-pointer">
                 <X className="w-5 h-5" />
@@ -625,7 +1095,7 @@ export default function ClientDashboard() {
               </div>
             )}
 
-            <form onSubmit={handleSaveProfile} className="space-y-3 font-sans">
+            <form onSubmit={handleSaveProfile} className="space-y-3.5 font-sans">
               <div>
                 <label className="block text-gray-700 font-bold mb-1 uppercase tracking-wider text-[10px]">
                   Full Name<span className="text-red-500">*</span>
@@ -633,7 +1103,7 @@ export default function ClientDashboard() {
                 <input
                   type="text"
                   required
-                  value={editForm.name}
+                  value={editForm.name || ''}
                   onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
                   className="w-full p-2.5 rounded-xl border border-[#f3e8d2] bg-[#fffdfa] text-gray-900 font-semibold focus:border-[#d97706] focus:outline-none"
                 />
@@ -646,7 +1116,7 @@ export default function ClientDashboard() {
                 <input
                   type="email"
                   required
-                  value={editForm.email}
+                  value={editForm.email || ''}
                   onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
                   className="w-full p-2.5 rounded-xl border border-[#f3e8d2] bg-[#fffdfa] text-gray-900 font-semibold focus:border-[#d97706] focus:outline-none"
                 />
@@ -660,7 +1130,7 @@ export default function ClientDashboard() {
                   <input
                     type="text"
                     required
-                    value={editForm.phone}
+                    value={editForm.phone || ''}
                     onChange={(e) => setEditForm({ ...editForm, phone: e.target.value, whatsapp: e.target.value })}
                     className="w-full p-2.5 rounded-xl border border-[#f3e8d2] bg-[#fffdfa] text-gray-900 font-semibold focus:border-[#d97706] focus:outline-none"
                   />
@@ -670,7 +1140,7 @@ export default function ClientDashboard() {
                     Gender / Sex
                   </label>
                   <select
-                    value={editForm.sex}
+                    value={editForm.sex || 'Male'}
                     onChange={(e) => setEditForm({ ...editForm, sex: e.target.value })}
                     className="w-full p-2.5 rounded-xl border border-[#f3e8d2] bg-[#fffdfa] text-gray-900 font-semibold focus:border-[#d97706] focus:outline-none"
                   >
@@ -681,16 +1151,121 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
+              {/* Residential Address */}
               <div>
                 <label className="block text-gray-700 font-bold mb-1 uppercase tracking-wider text-[10px]">
-                  Residential / Delivery Address
+                  Residential Address<span className="text-red-500">*</span>
                 </label>
                 <textarea
                   rows={2}
-                  value={editForm.address}
+                  required
+                  value={editForm.address || ''}
                   onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
                   className="w-full p-2.5 rounded-xl border border-[#f3e8d2] bg-[#fffdfa] text-gray-900 font-medium focus:border-[#d97706] focus:outline-none"
+                  placeholder="Enter street, city, state & pincode"
                 />
+              </div>
+
+              {/* Delivery Address Toggle */}
+              <div className="pt-1">
+                <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={editForm.sameAsResident !== false}
+                    onChange={(e) => setEditForm({ ...editForm, sameAsResident: e.target.checked })}
+                    className="rounded text-[#d97706] focus:ring-[#d97706] cursor-pointer"
+                  />
+                  <span>Delivery address same as residential address</span>
+                </label>
+              </div>
+
+              {/* Separate Primary Delivery Address (if sameAsResident is false) */}
+              {editForm.sameAsResident === false && (
+                <div className="animate-fadeIn">
+                  <label className="block text-gray-700 font-bold mb-1 uppercase tracking-wider text-[10px]">
+                    Primary Delivery Address<span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    rows={2}
+                    required={editForm.sameAsResident === false}
+                    value={editForm.deliveryAddress || ''}
+                    onChange={(e) => setEditForm({ ...editForm, deliveryAddress: e.target.value })}
+                    className="w-full p-2.5 rounded-xl border border-[#f3e8d2] bg-[#fffdfa] text-gray-900 font-medium focus:border-[#d97706] focus:outline-none"
+                    placeholder="Enter separate shipping / delivery address"
+                  />
+                </div>
+              )}
+
+              {/* Multiple Delivery Addresses List & Add More Option */}
+              <div className="pt-2 border-t border-[#f3e8d2] space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="block text-gray-700 font-bold uppercase tracking-wider text-[10px]">
+                    Saved Delivery Addresses ({editForm.deliveryAddresses?.length || 0})
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setShowNewAddrInput(!showNewAddrInput)}
+                    className="text-xs font-bold text-[#b45309] hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add More Delivery Address</span>
+                  </button>
+                </div>
+
+                {/* Saved list */}
+                {editForm.deliveryAddresses && editForm.deliveryAddresses.length > 0 && (
+                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                    {editForm.deliveryAddresses.map((addr: string, idx: number) => (
+                      <div key={idx} className="flex items-start justify-between gap-2 p-2.5 rounded-xl bg-amber-50/50 border border-amber-100 text-xs">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="w-3.5 h-3.5 text-[#d97706] mt-0.5 shrink-0" />
+                          <span className="text-gray-800 font-medium leading-snug">{addr}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = editForm.deliveryAddresses.filter((_: any, i: number) => i !== idx);
+                            setEditForm({ ...editForm, deliveryAddresses: updated });
+                          }}
+                          className="text-red-500 hover:text-red-700 p-1 cursor-pointer shrink-0"
+                          title="Remove Address"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add New Delivery Address Field */}
+                {showNewAddrInput && (
+                  <div className="flex items-center gap-2 pt-1 animate-fadeIn">
+                    <input
+                      type="text"
+                      placeholder="e.g. Office: Plot 12, MG Road, Imphal West - 795001"
+                      value={newDeliveryAddrInput}
+                      onChange={(e) => setNewDeliveryAddrInput(e.target.value)}
+                      className="flex-1 p-2 rounded-xl border border-[#f3e8d2] bg-white text-xs font-medium focus:border-[#d97706] focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (newDeliveryAddrInput.trim()) {
+                          const existing = editForm.deliveryAddresses || [];
+                          setEditForm({
+                            ...editForm,
+                            deliveryAddresses: [...existing, newDeliveryAddrInput.trim()],
+                          });
+                          setNewDeliveryAddrInput('');
+                          setShowNewAddrInput(false);
+                        }
+                      }}
+                      className="px-3 py-2 bg-[#d97706] hover:bg-[#b45309] text-white font-bold rounded-xl text-xs shrink-0 cursor-pointer"
+                    >
+                      Add
+                    </button>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end gap-2 pt-3 border-t border-[#f3e8d2]">
@@ -928,6 +1503,166 @@ export default function ClientDashboard() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* REQUEST CANCELLATION MODAL */}
+      {showCancelModal && selectedCancelOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-lg bg-white rounded-3xl border border-[#f3e8d2] shadow-2xl p-6 sm:p-8 space-y-5 text-xs text-[#0f172a]">
+            <div className="flex justify-between items-center pb-3 border-b border-[#f3e8d2]">
+              <div>
+                <h3 className="font-serif font-bold text-lg text-red-700 flex items-center gap-2">
+                  <Ban className="w-5 h-5 text-red-600" />
+                  Request Order Cancellation
+                </h3>
+                <p className="text-gray-500 text-xs">Order Ref: <strong className="font-mono text-gray-800">{selectedCancelOrder.orderRef}</strong></p>
+              </div>
+              <button onClick={() => setShowCancelModal(false)} className="text-gray-400 hover:text-gray-700 p-1 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-medium space-y-1">
+              <div className="font-extrabold flex items-center gap-1.5 text-amber-800">
+                <AlertTriangle className="w-4 h-4 text-[#d97706]" />
+                Cancellation Notice
+              </div>
+              <p>Are you sure you want to cancel this order? If your item is already consecrated or dispatched, your request will be reviewed by support instantly.</p>
+            </div>
+
+            <form onSubmit={handleCancelOrderSubmit} className="space-y-4 font-sans text-xs">
+              <div>
+                <label className="block font-bold text-[#0f172a] mb-1.5 uppercase tracking-wider text-[11px]">
+                  Reason for Cancellation<span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                >
+                  <option value="Changed my mind / Ordered by mistake">Changed my mind / Ordered by mistake</option>
+                  <option value="Want to change shipping address or items">Want to change shipping address or items</option>
+                  <option value="Delivery time is longer than expected">Delivery time is longer than expected</option>
+                  <option value="Found better alternative price">Found better alternative price</option>
+                  <option value="Other reason">Other reason</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block font-bold text-[#0f172a] mb-1.5 uppercase tracking-wider text-[11px]">
+                  Additional Details / Notes (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  value={cancelNotes}
+                  onChange={(e) => setCancelNotes(e.target.value)}
+                  placeholder="Please describe reason for cancellation..."
+                  className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-[#f3e8d2]">
+                <button
+                  type="button"
+                  onClick={() => setShowCancelModal(false)}
+                  className="px-5 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer"
+                >
+                  Keep Order
+                </button>
+                <button
+                  type="submit"
+                  disabled={cancelLoading}
+                  className="px-6 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-extrabold text-xs shadow-md transition-all cursor-pointer flex items-center gap-1.5"
+                >
+                  <Ban className="w-4 h-4" />
+                  <span>{cancelLoading ? 'Cancelling...' : 'Confirm Order Cancellation'}</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* E-STORE INVOICE / RECEIPT MODAL */}
+      {showInvoiceModal && selectedInvoiceOrder && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="relative w-full max-w-2xl bg-white rounded-3xl border border-[#f3e8d2] shadow-2xl p-6 sm:p-8 space-y-6 text-xs text-[#0f172a] max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-start pb-4 border-b border-gray-200">
+              <div>
+                <span className="font-serif font-black text-xl text-[#0f172a] block">KuthiYengpham E-Store</span>
+                <span className="text-[10px] text-[#b45309] font-bold uppercase tracking-wider">Tax Invoice & Order Receipt</span>
+              </div>
+              <button onClick={() => setShowInvoiceModal(false)} className="text-gray-400 hover:text-gray-700 p-1 cursor-pointer">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 text-xs bg-[#f8fafc] p-4 rounded-2xl border border-gray-200">
+              <div>
+                <span className="font-bold text-gray-500 uppercase tracking-wider text-[10px] block">Order Details</span>
+                <p className="font-mono font-bold text-[#b45309] mt-0.5">{selectedInvoiceOrder.orderRef}</p>
+                <p className="text-gray-600 mt-0.5">Date: {selectedInvoiceOrder.orderedAt}</p>
+                <p className="text-gray-600">UTR / Payment Ref: <strong className="font-mono text-gray-800">{selectedInvoiceOrder.utr}</strong></p>
+              </div>
+              <div>
+                <span className="font-bold text-gray-500 uppercase tracking-wider text-[10px] block">Customer & Shipping Address</span>
+                <p className="font-bold text-gray-900 mt-0.5">{selectedInvoiceOrder.buyerName}</p>
+                <p className="text-gray-600">{selectedInvoiceOrder.mobile}</p>
+                <p className="text-gray-600 leading-snug">{selectedInvoiceOrder.address}</p>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-2xl overflow-hidden">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-amber-50/60 border-b border-gray-200 text-[10px] uppercase font-bold text-gray-700">
+                    <th className="p-3">Item Description</th>
+                    <th className="p-3 text-center">Qty</th>
+                    <th className="p-3 text-right">Price</th>
+                    <th className="p-3 text-right">Total</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-100 font-medium">
+                  {selectedInvoiceOrder.items.map((it, idx) => (
+                    <tr key={idx}>
+                      <td className="p-3 font-semibold text-gray-900">{it.title}</td>
+                      <td className="p-3 text-center font-mono">{it.quantity}</td>
+                      <td className="p-3 text-right font-mono">₹{it.price.toLocaleString()}</td>
+                      <td className="p-3 text-right font-mono font-bold text-[#b45309]">₹{(it.price * it.quantity).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1 rounded-lg border border-emerald-200">
+                Payment Status: FULLY PAID (100% Verified)
+              </span>
+              <div className="text-right">
+                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider block">Grand Total Paid</span>
+                <span className="text-2xl font-serif font-extrabold text-[#0f172a]">₹{selectedInvoiceOrder.totalAmount.toLocaleString()}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-gray-200">
+              <button
+                type="button"
+                onClick={() => setShowInvoiceModal(false)}
+                className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#b45309] to-[#d97706] text-white font-extrabold text-xs shadow-md flex items-center gap-2 hover:opacity-95 cursor-pointer"
+              >
+                <Printer className="w-4 h-4" /> Print / Save Invoice (PDF)
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -6,23 +6,44 @@ export const dynamic = 'force-dynamic';
 export interface AstrologerItem {
   id: string;
   name: string;
-  badge: 'Celebrity' | 'Top Choice' | 'Master Guru' | 'Verified';
-  avatar: string;
-  specialties: string[];
-  categoryTags: string[]; // e.g. ['Love', 'Education', 'Career', 'Marriage', 'Health', 'Wealth']
-  languages: string;
-  experienceYears: number;
-  rating: number;
-  consultationsCount: string;
-  pricePerMin: number;
-  whatsappPhone: string;
-  email: string;
-  bio: string;
-  isTrending: boolean;
-  active: boolean;
-  online: boolean;
-  showOnHome: boolean; // Controls whether displayed in Homepage Top Astrologers section
-  allowedTools?: string[]; // Array of tool IDs allowed for this astrologer (controlled by Admin)
+  username?: string;
+  badge?: 'Celebrity' | 'Top Choice' | 'Master Guru' | 'Verified';
+  avatar?: string;
+  specialty?: string;
+  specialties?: string[];
+  categoryTags?: string[];
+  languages?: string | string[];
+  experienceYears?: number;
+  phone?: string;
+  whatsappNo?: string;
+  whatsappPhone?: string;
+  sameAsWhatsapp?: boolean;
+  email?: string;
+  streetLane?: string;
+  cityDistrict?: string;
+  state?: string;
+  pincode?: string;
+  address?: string;
+  password?: string;
+  status?: 'ACTIVE' | 'ON_HOLD' | 'SUSPENDED';
+  upiId?: string;
+  bankName?: string;
+  accountHolder?: string;
+  accountNo?: string;
+  ifscCode?: string;
+  payoutMethod?: 'UPI' | 'BANK';
+  planTier?: 'BASIC' | 'ADVANCE' | 'PRO';
+  rating?: number;
+  consultationsCount?: string;
+  pricePerMin?: number;
+  bio?: string;
+  isTrending?: boolean;
+  active?: boolean;
+  online?: boolean;
+  showOnHome?: boolean;
+  allowedTools?: string[];
+  pendingPayout?: number;
+  completedCount?: number;
 }
 
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';

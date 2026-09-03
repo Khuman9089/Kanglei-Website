@@ -85,6 +85,7 @@ export interface ShopOrder {
   totalAmount: number;
   utr: string;
   status: 'PAYMENT_PENDING' | 'PAID' | 'ENERGIZING' | 'DISPATCHED' | 'DELIVERED' | 'CANCELLED';
+  paymentStatus?: 'PAYMENT_RECEIVED' | 'PAYMENT_NOT_RECEIVED' | 'VERIFICATION_PENDING';
   adminConfirmed?: boolean;
   orderedAt: string;
   // Delivery Logistics
@@ -455,7 +456,8 @@ export async function POST(request: Request) {
         shippingFee: body.shippingFee || 0,
         totalAmount: body.totalAmount,
         utr: body.utr,
-        status: 'PAID',
+        status: 'PAYMENT_PENDING',
+        paymentStatus: 'VERIFICATION_PENDING',
         adminConfirmed: false,
         orderedAt: 'Just Now',
       };
@@ -494,6 +496,29 @@ export async function POST(request: Request) {
         await writePersistentDataAsync('shop_orders', orders);
       }
       return NextResponse.json({ success: true, orders, categories });
+    }
+
+    if (body.action === 'UPDATE_PAYMENT_STATUS') {
+      const order = orders.find((o: ShopOrder) => o.id === body.id);
+      if (order) {
+        order.paymentStatus = body.paymentStatus;
+        if (body.paymentStatus === 'PAYMENT_RECEIVED') {
+          order.status = 'PAID';
+        }
+        await writePersistentDataAsync('shop_orders', orders);
+      }
+      return NextResponse.json({ success: true, message: 'Payment verification status updated live!', orders });
+    }
+
+    if (body.action === 'CANCEL_ORDER' || body.action === 'REQUEST_CANCELLATION') {
+      const order = orders.find((o: ShopOrder) => o.id === body.id);
+      if (order) {
+        order.status = 'CANCELLED';
+        (order as any).cancelReason = body.reason || 'Requested by Customer';
+        (order as any).cancelledAt = 'Today, ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        await writePersistentDataAsync('shop_orders', orders);
+      }
+      return NextResponse.json({ success: true, message: 'Order cancellation request submitted successfully!', orders });
     }
 
     if (body.action === 'ASSIGN_DELIVERY') {

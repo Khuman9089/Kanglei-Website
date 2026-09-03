@@ -40,6 +40,7 @@ export interface KuthiOrder {
   amount: number;
   serviceType: string;
   status: 'PENDING' | 'ASSIGNED' | 'IN_ANALYSIS' | 'REPORT_RECEIVED' | 'COMPLETED';
+  paymentStatus?: 'PAYMENT_RECEIVED' | 'PAYMENT_NOT_RECEIVED' | 'VERIFICATION_PENDING';
   fatherName?: string;
   motherName?: string;
   yek?: string;
@@ -174,6 +175,7 @@ export async function POST(req: Request) {
         amount: order.totalAmount || order.amount || 499,
         serviceType: order.serviceTitle || order.serviceType || 'Kuthi Yengba',
         status: 'PENDING',
+        paymentStatus: 'VERIFICATION_PENDING',
         fatherName: order.fatherName || order.rewriteDetails?.fatherName || '',
         motherName: order.motherName || order.rewriteDetails?.motherName || '',
         yek: order.yek || order.rewriteDetails?.yekSalai || '',
@@ -243,6 +245,15 @@ export async function POST(req: Request) {
       );
       await writePersistentDataAsync('kuthi_orders', orders);
       return NextResponse.json({ success: true, orders });
+    }
+
+    if (action === 'UPDATE_PAYMENT_STATUS' && orderId) {
+      const pStatus = body.paymentStatus;
+      orders = orders.map((o) =>
+        o.id === orderId ? { ...o, paymentStatus: pStatus } : o
+      );
+      await writePersistentDataAsync('kuthi_orders', orders);
+      return NextResponse.json({ success: true, message: 'Kuthi Order Payment Status updated live!', orders });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

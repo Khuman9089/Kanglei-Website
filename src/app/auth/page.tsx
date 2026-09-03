@@ -22,15 +22,36 @@ function AuthContent() {
   // Form State
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phoneIsd, setPhoneIsd] = useState('+91');
   const [phone, setPhone] = useState('');
+  const [useDifferentWhatsapp, setUseDifferentWhatsapp] = useState(false);
+  const [whatsappIsd, setWhatsappIsd] = useState('+91');
   const [whatsappNo, setWhatsappNo] = useState('');
-  const [sameAsPhone, setSameAsPhone] = useState(true);
   const [address, setAddress] = useState('');
+  const [sameDeliveryAddress, setSameDeliveryAddress] = useState(true);
+  const [deliveryAddress, setDeliveryAddress] = useState('');
   const [sex, setSex] = useState('Male');
   const [password, setPassword] = useState('');
 
+  const ISD_CODES = [
+    { code: '+91', label: '+91' },
+    { code: '+1', label: '+1' },
+    { code: '+44', label: '+44' },
+    { code: '+971', label: '+971' },
+    { code: '+977', label: '+977' },
+    { code: '+880', label: '+880' },
+    { code: '+61', label: '+61' },
+    { code: '+65', label: '+65' },
+    { code: '+60', label: '+60' },
+    { code: '+966', label: '+966' },
+    { code: '+974', label: '+974' },
+    { code: '+968', label: '+968' },
+    { code: '+965', label: '+965' },
+  ];
+
   // Login State
   const [loginRole, setLoginRole] = useState<'CLIENT' | 'ASTROLOGER'>('CLIENT');
+  const [loginIsd, setLoginIsd] = useState('+91');
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
@@ -51,6 +72,36 @@ function AuthContent() {
     }
     return () => clearInterval(timerInterval);
   }, [step, resendTimer]);
+
+  // Sync form reset when user logs out
+  useEffect(() => {
+    const handleLogoutSync = () => {
+      if (typeof window !== 'undefined') {
+        const isLoggedOut = localStorage.getItem('kanglei_logged_out');
+        const currentUser = localStorage.getItem('kanglei_user');
+        if (isLoggedOut || !currentUser) {
+          setLoginIdentifier('');
+          setLoginPassword('');
+          setName('');
+          setEmail('');
+          setPhone('');
+          setWhatsappNo('');
+          setAddress('');
+          setDeliveryAddress('');
+          setOtpInput('');
+          setStep('form');
+        }
+      }
+    };
+
+    handleLogoutSync();
+    window.addEventListener('user-login-change', handleLogoutSync);
+    window.addEventListener('storage', handleLogoutSync);
+    return () => {
+      window.removeEventListener('user-login-change', handleLogoutSync);
+      window.removeEventListener('storage', handleLogoutSync);
+    };
+  }, []);
 
   // Forgot Password Modal State
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -141,25 +192,17 @@ function AuthContent() {
   };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value;
-    setPhone(val);
-    if (sameAsPhone) {
-      setWhatsappNo(val);
-    }
-  };
-
-  const handleSamePhoneToggle = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = e.target.checked;
-    setSameAsPhone(checked);
-    if (checked) {
-      setWhatsappNo(phone);
-    }
+    setPhone(e.target.value.replace(/\D/g, ''));
   };
 
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setLoading(true);
+
+    const fullPhone = `${phoneIsd} ${phone.replace(/\D/g, '')}`;
+    const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${whatsappNo.replace(/\D/g, '')}` : fullPhone;
+    const finalDeliveryAddress = sameDeliveryAddress ? address : (deliveryAddress || address);
 
     try {
       const res = await fetch('/api/auth/signup', {
@@ -168,9 +211,10 @@ function AuthContent() {
         body: JSON.stringify({
           name,
           email,
-          phone,
-          whatsappNo: sameAsPhone ? phone : whatsappNo,
+          phone: fullPhone,
+          whatsappNo: fullWhatsapp,
           address,
+          deliveryAddress: finalDeliveryAddress,
           sex,
           password,
         }),
@@ -198,14 +242,17 @@ function AuthContent() {
     setSuccessMsg('');
     setLoading(true);
 
+    const fullPhone = `${phoneIsd} ${phone.replace(/\D/g, '')}`;
+    const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${whatsappNo.replace(/\D/g, '')}` : fullPhone;
+
     try {
       const res = await fetch('/api/auth/resend-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          phone,
-          whatsappNo: sameAsPhone ? phone : whatsappNo,
+          phone: fullPhone,
+          whatsappNo: fullWhatsapp,
         }),
       });
 
@@ -219,7 +266,7 @@ function AuthContent() {
 
       setDemoOtp(data.demoOtpCode);
       setResendTimer(30);
-      setSuccessMsg(`New 6-digit OTP code sent to Mobile No (${sameAsPhone ? phone : whatsappNo})`);
+      setSuccessMsg(`New 6-digit OTP code sent to Mobile No (${fullWhatsapp || fullPhone})`);
     } catch (err: any) {
       setLoading(false);
       setErrorMsg(err.message || 'Failed to resend OTP');
@@ -232,13 +279,17 @@ function AuthContent() {
     setLoading(true);
 
     try {
+      const fullPhone = `${phoneIsd} ${phone.replace(/\D/g, '')}`;
+      const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${whatsappNo.replace(/\D/g, '')}` : fullPhone;
+      const finalDeliveryAddress = sameDeliveryAddress ? address : (deliveryAddress || address);
+
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           email,
-          phone,
-          whatsappNo: sameAsPhone ? phone : whatsappNo,
+          phone: fullPhone,
+          whatsappNo: fullWhatsapp,
           otpCode: otpInput,
         }),
       });
@@ -253,10 +304,11 @@ function AuthContent() {
 
       const sessionUser = {
         name: name || 'Nganba Meitei',
-        email: email || 'nganba@example.com',
-        phone: phone || '+91 98620 12345',
-        whatsappNo: sameAsPhone ? phone : whatsappNo,
+        email: email || 'abc@example.com',
+        phone: fullPhone,
+        whatsappNo: fullWhatsapp,
         address: address || 'Uripok, Imphal West, Manipur, 795001',
+        deliveryAddress: finalDeliveryAddress,
         sex: sex || 'Male',
         role: 'CLIENT',
         memberSince: 'Today',
@@ -469,7 +521,8 @@ function AuthContent() {
                       <input
                         type="email"
                         required
-                        placeholder="name@example.com"
+                        autoComplete="off"
+                        placeholder="abc@gmail.com"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
@@ -483,6 +536,7 @@ function AuthContent() {
                       <input
                         type="password"
                         required
+                        autoComplete="new-password"
                         placeholder="Create secure password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
@@ -491,62 +545,125 @@ function AuthContent() {
                     </div>
                   </div>
 
-                  {/* Phone & WhatsApp */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                        Phone Number<span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        placeholder="+91 98765 43210"
-                        value={phone}
-                        onChange={handlePhoneChange}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex items-center justify-between mb-1">
-                        <label className="font-bold text-[#0f172a] uppercase tracking-wider">
-                          WhatsApp Number<span className="text-red-500">*</span>
-                        </label>
-                        <label className="inline-flex items-center gap-1.5 text-[11px] text-gray-500 cursor-pointer">
+                  {/* Phone & WhatsApp Section */}
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
+                      <div className={useDifferentWhatsapp ? "md:col-span-6" : "md:col-span-12"}>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className="block font-bold text-[#0f172a] uppercase tracking-wider">
+                            Phone Number<span className="text-red-500">*</span>
+                          </label>
+                          <label className="inline-flex items-center gap-1.5 text-[11px] text-gray-600 font-bold cursor-pointer hover:text-[#d97706]">
+                            <input
+                              type="checkbox"
+                              checked={useDifferentWhatsapp}
+                              onChange={(e) => setUseDifferentWhatsapp(e.target.checked)}
+                              className="rounded text-[#d97706] focus:ring-[#d97706] cursor-pointer"
+                            />
+                            <span>Different WhatsApp Number</span>
+                          </label>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <select
+                            value={phoneIsd}
+                            onChange={(e) => setPhoneIsd(e.target.value)}
+                            className="h-11 px-2.5 rounded-xl border border-gray-300 bg-[#f8fafc] text-xs font-extrabold text-[#0f172a] focus:border-[#d97706] focus:outline-none shrink-0 shadow-xs cursor-pointer"
+                          >
+                            {ISD_CODES.map((item) => (
+                              <option key={item.code} value={item.code}>
+                                {item.label}
+                              </option>
+                            ))}
+                          </select>
                           <input
-                            type="checkbox"
-                            checked={sameAsPhone}
-                            onChange={handleSamePhoneToggle}
-                            className="rounded text-[#d97706] focus:ring-[#d97706]"
+                            type="tel"
+                            required
+                            autoComplete="off"
+                            placeholder="9012345678"
+                            value={phone}
+                            onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
+                            className="flex-1 h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-mono font-bold focus:border-[#d97706] focus:outline-none"
                           />
-                          <span>Same as Phone</span>
-                        </label>
+                        </div>
                       </div>
-                      <input
-                        type="tel"
-                        required
-                        disabled={sameAsPhone}
-                        placeholder="+91 98765 43210"
-                        value={sameAsPhone ? phone : whatsappNo}
-                        onChange={(e) => setWhatsappNo(e.target.value)}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none disabled:bg-gray-100 disabled:text-gray-500"
-                      />
+
+                      {/* WhatsApp Input (Only shown if 'Different WhatsApp Number' checkbox is checked) */}
+                      {useDifferentWhatsapp && (
+                        <div className="md:col-span-6 animate-fadeIn">
+                          <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                            WhatsApp Number<span className="text-red-500">*</span>
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <select
+                              value={whatsappIsd}
+                              onChange={(e) => setWhatsappIsd(e.target.value)}
+                              className="h-11 px-2.5 rounded-xl border border-gray-300 bg-[#f8fafc] text-xs font-extrabold text-[#0f172a] focus:border-[#d97706] focus:outline-none shrink-0 shadow-xs cursor-pointer"
+                            >
+                              {ISD_CODES.map((item) => (
+                                <option key={item.code} value={item.code}>
+                                  {item.label}
+                                </option>
+                              ))}
+                            </select>
+                            <input
+                              type="tel"
+                              required={useDifferentWhatsapp}
+                              autoComplete="off"
+                              placeholder="9012345678"
+                              value={whatsappNo}
+                              onChange={(e) => setWhatsappNo(e.target.value.replace(/\D/g, ''))}
+                              className="flex-1 h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-mono font-bold focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {/* Residential Address */}
-                  <div>
-                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Residential Address<span className="text-red-500">*</span>
-                    </label>
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="Please enter street, city, state & pincode"
-                      value={address}
-                      onChange={(e) => setAddress(e.target.value)}
-                      className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
-                    />
+                  {/* Address & Delivery Address Section */}
+                  <div className="space-y-3 pt-2">
+                    <div>
+                      <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                        Residential Address<span className="text-red-500">*</span>
+                      </label>
+                      <textarea
+                        required
+                        rows={2}
+                        placeholder="Please enter street, city, state & pincode"
+                        value={address}
+                        onChange={(e) => setAddress(e.target.value)}
+                        className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <label className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={sameDeliveryAddress}
+                          onChange={(e) => setSameDeliveryAddress(e.target.checked)}
+                          className="rounded text-[#d97706] focus:ring-[#d97706] cursor-pointer"
+                        />
+                        <span>Delivery address same as residential address</span>
+                      </label>
+                    </div>
+
+                    {/* Delivery Address (Only shown if 'Delivery address same as residential address' is UNCHECKED) */}
+                    {!sameDeliveryAddress && (
+                      <div className="animate-fadeIn pt-1">
+                        <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                          Delivery Address<span className="text-red-500">*</span>
+                        </label>
+                        <textarea
+                          required={!sameDeliveryAddress}
+                          rows={2}
+                          placeholder="Please enter separate delivery / shipping address"
+                          value={deliveryAddress}
+                          onChange={(e) => setDeliveryAddress(e.target.value)}
+                          className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+                    )}
                   </div>
 
                   {/* Submit Button */}
@@ -585,7 +702,9 @@ function AuthContent() {
                 <h3 className="font-serif font-bold text-2xl text-[#0f172a] mb-1">Mobile No. OTP Verification</h3>
                 <p className="text-xs text-gray-600 mb-4 max-w-sm mx-auto">
                   We have sent a 6-digit verification code to your Mobile / WhatsApp:
-                  <span className="font-extrabold text-[#b45309] text-sm block mt-1">{sameAsPhone ? phone : whatsappNo || phone}</span>
+                  <span className="font-extrabold text-[#b45309] text-sm block mt-1">
+                    {!useDifferentWhatsapp ? `${phoneIsd} ${phone}` : `${whatsappIsd} ${whatsappNo}`}
+                  </span>
                 </p>
 
                 {/* Real SMS / WhatsApp OTP Notification & Direct Link */}
@@ -603,7 +722,7 @@ function AuthContent() {
 
                     <div className="flex items-center justify-center gap-2">
                       <a
-                        href={`https://wa.me/${((sameAsPhone ? phone : whatsappNo || phone).replace(/\D/g, '').length === 10 ? '91' : '') + (sameAsPhone ? phone : whatsappNo || phone).replace(/\D/g, '')}?text=${encodeURIComponent(`Your KuthiYengpham verification code is: ${demoOtp}`)}`}
+                        href={`https://wa.me/${((!useDifferentWhatsapp ? `${phoneIsd}${phone}` : `${whatsappIsd}${whatsappNo}`).replace(/\D/g, '').length === 10 ? '91' : '') + (!useDifferentWhatsapp ? `${phoneIsd}${phone}` : `${whatsappIsd}${whatsappNo}`).replace(/\D/g, '')}?text=${encodeURIComponent(`Your KuthiYengpham verification code is: ${demoOtp}`)}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
@@ -727,19 +846,35 @@ function AuthContent() {
                 </div>
               </div>
 
-              <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs font-sans">
+              <form onSubmit={handleLoginSubmit} className="space-y-4 text-xs font-sans" autoComplete="off">
                 <div>
                   <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                    {loginRole === 'ASTROLOGER' ? 'Registered Phone Number' : 'Email Address'}
+                    {loginRole === 'ASTROLOGER' ? 'Registered Phone Number' : 'Email Address or Phone Number'}
                   </label>
-                  <input
-                    type="text"
-                    required
-                    placeholder={loginRole === 'ASTROLOGER' ? 'e.g. +91 98620 99881' : 'e.g. nganba@example.com'}
-                    value={loginIdentifier}
-                    onChange={(e) => setLoginIdentifier(e.target.value)}
-                    className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
-                  />
+                  <div className="flex items-center gap-2">
+                    {loginRole === 'ASTROLOGER' && (
+                      <select
+                        value={loginIsd}
+                        onChange={(e) => setLoginIsd(e.target.value)}
+                        className="h-11 px-2.5 rounded-xl border border-gray-300 bg-[#f8fafc] text-xs font-extrabold text-[#0f172a] focus:border-[#d97706] focus:outline-none shrink-0 shadow-xs cursor-pointer"
+                      >
+                        {ISD_CODES.map((item) => (
+                          <option key={item.code} value={item.code}>
+                            {item.label}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <input
+                      type="text"
+                      required
+                      autoComplete="off"
+                      placeholder={loginRole === 'ASTROLOGER' ? '9012345678' : 'abc@gmail.com or 9012345678'}
+                      value={loginIdentifier}
+                      onChange={(e) => setLoginIdentifier(e.target.value)}
+                      className="flex-1 h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-medium focus:border-[#d97706] focus:outline-none"
+                    />
+                  </div>
                 </div>
 
                 <div>
@@ -761,6 +896,7 @@ function AuthContent() {
                   <input
                     type="password"
                     required
+                    autoComplete="current-password"
                     placeholder="Enter password"
                     value={loginPassword}
                     onChange={(e) => setLoginPassword(e.target.value)}

@@ -14,10 +14,10 @@ export default function AboutPage() {
             15+ Years of Vedic Excellence
           </div>
           <h1 className="text-3xl md:text-5xl font-serif font-bold text-[#0f172a]">
-            About <span className="text-[#b45309]">KangleiAstro</span>
+            About <span className="text-[#b45309]">KuthiYengpham</span>
           </h1>
           <p className="text-gray-600 text-sm md:text-base mt-3 max-w-xl mx-auto">
-            Guiding lives across the globe with precise astronomical calculations and authentic Vedic Jyotish wisdom.
+            Guiding lives across the globe with precise astronomical calculations and authentic Manipuri Kuthi & Vedic Jyotish wisdom.
           </p>
         </div>
 
@@ -25,10 +25,10 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center mb-16">
           <div className="lg:col-span-7 space-y-6">
             <h2 className="font-serif font-bold text-3xl text-[#0f172a] leading-snug">
-              Authentic Vedic Predictions Backed by Precise Swiss Ephemeris Astronomy
+              Authentic Manipuri Kuthi & Vedic Predictions Backed by Precise Astronomy
             </h2>
             <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">
-              Founded with a mission to bring clarity, peace, and practical direction to individuals navigating career transitions, relationship decisions, and life milestones. KangleiAstro combines traditional Parashari Vedic Astrology with modern computational precision using Swiss Ephemeris tables and Lahiri Ayanamsa.
+              Founded with a mission to bring clarity, peace, and practical direction to individuals navigating career transitions, relationship decisions, and life milestones. KuthiYengpham (kuthiyengpham.in) combines traditional Parashari Vedic Astrology with modern computational precision using Swiss Ephemeris tables and Lahiri Ayanamsa.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
