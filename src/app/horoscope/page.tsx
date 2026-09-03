@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Navbar from '@/components/layout/Navbar';
 import { Sun, Sparkles, ChevronRight, Star, Calendar, Clock, Compass } from 'lucide-react';
 import Link from 'next/link';
 
@@ -25,7 +24,6 @@ export default function HoroscopeDirectoryPage() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
-      <Navbar />
       <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-10">
         
         {/* Page Header with BIGGER readable typography */}

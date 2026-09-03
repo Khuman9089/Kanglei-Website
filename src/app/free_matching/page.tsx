@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
 import { 
   Heart, CheckCircle2, AlertCircle, Sparkles, RefreshCw, User, Calendar, Clock, MapPin, ShieldCheck, Check, ArrowRight 
@@ -76,7 +75,6 @@ export default function FreeMatchingPage() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans antialiased">
-      <Navbar />
       <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-8">
         
         {/* Header Title */}

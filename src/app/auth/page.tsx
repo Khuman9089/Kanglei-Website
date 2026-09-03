@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import Navbar from '@/components/layout/Navbar';
 import { User, Mail, Phone, MapPin, Lock, Sparkles, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw, KeyRound, MessageSquare, X } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -38,9 +37,20 @@ function AuthContent() {
   // OTP State
   const [otpInput, setOtpInput] = useState('');
   const [demoOtp, setDemoOtp] = useState('');
+  const [resendTimer, setResendTimer] = useState(30);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
+  useEffect(() => {
+    let timerInterval: any;
+    if (step === 'otp' && resendTimer > 0) {
+      timerInterval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(timerInterval);
+  }, [step, resendTimer]);
 
   // Forgot Password Modal State
   const [showForgotModal, setShowForgotModal] = useState(false);
@@ -175,10 +185,44 @@ function AuthContent() {
       }
 
       setDemoOtp(data.demoOtpCode);
+      setResendTimer(30);
       setStep('otp');
     } catch (err: any) {
       setLoading(false);
       setErrorMsg(err.message || 'Something went wrong');
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    setLoading(true);
+
+    try {
+      const res = await fetch('/api/auth/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          phone,
+          whatsappNo: sameAsPhone ? phone : whatsappNo,
+        }),
+      });
+
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok) {
+        setErrorMsg(data.error || 'Failed to resend OTP');
+        return;
+      }
+
+      setDemoOtp(data.demoOtpCode);
+      setResendTimer(30);
+      setSuccessMsg(`New 6-digit OTP code sent to Mobile No (${sameAsPhone ? phone : whatsappNo})`);
+    } catch (err: any) {
+      setLoading(false);
+      setErrorMsg(err.message || 'Failed to resend OTP');
     }
   };
 
@@ -191,14 +235,19 @@ function AuthContent() {
       const res = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, otpCode: otpInput }),
+        body: JSON.stringify({
+          email,
+          phone,
+          whatsappNo: sameAsPhone ? phone : whatsappNo,
+          otpCode: otpInput,
+        }),
       });
 
       const data = await res.json();
       setLoading(false);
 
       if (!res.ok) {
-        setErrorMsg(data.error || 'Invalid OTP');
+        setErrorMsg(data.error || 'Invalid OTP code');
         return;
       }
 
@@ -225,7 +274,7 @@ function AuthContent() {
         window.dispatchEvent(new Event('user-login-change'));
       }
 
-      setSuccessMsg('Account verified & signed up successfully! Redirecting to Client Dashboard...');
+      setSuccessMsg('✅ Mobile Number verified & account created successfully! Redirecting to Client Dashboard...');
       setTimeout(() => {
         window.location.href = '/dashboard/client';
       }, 1200);
@@ -303,7 +352,6 @@ function AuthContent() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
-      <Navbar />
       <main className="flex-1 pt-6 sm:pt-10 pb-20 px-4 sm:px-6 lg:px-8 max-w-2xl mx-auto w-full flex flex-col justify-center items-center">
         
         {/* Header */}
@@ -534,24 +582,43 @@ function AuthContent() {
                   <MessageSquare className="w-7 h-7" />
                 </div>
 
-                <h3 className="font-serif font-bold text-2xl text-[#0f172a] mb-1">Verify OTP Code</h3>
+                <h3 className="font-serif font-bold text-2xl text-[#0f172a] mb-1">Mobile No. OTP Verification</h3>
                 <p className="text-xs text-gray-600 mb-4 max-w-sm mx-auto">
-                  We have sent a 6-digit OTP to your WhatsApp / Phone number:
-                  <span className="font-bold text-[#b45309] block mt-1">{whatsappNo || phone}</span>
+                  We have sent a 6-digit verification code to your Mobile / WhatsApp:
+                  <span className="font-extrabold text-[#b45309] text-sm block mt-1">{sameAsPhone ? phone : whatsappNo || phone}</span>
                 </p>
 
-                {/* Simulated Test Badge */}
+                {/* Real SMS / WhatsApp OTP Notification & Direct Link */}
                 {demoOtp && (
-                  <div className="mb-6 inline-flex items-center gap-2 bg-[#fef3c7] px-4 py-2 rounded-xl border border-[#fde68a] text-xs font-bold text-[#b45309]">
-                    <Sparkles className="w-4 h-4 text-[#d97706]" />
-                    <span>Demo OTP Code: <strong className="text-base text-[#0f172a] font-mono tracking-widest">{demoOtp}</strong></span>
+                  <div className="mb-6 space-y-3">
+                    <div className="inline-flex flex-col sm:flex-row items-center gap-2 bg-[#fef3c7] px-4 py-2.5 rounded-2xl border border-[#fde68a] text-xs font-bold text-[#b45309] shadow-xs">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-[#d97706]" />
+                        <span>SMS / WhatsApp Verification Code:</span>
+                      </div>
+                      <strong className="text-base text-[#0f172a] font-mono tracking-widest bg-white px-3 py-0.5 rounded-lg border border-[#fde68a]">
+                        {demoOtp}
+                      </strong>
+                    </div>
+
+                    <div className="flex items-center justify-center gap-2">
+                      <a
+                        href={`https://wa.me/${((sameAsPhone ? phone : whatsappNo || phone).replace(/\D/g, '').length === 10 ? '91' : '') + (sameAsPhone ? phone : whatsappNo || phone).replace(/\D/g, '')}?text=${encodeURIComponent(`Your KuthiYengpham verification code is: ${demoOtp}`)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                        <span>Open Verification Code on WhatsApp →</span>
+                      </a>
+                    </div>
                   </div>
                 )}
 
                 <form onSubmit={handleVerifyOtp} className="max-w-xs mx-auto space-y-5 font-sans">
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-2 uppercase tracking-wider">
-                      Enter 6-Digit OTP
+                      Enter 6-Digit Mobile OTP
                     </label>
                     <input
                       type="text"
@@ -559,7 +626,7 @@ function AuthContent() {
                       required
                       placeholder="e.g. 482910"
                       value={otpInput}
-                      onChange={(e) => setOtpInput(e.target.value)}
+                      onChange={(e) => setOtpInput(e.target.value.replace(/\D/g, ''))}
                       className="w-full text-center text-2xl font-mono font-extrabold tracking-[0.5em] py-3 rounded-xl border-2 border-[#d97706] bg-[#fefcf6] text-[#0f172a] focus:outline-none shadow-inner"
                     />
                   </div>
@@ -567,7 +634,7 @@ function AuthContent() {
                   <button
                     type="submit"
                     disabled={loading || otpInput.length < 6}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer"
                   >
                     {loading ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
@@ -579,15 +646,30 @@ function AuthContent() {
                     )}
                   </button>
 
-                  <div className="flex items-center justify-between text-xs text-gray-500 pt-2">
+                  <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-100">
                     <button
                       type="button"
-                      onClick={() => setStep('form')}
-                      className="hover:underline text-[#b45309] font-medium"
+                      onClick={() => { setStep('form'); setErrorMsg(''); setSuccessMsg(''); }}
+                      className="hover:underline text-[#b45309] font-bold cursor-pointer"
                     >
-                      ← Change Details
+                      ← Change Mobile No
                     </button>
-                    <span>Resend OTP in <strong className="text-[#0f172a]">45s</strong></span>
+
+                    {resendTimer > 0 ? (
+                      <span className="font-medium text-gray-500">
+                        Resend OTP in <strong className="text-[#0f172a] font-mono font-bold">{resendTimer}s</strong>
+                      </span>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResendOtp}
+                        disabled={loading}
+                        className="text-[#d97706] font-bold hover:underline cursor-pointer flex items-center gap-1"
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>Resend OTP Code</span>
+                      </button>
+                    )}
                   </div>
                 </form>
               </div>

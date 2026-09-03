@@ -6,7 +6,6 @@ import {
   User, Phone, MapPin, Calendar, Clock, FileText, CheckCircle2, 
   ArrowRight, ArrowLeft, Sparkles, QrCode, ShieldCheck, MessageSquare, Home, Baby, Scroll 
 } from 'lucide-react';
-import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
 
 export interface KuthiIbaPackage {
@@ -209,7 +208,6 @@ function ManipuriKuthiContent() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
-      <Navbar />
       <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full">
         
         {/* Progress Tracker */}

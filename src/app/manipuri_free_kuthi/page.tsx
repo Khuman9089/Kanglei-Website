@@ -10,7 +10,6 @@ import NorthIndianChart from '@/components/charts/NorthIndianChart';
 import SouthIndianChart from '@/components/charts/SouthIndianChart';
 import PlanetaryTable, { PlanetData as TablePlanetData } from '@/components/charts/PlanetaryTable';
 import DashaTimeline, { DashaPeriod } from '@/components/charts/DashaTimeline';
-import Navbar from '@/components/layout/Navbar';
 
 interface ChartResult {
   ascendant: number;
@@ -149,9 +148,6 @@ function ManipuriFreeKuthiContent() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] print:bg-white print:p-0 font-sans">
-      <div className="print:hidden">
-        <Navbar />
-      </div>
 
       {/* Page Header */}
       {!chartData && (

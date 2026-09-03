@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { ShieldAlert, Sparkles, CheckCircle2, ArrowRight, RotateCcw } from 'lucide-react';
-import Navbar from '@/components/layout/Navbar';
 
 export default function KaalSarpDoshPage() {
   const [form, setForm] = useState({
@@ -44,7 +43,6 @@ export default function KaalSarpDoshPage() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a]">
-      <Navbar />
 
       <div className="pt-1 sm:pt-2 pb-16 px-4 max-w-4xl mx-auto space-y-8">
         <div className="text-center space-y-3">

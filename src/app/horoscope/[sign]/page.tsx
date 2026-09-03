@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import Navbar from '@/components/layout/Navbar';
 import {
   Briefcase,
   Heart,
@@ -1282,9 +1281,8 @@ export default function MoonSignForecastPage({ params }: { params: Promise<{ sig
   const periodData = data.periods[activePeriod];
 
   return (
-    <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
-      <Navbar />
-      <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full space-y-8">
+    <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] font-sans antialiased flex flex-col">
+      <main className="flex-1 pt-2 sm:pt-4 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto w-full space-y-8">
         
         {/* Top Back Navigation Bar */}
         <div className="flex flex-wrap items-center justify-between gap-4">

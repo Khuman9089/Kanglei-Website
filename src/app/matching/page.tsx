@@ -1,14 +1,12 @@
 'use client';
 
 import React from 'react';
-import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
 import { Heart, Sparkles, ShieldCheck, ArrowRight } from 'lucide-react';
 
 export default function MatchingPage() {
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans antialiased">
-      <Navbar />
       <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-4xl mx-auto w-full flex flex-col justify-center items-center text-center space-y-8">
         
         {/* Header Title */}

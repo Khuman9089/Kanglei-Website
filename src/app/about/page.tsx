@@ -1,12 +1,10 @@
 import React from 'react';
-import Navbar from '@/components/layout/Navbar';
 import { Star, Award, ShieldCheck, BookOpen, Sparkles, CheckCircle2, Users } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
-      <Navbar />
       <main className="flex-1 pt-4 sm:pt-6 pb-20 px-4 sm:px-6 lg:px-8 max-w-6xl mx-auto w-full">
         
         {/* Header */}

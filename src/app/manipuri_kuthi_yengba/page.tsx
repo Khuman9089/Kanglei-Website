@@ -6,7 +6,6 @@ import {
   User, Phone, Calendar, Clock, MapPin, FileText, CheckCircle2, 
   ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, MessageSquare, Truck, BookOpen 
 } from 'lucide-react';
-import Navbar from '@/components/layout/Navbar';
 import Link from 'next/link';
 
 interface KuthiSlot {
@@ -313,7 +312,6 @@ function ManipuriKuthiYengbaContent() {
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] flex flex-col font-sans">
-      <Navbar />
       <main className="flex-1 pt-1 sm:pt-2 pb-20 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto w-full">
         
         {/* Progress Tracker */}
