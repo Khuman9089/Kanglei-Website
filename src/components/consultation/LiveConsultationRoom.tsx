@@ -327,6 +327,14 @@ export default function LiveConsultationRoom({
           stream = createFallbackMediaStream(currentUserType === 'CLIENT' ? 'Client' : 'Astrologer');
         }
       }
+
+      // Guarantee video track is present for VIDEO calls even if hardware is locked or fallback occurred
+      if (callType === 'VIDEO' && stream.getVideoTracks().length === 0) {
+        const fallback = createFallbackMediaStream(currentUserType === 'CLIENT' ? 'Client Camera' : 'Astrologer Camera');
+        const vTrack = fallback.getVideoTracks()[0];
+        if (vTrack) stream.addTrack(vTrack);
+      }
+
       if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
       localStreamRef.current = stream;
       setLocalStream(stream);
@@ -783,56 +791,76 @@ export default function LiveConsultationRoom({
             {callType === 'VIDEO' && !isVideoOff ? (
               <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
                 
-                {/* 1. REMOTE VIDEO ELEMENT (Main View by default) */}
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                  className={`transition-all duration-300 ${
-                    !isSwappedCamera
-                      ? 'absolute inset-0 w-full h-full object-cover z-10'
-                      : 'w-full h-full object-cover'
-                  } ${!hasRemoteStream ? 'hidden' : 'block'}`}
-                />
+                {/* MAIN VIEW: Remote Party Stream (or Local View if swapped) */}
+                <div className="absolute inset-0 w-full h-full bg-slate-950 overflow-hidden flex items-center justify-center">
+                  {!isSwappedCamera ? (
+                    /* Default Main View: REMOTE PARTY VIDEO STREAM */
+                    <video
+                      ref={remoteVideoRef}
+                      autoPlay
+                      playsInline
+                      className={`w-full h-full object-cover ${!hasRemoteStream ? 'hidden' : 'block'}`}
+                    />
+                  ) : (
+                    /* Swapped Main View: LOCAL WEBCAM VIDEO STREAM */
+                    <video
+                      ref={localVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className={`w-full h-full object-cover transform -scale-x-100 ${!localStream ? 'hidden' : 'block'}`}
+                    />
+                  )}
 
-                {/* 2. LOCAL WEBCAM VIDEO ELEMENT */}
-                <video
-                  ref={localVideoRef}
-                  autoPlay
-                  playsInline
-                  muted
-                  className={`transition-all duration-300 transform -scale-x-100 ${
-                    isSwappedCamera
-                      ? 'absolute inset-0 w-full h-full object-cover z-10'
-                      : 'w-full h-full object-cover'
-                  } ${!localStream ? 'hidden' : 'block'}`}
-                />
-
-                {/* FALLBACK / CONNECTING OVERLAY (shown when remote stream is not yet established) */}
-                {!hasRemoteStream && (
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60 flex flex-col items-center justify-center p-4 text-center z-15">
-                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
-                      <User className="w-8 h-8 text-emerald-300" />
+                  {/* FALLBACK OVERLAY when remote stream is not yet established */}
+                  {(!isSwappedCamera && !hasRemoteStream) && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60 flex flex-col items-center justify-center p-4 text-center z-10">
+                      <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
+                        <User className="w-8 h-8 text-emerald-300" />
+                      </div>
+                      <h4 className="text-white font-bold text-sm md:text-base">{otherPartyName}</h4>
+                      <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                        <span>
+                          {connectionState === 'CONNECTING' ? 'Connecting 1-on-1 HD Video Feed...' : 'Waiting for Remote Camera...'}
+                        </span>
+                      </p>
                     </div>
-                    <h4 className="text-white font-bold text-sm md:text-base">{otherPartyName}</h4>
-                    <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                      <span>
-                        {connectionState === 'CONNECTING' ? 'Connecting 1-on-1 HD Video Feed...' : 'Waiting for Remote Camera...'}
-                      </span>
-                    </p>
-                  </div>
-                )}
+                  )}
+                </div>
 
-                {/* OVERLAID PIP CORNER BOX (Tap to interchange main & corner views) */}
+                {/* OVERLAID PIP CORNER BOX (Tap to swap main & corner views) */}
                 <div
                   onClick={() => setIsSwappedCamera(!isSwappedCamera)}
                   className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group"
                   title="Click to swap remote and local camera views"
                 >
-                  {isSwappedCamera ? (
-                    /* PiP shows Remote stream */
+                  {!isSwappedCamera ? (
+                    /* PiP Corner Box: LOCAL WEBCAM VIDEO STREAM */
+                    <div className="w-full h-full relative bg-black flex items-center justify-center">
+                      <video
+                        ref={localVideoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className={`w-full h-full object-cover transform -scale-x-100 ${!localStream ? 'hidden' : 'block'}`}
+                      />
+                      {!localStream && (
+                        <div className="text-slate-400 text-[10px] font-bold">No Camera</div>
+                      )}
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold z-30">
+                        You
+                      </div>
+                    </div>
+                  ) : (
+                    /* PiP Corner Box: REMOTE PARTY VIDEO STREAM */
                     <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
+                      <video
+                        ref={remoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className={`w-full h-full object-cover ${!hasRemoteStream ? 'hidden' : 'block'}`}
+                      />
                       {!hasRemoteStream && (
                         <img
                           src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
@@ -842,13 +870,6 @@ export default function LiveConsultationRoom({
                       )}
                       <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-emerald-300 font-bold z-30">
                         {otherPartyName}
-                      </div>
-                    </div>
-                  ) : (
-                    /* PiP shows Local stream */
-                    <div className="w-full h-full relative bg-black">
-                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold z-30">
-                        You
                       </div>
                     </div>
                   )}
