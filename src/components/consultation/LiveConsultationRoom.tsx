@@ -146,13 +146,68 @@ export default function LiveConsultationRoom({
   const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
   const processedSigIds = useRef<Set<string>>(new Set());
   const callActiveRef = useRef<boolean>(false);
+  // Stores ALL signals from last API poll — read by the PC effect
+  const pendingSignalsRef = useRef<any[]>([]);
 
   // ─────────────────────────────────────────────────────────
-  // STEP 1: Start local camera/mic as soon as call is active
+  // Helper: apply a signal directly to a known-good PC
+  // ─────────────────────────────────────────────────────────
+  const applySignalToPc = async (pc: RTCPeerConnection, sig: any) => {
+    if (!sig || sig.sender === currentUserType) return;
+    const key = sig.id ?? `${sig.signalType ?? sig.type}:${JSON.stringify(sig.sdp ?? sig.candidate ?? '')}`;
+    if (processedSigIds.current.has(key)) return;
+    processedSigIds.current.add(key);
+
+    const type: string = sig.signalType ?? sig.type ?? '';
+    try {
+      if (type === 'OFFER') {
+        const sdp = sig.sdp ?? sig.offer;
+        if (!sdp) return;
+        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        for (const c of pendingCandidates.current) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+        }
+        pendingCandidates.current = [];
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+        await fetch('/api/consultations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'SIGNAL_CALL',
+            sessionId,
+            signalType: 'ANSWER',
+            sender: currentUserType,
+            sdp: pc.localDescription,
+          }),
+        });
+      } else if (type === 'ANSWER') {
+        const sdp = sig.sdp ?? sig.answer;
+        if (!sdp || pc.signalingState !== 'have-local-offer') return;
+        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        for (const c of pendingCandidates.current) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+        }
+        pendingCandidates.current = [];
+      } else if (type === 'ICE_CANDIDATE' || type === 'ICE') {
+        const cand = sig.candidate;
+        if (!cand) return;
+        if (pc.remoteDescription?.type) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch {}
+        } else {
+          pendingCandidates.current.push(cand);
+        }
+      }
+    } catch (err) {
+      console.warn('[WebRTC] signal error:', err);
+    }
+  };
+
+  // ─────────────────────────────────────────────────────────
+  // STEP 1: Start local camera/mic when call activates
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isCallActive) {
-      // Stop & clean up local stream
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
@@ -160,41 +215,33 @@ export default function LiveConsultationRoom({
       setLocalStream(null);
       setRemoteStream(null);
       callActiveRef.current = false;
+      if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
       return;
     }
-
     callActiveRef.current = true;
 
-    const startMedia = async () => {
+    let cancelled = false;
+    (async () => {
+      let stream: MediaStream;
       try {
-        let stream: MediaStream;
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: callType === 'VIDEO' ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false,
+          audio: true,
+        });
+      } catch {
         try {
-          stream = await navigator.mediaDevices.getUserMedia({
-            video: callType === 'VIDEO' ? { width: { ideal: 1280 }, height: { ideal: 720 } } : false,
-            audio: true,
-          });
-        } catch (err) {
-          // Fallback if camera denied — audio only
-          try {
-            stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
-          } catch {
-            stream = createFallbackMediaStream(currentUserType === 'CLIENT' ? 'Client' : 'Astrologer');
-          }
+          stream = await navigator.mediaDevices.getUserMedia({ video: false, audio: true });
+        } catch {
+          stream = createFallbackMediaStream(currentUserType === 'CLIENT' ? 'Client' : 'Astrologer');
         }
-        localStreamRef.current = stream;
-        setLocalStream(stream);
-        if (localVideoRef.current) {
-          localVideoRef.current.srcObject = stream;
-          localVideoRef.current.play().catch(() => {});
-        }
-      } catch (err) {
-        console.warn('Media start error:', err);
       }
-    };
-
-    startMedia();
+      if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+      localStreamRef.current = stream;
+      setLocalStream(stream);
+    })();
 
     return () => {
+      cancelled = true;
       if (localStreamRef.current) {
         localStreamRef.current.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
@@ -204,15 +251,12 @@ export default function LiveConsultationRoom({
 
   // ─────────────────────────────────────────────────────────
   // STEP 2: Create RTCPeerConnection once local stream is ready
+  //         Then immediately apply any already-received signals
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isCallActive || !localStream) return;
 
-    // Close existing connection
-    if (pcRef.current) {
-      pcRef.current.close();
-      pcRef.current = null;
-    }
+    if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
     processedSigIds.current.clear();
     pendingCandidates.current = [];
 
@@ -225,23 +269,18 @@ export default function LiveConsultationRoom({
     });
     pcRef.current = pc;
 
-    // Add local tracks
-    localStream.getTracks().forEach(track => {
-      pc.addTrack(track, localStream);
-    });
+    // Add local tracks BEFORE creating offer
+    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
-    // When remote tracks arrive → show remote video
     pc.ontrack = (event) => {
-      if (event.streams?.[0]) {
-        setRemoteStream(event.streams[0]);
-        if (remoteVideoRef.current) {
-          remoteVideoRef.current.srcObject = event.streams[0];
-          remoteVideoRef.current.play().catch(() => {});
-        }
+      const stream = event.streams?.[0] ?? new MediaStream([event.track]);
+      setRemoteStream(stream);
+      if (remoteVideoRef.current) {
+        remoteVideoRef.current.srcObject = stream;
+        remoteVideoRef.current.play().catch(() => {});
       }
     };
 
-    // Send ICE candidates to other party via API
     pc.onicecandidate = (event) => {
       if (!event.candidate) return;
       fetch('/api/consultations', {
@@ -257,13 +296,13 @@ export default function LiveConsultationRoom({
       }).catch(() => {});
     };
 
-    // CLIENT creates and sends offer
+    // CLIENT: create & send offer
     if (currentUserType === 'CLIENT') {
-      pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true })
-        .then(offer => pc.setLocalDescription(offer))
-        .then(() => {
-          if (!pc.localDescription) return;
-          fetch('/api/consultations', {
+      (async () => {
+        try {
+          const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true });
+          await pc.setLocalDescription(offer);
+          await fetch('/api/consultations', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -273,132 +312,81 @@ export default function LiveConsultationRoom({
               sender: 'CLIENT',
               sdp: pc.localDescription,
             }),
-          }).catch(() => {});
-        })
-        .catch(err => console.warn('Offer creation error:', err));
+          });
+        } catch (err) {
+          console.warn('[WebRTC] offer error:', err);
+        }
+      })();
+    }
+
+    // ASTROLOGER: process any OFFER already in pendingSignalsRef
+    // (they arrived while we were getting camera access)
+    if (currentUserType === 'ASTROLOGER') {
+      const buffered = [...pendingSignalsRef.current];
+      for (const sig of buffered) {
+        applySignalToPc(pc, sig);
+      }
     }
 
     return () => {
       pc.close();
       if (pcRef.current === pc) pcRef.current = null;
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isCallActive, localStream, sessionId, currentUserType]);
 
   // ─────────────────────────────────────────────────────────
-  // STEP 3: Poll API every 1.5s to receive signals from other party
+  // STEP 3: Poll API every 1.5s — update session & relay signals
   // ─────────────────────────────────────────────────────────
-  const processSignal = async (sig: any) => {
-    const pc = pcRef.current;
-    if (!pc || !sig || sig.sender === currentUserType) return;
-
-    const key = sig.id || `${sig.type || sig.signalType}:${JSON.stringify(sig.sdp || sig.candidate || '')}`;
-    if (processedSigIds.current.has(key)) return;
-    processedSigIds.current.add(key);
-
-    const type = sig.type || sig.signalType;
-
-    try {
-      if (type === 'OFFER') {
-        const sdp = sig.sdp || sig.offer;
-        if (!sdp) return;
-        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-        // Flush queued ICE candidates
-        for (const c of pendingCandidates.current) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
-        }
-        pendingCandidates.current = [];
-
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-        await fetch('/api/consultations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            action: 'SIGNAL_CALL',
-            sessionId,
-            signalType: 'ANSWER',
-            sender: currentUserType,
-            sdp: pc.localDescription,
-          }),
-        });
-
-      } else if (type === 'ANSWER') {
-        const sdp = sig.sdp || sig.answer;
-        if (!sdp || pc.signalingState !== 'have-local-offer') return;
-        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-        // Flush queued ICE candidates
-        for (const c of pendingCandidates.current) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
-        }
-        pendingCandidates.current = [];
-
-      } else if (type === 'ICE_CANDIDATE' || type === 'ICE') {
-        const cand = sig.candidate;
-        if (!cand) return;
-        if (pc.remoteDescription?.type) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch {}
-        } else {
-          pendingCandidates.current.push(cand);
-        }
-      }
-    } catch (err) {
-      console.warn('Signal processing error:', err);
-    }
-  };
-
-  // Sync session & process WebRTC signals
-  const fetchSession = async () => {
-    try {
-      const res = await fetch(`/api/consultations?sessionId=${sessionId}`);
-      const data = await res.json();
-      if (!data.session) return;
-
-      setSession(data.session);
-      setRemainingSecs(data.session.remainingSeconds ?? 900);
-
-      // Both sides activate call when session is LIVE
-      if (data.session.status === 'LIVE' && !callActiveRef.current) {
-        callActiveRef.current = true;
-        setIsCallActive(true);
-        setCallType(data.session.callType || 'VIDEO');
-      }
-
-      // Process any incoming WebRTC signals from other party
-      if (callActiveRef.current && data.session.signals?.length > 0) {
-        for (const sig of data.session.signals) {
-          processSignal(sig);
-        }
-      }
-    } catch (err) {
-      console.error('fetchSession error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
+    const fetchSession = async () => {
+      try {
+        const res = await fetch(`/api/consultations?sessionId=${sessionId}`);
+        const data = await res.json();
+        if (!data.session) return;
+
+        setSession(data.session);
+        setRemainingSecs(data.session.remainingSeconds ?? 900);
+
+        // Activate call on this side when remote triggers INITIATE_CALL
+        if (data.session.status === 'LIVE' && !callActiveRef.current) {
+          callActiveRef.current = true;
+          setIsCallActive(true);
+          setCallType(data.session.callType ?? 'VIDEO');
+        }
+
+        // Store latest signals in ref (for Step 2 to consume after PC is ready)
+        pendingSignalsRef.current = data.session.signals ?? [];
+
+        // If PC already exists, apply signals to it right now
+        const pc = pcRef.current;
+        if (pc && callActiveRef.current) {
+          for (const sig of pendingSignalsRef.current) {
+            applySignalToPc(pc, sig);
+          }
+        }
+      } catch (err) {
+        console.error('[fetchSession] error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
     fetchSession();
     const interval = setInterval(fetchSession, 1500);
     return () => clearInterval(interval);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  // Callback ref to attach local camera stream reliably
+  // Callback refs to attach streams to video elements reliably
   const setLocalVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
     localVideoRef.current = node;
-    if (node && localStream) {
-      node.srcObject = localStream;
-      node.play().catch(() => {});
-    }
+    if (node && localStream) { node.srcObject = localStream; node.play().catch(() => {}); }
   }, [localStream]);
 
-  // Callback ref to attach remote party camera stream reliably
   const setRemoteVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
     remoteVideoRef.current = node;
-    if (node && remoteStream) {
-      node.srcObject = remoteStream;
-      node.play().catch(() => {});
-    }
+    if (node && remoteStream) { node.srcObject = remoteStream; node.play().catch(() => {}); }
   }, [remoteStream]);
 
   // Re-bind video elements on stream change
@@ -413,34 +401,36 @@ export default function LiveConsultationRoom({
     }
   }, [localStream, remoteStream, isSwappedCamera, isCallActive, callType, isVideoOff]);
 
-  // Dynamic Audio & Video Track Mute/Unmute
+  // Dynamic mute/unmute
   useEffect(() => {
     if (localStream) {
-      localStream.getAudioTracks().forEach((t) => (t.enabled = !isMicMuted));
-      localStream.getVideoTracks().forEach((t) => (t.enabled = !isVideoOff));
+      localStream.getAudioTracks().forEach(t => (t.enabled = !isMicMuted));
+      localStream.getVideoTracks().forEach(t => (t.enabled = !isVideoOff));
     }
   }, [isMicMuted, isVideoOff, localStream]);
 
-  // Timer Countdown
+  // Timer countdown
   useEffect(() => {
     if (!session || session.status !== 'LIVE') return;
     const timer = setInterval(() => {
-      setRemainingSecs((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleEndSession('System Timer Expired');
-          return 0;
-        }
+      setRemainingSecs(prev => {
+        if (prev <= 1) { clearInterval(timer); handleEndSession('System Timer Expired'); return 0; }
         return prev - 1;
       });
     }, 1000);
     return () => clearInterval(timer);
   }, [session?.status]);
 
-  // Scroll to bottom
+  // Scroll chat to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [session?.messages]);
+
+
+
+
+
+
 
 
 
@@ -555,7 +545,7 @@ export default function LiveConsultationRoom({
       });
       setRemedyInput('');
       setShowRemedyModal(false);
-      fetchSession();
+
     } catch (err) {
       console.error('Failed to send remedy:', err);
     }
