@@ -28,7 +28,8 @@ import {
   Minimize2,
   Maximize2,
   RefreshCw,
-  AlertTriangle
+  AlertTriangle,
+  RotateCw
 } from 'lucide-react';
 import { ConsultationSession, ConsultationMessage } from '@/app/api/consultations/route';
 
@@ -55,6 +56,7 @@ export default function LiveConsultationRoom({
   const [isVideoOff, setIsVideoOff] = useState(false);
   const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
   const [isCallPip, setIsCallPip] = useState(false);
+  const [isSwappedCamera, setIsSwappedCamera] = useState(false);
 
   // Media Stream & Camera State
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -104,6 +106,15 @@ export default function LiveConsultationRoom({
     return () => clearInterval(interval);
   }, [sessionId]);
 
+  // Callback ref to attach local camera stream reliably across DOM mounts & view swaps
+  const setLocalVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
+    localVideoRef.current = node;
+    if (node && localStream) {
+      node.srcObject = localStream;
+      node.play().catch(() => {});
+    }
+  }, [localStream]);
+
   // Handle getUserMedia video stream when call is active
   useEffect(() => {
     if (!isCallActive) {
@@ -146,10 +157,6 @@ export default function LiveConsultationRoom({
             localVideoRef.current.srcObject = activeMediaStream;
             localVideoRef.current.play().catch(() => {});
           }
-          if (remoteVideoRef.current) {
-            remoteVideoRef.current.srcObject = activeMediaStream;
-            remoteVideoRef.current.play().catch(() => {});
-          }
         }
       } catch (err: any) {
         console.warn('Webcam / Microphone permission note:', err);
@@ -166,6 +173,14 @@ export default function LiveConsultationRoom({
       }
     };
   }, [isCallActive, callType]);
+
+  // Re-bind local video stream whenever view swapped or controls changed
+  useEffect(() => {
+    if (localVideoRef.current && localStream) {
+      localVideoRef.current.srcObject = localStream;
+      localVideoRef.current.play().catch(() => {});
+    }
+  }, [localStream, isSwappedCamera, isCallActive, callType, isVideoOff]);
 
   // Dynamic Audio & Video Track Mute/Unmute
   useEffect(() => {
@@ -320,7 +335,7 @@ export default function LiveConsultationRoom({
 
   if (loading || !session) {
     return (
-      <div className="fixed inset-0 z-50 bg-[#0b141a] flex flex-col items-center justify-center space-y-4 text-slate-300">
+      <div className="fixed inset-0 z-[999999] bg-[#0b141a] flex flex-col items-center justify-center space-y-4 text-slate-300">
         <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
         <p className="font-medium text-sm text-emerald-400">Loading WhatsApp Live Consultation Workspace...</p>
       </div>
@@ -330,7 +345,7 @@ export default function LiveConsultationRoom({
   const otherPartyName = currentUserType === 'CLIENT' ? session.astrologerName : session.clientName;
 
   return (
-    <div className="fixed inset-0 z-50 w-screen h-screen bg-[#0b141a] text-[#e9edef] font-sans flex flex-col overflow-hidden">
+    <div className="fixed inset-0 z-[999999] w-screen h-[100dvh] max-h-[100dvh] bg-[#0b141a] text-[#e9edef] font-sans flex flex-col overflow-hidden select-none">
 
       {/* Hidden Mobile Camera Input & File Input */}
       <input
@@ -349,55 +364,55 @@ export default function LiveConsultationRoom({
         onChange={handleImageCapture}
       />
 
-      {/* 1. WHATSAPP HEADER NAVBAR */}
-      <div className="h-16 bg-[#202c33] px-3 md:px-6 flex items-center justify-between border-b border-[#2a3942] z-30 shrink-0 shadow-md">
-        <div className="flex items-center space-x-3">
+      {/* 1. WHATSAPP HEADER NAVBAR (FULLY RESPONSIVE & ADJUSTED FOR SAFE DISPLAY) */}
+      <div className="h-14 md:h-16 bg-[#202c33] px-2 sm:px-3 md:px-6 flex items-center justify-between border-b border-[#2a3942] z-30 shrink-0 shadow-md">
+        <div className="flex items-center space-x-1.5 sm:space-x-3 min-w-0">
           {onClose && (
             <button
               onClick={onClose}
-              className="p-1 text-[#8696a0] hover:text-[#e9edef] transition cursor-pointer"
+              className="p-1 text-[#8696a0] hover:text-[#e9edef] transition cursor-pointer shrink-0"
               title="Close chat"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 md:w-6 md:h-6" />
             </button>
           )}
 
-          <div className="relative">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-700 p-0.5 overflow-hidden flex items-center justify-center">
+          <div className="relative shrink-0">
+            <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-700 p-0.5 overflow-hidden flex items-center justify-center">
               {session.astrologerAvatar ? (
                 <img src={session.astrologerAvatar} alt={otherPartyName} className="w-full h-full object-cover rounded-full" />
               ) : (
-                <User className="w-6 h-6 text-white" />
+                <User className="w-5 h-5 md:w-6 md:h-6 text-white" />
               )}
             </div>
-            <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-[#202c33] rounded-full"></span>
+            <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-[#202c33] rounded-full"></span>
           </div>
 
-          <div>
-            <div className="flex items-center space-x-2">
-              <h3 className="font-semibold text-[#e9edef] text-sm md:text-base leading-tight">
+          <div className="min-w-0">
+            <div className="flex items-center space-x-1">
+              <h3 className="font-semibold text-[#e9edef] text-xs sm:text-sm md:text-base leading-tight truncate max-w-[85px] xs:max-w-[120px] sm:max-w-[180px]">
                 {otherPartyName}
               </h3>
-              <span className="bg-emerald-500/20 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-emerald-500/30 flex items-center gap-1">
+              <span className="bg-emerald-500/20 text-emerald-400 text-[9px] md:text-[10px] px-1 py-0.5 rounded-full font-bold border border-emerald-500/30 hidden sm:flex items-center gap-0.5">
                 <ShieldCheck className="w-3 h-3 text-emerald-400" />
-                Verified Guru
+                Verified
               </span>
             </div>
-            <p className="text-[11px] text-emerald-400 flex items-center gap-1.5 mt-0.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              <span>online • ₹{session.ratePerMin}/min</span>
+            <p className="text-[10px] md:text-[11px] text-emerald-400 flex items-center gap-1 mt-0.5 truncate">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse shrink-0"></span>
+              <span className="truncate">online • ₹{session.ratePerMin}/min</span>
             </p>
           </div>
         </div>
 
         {/* TIMER & CALL CONVERT BUTTONS */}
-        <div className="flex items-center space-x-2 md:space-x-3">
+        <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 shrink-0">
           
           {/* Live Timer Pill */}
           {session.status === 'LIVE' && (
-            <div className="flex items-center space-x-1.5 bg-[#111b21] px-3 py-1.5 rounded-full border border-amber-500/40 shadow-inner">
-              <Clock className="w-3.5 h-3.5 text-amber-400 animate-spin" style={{ animationDuration: '3s' }} />
-              <span className="font-mono font-bold text-amber-300 text-xs tracking-wider">
+            <div className="flex items-center space-x-1 bg-[#111b21] px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-amber-500/40 shadow-inner">
+              <Clock className="w-3 h-3 text-amber-400 animate-spin" style={{ animationDuration: '3s' }} />
+              <span className="font-mono font-bold text-amber-300 text-[10px] sm:text-xs tracking-wider">
                 {formatTimer(remainingSecs)}
               </span>
             </div>
@@ -407,14 +422,14 @@ export default function LiveConsultationRoom({
           {session.status === 'LIVE' && (
             <button
               onClick={() => handleInitiateCall('VIDEO')}
-              className={`p-2.5 rounded-full border transition cursor-pointer ${
+              className={`p-1.5 sm:p-2 md:p-2.5 rounded-full border transition cursor-pointer ${
                 isCallActive && callType === 'VIDEO'
                   ? 'bg-emerald-600 border-emerald-400 text-white shadow-lg animate-pulse'
                   : 'bg-[#2a3942] hover:bg-[#3b4a54] border-[#374248] text-[#aebac1] hover:text-[#e9edef]'
               }`}
               title="Start Live Video Call"
             >
-              <Video className="w-5 h-5" />
+              <Video className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           )}
 
@@ -422,30 +437,30 @@ export default function LiveConsultationRoom({
           {session.status === 'LIVE' && (
             <button
               onClick={() => handleInitiateCall('AUDIO')}
-              className={`p-2.5 rounded-full border transition cursor-pointer ${
+              className={`p-1.5 sm:p-2 md:p-2.5 rounded-full border transition cursor-pointer ${
                 isCallActive && callType === 'AUDIO'
                   ? 'bg-emerald-600 border-emerald-400 text-white shadow-lg animate-pulse'
                   : 'bg-[#2a3942] hover:bg-[#3b4a54] border-[#374248] text-[#aebac1] hover:text-[#e9edef]'
               }`}
               title="Start Live Voice Call"
             >
-              <Phone className="w-5 h-5" />
+              <Phone className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           )}
 
           {/* 📷 Snap Kundli Camera Button */}
           <button
             onClick={() => cameraInputRef.current?.click()}
-            className="p-2.5 rounded-full bg-[#2a3942] hover:bg-[#3b4a54] border border-[#374248] text-[#aebac1] hover:text-[#e9edef] transition cursor-pointer"
+            className="p-1.5 sm:p-2 md:p-2.5 rounded-full bg-[#2a3942] hover:bg-[#3b4a54] border border-[#374248] text-[#aebac1] hover:text-[#e9edef] transition cursor-pointer"
             title="Snap Paper Kundli Photo using Mobile Camera"
           >
-            <Camera className="w-5 h-5 text-amber-400" />
+            <Camera className="w-4 h-4 md:w-5 md:h-5 text-amber-400" />
           </button>
 
           {/* Kundli Details Button */}
           <button
             onClick={() => setShowKundliModal(true)}
-            className="hidden sm:flex items-center space-x-1 text-xs bg-[#111b21] hover:bg-[#182229] text-emerald-400 px-3 py-1.5 rounded-xl border border-emerald-500/30 transition cursor-pointer"
+            className="hidden sm:flex items-center space-x-1 text-xs bg-[#111b21] hover:bg-[#182229] text-emerald-400 px-2 py-1 rounded-xl border border-emerald-500/30 transition cursor-pointer"
           >
             <FileText className="w-3.5 h-3.5" />
             <span>Kundli</span>
@@ -454,7 +469,7 @@ export default function LiveConsultationRoom({
           {currentUserType === 'ASTROLOGER' && session.status === 'LIVE' && (
             <button
               onClick={() => setShowRemedyModal(true)}
-              className="hidden md:flex items-center space-x-1 text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 px-3 py-1.5 rounded-xl transition"
+              className="hidden md:flex items-center space-x-1 text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 px-2.5 py-1 rounded-xl transition cursor-pointer"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>Remedy</span>
@@ -464,10 +479,11 @@ export default function LiveConsultationRoom({
           {session.status === 'LIVE' && (
             <button
               onClick={() => handleEndSession('User ended session')}
-              className="bg-red-600 hover:bg-red-700 text-white font-bold text-xs px-3 py-1.5 rounded-xl border border-red-500/50 flex items-center gap-1 transition shadow cursor-pointer"
+              className="bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] sm:text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-red-500/50 flex items-center gap-1 transition shadow cursor-pointer shrink-0"
+              title="End Consultation"
             >
               <PhoneOff className="w-3.5 h-3.5" />
-              <span>End</span>
+              <span className="hidden xs:inline">End</span>
             </button>
           )}
         </div>
@@ -475,33 +491,80 @@ export default function LiveConsultationRoom({
 
       {/* 2. REAL-TIME VIDEO / VOICE CALL SCREEN DOCK */}
       {isCallActive && session.status === 'LIVE' && (
-        <div className={`bg-[#0b141a] border-b border-[#222d34] flex flex-col items-center justify-between p-3 md:p-4 transition-all duration-300 shrink-0 relative ${
-          isCallPip ? 'h-40' : 'h-72 md:h-96'
+        <div className={`bg-[#0b141a] border-b border-[#222d34] flex flex-col items-center justify-between p-2 md:p-4 transition-all duration-300 shrink-0 relative ${
+          isCallPip ? 'h-36' : 'h-64 md:h-80'
         }`}>
           <div className="relative w-full flex-1 rounded-3xl bg-slate-950 border border-[#2a3942] overflow-hidden shadow-2xl flex items-center justify-center">
             
             {/* LIVE WEBCAM VIDEO STREAM DISPLAY */}
             {callType === 'VIDEO' && !isVideoOff ? (
               <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                {/* Main Remote / Astrologer Stream Container */}
-                <video
-                  ref={remoteVideoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
-
-                {/* Overlaid Self-View PIP Camera Box (Bottom Right) */}
-                <div className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20">
+                
+                {/* MAIN VIEW: Remote Party (or Swapped Local View) */}
+                {!isSwappedCamera ? (
+                  /* Remote Party Video Background */
+                  <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&q=80'}
+                      alt={otherPartyName}
+                      className="w-full h-full object-cover opacity-80"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 flex flex-col items-center justify-center p-4">
+                      <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse">
+                        <User className="w-10 h-10" />
+                      </div>
+                      <h4 className="text-white font-bold text-base">{otherPartyName}</h4>
+                      <p className="text-emerald-400 text-xs flex items-center gap-1 mt-1">
+                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                        Live Video Feed Connected
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  /* Swapped: Own Webcam Feed as Main View */
                   <video
-                    ref={localVideoRef}
+                    ref={setLocalVideoRef}
                     autoPlay
                     playsInline
                     muted
                     className="w-full h-full object-cover transform -scale-x-100"
                   />
-                  <div className="absolute bottom-1 left-1.5 bg-black/60 px-1.5 py-0.5 rounded text-[9px] text-white font-bold">
-                    You
+                )}
+
+                {/* OVERLAID SMALL PIP CORNER BOX (Tap to interchange views!) */}
+                <div
+                  onClick={() => setIsSwappedCamera(!isSwappedCamera)}
+                  className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group"
+                  title="Click to interchange main video and PIP views"
+                >
+                  {isSwappedCamera ? (
+                    <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
+                      <img
+                        src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                        alt={otherPartyName}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute bottom-1 left-1 bg-black/70 px-1 py-0.5 rounded text-[8px] text-emerald-300 font-bold">
+                        {otherPartyName}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full relative bg-black">
+                      <video
+                        ref={setLocalVideoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover transform -scale-x-100"
+                      />
+                      <div className="absolute bottom-1 left-1 bg-black/70 px-1 py-0.5 rounded text-[8px] text-white font-bold">
+                        You
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                    <RotateCw className="w-5 h-5 text-white animate-spin" />
                   </div>
                 </div>
 
@@ -552,18 +615,18 @@ export default function LiveConsultationRoom({
               </div>
             )}
 
-            {/* Camera Permission Warning Banner if denied */}
+            {/* Camera Warning Banner if hardware missing or denied */}
             {cameraError && (
-              <div className="absolute top-3 inset-x-4 bg-amber-950/90 border border-amber-500/50 p-2.5 rounded-xl text-xs text-amber-200 flex items-center justify-between z-30">
+              <div className="absolute top-3 inset-x-4 bg-amber-950/90 border border-amber-500/50 p-2 rounded-xl text-xs text-amber-200 flex items-center justify-between z-30">
                 <div className="flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
                   <span>{cameraError}</span>
                 </div>
                 <button
-                  onClick={() => setIsVideoOff(true)}
+                  onClick={() => setCameraError(null)}
                   className="px-2 py-0.5 bg-amber-500 text-slate-950 font-bold rounded text-[10px]"
                 >
-                  Dismiss
+                  OK
                 </button>
               </div>
             )}
@@ -610,6 +673,14 @@ export default function LiveConsultationRoom({
             </button>
 
             <button
+              onClick={() => setIsSwappedCamera(!isSwappedCamera)}
+              className="p-2.5 rounded-full bg-[#111b21] border border-[#222d34] text-[#e9edef] hover:bg-[#182229] transition cursor-pointer"
+              title="Interchange Camera Stream Views"
+            >
+              <RotateCw className="w-4 h-4 text-emerald-400" />
+            </button>
+
+            <button
               onClick={() => setIsCallActive(false)}
               className="p-3 rounded-full bg-red-600 hover:bg-red-700 text-white shadow-lg transition cursor-pointer"
               title="Minimize Call & Return to Chat"
@@ -621,7 +692,7 @@ export default function LiveConsultationRoom({
       )}
 
       {/* 3. WHATSAPP CHAT STREAM CONTAINER */}
-      <div className="flex-1 bg-[#0b141a] relative overflow-hidden flex flex-col">
+      <div className="flex-1 bg-[#0b141a] relative overflow-hidden flex flex-col min-h-0">
         
         {/* Subtly Textured WhatsApp Background Pattern */}
         <div
@@ -732,7 +803,7 @@ export default function LiveConsultationRoom({
 
         {/* QUICK RESPONSE CHIPS */}
         {session.status === 'LIVE' && (
-          <div className="px-3 py-1.5 bg-[#111b21] border-t border-[#222d34] flex items-center gap-2 overflow-x-auto scrollbar-none text-xs">
+          <div className="px-3 py-1.5 bg-[#111b21] border-t border-[#222d34] flex items-center gap-2 overflow-x-auto scrollbar-none text-xs shrink-0">
             <span className="text-[#8696a0] text-[10px] uppercase tracking-wider whitespace-nowrap flex items-center gap-1">
               <Zap className="w-3 h-3 text-amber-400" /> Quick Vedic Answers:
             </span>
@@ -805,31 +876,31 @@ export default function LiveConsultationRoom({
           </div>
         )}
 
-        {/* 4. WHATSAPP CHAT INPUT BAR */}
+        {/* 4. WHATSAPP CHAT INPUT BAR (FLUSH SAFE AREA AT BOTTOM) */}
         {session.status === 'LIVE' ? (
           <form
             onSubmit={(e) => {
               e.preventDefault();
               handleSendMessage();
             }}
-            className="p-2.5 bg-[#202c33] border-t border-[#2a3942] flex items-center space-x-2 shrink-0"
+            className="px-2 py-2 sm:px-3 sm:py-2.5 bg-[#202c33] border-t border-[#2a3942] flex items-center space-x-1.5 sm:space-x-2 shrink-0 pb-5 sm:pb-3.5 md:pb-2.5 z-30 mb-0"
           >
             <button
               type="button"
               onClick={() => setShowAttachMenu(!showAttachMenu)}
-              className="p-2 text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full transition cursor-pointer"
+              className="p-1.5 sm:p-2 text-[#8696a0] hover:text-[#e9edef] hover:bg-[#2a3942] rounded-full transition cursor-pointer shrink-0"
               title="Attach Kundli photo / chart"
             >
-              <Paperclip className="w-5 h-5" />
+              <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             <button
               type="button"
               onClick={() => cameraInputRef.current?.click()}
-              className="p-2 text-amber-400 hover:text-amber-300 hover:bg-[#2a3942] rounded-full transition cursor-pointer"
+              className="p-1.5 sm:p-2 text-amber-400 hover:text-amber-300 hover:bg-[#2a3942] rounded-full transition cursor-pointer shrink-0"
               title="Snap Paper Kundli with Mobile Camera"
             >
-              <Camera className="w-5 h-5" />
+              <Camera className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             <input
@@ -837,19 +908,19 @@ export default function LiveConsultationRoom({
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               placeholder="Type a message..."
-              className="flex-1 bg-[#2a3942] border border-transparent rounded-xl px-4 py-2.5 text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:border-emerald-500/50 transition"
+              className="flex-1 min-w-0 bg-[#2a3942] border border-transparent rounded-xl px-3 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm text-[#e9edef] placeholder-[#8696a0] focus:outline-none focus:border-emerald-500/50 transition"
             />
 
             <button
               type="submit"
               disabled={sending || !inputText.trim()}
-              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2.5 rounded-full disabled:opacity-40 transition flex items-center justify-center shadow-lg cursor-pointer shrink-0"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2 sm:p-2.5 rounded-full disabled:opacity-40 transition flex items-center justify-center shadow-lg cursor-pointer shrink-0"
             >
               <Send className="w-4 h-4" />
             </button>
           </form>
         ) : (
-          <div className="p-3 bg-[#202c33] border-t border-[#2a3942] text-center text-xs text-[#8696a0]">
+          <div className="p-3 bg-[#202c33] border-t border-[#2a3942] text-center text-xs text-[#8696a0] shrink-0 pb-5 sm:pb-3.5">
             This live consultation has completed.
           </div>
         )}
@@ -857,11 +928,11 @@ export default function LiveConsultationRoom({
 
       {/* FULL RESOLUTION IMAGE PREVIEW MODAL */}
       {previewImage && (
-        <div className="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100000] bg-black/90 backdrop-blur-md flex items-center justify-center p-4">
           <div className="relative max-w-4xl w-full max-h-[90vh] flex flex-col items-center">
             <button
               onClick={() => setPreviewImage(null)}
-              className="absolute -top-10 right-0 p-2 text-white bg-slate-800 rounded-full"
+              className="absolute -top-10 right-0 p-2 text-white bg-slate-800 rounded-full cursor-pointer"
             >
               <X className="w-6 h-6" />
             </button>
@@ -872,7 +943,7 @@ export default function LiveConsultationRoom({
 
       {/* PRESCRIBE REMEDY MODAL (Astrologer Only) */}
       {showRemedyModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100000] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#202c33] border border-amber-500/40 rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl text-[#e9edef]">
             <div className="flex items-center justify-between border-b border-[#2a3942] pb-3">
               <h3 className="font-semibold text-amber-400 flex items-center gap-2">
@@ -894,13 +965,13 @@ export default function LiveConsultationRoom({
             <div className="flex items-center justify-end space-x-3 pt-2">
               <button
                 onClick={() => setShowRemedyModal(false)}
-                className="px-4 py-2 bg-[#2a3942] hover:bg-[#3b4a54] text-[#aebac1] rounded-xl text-xs"
+                className="px-4 py-2 bg-[#2a3942] hover:bg-[#3b4a54] text-[#aebac1] rounded-xl text-xs cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSendRemedy}
-                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-lg"
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold rounded-xl text-xs shadow-lg cursor-pointer"
               >
                 Send Prescription
               </button>
@@ -911,7 +982,7 @@ export default function LiveConsultationRoom({
 
       {/* KUNDLI DETAILS MODAL */}
       {showKundliModal && (
-        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-[100000] bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-[#202c33] border border-[#2a3942] rounded-2xl max-w-md w-full p-5 space-y-4 shadow-2xl text-[#e9edef]">
             <div className="flex items-center justify-between border-b border-[#2a3942] pb-3">
               <h3 className="font-semibold text-[#e9edef] flex items-center gap-2">
@@ -948,13 +1019,13 @@ export default function LiveConsultationRoom({
             <div className="flex items-center justify-end space-x-3 pt-2">
               <button
                 onClick={handleShareKundli}
-                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl text-xs flex items-center gap-1.5 shadow"
+                className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-medium rounded-xl text-xs flex items-center gap-1.5 shadow cursor-pointer"
               >
                 <Share2 className="w-3.5 h-3.5" /> Share in Chat
               </button>
               <button
                 onClick={() => setShowKundliModal(false)}
-                className="px-4 py-2 bg-[#2a3942] hover:bg-[#3b4a54] text-[#aebac1] rounded-xl text-xs"
+                className="px-4 py-2 bg-[#2a3942] hover:bg-[#3b4a54] text-[#aebac1] rounded-xl text-xs cursor-pointer"
               >
                 Close
               </button>
