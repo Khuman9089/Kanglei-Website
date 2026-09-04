@@ -154,6 +154,29 @@ export default function LiveConsultationRoom({
   const pendingSignalsRef = useRef<any[]>([]);
 
   // ─────────────────────────────────────────────────────────
+  // Helper: Wait for ICE candidate gathering completion
+  // ─────────────────────────────────────────────────────────
+  const waitForIceGathering = (pc: RTCPeerConnection): Promise<void> => {
+    return new Promise((resolve) => {
+      if (pc.iceGatheringState === 'complete') {
+        resolve();
+        return;
+      }
+      const checkState = () => {
+        if (pc.iceGatheringState === 'complete') {
+          pc.removeEventListener('icegatheringstatechange', checkState);
+          resolve();
+        }
+      };
+      pc.addEventListener('icegatheringstatechange', checkState);
+      setTimeout(() => {
+        pc.removeEventListener('icegatheringstatechange', checkState);
+        resolve();
+      }, 1500);
+    });
+  };
+
+  // ─────────────────────────────────────────────────────────
   // Helper: Create fresh RTCPeerConnection instance
   // ─────────────────────────────────────────────────────────
   const createPeerConnection = (stream: MediaStream): RTCPeerConnection => {
@@ -174,6 +197,8 @@ export default function LiveConsultationRoom({
         { urls: 'stun:stun2.l.google.com:19302' },
         { urls: 'stun:stun3.l.google.com:19302' },
         { urls: 'stun:stun4.l.google.com:19302' },
+        { urls: 'stun:stun.services.mozilla.com' },
+        { urls: 'stun:global.stun.twilio.com:3478' },
       ],
     });
     pcRef.current = pc;
@@ -256,6 +281,7 @@ export default function LiveConsultationRoom({
 
         const answer = await targetPc.createAnswer();
         await targetPc.setLocalDescription(answer);
+        await waitForIceGathering(targetPc);
         await fetch('/api/consultations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -364,6 +390,7 @@ export default function LiveConsultationRoom({
           console.log('[WebRTC] CLIENT creating OFFER');
           const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true });
           await pc.setLocalDescription(offer);
+          await waitForIceGathering(pc);
           await fetch('/api/consultations', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
