@@ -140,17 +140,20 @@ export default function LiveConsultationRoom({
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  // WebRTC refs
+  // WebRTC refs & states
   const pcRef = useRef<RTCPeerConnection | null>(null);
   const localStreamRef = useRef<MediaStream | null>(null);
+  const remoteStreamRef = useRef<MediaStream>(new MediaStream());
+  const [hasRemoteStream, setHasRemoteStream] = useState(false);
+  const [connectionState, setConnectionState] = useState<'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'FAILED'>('DISCONNECTED');
+  
   const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
   const processedSigIds = useRef<Set<string>>(new Set());
   const callActiveRef = useRef<boolean>(false);
-  // Stores ALL signals from last API poll — read by the PC effect
   const pendingSignalsRef = useRef<any[]>([]);
 
   // ─────────────────────────────────────────────────────────
-  // Helper: apply a signal directly to a known-good PC
+  // Helper: process incoming WebRTC signal safely
   // ─────────────────────────────────────────────────────────
   const applySignalToPc = async (pc: RTCPeerConnection, sig: any) => {
     if (!sig || sig.sender === currentUserType) return;
@@ -160,14 +163,18 @@ export default function LiveConsultationRoom({
 
     const type: string = sig.signalType ?? sig.type ?? '';
     try {
-      if (type === 'OFFER') {
+      if (type === 'OFFER' && currentUserType === 'ASTROLOGER') {
         const sdp = sig.sdp ?? sig.offer;
         if (!sdp) return;
+        console.log('[WebRTC] Astrologer applying OFFER');
         await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        
+        // Drain buffered candidates
         for (const c of pendingCandidates.current) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
         }
         pendingCandidates.current = [];
+
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         await fetch('/api/consultations', {
@@ -177,34 +184,37 @@ export default function LiveConsultationRoom({
             action: 'SIGNAL_CALL',
             sessionId,
             signalType: 'ANSWER',
-            sender: currentUserType,
+            sender: 'ASTROLOGER',
             sdp: pc.localDescription,
           }),
         });
-      } else if (type === 'ANSWER') {
+      } else if (type === 'ANSWER' && currentUserType === 'CLIENT') {
         const sdp = sig.sdp ?? sig.answer;
-        if (!sdp || pc.signalingState !== 'have-local-offer') return;
-        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-        for (const c of pendingCandidates.current) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch {}
+        if (!sdp) return;
+        console.log('[WebRTC] Client applying ANSWER');
+        if (pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+          for (const c of pendingCandidates.current) {
+            try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+          }
+          pendingCandidates.current = [];
         }
-        pendingCandidates.current = [];
       } else if (type === 'ICE_CANDIDATE' || type === 'ICE') {
         const cand = sig.candidate;
-        if (!cand) return;
-        if (pc.remoteDescription?.type) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch {}
+        if (!cand || !cand.candidate) return;
+        if (pc.remoteDescription && pc.remoteDescription.type) {
+          try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
         } else {
           pendingCandidates.current.push(cand);
         }
       }
     } catch (err) {
-      console.warn('[WebRTC] signal error:', err);
+      console.warn('[WebRTC] signal processing warning:', err);
     }
   };
 
   // ─────────────────────────────────────────────────────────
-  // STEP 1: Start local camera/mic when call activates
+  // STEP 1: Manage local camera/mic stream
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isCallActive) {
@@ -213,12 +223,14 @@ export default function LiveConsultationRoom({
         localStreamRef.current = null;
       }
       setLocalStream(null);
-      setRemoteStream(null);
+      setHasRemoteStream(false);
+      setConnectionState('DISCONNECTED');
       callActiveRef.current = false;
       if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
       return;
     }
     callActiveRef.current = true;
+    setConnectionState('CONNECTING');
 
     let cancelled = false;
     (async () => {
@@ -250,8 +262,7 @@ export default function LiveConsultationRoom({
   }, [isCallActive, callType, currentUserType]);
 
   // ─────────────────────────────────────────────────────────
-  // STEP 2: Create RTCPeerConnection once local stream is ready
-  //         Then immediately apply any already-received signals
+  // STEP 2: Initialize PeerConnection when localStream is ready
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isCallActive || !localStream) return;
@@ -259,12 +270,17 @@ export default function LiveConsultationRoom({
     if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
     processedSigIds.current.clear();
     pendingCandidates.current = [];
+    remoteStreamRef.current = new MediaStream();
+    setHasRemoteStream(false);
+    setConnectionState('CONNECTING');
 
     const pc = new RTCPeerConnection({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
       ],
     });
     pcRef.current = pc;
@@ -273,16 +289,33 @@ export default function LiveConsultationRoom({
     localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
 
     pc.ontrack = (event) => {
-      const stream = event.streams?.[0] ?? new MediaStream([event.track]);
-      setRemoteStream(stream);
-      if (remoteVideoRef.current) {
-        remoteVideoRef.current.srcObject = stream;
-        remoteVideoRef.current.play().catch(() => {});
+      console.log('[WebRTC] ontrack received:', event.track.kind);
+      if (event.streams && event.streams[0]) {
+        event.streams[0].getTracks().forEach(t => {
+          if (!remoteStreamRef.current.getTracks().some(existing => existing.id === t.id)) {
+            remoteStreamRef.current.addTrack(t);
+          }
+        });
+      } else if (event.track) {
+        if (!remoteStreamRef.current.getTracks().some(existing => existing.id === event.track.id)) {
+          remoteStreamRef.current.addTrack(event.track);
+        }
+      }
+      setHasRemoteStream(true);
+      setConnectionState('CONNECTED');
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log('[WebRTC] ICE State:', pc.iceConnectionState);
+      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        setConnectionState('CONNECTED');
+      } else if (pc.iceConnectionState === 'failed') {
+        setConnectionState('FAILED');
       }
     };
 
     pc.onicecandidate = (event) => {
-      if (!event.candidate) return;
+      if (!event.candidate || !event.candidate.candidate) return;
       fetch('/api/consultations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -300,6 +333,7 @@ export default function LiveConsultationRoom({
     if (currentUserType === 'CLIENT') {
       (async () => {
         try {
+          console.log('[WebRTC] CLIENT creating OFFER');
           const offer = await pc.createOffer({ offerToReceiveVideo: true, offerToReceiveAudio: true });
           await pc.setLocalDescription(offer);
           await fetch('/api/consultations', {
@@ -320,7 +354,6 @@ export default function LiveConsultationRoom({
     }
 
     // ASTROLOGER: process any OFFER already in pendingSignalsRef
-    // (they arrived while we were getting camera access)
     if (currentUserType === 'ASTROLOGER') {
       const buffered = [...pendingSignalsRef.current];
       for (const sig of buffered) {
@@ -336,7 +369,7 @@ export default function LiveConsultationRoom({
   }, [isCallActive, localStream, sessionId, currentUserType]);
 
   // ─────────────────────────────────────────────────────────
-  // STEP 3: Poll API every 1.5s — update session & relay signals
+  // STEP 3: Poll API every 1.2s — sync session & signals
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     const fetchSession = async () => {
@@ -348,17 +381,14 @@ export default function LiveConsultationRoom({
         setSession(data.session);
         setRemainingSecs(data.session.remainingSeconds ?? 900);
 
-        // Activate call on this side when remote triggers INITIATE_CALL
         if (data.session.status === 'LIVE' && !callActiveRef.current) {
           callActiveRef.current = true;
           setIsCallActive(true);
           setCallType(data.session.callType ?? 'VIDEO');
         }
 
-        // Store latest signals in ref (for Step 2 to consume after PC is ready)
         pendingSignalsRef.current = data.session.signals ?? [];
 
-        // If PC already exists, apply signals to it right now
         const pc = pcRef.current;
         if (pc && callActiveRef.current) {
           for (const sig of pendingSignalsRef.current) {
@@ -373,33 +403,27 @@ export default function LiveConsultationRoom({
     };
 
     fetchSession();
-    const interval = setInterval(fetchSession, 1500);
+    const interval = setInterval(fetchSession, 1200);
     return () => clearInterval(interval);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
-  // Callback refs to attach streams to video elements reliably
-  const setLocalVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
-    localVideoRef.current = node;
-    if (node && localStream) { node.srcObject = localStream; node.play().catch(() => {}); }
-  }, [localStream]);
-
-  const setRemoteVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
-    remoteVideoRef.current = node;
-    if (node && remoteStream) { node.srcObject = remoteStream; node.play().catch(() => {}); }
-  }, [remoteStream]);
-
-  // Re-bind video elements on stream change
+  // ─────────────────────────────────────────────────────────
+  // Attach Streams to Video Elements
+  // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
       localVideoRef.current.play().catch(() => {});
     }
-    if (remoteVideoRef.current && remoteStream) {
-      remoteVideoRef.current.srcObject = remoteStream;
+  }, [localStream, isVideoOff]);
+
+  useEffect(() => {
+    if (remoteVideoRef.current && hasRemoteStream) {
+      remoteVideoRef.current.srcObject = remoteStreamRef.current;
       remoteVideoRef.current.play().catch(() => {});
     }
-  }, [localStream, remoteStream, isSwappedCamera, isCallActive, callType, isVideoOff]);
+  }, [hasRemoteStream]);
 
   // Dynamic mute/unmute
   useEffect(() => {
@@ -734,114 +758,89 @@ export default function LiveConsultationRoom({
         }`}>
           <div className="relative w-full flex-1 rounded-3xl bg-slate-950 border border-[#2a3942] overflow-hidden shadow-2xl flex items-center justify-center">
             
-            {/* LIVE NATIVE WEBCAM VIDEO STREAM DISPLAY */}
+            {/* LIVE WEBCAM VIDEO STREAM DISPLAY */}
             {callType === 'VIDEO' && !isVideoOff ? (
               <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                {/* MAIN VIEW: Remote Party Stream (or Local View while connecting) */}
-                {!isSwappedCamera ? (
-                  <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                    {remoteStream ? (
-                      <video
-                        ref={setRemoteVideoRef}
-                        autoPlay
-                        playsInline
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                        {localStream ? (
-                          <video
-                            ref={setLocalVideoRef}
-                            autoPlay
-                            playsInline
-                            muted
-                            className="w-full h-full object-cover transform -scale-x-100 opacity-80"
-                          />
-                        ) : (
-                          <img
-                            src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&q=80'}
-                            alt={otherPartyName}
-                            className="w-full h-full object-cover opacity-70"
-                          />
-                        )}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/50 flex flex-col items-center justify-center p-4 text-center">
-                          <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
-                            <User className="w-8 h-8 text-emerald-300" />
-                          </div>
-                          <h4 className="text-white font-bold text-sm md:text-base">{otherPartyName}</h4>
-                          <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                            <span>Connecting 1-on-1 HD Video Feed...</span>
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  /* Swapped: Own Webcam Feed as Main View */
-                  <div className="relative w-full h-full bg-black">
-                    <video
-                      ref={setLocalVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover transform -scale-x-100"
-                    />
-                    <div className="absolute top-3 left-3 bg-black/70 px-2.5 py-1 rounded-full text-xs text-white font-bold">
-                      You (Main View)
+                
+                {/* 1. REMOTE VIDEO ELEMENT (Main View by default) */}
+                <video
+                  ref={remoteVideoRef}
+                  autoPlay
+                  playsInline
+                  className={`transition-all duration-300 ${
+                    !isSwappedCamera
+                      ? 'absolute inset-0 w-full h-full object-cover z-10'
+                      : 'w-full h-full object-cover'
+                  } ${!hasRemoteStream ? 'hidden' : 'block'}`}
+                />
+
+                {/* 2. LOCAL WEBCAM VIDEO ELEMENT */}
+                <video
+                  ref={localVideoRef}
+                  autoPlay
+                  playsInline
+                  muted
+                  className={`transition-all duration-300 transform -scale-x-100 ${
+                    isSwappedCamera
+                      ? 'absolute inset-0 w-full h-full object-cover z-10'
+                      : 'w-full h-full object-cover'
+                  } ${!localStream ? 'hidden' : 'block'}`}
+                />
+
+                {/* FALLBACK / CONNECTING OVERLAY (shown when remote stream is not yet established) */}
+                {!hasRemoteStream && (
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60 flex flex-col items-center justify-center p-4 text-center z-15">
+                    <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
+                      <User className="w-8 h-8 text-emerald-300" />
                     </div>
+                    <h4 className="text-white font-bold text-sm md:text-base">{otherPartyName}</h4>
+                    <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                      <span>
+                        {connectionState === 'CONNECTING' ? 'Connecting 1-on-1 HD Video Feed...' : 'Waiting for Remote Camera...'}
+                      </span>
+                    </p>
                   </div>
                 )}
 
-                {/* OVERLAID PIP CORNER BOX (Tap to interchange views!) */}
+                {/* OVERLAID PIP CORNER BOX (Tap to interchange main & corner views) */}
                 <div
                   onClick={() => setIsSwappedCamera(!isSwappedCamera)}
                   className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group"
-                  title="Click to interchange remote and local camera views"
+                  title="Click to swap remote and local camera views"
                 >
                   {isSwappedCamera ? (
+                    /* PiP shows Remote stream */
                     <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
-                      {remoteStream ? (
-                        <video
-                          ref={setRemoteVideoRef}
-                          autoPlay
-                          playsInline
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
+                      {!hasRemoteStream && (
                         <img
                           src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
                           alt={otherPartyName}
                           className="w-full h-full object-cover opacity-75"
                         />
                       )}
-                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-emerald-300 font-bold">
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-emerald-300 font-bold z-30">
                         {otherPartyName}
                       </div>
                     </div>
                   ) : (
+                    /* PiP shows Local stream */
                     <div className="w-full h-full relative bg-black">
-                      <video
-                        ref={setLocalVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className="w-full h-full object-cover transform -scale-x-100"
-                      />
-                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold">
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold z-30">
                         You
                       </div>
                     </div>
                   )}
 
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition z-30">
                     <RotateCw className="w-5 h-5 text-white animate-spin" />
                   </div>
                 </div>
 
-                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-emerald-400 font-bold flex items-center gap-1.5 z-20">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                  <span>1-on-1 HD Live Video</span>
+                {/* WEBCAM STATUS BADGE */}
+                <div className="absolute top-3 left-3 bg-black/70 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-emerald-400 font-bold flex items-center gap-1.5 z-20 border border-emerald-500/30">
+                  <span className={`w-2 h-2 rounded-full ${hasRemoteStream ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400 animate-ping'}`}></span>
+                  <span>{hasRemoteStream ? '1-on-1 HD Live Connected' : '1-on-1 HD Connecting...'}</span>
                 </div>
               </div>
             ) : (
