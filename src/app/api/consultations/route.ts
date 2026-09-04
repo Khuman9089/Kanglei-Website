@@ -129,9 +129,19 @@ async function getSessionsWithDefaults(): Promise<ConsultationSession[]> {
   const sessions = await readPersistentDataAsync<ConsultationSession[]>('consultation_sessions', DEFAULT_SESSIONS);
   let changed = false;
   for (const def of DEFAULT_SESSIONS) {
-    if (!sessions.some((s) => s.id === def.id)) {
-      sessions.unshift(def);
+    const existing = sessions.find((s) => s.id === def.id);
+    if (!existing) {
+      sessions.unshift({ ...def });
       changed = true;
+    } else if (def.id === 'TEST-SESS-999') {
+      // Auto-revive test session if it was previously ended or out of time
+      if (existing.status !== 'LIVE' || !existing.remainingSeconds || existing.remainingSeconds <= 60) {
+        existing.status = 'LIVE';
+        existing.remainingSeconds = 3600;
+        existing.durationMinutes = 60;
+        existing.callType = 'VIDEO';
+        changed = true;
+      }
     }
   }
   if (changed) {
@@ -300,6 +310,9 @@ export async function POST(req: Request) {
 
       sessions[idx].callType = callType || 'VIDEO';
       sessions[idx].status = 'LIVE';
+      if (!sessions[idx].remainingSeconds || sessions[idx].remainingSeconds <= 60) {
+        sessions[idx].remainingSeconds = (sessions[idx].durationMinutes || 30) * 60;
+      }
       // Prune signals older than 20s so active in-flight offer/answer negotiation isn't wiped out
       const now = Date.now();
       sessions[idx].signals = (sessions[idx].signals || []).filter(
@@ -314,6 +327,13 @@ export async function POST(req: Request) {
       const { sessionId, remainingSeconds } = body;
       const idx = sessions.findIndex((s) => s.id === sessionId);
       if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      if (sessionId === 'TEST-SESS-999') {
+        sessions[idx].status = 'LIVE';
+        sessions[idx].remainingSeconds = 3600;
+        await writePersistentDataAsync('consultation_sessions', sessions);
+        return NextResponse.json({ success: true, session: sessions[idx] });
+      }
 
       sessions[idx].remainingSeconds = Math.max(0, remainingSeconds);
       if (remainingSeconds <= 0 && sessions[idx].status === 'LIVE') {
@@ -335,6 +355,15 @@ export async function POST(req: Request) {
       const { sessionId, remedyRecommended } = body;
       const idx = sessions.findIndex((s) => s.id === sessionId);
       if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      // In TEST-SESS-999, reset the session so subsequent testing immediately has a fresh active room
+      if (sessionId === 'TEST-SESS-999') {
+        sessions[idx].status = 'LIVE';
+        sessions[idx].remainingSeconds = 3600;
+        sessions[idx].signals = [];
+        await writePersistentDataAsync('consultation_sessions', sessions);
+        return NextResponse.json({ success: true, session: sessions[idx] });
+      }
 
       sessions[idx].status = 'ENDED';
       sessions[idx].endedAt = new Date().toISOString();

@@ -453,7 +453,11 @@ export default function LiveConsultationRoom({
         if (!data.session) return;
 
         setSession(data.session);
-        setRemainingSecs(data.session.remainingSeconds ?? 900);
+        if (sessionId === 'TEST-SESS-999') {
+          setRemainingSecs((prev) => (prev > 60 ? prev : 1800));
+        } else {
+          setRemainingSecs(data.session.remainingSeconds ?? 900);
+        }
 
         if (data.session.status === 'LIVE' && !callActiveRef.current) {
           callActiveRef.current = true;
@@ -514,6 +518,9 @@ export default function LiveConsultationRoom({
   // Timer countdown
   useEffect(() => {
     if (!session || session.status !== 'LIVE') return;
+    // Never auto-expire test session TEST-SESS-999
+    if (sessionId === 'TEST-SESS-999') return;
+
     const timer = setInterval(() => {
       setRemainingSecs(prev => {
         if (prev <= 1) { clearInterval(timer); handleEndSession('System Timer Expired'); return 0; }
@@ -521,7 +528,7 @@ export default function LiveConsultationRoom({
       });
     }, 1000);
     return () => clearInterval(timer);
-  }, [session?.status]);
+  }, [session?.status, sessionId]);
 
   // Scroll chat to bottom
   useEffect(() => {
