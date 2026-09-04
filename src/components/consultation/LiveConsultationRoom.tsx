@@ -142,6 +142,75 @@ export default function LiveConsultationRoom({
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const processedSignalIdsRef = useRef<Set<string>>(new Set());
 
+  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
+  const bcRef = useRef<BroadcastChannel | null>(null);
+  const pendingIceCandidatesRef = useRef<RTCIceCandidateInit[]>([]);
+  const processedSignalIdsRef = useRef<Set<string>>(new Set());
+  const hasOfferedRef = useRef<boolean>(false);
+
+  // Unified WebRTC Signal Processing Engine
+  const processWebRtcSignal = React.useCallback(async (sig: any) => {
+    if (!sig || sig.sender === currentUserType) return;
+    const sigKey = sig.id || `${sig.type || sig.signalType}-${sig.sender}-${JSON.stringify(sig.sdp || sig.candidate || '')}`;
+    if (processedSignalIdsRef.current.has(sigKey)) return;
+    processedSignalIdsRef.current.add(sigKey);
+
+    const pc = peerConnectionRef.current;
+    if (!pc) return;
+
+    try {
+      if (sig.type === 'OFFER' || sig.signalType === 'OFFER') {
+        const sdp = sig.offer || sig.sdp;
+        if (sdp && (pc.signalingState === 'stable' || pc.signalingState === 'have-local-offer')) {
+          await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+          // Flush pending ICE candidates
+          while (pendingIceCandidatesRef.current.length > 0) {
+            const cand = pendingIceCandidatesRef.current.shift();
+            if (cand) {
+              try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+            }
+          }
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          if (bcRef.current) bcRef.current.postMessage({ id: `ans-${Date.now()}`, type: 'ANSWER', answer, sender: currentUserType });
+          fetch('/api/consultations', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              action: 'SIGNAL_CALL',
+              sessionId,
+              signalType: 'ANSWER',
+              sender: currentUserType,
+              sdp: answer,
+            }),
+          }).catch(() => {});
+        }
+      } else if (sig.type === 'ANSWER' || sig.signalType === 'ANSWER') {
+        const sdp = sig.answer || sig.sdp;
+        if (sdp && pc.signalingState === 'have-local-offer') {
+          await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+          // Flush pending ICE candidates
+          while (pendingIceCandidatesRef.current.length > 0) {
+            const cand = pendingIceCandidatesRef.current.shift();
+            if (cand) {
+              try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+            }
+          }
+        }
+      } else if ((sig.type === 'ICE' || sig.signalType === 'ICE_CANDIDATE') && sig.candidate) {
+        if (pc.remoteDescription && pc.remoteDescription.type) {
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(sig.candidate));
+          } catch (e) {}
+        } else {
+          pendingIceCandidatesRef.current.push(sig.candidate);
+        }
+      }
+    } catch (err) {
+      console.warn('WebRTC signal processing note:', err);
+    }
+  }, [currentUserType, sessionId]);
+
   // Sync consultation session data
   const fetchSession = async () => {
     try {
@@ -158,34 +227,9 @@ export default function LiveConsultationRoom({
         }
 
         // Process remote WebRTC signaling objects dynamically
-        if (isCallActive && data.session.signals && data.session.signals.length > 0 && peerConnectionRef.current) {
-          const pc = peerConnectionRef.current;
+        if (isCallActive && data.session.signals && data.session.signals.length > 0) {
           for (const sig of data.session.signals) {
-            if (sig.sender !== currentUserType && !processedSignalIdsRef.current.has(sig.id)) {
-              processedSignalIdsRef.current.add(sig.id);
-              try {
-                if (sig.type === 'OFFER' && (pc.signalingState === 'stable' || pc.signalingState === 'have-local-offer')) {
-                  await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
-                  const answer = await pc.createAnswer();
-                  await pc.setLocalDescription(answer);
-                  fetch('/api/consultations', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      action: 'SIGNAL_CALL',
-                      sessionId,
-                      signalType: 'ANSWER',
-                      sender: currentUserType,
-                      sdp: answer,
-                    }),
-                  }).catch(() => {});
-                } else if (sig.type === 'ANSWER' && pc.signalingState === 'have-local-offer') {
-                  await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
-                } else if ((sig.type === 'ICE_CANDIDATE' || sig.type === 'ICE') && sig.candidate) {
-                  await pc.addIceCandidate(new RTCIceCandidate(sig.candidate));
-                }
-              } catch (e) {}
-            }
+            processWebRtcSignal(sig);
           }
         }
       }
@@ -198,9 +242,9 @@ export default function LiveConsultationRoom({
 
   useEffect(() => {
     fetchSession();
-    const interval = setInterval(fetchSession, 2000);
+    const interval = setInterval(fetchSession, 1500);
     return () => clearInterval(interval);
-  }, [sessionId, isCallActive]);
+  }, [sessionId, isCallActive, processWebRtcSignal]);
 
   // Callback ref to attach local camera stream reliably across DOM mounts & view swaps
   const setLocalVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
@@ -220,22 +264,25 @@ export default function LiveConsultationRoom({
     }
   }, [remoteStream]);
 
-  const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
-
-  // WebRTC PeerConnection Signaling for 1-on-1 Remote Video Stream
+  // WebRTC PeerConnection Lifetime Management
   useEffect(() => {
     if (!isCallActive) {
       setRemoteStream(null);
+      hasOfferedRef.current = false;
       if (peerConnectionRef.current) {
         peerConnectionRef.current.close();
         peerConnectionRef.current = null;
       }
+      if (bcRef.current) {
+        bcRef.current.close();
+        bcRef.current = null;
+      }
       return;
     }
 
-    let bc: BroadcastChannel | null = null;
     try {
-      bc = new BroadcastChannel(`consultation-call-${sessionId}`);
+      bcRef.current = new BroadcastChannel(`consultation-call-${sessionId}`);
+      bcRef.current.onmessage = (msg) => processWebRtcSignal(msg.data);
     } catch (e) {}
 
     const pc = new RTCPeerConnection({
@@ -249,14 +296,6 @@ export default function LiveConsultationRoom({
     });
     peerConnectionRef.current = pc;
 
-    if (localStream) {
-      localStream.getTracks().forEach((track) => {
-        try {
-          pc.addTrack(track, localStream);
-        } catch (e) {}
-      });
-    }
-
     pc.ontrack = (event) => {
       if (event.streams && event.streams[0]) {
         setRemoteStream(event.streams[0]);
@@ -267,7 +306,7 @@ export default function LiveConsultationRoom({
 
     pc.onicecandidate = (event) => {
       if (event.candidate) {
-        if (bc) bc.postMessage({ type: 'ICE', candidate: event.candidate, sender: currentUserType });
+        if (bcRef.current) bcRef.current.postMessage({ id: `ice-${Date.now()}`, type: 'ICE', candidate: event.candidate, sender: currentUserType });
         fetch('/api/consultations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -282,54 +321,42 @@ export default function LiveConsultationRoom({
       }
     };
 
-    const handleSignal = async (data: any) => {
-      if (!data || data.sender === currentUserType) return;
-      try {
-        if (data.type === 'OFFER' || data.signalType === 'OFFER') {
-          const sdp = data.offer || data.sdp;
-          if (sdp && (pc.signalingState === 'stable' || pc.signalingState === 'have-local-offer')) {
-            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            if (bc) bc.postMessage({ type: 'ANSWER', answer, sender: currentUserType });
-            fetch('/api/consultations', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                action: 'SIGNAL_CALL',
-                sessionId,
-                signalType: 'ANSWER',
-                sender: currentUserType,
-                sdp: answer,
-              }),
-            }).catch(() => {});
-          }
-        } else if (data.type === 'ANSWER' || data.signalType === 'ANSWER') {
-          const sdp = data.answer || data.sdp;
-          if (sdp && pc.signalingState === 'have-local-offer') {
-            await pc.setRemoteDescription(new RTCSessionDescription(sdp));
-          }
-        } else if ((data.type === 'ICE' || data.signalType === 'ICE_CANDIDATE') && data.candidate) {
-          try {
-            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
-          } catch (iceErr) {}
-        }
-      } catch (e) {
-        console.warn('WebRTC signal handler warning:', e);
+    return () => {
+      pc.close();
+      peerConnectionRef.current = null;
+      if (bcRef.current) {
+        bcRef.current.close();
+        bcRef.current = null;
       }
     };
+  }, [isCallActive, sessionId, currentUserType, processWebRtcSignal]);
 
-    if (bc) {
-      bc.onmessage = (msg) => handleSignal(msg.data);
+  // Bind local media tracks to active peer connection & initiate offer
+  useEffect(() => {
+    const pc = peerConnectionRef.current;
+    if (!isCallActive || !pc) return;
+
+    if (localStream) {
+      localStream.getTracks().forEach((track) => {
+        try {
+          const senders = pc.getSenders();
+          const existing = senders.find((s) => s.track?.kind === track.kind);
+          if (existing) {
+            existing.replaceTrack(track);
+          } else {
+            pc.addTrack(track, localStream);
+          }
+        } catch (e) {}
+      });
     }
 
-    // Only CLIENT initiates initial offer to avoid glare conflict
-    if (currentUserType === 'CLIENT' && localStream) {
+    if (currentUserType === 'CLIENT' && !hasOfferedRef.current && pc.signalingState === 'stable') {
+      hasOfferedRef.current = true;
       pc.createOffer()
         .then((offer) => pc.setLocalDescription(offer))
         .then(() => {
           if (pc.localDescription) {
-            if (bc) bc.postMessage({ type: 'OFFER', offer: pc.localDescription, sender: currentUserType });
+            if (bcRef.current) bcRef.current.postMessage({ id: `off-${Date.now()}`, type: 'OFFER', offer: pc.localDescription, sender: currentUserType });
             fetch('/api/consultations', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -345,12 +372,7 @@ export default function LiveConsultationRoom({
         })
         .catch((err) => console.warn('Error creating WebRTC offer:', err));
     }
-
-    return () => {
-      pc.close();
-      if (bc) bc.close();
-    };
-  }, [isCallActive, sessionId, localStream, currentUserType]);
+  }, [isCallActive, localStream, currentUserType, sessionId]);
 
   // Handle getUserMedia video stream when call is active
   useEffect(() => {
