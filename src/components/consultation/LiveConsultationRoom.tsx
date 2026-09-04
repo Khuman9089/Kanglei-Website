@@ -152,6 +152,37 @@ export default function LiveConsultationRoom({
           setIsCallActive(true);
           setCallType(data.session.callType || 'VIDEO');
         }
+
+        // Process remote WebRTC signaling objects
+        if (isCallActive && data.session.signals && data.session.signals.length > 0 && peerConnectionRef.current) {
+          const pc = peerConnectionRef.current;
+          data.session.signals.forEach(async (sig: any) => {
+            if (sig.sender !== currentUserType) {
+              try {
+                if (sig.type === 'OFFER' && pc.signalingState === 'stable') {
+                  await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
+                  const answer = await pc.createAnswer();
+                  await pc.setLocalDescription(answer);
+                  fetch('/api/consultations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      action: 'SIGNAL_CALL',
+                      sessionId,
+                      signalType: 'ANSWER',
+                      sender: currentUserType,
+                      sdp: answer,
+                    }),
+                  }).catch(() => {});
+                } else if (sig.type === 'ANSWER' && pc.signalingState === 'have-local-offer') {
+                  await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
+                } else if (sig.type === 'ICE_CANDIDATE' && sig.candidate) {
+                  await pc.addIceCandidate(new RTCIceCandidate(sig.candidate));
+                }
+              } catch (e) {}
+            }
+          });
+        }
       }
     } catch (err) {
       console.error('Failed to sync consultation session:', err);
@@ -305,18 +336,6 @@ export default function LiveConsultationRoom({
       if (bc) bc.close();
     };
   }, [isCallActive, sessionId, localStream, currentUserType]);
-
-  // Single-screen / self testing remote stream preview fallback
-  useEffect(() => {
-    if (isCallActive && !remoteStream && localStream) {
-      const timer = setTimeout(() => {
-        if (!remoteStream && localStream) {
-          setRemoteStream(localStream);
-        }
-      }, 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isCallActive, remoteStream, localStream]);
 
   // Handle getUserMedia video stream when call is active
   useEffect(() => {
