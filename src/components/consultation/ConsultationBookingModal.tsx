@@ -6,6 +6,7 @@ import {
   X, MessageCircle, Phone, Lock, CheckCircle2, ShieldCheck, 
   Sparkles, ArrowRight, RefreshCw, QrCode, CreditCard, Check, User
 } from 'lucide-react';
+import LiveConsultationRoom from './LiveConsultationRoom';
 
 export interface AstrologerModalItem {
   id: string;
@@ -55,6 +56,7 @@ export default function ConsultationBookingModal({
   const [paymentMethod, setPaymentMethod] = useState<'UPI' | 'CARD'>('UPI');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
 
   // Check initial login status when modal opens
   useEffect(() => {
@@ -135,7 +137,7 @@ export default function ConsultationBookingModal({
     }
   };
 
-  // Submit Payment & Redirect to WhatsApp
+  // Submit Payment & Launch In-App Live Consultation Room
   const handleCompletePayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessingPayment(true);
@@ -143,7 +145,7 @@ export default function ConsultationBookingModal({
     const orderRef = 'KY-' + Math.floor(100000 + Math.random() * 900000);
 
     try {
-      // Save order to system API
+      // 1. Save order to kuthi API
       await fetch('/api/kuthi', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,7 +155,7 @@ export default function ConsultationBookingModal({
           mobile: whatsappNo,
           whatsappNo,
           email: user?.email || '',
-          serviceType: `Live ${mode === 'CHAT' ? 'WhatsApp Chat' : 'WhatsApp Call'} (${selectedDuration} Mins)`,
+          serviceType: `Live In-App ${mode === 'CHAT' ? 'Chat' : 'Call'} (${selectedDuration} Mins)`,
           amount: totalAmount,
           utr: utrNumber || 'UPI-' + Math.floor(1000000000 + Math.random() * 900000000),
           status: 'PENDING',
@@ -161,24 +163,38 @@ export default function ConsultationBookingModal({
           assignedAstrologerName: astrologer.name,
         }),
       });
+
+      // 2. Create Live Consultation Session in /api/consultations
+      const sessRes = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'CREATE_SESSION',
+          mode: mode,
+          callType: 'AUDIO',
+          clientName: user?.name || 'Verified Client',
+          clientPhone: whatsappNo,
+          astrologerId: astrologer.id,
+          astrologerName: astrologer.name,
+          astrologerAvatar: astrologer.avatar,
+          astrologerPhone: astrologer.whatsappPhone,
+          durationMinutes: selectedDuration,
+          ratePerMin: ratePerMin,
+        }),
+      });
+      const sessData = await sessRes.json();
+      if (sessData.session) {
+        setCreatedSessionId(sessData.session.id);
+      }
     } catch (err) {
-      console.error('Order save note:', err);
+      console.error('Order/Session creation note:', err);
     }
 
     setTimeout(() => {
       setIsProcessingPayment(false);
       setPaymentSuccess(true);
       setStep(4);
-
-      // Open WhatsApp directly after 1.5s
-      setTimeout(() => {
-        const cleanPhone = astrologer.whatsappPhone ? astrologer.whatsappPhone.replace(/[^0-9]/g, '') : '919862099881';
-        const msg = `🙏 Namaste ${astrologer.name}!\n\nI have completed booking for a Live ${mode === 'CHAT' ? 'Chat Consultation' : 'Voice Call'} (${selectedDuration} Mins).\n\n📌 Order Ref: ${orderRef}\n👤 Client: ${user?.name || 'Client'}\n📱 Verified WhatsApp: ${whatsappNo}\n💳 Paid: ₹${totalAmount}\n\nI am ready to start our session now!`;
-
-        window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-        onClose();
-      }, 1800);
-    }, 1500);
+    }, 1200);
   };
 
   return (
@@ -509,25 +525,30 @@ export default function ConsultationBookingModal({
             </div>
           )}
 
-          {/* STEP 4: SUCCESS & WHATSAPP REDIRECT */}
+          {/* STEP 4: LIVE CONSULTATION ROOM */}
           {step === 4 && (
-            <div className="text-center space-y-4 py-6">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 border-2 border-emerald-400 flex items-center justify-center mx-auto shadow-md animate-bounce">
-                <CheckCircle2 className="w-10 h-10" />
-              </div>
-
-              <div className="space-y-1">
-                <h4 className="font-serif font-bold text-2xl text-emerald-800">
-                  🎉 Payment Verified & Confirmed!
-                </h4>
-                <p className="text-xs text-gray-600 max-w-xs mx-auto">
-                  Redirecting to WhatsApp to start your 1-on-1 session with <strong className="text-[#0f172a]">{astrologer.name}</strong>...
-                </p>
-              </div>
-
-              <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs font-mono text-emerald-900 font-bold max-w-xs mx-auto">
-                📱 WhatsApp Contact: {whatsappNo}
-              </div>
+            <div className="w-full">
+              {createdSessionId ? (
+                <LiveConsultationRoom
+                  sessionId={createdSessionId}
+                  currentUserType="CLIENT"
+                  onClose={onClose}
+                />
+              ) : (
+                <div className="text-center space-y-4 py-6">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 border-2 border-emerald-400 flex items-center justify-center mx-auto shadow-md animate-bounce">
+                    <CheckCircle2 className="w-10 h-10" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="font-serif font-bold text-2xl text-emerald-800">
+                      🎉 Payment Verified & Confirmed!
+                    </h4>
+                    <p className="text-xs text-gray-600 max-w-xs mx-auto">
+                      Connecting to live consultation room with <strong className="text-[#0f172a]">{astrologer.name}</strong>...
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 

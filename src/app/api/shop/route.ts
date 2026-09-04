@@ -10,6 +10,16 @@ export interface ProductVariant {
   stock: number;
 }
 
+export interface PackOption {
+  id: string;
+  packSize: number;
+  label: string;
+  price: number;
+  originalPrice?: number;
+  badge?: string;
+  savingsText?: string;
+}
+
 export interface ProductItem {
   id: string;
   sku?: string;
@@ -45,6 +55,15 @@ export interface ProductItem {
   badge?: string;
   features?: string[];
   variants?: ProductVariant[];
+
+  // Pack Options & Promotional Offer Fields
+  packOptions?: PackOption[];
+  specialBadges?: string[];
+  specialOfferTitle?: string;
+  specialOfferDiscount?: string;
+  specialOfferDetails?: string;
+  offerEndsInHours?: number;
+
   vedicSignificance?: string;
   wearingRituals?: string;
   sellerType?: 'PLATFORM' | 'ASTROLOGER';
@@ -124,6 +143,7 @@ const DEFAULT_COMMISSION_SETTINGS = {
 const DEFAULT_PRODUCTS: ProductItem[] = [
   {
     id: 'prod-1',
+    sku: 'SKU-GEM-58492',
     title: 'Natural Ceylon Yellow Sapphire (Pukhraj) 5.25 Ratti',
     category: 'Gemstones',
     price: 6999,
@@ -147,6 +167,7 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
   },
   {
     id: 'prod-2',
+    sku: 'SKU-YAN-12840',
     title: 'Energized Heavy Brass Shri Yantra (3x3 inch)',
     category: 'Yantras & Mala',
     price: 1299,
@@ -170,6 +191,7 @@ const DEFAULT_PRODUCTS: ProductItem[] = [
   },
   {
     id: 'prod-5',
+    sku: 'SKU-MAL-94821',
     title: 'Natural 5 Mukhi Nepal Rudraksha Mala (108+1 Beads)',
     category: 'Yantras & Mala',
     price: 999,
@@ -237,12 +259,41 @@ const DEFAULT_SHOP_SLIDERS: ShopSliderItem[] = [
 
 const DEFAULT_SHOP_ORDERS: ShopOrder[] = [];
 
+function generateProductSku(category?: string): string {
+  const catPrefix = (category || 'VED')
+    .substring(0, 3)
+    .toUpperCase()
+    .replace(/[^A-Z]/g, 'VED');
+  const randomCode = Math.floor(10000 + Math.random() * 90000);
+  return `SKU-${catPrefix}-${randomCode}`;
+}
+
+function ensureProductSku(prod: ProductItem): ProductItem {
+  if (!prod.sku || prod.sku.trim() === '') {
+    prod.sku = generateProductSku(prod.category);
+  }
+  return prod;
+}
+
 export async function GET() {
-  const products = await readPersistentDataAsync<ProductItem[]>('shop_products', DEFAULT_PRODUCTS);
+  let products = await readPersistentDataAsync<ProductItem[]>('shop_products', DEFAULT_PRODUCTS);
   const orders = await readPersistentDataAsync<ShopOrder[]>('shop_orders', DEFAULT_SHOP_ORDERS);
   const categories = await readPersistentDataAsync<string[]>('shop_categories', DEFAULT_CATEGORIES);
   const commissionSettings = await readPersistentDataAsync('shop_commission', DEFAULT_COMMISSION_SETTINGS);
   const sliders = await readPersistentDataAsync<ShopSliderItem[]>('shop_sliders', DEFAULT_SHOP_SLIDERS);
+
+  let updatedAnySku = false;
+  products = products.map((p) => {
+    if (!p.sku || p.sku.trim() === '') {
+      updatedAnySku = true;
+      return ensureProductSku({ ...p });
+    }
+    return p;
+  });
+
+  if (updatedAnySku) {
+    await writePersistentDataAsync('shop_products', products);
+  }
 
   return NextResponse.json({
     products,
@@ -322,7 +373,8 @@ export async function POST(request: Request) {
     }
 
     if (body.action === 'CREATE_PRODUCT' || body.action === 'UPDATE_PRODUCT' || body.action === 'SAVE_PRODUCT') {
-      const prod: ProductItem = body.product;
+      let prod: ProductItem = body.product;
+      prod = ensureProductSku(prod);
       if (prod.sellerType === 'ASTROLOGER' && !prod.status) {
         prod.status = 'PENDING_APPROVAL';
         prod.adminCommissionPct = commissionSettings.defaultCommissionPct;

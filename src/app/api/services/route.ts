@@ -15,6 +15,7 @@ export interface ServiceItem {
   badge?: string;
   title: string;
   description?: string;
+  iconUrl?: string;
   features?: string[];
   price?: string;
   cta?: string;

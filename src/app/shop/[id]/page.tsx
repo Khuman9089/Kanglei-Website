@@ -3,7 +3,7 @@
 import React, { useState, useEffect, use } from 'react';
 import { 
   ShoppingBag, Star, ShieldCheck, Sparkles, ArrowRight, CheckCircle2, 
-  ArrowLeft, Truck, Award, Heart, Share2, Plus, Minus, Tag, Check
+  ArrowLeft, Truck, Award, Heart, Share2, Plus, Minus, Tag, Check, Zap
 } from 'lucide-react';
 import Link from 'next/link';
 import { ProductItem, ProductVariant } from '@/app/api/shop/route';
@@ -124,7 +124,7 @@ export default function ProductDetailPage({
 
   return (
     <div className="min-h-screen bg-[#fffdfa] text-[#0f172a] font-sans antialiased">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 md:pt-10 pb-20 space-y-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 md:pt-10 pb-28 md:pb-20 space-y-8">
         
         {/* Back Link Breadcrumb */}
         <div className="flex items-center justify-between">
@@ -144,17 +144,17 @@ export default function ProductDetailPage({
           {/* LEFT: MULTI-IMAGE GALLERY (col-span-6) */}
           <div className="lg:col-span-6 space-y-4">
             {/* Main Featured Display Image */}
-            <div className="w-full h-80 sm:h-100 rounded-3xl overflow-hidden border-2 border-[#f3e8d2] shadow-lg relative bg-white flex items-center justify-center">
+            <div className="w-full h-52 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#f3e8d2] shadow-md relative bg-white flex items-center justify-center max-w-sm sm:max-w-none mx-auto">
               <img
                 src={selectedImage}
                 alt={product.title}
                 className="w-full h-full object-cover"
               />
-              <span className="absolute top-4 left-4 px-3 py-1 rounded-xl bg-[#0f172a]/90 text-[#fbbf24] text-xs font-extrabold uppercase tracking-wider backdrop-blur-xs border border-[#fbbf24]/30">
+              <span className="absolute top-3 left-3 sm:top-4 sm:left-4 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg sm:rounded-xl bg-[#0f172a]/90 text-[#fbbf24] text-[10px] sm:text-xs font-extrabold uppercase tracking-wider backdrop-blur-xs border border-[#fbbf24]/30">
                 {product.badge || 'AUTHENTIC VEDIC'}
               </span>
               {discountPct > 0 && (
-                <span className="absolute top-4 right-4 px-3 py-1 rounded-xl bg-green-600 text-white text-xs font-black shadow-md">
+                <span className="absolute top-3 right-3 sm:top-4 sm:right-4 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg sm:rounded-xl bg-green-600 text-white text-[10px] sm:text-xs font-black shadow-md">
                   {discountPct}% OFF
                 </span>
               )}
@@ -162,12 +162,12 @@ export default function ProductDetailPage({
 
             {/* Thumbnail Carousel Selector */}
             {imagesList.length > 1 && (
-              <div className="flex items-center gap-3 overflow-x-auto pb-2">
+              <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto pb-1.5">
                 {imagesList.map((imgUrl, idx) => (
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(imgUrl)}
-                    className={`w-20 h-20 rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white shrink-0 ${
+                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white shrink-0 ${
                       selectedImage === imgUrl ? 'border-[#d97706] ring-2 ring-[#d97706]/30 scale-105' : 'border-gray-200 opacity-70 hover:opacity-100'
                     }`}
                   >
@@ -255,131 +255,8 @@ export default function ProductDetailPage({
             )}
           </div>
 
-          {/* RIGHT: DETAILS, VARIANTS & BUY ACTIONS (col-span-6) */}
-          <div className="lg:col-span-6 space-y-6 bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl">
-            
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold text-amber-600">
-                <div className="flex items-center">
-                  <Star className="w-4 h-4 fill-amber-500 text-amber-500" />
-                  <span className="ml-1 text-sm font-black">{product.rating}</span>
-                </div>
-                <span className="text-gray-400 font-normal">({product.reviewsCount} customer reviews)</span>
-                <span className="mx-2 text-gray-300">•</span>
-                <span className="text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200 text-[11px] font-extrabold">
-                  {product.stock > 0 ? `In Stock (${product.stock} units)` : 'Out of Stock'}
-                </span>
-              </div>
-
-              <h1 className="font-serif font-black text-2xl sm:text-3xl text-[#0f172a] leading-tight">
-                {product.title}
-              </h1>
-
-              <p className="text-xs sm:text-sm text-gray-600 leading-relaxed font-sans">
-                {product.description}
-              </p>
-            </div>
-
-            {/* Price Box */}
-            <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] flex items-center justify-between">
-              <div>
-                <span className="text-xs text-gray-500 uppercase font-bold block">Current Price</span>
-                <div className="flex items-baseline gap-3">
-                  <span className="text-3xl font-black text-[#b45309] font-mono">₹{currentPrice.toLocaleString()}</span>
-                  {product.originalPrice > currentPrice && (
-                    <span className="text-sm text-gray-400 line-through font-mono">₹{product.originalPrice.toLocaleString()}</span>
-                  )}
-                </div>
-              </div>
-
-              <div className="text-right">
-                <span className="text-[11px] text-green-700 font-extrabold uppercase block">Nationwide Delivery</span>
-                <span className="text-xs font-bold text-gray-700">Dispatched in 24 Hours</span>
-              </div>
-            </div>
-
-            {/* Product Variants (if applicable) */}
-            {product.variants && product.variants.length > 0 && (
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-[#0f172a] uppercase tracking-wider">
-                  Select Weight / Carat Option<span className="text-red-500">*</span>
-                </label>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {product.variants.map((vrt) => (
-                    <button
-                      key={vrt.id}
-                      onClick={() => setSelectedVariant(vrt)}
-                      className={`p-3 rounded-xl border text-xs font-bold transition-all text-left cursor-pointer ${
-                        selectedVariant?.id === vrt.id
-                          ? 'border-[#d97706] bg-[#fef3c7] text-[#78350f] shadow-xs'
-                          : 'border-gray-200 bg-[#fefcf6] text-gray-700 hover:border-[#d97706]'
-                      }`}
-                    >
-                      <div className="font-extrabold">{vrt.name}</div>
-                      <div className="text-[11px] font-mono text-[#b45309] mt-0.5">₹{vrt.price.toLocaleString()}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Quantity Selector & Add to Cart */}
-            <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-4">
-                <div className="flex items-center border border-gray-300 rounded-xl bg-[#fefcf6] overflow-hidden">
-                  <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="p-3 hover:bg-gray-100 font-bold text-gray-700 cursor-pointer"
-                  >
-                    <Minus className="w-4 h-4" />
-                  </button>
-                  <span className="px-4 font-bold text-sm font-mono text-[#0f172a]">{quantity}</span>
-                  <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="p-3 hover:bg-gray-100 font-bold text-gray-700 cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                  </button>
-                </div>
-
-                <button
-                  onClick={handleAddToCart}
-                  className="flex-1 py-3.5 px-6 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-xl transition-all flex items-center justify-center gap-2 hover:scale-[1.01] cursor-pointer"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Add {quantity} to Shopping Cart</span>
-                </button>
-              </div>
-
-              {addedNotice && (
-                <div className="p-3 rounded-xl bg-green-50 border border-green-300 text-green-800 text-xs font-bold flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-green-600" />
-                  <span>Item added to your cart! Slide-out drawer opened.</span>
-                </div>
-              )}
-            </div>
-
-            {/* Trust Badges */}
-            <div className="pt-4 border-t border-gray-200 grid grid-cols-2 gap-3 text-xs text-gray-600 font-medium">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#d97706]" />
-                <span>100% Original Govt. Lab Certificate</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Award className="w-4 h-4 text-[#d97706]" />
-                <span>Pandit Consecrated & Energized</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Truck className="w-4 h-4 text-[#d97706]" />
-                <span>Express Insured Courier Shipping</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#d97706]" />
-                <span>Instant WhatsApp Dispatch Alert</span>
-              </div>
-            </div>
-
-          </div>
+          {/* RIGHT: DETAILS, VARIANTS, PACK OPTIONS & BUY ACTIONS (col-span-6) */}
+          <ProductDetailRightColumn product={product} selectedImage={selectedImage} />
         </div>
 
         {/* 2. RITUAL & SPECIFICATION TABS */}
@@ -459,6 +336,328 @@ export default function ProductDetailPage({
         </div>
 
       </main>
+    </div>
+  );
+}
+
+function ProductDetailRightColumn({
+  product,
+  selectedImage,
+}: {
+  product: ProductItem;
+  selectedImage: string;
+}) {
+  const defaultPackOptions = [
+    {
+      id: 'pack-1',
+      packSize: 1,
+      label: 'Pack of 1',
+      price: product.price,
+      originalPrice: product.originalPrice || Math.round(product.price * 1.4),
+      savingsText: '',
+    },
+    {
+      id: 'pack-2',
+      packSize: 2,
+      label: 'Pack of 2',
+      price: Math.round(product.price * 1.5),
+      originalPrice: Math.round((product.originalPrice || product.price * 1.4) * 2),
+      badge: 'Most Popular',
+      savingsText: `Extra ₹${Math.round(product.price * 0.5)} Off`,
+    },
+    {
+      id: 'pack-3',
+      packSize: 3,
+      label: 'Pack of 3',
+      price: Math.round(product.price * 2.0),
+      originalPrice: Math.round((product.originalPrice || product.price * 1.4) * 3),
+      savingsText: `Extra ₹${product.price} Off`,
+    },
+  ];
+
+  const availablePacks =
+    product.packOptions && product.packOptions.length > 0
+      ? product.packOptions
+      : defaultPackOptions;
+
+  const [selectedPackId, setSelectedPackId] = useState<string>(availablePacks[1]?.id || availablePacks[0]?.id || 'pack-2');
+  const activePack = availablePacks.find((p) => p.id === selectedPackId) || availablePacks[0];
+
+  const initialHours = product.offerEndsInHours || 16;
+  const [showOfferDetails, setShowOfferDetails] = useState(false);
+  const [addedNotice, setAddedNotice] = useState(false);
+  const [timeLeft, setTimeLeft] = useState({ hours: initialHours, minutes: 40, seconds: 16 });
+
+  useEffect(() => {
+    setTimeLeft({ hours: product.offerEndsInHours || 16, minutes: 40, seconds: 16 });
+  }, [product.offerEndsInHours]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev.seconds > 0) return { ...prev, seconds: prev.seconds - 1 };
+        if (prev.minutes > 0) return { ...prev, minutes: 59, seconds: 59 };
+        if (prev.hours > 0) return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
+        return { hours: product.offerEndsInHours || 16, minutes: 40, seconds: 16 };
+      });
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [product.offerEndsInHours]);
+
+  const handleAddToCart = () => {
+    if (typeof window !== 'undefined') {
+      const stored = localStorage.getItem('kanglei_cart');
+      let cartItems: any[] = [];
+      if (stored) {
+        try {
+          cartItems = JSON.parse(stored);
+        } catch (e) {
+          cartItems = [];
+        }
+      }
+
+      const cartItemId = `${product.id}-${activePack.id}`;
+      const itemTitle = `${product.title} (${activePack.label})`;
+      const packQty = activePack.packSize || 1;
+
+      const existingIndex = cartItems.findIndex((it) => it.id === cartItemId);
+      if (existingIndex >= 0) {
+        cartItems[existingIndex].quantity += 1;
+      } else {
+        cartItems.push({
+          id: cartItemId,
+          productId: product.id,
+          title: itemTitle,
+          price: activePack.price,
+          originalPrice: activePack.originalPrice || ((product.originalPrice || product.price * 1.2) * packQty),
+          image: selectedImage || product.image,
+          quantity: 1,
+          packSize: packQty,
+          packLabel: activePack.label,
+        });
+      }
+
+      localStorage.setItem('kanglei_cart', JSON.stringify(cartItems));
+      window.dispatchEvent(new Event('cart-updated'));
+      window.dispatchEvent(new Event('open-cart-drawer'));
+
+      setAddedNotice(true);
+      setTimeout(() => setAddedNotice(false), 3000);
+    }
+  };
+
+  const handleBuyNow = () => {
+    handleAddToCart();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/checkout';
+    }
+  };
+
+  return (
+    <div className="lg:col-span-6 space-y-4 bg-white p-5 sm:p-7 rounded-3xl border border-[#f3e8d2] shadow-xl">
+      {/* Title & Reviews */}
+      <div className="space-y-2.5">
+        <h1 className="font-serif font-bold text-xl sm:text-2xl text-[#0f172a] leading-snug">
+          {product.title}
+        </h1>
+
+        {/* Reviews Star Rating */}
+        <div className="flex items-center gap-2 text-[11px] font-medium text-gray-600">
+          <div className="flex items-center gap-0.5">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+            ))}
+            <span className="ml-1 text-[11px] font-bold text-gray-800">{product.reviewsCount || 169} reviews</span>
+          </div>
+          <span className="text-gray-300">•</span>
+          <span className="text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200 text-[10px] font-bold">
+            {product.stock > 0 ? `In Stock (${product.stock} units)` : 'Out of Stock'}
+          </span>
+        </div>
+
+        {/* Custom Badges Pills */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+          {(product.specialBadges && product.specialBadges.length > 0
+            ? product.specialBadges
+            : ['Blessed by Lord Murugan & Lord Shiva', 'Daily Shield & Spiritual Guide']
+          ).map((badgeText, bIdx) => (
+            <span
+              key={bIdx}
+              className={`px-2.5 py-0.5 rounded-full text-[11px] font-semibold border ${
+                bIdx === 0
+                  ? 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
+                  : 'bg-indigo-50 text-indigo-700 border-indigo-200'
+              }`}
+            >
+              {badgeText}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Price Header */}
+      <div className="flex items-baseline gap-2.5 pt-1">
+        <span className="text-2xl sm:text-3xl font-extrabold text-gray-900 font-mono">
+          ₹{activePack.price.toLocaleString()}
+        </span>
+        {activePack.originalPrice && activePack.originalPrice > activePack.price && (
+          <span className="text-sm text-gray-400 line-through font-mono">
+            ₹{activePack.originalPrice.toLocaleString()}
+          </span>
+        )}
+        <span className="text-[11px] font-bold text-emerald-600">
+          16% + Extra 26% OFF
+        </span>
+      </div>
+
+      {/* SELECT QUANTITY - Pack Options Grid (3 Cards) */}
+      <div className="space-y-2 pt-1">
+        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider">
+          SELECT QUANTITY
+        </label>
+
+        <div className="grid grid-cols-3 gap-2.5">
+          {availablePacks.map((pack) => {
+            const isSelected = selectedPackId === pack.id;
+            return (
+              <button
+                key={pack.id}
+                type="button"
+                onClick={() => setSelectedPackId(pack.id)}
+                className={`relative p-2.5 rounded-xl transition-all text-center flex flex-col justify-between cursor-pointer ${
+                  isSelected
+                    ? 'border-2 border-[#d97706] bg-[#fefcf6] ring-2 ring-[#d97706]/15 shadow-2xs'
+                    : 'border border-gray-200 bg-white hover:border-[#d97706]/60'
+                }`}
+              >
+                {/* Floating Badge (e.g. Most Popular) */}
+                {pack.badge && (
+                  <div className="absolute -top-2.5 left-1/2 -translate-x-1/2 whitespace-nowrap bg-[#fbbf24] text-[#78350f] text-[9px] font-bold uppercase px-2 py-0.2 rounded-full border border-[#fde68a] shadow-2xs">
+                    {pack.badge}
+                  </div>
+                )}
+
+                <div className="space-y-0.5">
+                  <span className="text-[11px] font-medium text-gray-600 block">{pack.label}</span>
+                  <span className="text-base font-bold text-gray-900 font-mono block">
+                    ₹{pack.price.toLocaleString()}
+                  </span>
+                </div>
+
+                {pack.savingsText && (
+                  <span className="text-[10px] font-semibold text-emerald-600 block mt-0.5">
+                    {pack.savingsText}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Urgency Countdown Timer */}
+      <div className="flex items-center gap-2 text-red-600 text-xs font-bold pt-1">
+        <span>Offer ends in</span>
+        <span className="bg-red-50 text-red-700 font-mono px-2 py-0.5 rounded border border-red-200 font-extrabold text-xs">
+          {String(timeLeft.hours).padStart(2, '0')} hr : {String(timeLeft.minutes).padStart(2, '0')} min : {String(timeLeft.seconds).padStart(2, '0')} sec
+        </span>
+      </div>
+
+      {/* Special Offer Collapsible Drawer */}
+      <div className="rounded-xl bg-[#fefcf6] border border-[#fde68a] p-3 space-y-2.5">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-full bg-[#1e293b] text-white font-bold text-xs flex items-center justify-center shrink-0">
+              %
+            </div>
+            <div>
+              <h4 className="font-serif font-bold text-xs text-[#0f172a]">
+                {product.specialOfferTitle || 'Vaikasi Visakam Special Offer'}
+              </h4>
+            </div>
+          </div>
+          <span className="px-2 py-0.5 rounded-full bg-emerald-600 text-white font-bold text-[11px] shrink-0">
+            {product.specialOfferDiscount || 'Save ₹500'}
+          </span>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setShowOfferDetails(!showOfferDetails)}
+          className="w-full py-1.5 bg-[#fef08a] hover:bg-[#fde047] border border-[#fde68a] text-gray-900 font-bold text-[11px] rounded-lg flex items-center justify-center gap-1 transition-all cursor-pointer"
+        >
+          <span>View Offer</span>
+          <span className="text-[9px]">{showOfferDetails ? '▲' : '▼'}</span>
+        </button>
+
+        {showOfferDetails && (
+          <div className="p-2.5 bg-white rounded-lg border border-[#fde68a] text-[11px] text-gray-700 space-y-1 font-sans animate-fadeIn">
+            <p className="font-semibold text-[#b45309]">
+              {product.specialOfferDetails || 'Use code VAIKASI500 at checkout or automatically applied on orders above ₹1,000!'}
+            </p>
+            <p className="text-[10px] text-gray-500">Includes free consecration certificate and complimentary Prasad dispatch.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Add to Cart CTA Button (Desktop & Standard Flow) */}
+      <div className="pt-1">
+        <button
+          onClick={handleAddToCart}
+          className="w-full py-3 px-5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-bold text-xs sm:text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 hover:scale-[1.005] cursor-pointer"
+        >
+          <ShoppingBag className="w-4 h-4" />
+          <span>Add {activePack.label} to Shopping Cart</span>
+        </button>
+
+        {addedNotice && (
+          <div className="mt-2.5 p-2.5 rounded-xl bg-green-50 border border-green-300 text-green-800 text-xs font-bold flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4 text-green-600" />
+            <span>{activePack.label} (₹{activePack.price.toLocaleString()}) added to your cart!</span>
+          </div>
+        )}
+      </div>
+
+      {/* Trust Badges */}
+      <div className="pt-3 border-t border-gray-200 grid grid-cols-2 gap-2.5 text-[11px] text-gray-600 font-medium">
+        <div className="flex items-center gap-2">
+          <ShieldCheck className="w-3.5 h-3.5 text-[#d97706]" />
+          <span>100% Original Govt. Lab Certificate</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Award className="w-3.5 h-3.5 text-[#d97706]" />
+          <span>Pandit Consecrated & Energized</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <Truck className="w-3.5 h-3.5 text-[#d97706]" />
+          <span>Express Insured Courier Shipping</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <CheckCircle2 className="w-3.5 h-3.5 text-[#d97706]" />
+          <span>Instant WhatsApp Dispatch Alert</span>
+        </div>
+      </div>
+
+      {/* MOBILE FIXED STICKY ACTION BAR (POSITIONED JUST ABOVE MOBILE BOTTOM NAVBAR) */}
+      <div className="fixed bottom-[52px] sm:bottom-14 left-0 right-0 z-40 md:hidden bg-white/95 backdrop-blur-xl border-t border-[#fde68a] shadow-[0_-8px_25px_rgba(0,0,0,0.12)] p-2.5 px-3 flex items-center gap-2.5 select-none-mobile pb-safe">
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          className="flex-1 py-2.5 px-3 rounded-xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-extrabold text-xs flex items-center justify-center gap-1.5 border border-[#fde68a] app-active-press shadow-2xs cursor-pointer"
+        >
+          <ShoppingBag className="w-4 h-4 text-[#d97706]" />
+          <span>Add to Cart</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleBuyNow}
+          className="flex-1 py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:opacity-95 text-white font-black text-xs flex items-center justify-center gap-1.5 shadow-md app-active-press cursor-pointer uppercase tracking-wider"
+        >
+          <Zap className="w-4 h-4 fill-white text-white" />
+          <span>Buy Now</span>
+        </button>
+      </div>
     </div>
   );
 }

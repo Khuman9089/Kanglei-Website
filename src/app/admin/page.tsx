@@ -19,8 +19,10 @@ interface Astrologer {
   avatar?: string;
   username?: string;
   specialty: string;
+  specialties?: string[];
   phone: string;
   whatsappNo: string;
+  whatsappPhone?: string;
   sameAsWhatsapp?: boolean;
   email?: string;
   streetLane?: string;
@@ -63,6 +65,7 @@ interface ManagedService {
   badge: string;
   title: string;
   description: string;
+  iconUrl?: string;
   features: string[];
   price: string;
   astroPayoutFee: number;
@@ -71,6 +74,16 @@ interface ManagedService {
   pageTarget?: '/manipuri_kuthi_yengba' | '/manipuri_kuthi' | '/numit_leppa_yengba' | '/matching' | 'all';
   active: boolean;
   subServices?: SubServiceItem[];
+}
+
+interface PackOption {
+  id: string;
+  packSize: number;
+  label: string;
+  price: number;
+  originalPrice?: number;
+  badge?: string;
+  savingsText?: string;
 }
 
 interface ProductItem {
@@ -103,6 +116,12 @@ interface ProductItem {
   reviewsCount?: number;
   badge?: string;
   features?: string[];
+  packOptions?: PackOption[];
+  specialBadges?: string[];
+  specialOfferTitle?: string;
+  specialOfferDiscount?: string;
+  specialOfferDetails?: string;
+  offerEndsInHours?: number;
   sellerType?: 'PLATFORM' | 'ASTROLOGER';
   sellerId?: string;
   sellerName?: string;
@@ -1421,6 +1440,24 @@ export default function AdminDashboardPage() {
   });
 
   const [apiAstrologers, setApiAstrologers] = useState<any[]>([]);
+  const [adminConsultationSessions, setAdminConsultationSessions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchSessions = async () => {
+      try {
+        const res = await fetch('/api/consultations');
+        const data = await res.json();
+        if (data.sessions && Array.isArray(data.sessions)) {
+          setAdminConsultationSessions(data.sessions);
+        }
+      } catch (err) {
+        console.warn('Admin consultations fetch note:', err);
+      }
+    };
+    fetchSessions();
+    const interval = setInterval(fetchSessions, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSaveAstrologerSectionSettings = async () => {
     try {
@@ -1507,7 +1544,10 @@ export default function AdminDashboardPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.settings) setAstrologerSectionSettings((prev) => ({ ...prev, ...data.settings }));
-        if (data.astrologers && Array.isArray(data.astrologers)) setApiAstrologers(data.astrologers);
+        if (data.astrologers && Array.isArray(data.astrologers)) {
+          setApiAstrologers(data.astrologers);
+          setAstrologers(data.astrologers);
+        }
       })
       .catch((err) => console.error('Error fetching astrologers settings in admin:', err));
     fetch('/api/ticker')
@@ -1795,7 +1835,7 @@ export default function AdminDashboardPage() {
     message += `\n-----------------------------------`;
     message += `\n🔗 *Open Astrologer Dashboard:* ${host}/dashboard/astrologer`;
 
-    const phoneNo = astro.whatsappNo.replace(/[^0-9]/g, '');
+    const phoneNo = (astro.whatsappNo || astro.whatsappPhone || astro.phone || '').replace(/[^0-9]/g, '');
     const waUrl = `https://wa.me/${phoneNo}?text=${encodeURIComponent(message)}`;
     
     window.open(waUrl, '_blank');
@@ -2573,6 +2613,90 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const openEditProductModal = (prod?: Partial<ProductItem>) => {
+    const basePrice = prod?.price || 799;
+    const defaultPacks = [
+      {
+        id: 'pack-1',
+        packSize: 1,
+        label: 'Pack of 1',
+        price: basePrice,
+        originalPrice: prod?.originalPrice || Math.round(basePrice * 1.4),
+        badge: prod?.packOptions?.[0]?.badge || '',
+        savingsText: prod?.packOptions?.[0]?.savingsText || '',
+      },
+      {
+        id: 'pack-2',
+        packSize: 2,
+        label: 'Pack of 2',
+        price: prod?.packOptions?.[1]?.price || Math.round(basePrice * 1.5),
+        originalPrice: prod?.packOptions?.[1]?.originalPrice || Math.round((prod?.originalPrice || basePrice * 1.4) * 2),
+        badge: prod?.packOptions?.[1]?.badge || 'Most Popular',
+        savingsText: prod?.packOptions?.[1]?.savingsText || `Extra ₹${Math.round(basePrice * 0.5)} Off`,
+      },
+      {
+        id: 'pack-3',
+        packSize: 3,
+        label: 'Pack of 3',
+        price: prod?.packOptions?.[2]?.price || Math.round(basePrice * 2.0),
+        originalPrice: prod?.packOptions?.[2]?.originalPrice || Math.round((prod?.originalPrice || basePrice * 1.4) * 3),
+        badge: prod?.packOptions?.[2]?.badge || '',
+        savingsText: prod?.packOptions?.[2]?.savingsText || `Extra ₹${basePrice} Off`,
+      },
+    ];
+
+    const packOptions = prod?.packOptions && prod.packOptions.length >= 3
+      ? prod.packOptions
+      : defaultPacks;
+
+    setEditingProduct({
+      ...prod,
+      title: prod?.title || '',
+      category: prod?.category || shopCategories[0] || 'Gemstones',
+      price: basePrice,
+      originalPrice: prod?.originalPrice || Math.round(basePrice * 1.4),
+      stock: prod?.stock ?? 10,
+      badge: prod?.badge || '100% ORIGINAL',
+      image: prod?.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+      description: prod?.description || '',
+      packOptions: packOptions,
+      specialOfferTitle: prod?.specialOfferTitle || 'Vaikasi Visakam Special Offer',
+      specialOfferDiscount: prod?.specialOfferDiscount || 'Save ₹500',
+      specialOfferDetails: prod?.specialOfferDetails || 'Use code VAIKASI500 at checkout for flat ₹500 discount!',
+      offerEndsInHours: prod?.offerEndsInHours ?? 16,
+    });
+  };
+
+  const updatePackOptionField = (index: number, field: 'price' | 'savingsText' | 'badge' | 'label', val: any) => {
+    if (!editingProduct) return;
+    const currentPrice = editingProduct.price || 799;
+    const currentPacks = editingProduct.packOptions && editingProduct.packOptions.length >= 3
+      ? [...editingProduct.packOptions]
+      : [
+          { id: 'pack-1', packSize: 1, label: 'Pack of 1', price: currentPrice, savingsText: '', badge: '' },
+          { id: 'pack-2', packSize: 2, label: 'Pack of 2', price: Math.round(currentPrice * 1.5), badge: 'Most Popular', savingsText: `Extra ₹${Math.round(currentPrice * 0.5)} Off` },
+          { id: 'pack-3', packSize: 3, label: 'Pack of 3', price: Math.round(currentPrice * 2.0), savingsText: `Extra ₹${currentPrice} Off`, badge: '' },
+        ];
+
+    const updatedPacks = currentPacks.map((p, i) => {
+      if (i === index) {
+        return {
+          ...p,
+          [field]: field === 'price' ? (isNaN(Number(val)) ? 0 : Number(val)) : val,
+        };
+      }
+      return p;
+    });
+
+    const newMainPrice = index === 0 && field === 'price' ? Number(val) : currentPrice;
+
+    setEditingProduct({
+      ...editingProduct,
+      price: newMainPrice,
+      packOptions: updatedPacks,
+    });
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editingProduct?.title || !editingProduct?.price) return;
@@ -2584,12 +2708,22 @@ export default function AdminDashboardPage() {
       price: Number(editingProduct.price),
       originalPrice: Number(editingProduct.originalPrice || editingProduct.price * 1.2),
       rating: editingProduct.rating || 4.9,
-      reviewsCount: editingProduct.reviewsCount || 12,
+      reviewsCount: editingProduct.reviewsCount || 169,
       image: editingProduct.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
       badge: editingProduct.badge || 'Certified Original',
       stock: Number(editingProduct.stock || 10),
       description: editingProduct.description || editingProduct.title,
       features: editingProduct.features || ['Authentic Vedic Remedy', 'Consecrated by Master Pandits'],
+      packOptions: editingProduct.packOptions || [
+        { id: 'pack-1', packSize: 1, label: 'Pack of 1', price: Number(editingProduct.price), originalPrice: Number(editingProduct.originalPrice || editingProduct.price * 1.4), savingsText: '' },
+        { id: 'pack-2', packSize: 2, label: 'Pack of 2', price: Math.round(Number(editingProduct.price) * 1.5), originalPrice: Math.round((editingProduct.originalPrice || editingProduct.price * 1.4) * 2), badge: 'Most Popular', savingsText: `Extra ₹${Math.round(editingProduct.price * 0.5)} Off` },
+        { id: 'pack-3', packSize: 3, label: 'Pack of 3', price: Math.round(Number(editingProduct.price) * 2.0), originalPrice: Math.round((editingProduct.originalPrice || editingProduct.price * 1.4) * 3), savingsText: `Extra ₹${editingProduct.price} Off` },
+      ],
+      specialBadges: editingProduct.specialBadges || ['Blessed by Lord Murugan & Lord Shiva', 'Daily Shield & Spiritual Guide'],
+      specialOfferTitle: editingProduct.specialOfferTitle || 'Vaikasi Visakam Special Offer',
+      specialOfferDiscount: editingProduct.specialOfferDiscount || 'Save ₹500',
+      specialOfferDetails: editingProduct.specialOfferDetails || 'Use code VAIKASI500 at checkout for flat ₹500 discount!',
+      offerEndsInHours: editingProduct.offerEndsInHours || 16,
     };
 
     try {
@@ -4348,18 +4482,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </button>
 
                   <button
-                    onClick={() =>
-                      setEditingProduct({
-                        title: '',
-                        category: shopCategories[0] || 'Precious Gemstones > Ruby',
-                        price: 45000,
-                        originalPrice: 55000,
-                        stock: 5,
-                        badge: '100% NATURAL',
-                        image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
-                        description: 'Authentic unheated natural gemstone certified for Vedic astrology.',
-                      })
-                    }
+                    onClick={() => openEditProductModal()}
                     className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
@@ -4439,7 +4562,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Selling Price (₹) *</label>
                       <input
@@ -4462,7 +4585,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Available Stock Count *</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Available Stock *</label>
                       <input
                         type="number"
                         required
@@ -4470,6 +4593,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         value={editingProduct.stock ?? 10}
                         onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
                         className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-green-400 font-mono font-bold text-xs"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Product SKU (Auto)</label>
+                      <input
+                        type="text"
+                        placeholder="SKU-GEM-84920"
+                        value={editingProduct.sku || ''}
+                        onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value })}
+                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono font-bold text-xs"
                       />
                     </div>
                   </div>
@@ -4522,10 +4655,175 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <div className="w-16 h-16 rounded-xl bg-cover bg-center border border-[#fbbf24] shadow-md shrink-0 bg-[#1c2541] flex items-center justify-center overflow-hidden" style={{ backgroundImage: editingProduct.image ? `url(${editingProduct.image})` : undefined }}>
                           {!editingProduct.image && <ImageIcon className="w-6 h-6 text-gray-500" />}
                         </div>
-                        <div>
-                          <span className="text-[10px] font-bold text-[#fbbf24] block uppercase">Live Preview</span>
-                          <span className="text-[9px] text-gray-400 block line-clamp-1">{editingProduct.image ? 'Photo Loaded' : 'No photo chosen'}</span>
                         </div>
+                      </div>
+                    </div>
+
+                  {/* Pack Options Bundles & Promotional Offers Controls */}
+                  <div className="space-y-3 p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b]/60">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-black uppercase tracking-wider text-[#fbbf24] flex items-center gap-1.5">
+                        <Sparkles className="w-4 h-4 text-[#d97706]" />
+                        Multi-Pack Pricing Bundles & Savings Controls (Pack 1, 2, 3)
+                      </span>
+                      <span className="text-[10px] text-gray-400 font-medium">Configures client store pack selection cards</span>
+                    </div>
+                    
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                      {/* Pack 1 */}
+                      <div className="p-3 rounded-xl bg-[#1c2541] border border-[#3a506b] space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-gray-300 uppercase">Pack of 1 (Single)</span>
+                          <span className="text-[9px] font-mono text-gray-400">Default Pack</span>
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Price (₹)</label>
+                          <input
+                            type="number"
+                            placeholder="799"
+                            value={editingProduct.packOptions?.[0]?.price ?? editingProduct.price ?? ''}
+                            onChange={(e) => updatePackOptionField(0, 'price', e.target.value)}
+                            className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Badge Tag (Optional)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Standard"
+                            value={editingProduct.packOptions?.[0]?.badge || ''}
+                            onChange={(e) => updatePackOptionField(0, 'badge', e.target.value)}
+                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-[10px]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Savings Tag (Optional)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Base Price"
+                            value={editingProduct.packOptions?.[0]?.savingsText || ''}
+                            onChange={(e) => updatePackOptionField(0, 'savingsText', e.target.value)}
+                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-bold text-[10px]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pack 2 */}
+                      <div className="p-3 rounded-xl bg-[#1c2541] border border-amber-500/40 space-y-2 ring-1 ring-amber-500/20">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-amber-300 uppercase">Pack of 2 (Double)</span>
+                          <span className="text-[9px] font-extrabold bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded">POPULAR</span>
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Price (₹)</label>
+                          <input
+                            type="number"
+                            placeholder="1199"
+                            value={editingProduct.packOptions?.[1]?.price ?? (editingProduct.price ? Math.round(editingProduct.price * 1.5) : '')}
+                            onChange={(e) => updatePackOptionField(1, 'price', e.target.value)}
+                            className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Badge Pill (Floating)</label>
+                          <input
+                            type="text"
+                            placeholder="Most Popular"
+                            value={editingProduct.packOptions?.[1]?.badge ?? 'Most Popular'}
+                            onChange={(e) => updatePackOptionField(1, 'badge', e.target.value)}
+                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-[10px]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Savings Tag (Green Pill)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Extra ₹400 Off"
+                            value={editingProduct.packOptions?.[1]?.savingsText ?? 'Extra ₹400 Off'}
+                            onChange={(e) => updatePackOptionField(1, 'savingsText', e.target.value)}
+                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-bold text-[10px]"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Pack 3 */}
+                      <div className="p-3 rounded-xl bg-[#1c2541] border border-[#3a506b] space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10px] font-bold text-sky-300 uppercase">Pack of 3 (Family / Bulk)</span>
+                          <span className="text-[9px] font-mono text-gray-400">Best Value</span>
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Price (₹)</label>
+                          <input
+                            type="number"
+                            placeholder="1599"
+                            value={editingProduct.packOptions?.[2]?.price ?? (editingProduct.price ? Math.round(editingProduct.price * 2.0) : '')}
+                            onChange={(e) => updatePackOptionField(2, 'price', e.target.value)}
+                            className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Badge Pill (Floating)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Best Value"
+                            value={editingProduct.packOptions?.[2]?.badge || ''}
+                            onChange={(e) => updatePackOptionField(2, 'badge', e.target.value)}
+                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-[10px]"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[9px] font-bold text-gray-400 mb-0.5">Savings Tag (Green Pill)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Extra ₹800 Off"
+                            value={editingProduct.packOptions?.[2]?.savingsText ?? 'Extra ₹800 Off'}
+                            onChange={(e) => updatePackOptionField(2, 'savingsText', e.target.value)}
+                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-bold text-[10px]"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Special Offer Title & Timer Settings */}
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#3a506b]/40">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                          Special Offer Title
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Vaikasi Visakam Special Offer"
+                          value={editingProduct.specialOfferTitle || ''}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, specialOfferTitle: e.target.value })}
+                          className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                          Special Offer Discount Tag
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="Save ₹500"
+                          value={editingProduct.specialOfferDiscount || ''}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, specialOfferDiscount: e.target.value })}
+                          className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#1c2541] text-emerald-400 font-bold text-xs"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                          ⏰ Offer End Timer (Hours)
+                        </label>
+                        <input
+                          type="number"
+                          min="1"
+                          max="720"
+                          placeholder="16"
+                          value={editingProduct.offerEndsInHours ?? 16}
+                          onChange={(e) => setEditingProduct({ ...editingProduct, offerEndsInHours: Number(e.target.value) })}
+                          className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#1c2541] text-red-400 font-mono font-bold text-xs"
+                        />
                       </div>
                     </div>
                   </div>
@@ -4573,7 +4871,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       {shopProducts.map((prod) => (
                         <tr key={prod.id} className="hover:bg-[#fefcf6]">
                           <td className="px-6 py-4">
-                            <div className="font-bold text-[#0f172a] text-sm">{prod.title}</div>
+                            <div className="font-bold text-[#0f172a] text-sm flex items-center gap-2">
+                              <span>{prod.title}</span>
+                              {prod.sku && (
+                                <span className="px-2 py-0.5 rounded bg-[#fef3c7] text-[#b45309] font-mono text-[10px] font-extrabold border border-[#fde68a] shrink-0">
+                                  {prod.sku}
+                                </span>
+                              )}
+                            </div>
                             <div className="text-gray-500 text-[10px] line-clamp-1">{prod.description}</div>
                           </td>
                           <td className="px-6 py-4 text-[#b45309] font-bold">{prod.category}</td>
@@ -4596,7 +4901,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             </button>
                           </td>
                           <td className="px-6 py-4 text-right space-x-2">
-                            <button onClick={() => setEditingProduct(prod)} className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#b45309] border border-[#fde68a] text-[10px] font-bold cursor-pointer">Edit</button>
+                            <button onClick={() => openEditProductModal(prod)} className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#b45309] border border-[#fde68a] text-[10px] font-bold cursor-pointer">Edit</button>
                             <button onClick={() => handleDeleteProduct(prod.id)} className="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 border border-red-200 text-[10px] font-bold cursor-pointer">Delete</button>
                           </td>
                         </tr>
@@ -5507,6 +5812,79 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </button>
               </div>
 
+              {/* LIVE CHAT & CALL SESSION MONITORING CARD */}
+              <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white space-y-4 shadow-xl">
+                <div className="flex flex-wrap items-center justify-between border-b border-slate-800 pb-4 gap-2">
+                  <div>
+                    <h3 className="font-bold text-lg text-amber-400 flex items-center gap-2">
+                      <Phone className="w-5 h-5 text-emerald-400 animate-pulse" />
+                      Live Chat & Call Session Monitoring
+                    </h3>
+                    <p className="text-xs text-slate-400">
+                      Real-time oversight of active in-app consultations, session duration, and live revenues.
+                    </p>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                      {adminConsultationSessions.filter((s) => s.status === 'LIVE').length} Active Live Sessions
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <span className="text-slate-400 text-xs font-medium block">Total Consultations</span>
+                    <span className="text-2xl font-bold font-mono text-amber-400">{adminConsultationSessions.length}</span>
+                  </div>
+                  <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <span className="text-slate-400 text-xs font-medium block">Active Sessions Now</span>
+                    <span className="text-2xl font-bold font-mono text-emerald-400">
+                      {adminConsultationSessions.filter((s) => s.status === 'LIVE').length}
+                    </span>
+                  </div>
+                  <div className="bg-slate-950 p-4 rounded-2xl border border-slate-800">
+                    <span className="text-slate-400 text-xs font-medium block">Total Revenue Generated</span>
+                    <span className="text-2xl font-bold font-mono text-indigo-400">
+                      ₹{adminConsultationSessions.reduce((acc, s) => acc + (s.totalFee || 0), 0).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Session Records */}
+                <div className="space-y-2 pt-2">
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Live Session Activity Logs</h4>
+                  {adminConsultationSessions.length === 0 ? (
+                    <div className="p-4 bg-slate-950 rounded-xl text-xs text-slate-500 text-center border border-slate-800">
+                      No live consultation sessions recorded yet.
+                    </div>
+                  ) : (
+                    adminConsultationSessions.slice(0, 5).map((sess) => (
+                      <div key={sess.id} className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between text-xs">
+                        <div className="flex items-center space-x-3">
+                          <span className="font-mono text-amber-400 font-bold">{sess.id}</span>
+                          <div>
+                            <span className="font-semibold text-slate-200">{sess.clientName}</span>
+                            <span className="text-slate-500"> ↔ </span>
+                            <span className="font-semibold text-amber-300">{sess.astrologerName}</span>
+                            <span className="text-[10px] text-slate-500 block">
+                              {sess.mode} ({sess.durationMinutes} mins) • Fee: ₹{sess.totalFee}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                          sess.status === 'LIVE' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' :
+                          sess.status === 'WAITING' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-slate-800 text-slate-400'
+                        }`}>
+                          {sess.status}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+
               {/* ASTROLOGER ACCOUNTS MANAGEMENT TABLE */}
               <div className={`rounded-3xl border overflow-hidden shadow-2xl transition-colors ${
                 theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-300 shadow-lg'
@@ -5568,7 +5946,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               <span className={`text-xs font-extrabold block ${
                                 theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'
                               }`}>
-                                {astro.specialty}
+                                {astro.specialty || (Array.isArray(astro.specialties) ? astro.specialties.join(', ') : 'Vedic Astrologer')}
                               </span>
                               <div className={`text-xs font-bold mt-1 inline-flex items-center gap-1 px-2.5 py-1 rounded-md border shadow-xs ${
                                 theme === 'dark' ? 'text-white bg-slate-800 border-slate-600' : 'text-slate-900 bg-slate-200 border-slate-400'
@@ -5580,7 +5958,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             {/* 3. Phone & WhatsApp */}
                             <td className="p-4">
                               <a
-                                href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
+                                href={`https://wa.me/${(astro.whatsappNo || astro.whatsappPhone || astro.phone || '').replace(/[^0-9]/g, '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className={`text-xs px-3 py-1 rounded-lg font-mono font-extrabold hover:underline inline-flex items-center gap-1.5 shadow-sm transition-all border ${
@@ -5588,11 +5966,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 }`}
                               >
                                 <MessageSquare className="w-3.5 h-3.5" />
-                                <span>{astro.whatsappNo}</span>
+                                <span>{astro.whatsappNo || astro.whatsappPhone || astro.phone || '+91 98620 99881'}</span>
                               </a>
                               <span className={`text-xs font-mono font-bold block mt-1 ${
                                 theme === 'dark' ? 'text-slate-200' : 'text-slate-800'
-                              }`}>📞 {astro.phone}</span>
+                              }`}>📞 {astro.phone || astro.whatsappPhone || astro.whatsappNo || '+91 98620 99881'}</span>
                             </td>
 
                             {/* 4. Experience Years */}
@@ -6906,13 +7284,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               </div>
                               <div className="mt-1.5">
                                 <a
-                                  href={`https://wa.me/${astro.whatsappNo.replace(/[^0-9]/g, '')}`}
+                                  href={`https://wa.me/${(astro.whatsappNo || astro.whatsappPhone || astro.phone || '').replace(/[^0-9]/g, '')}`}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-3 py-1 rounded-lg font-mono font-extrabold hover:underline inline-flex items-center gap-1.5 shadow-xs transition-all"
                                 >
                                   <MessageSquare className="w-3.5 h-3.5 text-emerald-700" />
-                                  <span>{astro.whatsappNo}</span>
+                                  <span>{astro.whatsappNo || astro.whatsappPhone || astro.phone || '+91 98620 99881'}</span>
                                 </a>
                               </div>
                             </td>
@@ -7361,7 +7739,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <table className="w-full text-left border-collapse text-xs font-sans">
                     <thead>
                       <tr className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold text-[10px] border-b border-[#fde68a]">
-                        <th className="px-4 py-3.5">Service Title & Badge</th>
+                        <th className="px-4 py-3.5">Service Title, Icon Logo & Badge</th>
                         <th className="px-4 py-3.5">Client Price (₹)</th>
                         <th className="px-4 py-3.5">Astrologer Fee (₹)</th>
                         <th className="px-4 py-3.5">Platform Net Share (₹)</th>
@@ -7380,23 +7758,72 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         return (
                           <React.Fragment key={serv.id}>
                             <tr className="hover:bg-[#fefcf6] transition-colors">
-                              {/* Service Title & Badge inputs */}
+                              {/* Service Title & Badge inputs & Icon Logo Uploader */}
                               <td className="px-4 py-3">
-                                <div className="flex items-center gap-2">
-                                  <input
-                                    type="text"
-                                    value={serv.title}
-                                    onChange={(e) => handleServiceChange(serv.id, 'title', e.target.value)}
-                                    className="w-56 h-9 px-2.5 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                                    placeholder="Package Title"
-                                  />
-                                  <input
-                                    type="text"
-                                    value={serv.badge}
-                                    onChange={(e) => handleServiceChange(serv.id, 'badge', e.target.value)}
-                                    className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase text-center focus:border-[#d97706] focus:outline-none"
-                                    placeholder="Badge"
-                                  />
+                                <div className="flex flex-col gap-2">
+                                  <div className="flex items-center gap-2">
+                                    <input
+                                      type="text"
+                                      value={serv.title}
+                                      onChange={(e) => handleServiceChange(serv.id, 'title', e.target.value)}
+                                      className="w-56 h-9 px-2.5 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                      placeholder="Package Title"
+                                    />
+                                    <input
+                                      type="text"
+                                      value={serv.badge}
+                                      onChange={(e) => handleServiceChange(serv.id, 'badge', e.target.value)}
+                                      className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase text-center focus:border-[#d97706] focus:outline-none"
+                                      placeholder="Badge"
+                                    />
+                                  </div>
+
+                                  {/* Icon/Logo Image Upload or URL Input */}
+                                  <div className="flex items-center gap-2 bg-[#fefcf6] p-1.5 rounded-xl border border-gray-300">
+                                    {serv.iconUrl ? (
+                                      <img src={serv.iconUrl} alt="Logo" className="w-7 h-7 object-contain rounded bg-white p-0.5 border border-gray-300 shrink-0" />
+                                    ) : (
+                                      <div className="w-7 h-7 rounded bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706] text-xs font-bold shrink-0">
+                                        📷
+                                      </div>
+                                    )}
+                                    <input
+                                      type="text"
+                                      value={serv.iconUrl || ''}
+                                      onChange={(e) => handleServiceChange(serv.id, 'iconUrl', e.target.value)}
+                                      className="w-48 h-7 px-2 rounded-lg border border-gray-300 bg-white text-[11px] font-sans focus:border-[#d97706] focus:outline-none"
+                                      placeholder="Image Icon / Logo URL"
+                                    />
+                                    <label className="px-2.5 py-1 bg-[#d97706] hover:bg-[#b45309] text-white text-[10px] font-bold rounded-lg cursor-pointer shrink-0 transition-all">
+                                      Upload Icon
+                                      <input
+                                        type="file"
+                                        accept="image/*"
+                                        className="hidden"
+                                        onChange={(e) => {
+                                          const file = e.target.files?.[0];
+                                          if (file) {
+                                            const reader = new FileReader();
+                                            reader.onload = (event) => {
+                                              const result = event.target?.result as string;
+                                              if (result) handleServiceChange(serv.id, 'iconUrl', result);
+                                            };
+                                            reader.readAsDataURL(file);
+                                          }
+                                        }}
+                                      />
+                                    </label>
+                                    {serv.iconUrl && (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleServiceChange(serv.id, 'iconUrl', '')}
+                                        className="text-red-500 hover:text-red-700 text-[11px] font-extrabold px-1"
+                                        title="Clear Icon Logo"
+                                      >
+                                        ✕
+                                      </button>
+                                    )}
+                                  </div>
                                 </div>
                               </td>
 
@@ -7749,7 +8176,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <td className="p-4">
                               <div className="text-gray-700 font-medium">{client.email}</div>
                               <a
-                                href={`https://wa.me/${client.whatsappNo.replace(/[^0-9]/g, '')}`}
+                                href={`https://wa.me/${(client.whatsappNo || client.phone || '').replace(/[^0-9]/g, '')}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-[11px] text-green-400 font-mono font-bold hover:underline inline-flex items-center gap-1 mt-0.5"
@@ -7833,7 +8260,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   <div className="pt-2 flex justify-between items-center">
                     <a
-                      href={`https://wa.me/${inspectingClient.whatsappNo.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${inspectingClient.name}, this is KangleiAstro Customer Support.`)}`}
+                      href={`https://wa.me/${(inspectingClient.whatsappNo || inspectingClient.phone || '').replace(/[^0-9]/g, '')}?text=${encodeURIComponent(`Hello ${inspectingClient.name}, this is KangleiAstro Customer Support.`)}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="px-4 py-2 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-xs inline-flex items-center gap-1.5"
@@ -10185,7 +10612,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#fde68a]">
               <a
-                href={`https://wa.me/${payoutModalAstro.whatsappNo.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(payoutModalAstro.name)},%20your%20KangleiAstro%20commission%20payout%20of%20%E2%82%B9${payoutForm.amount}%20has%20been%20processed%20successfully!%20Transaction%20UTR:%20${encodeURIComponent(payoutForm.utr)}`}
+                href={`https://wa.me/${(payoutModalAstro.whatsappNo || payoutModalAstro.whatsappPhone || payoutModalAstro.phone || '').replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(payoutModalAstro.name)},%20your%20KangleiAstro%20commission%20payout%20of%20%E2%82%B9${payoutForm.amount}%20has%20been%20processed%20successfully!%20Transaction%20UTR:%20${encodeURIComponent(payoutForm.utr)}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="px-4 py-2.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-sm cursor-pointer"

@@ -100,6 +100,41 @@ h1, h2, h3, h4, h5, h6 {
   animation-play-state: paused;
 }
 
+/* Mobile App Experience Enhancements */
+body, button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Hide scrollbars for app-like smooth horizontal scroll views */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Mobile Safe Area Padding */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Mobile App Active Press Feedback */
+.app-active-press {
+  transition: transform 0.15s ease, opacity 0.15s ease;
+}
+.app-active-press:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* Prevent accidental text selection on mobile app buttons */
+.select-none-mobile {
+  user-select: none;
+  -webkit-user-select: none;
+}
+
 /* Strict Mobile Hiding Utility (Guaranteed to hide elements on screens < 1024px) */
 @media (max-width: 1023.98px) {
   .hidden-on-mobile,

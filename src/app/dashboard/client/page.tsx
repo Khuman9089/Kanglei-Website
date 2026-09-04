@@ -9,6 +9,7 @@ import {
   Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, Star, KeyRound,
   Truck, Ban, Printer, MessageSquare, AlertTriangle, ShieldCheck, Image as ImageIcon, Video
 } from 'lucide-react';
+import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 
 interface KuthiOrder {
   id: string;
@@ -162,7 +163,31 @@ export default function ClientDashboard() {
   const [showNewAddrInput, setShowNewAddrInput] = useState(false);
 
   // Dashboard Tabs & E-Store Orders State
-  const [activeDashTab, setActiveDashTab] = useState<'consultations' | 'store_orders'>('consultations');
+  const [activeDashTab, setActiveDashTab] = useState<'consultations' | 'store_orders' | 'live_consultations'>('consultations');
+  const [activeLiveSessionId, setActiveLiveSessionId] = useState<string | null>(null);
+  const [clientSessions, setClientSessions] = useState<any[]>([]);
+
+  useEffect(() => {
+    const fetchConsultations = async () => {
+      try {
+        const res = await fetch('/api/consultations');
+        const data = await res.json();
+        if (data.sessions && Array.isArray(data.sessions)) {
+          setClientSessions(data.sessions);
+          const live = data.sessions.find((s: any) => s.status === 'LIVE' || s.status === 'WAITING');
+          if (live && !activeLiveSessionId) {
+            setActiveLiveSessionId(live.id);
+          }
+        }
+      } catch (err) {
+        console.warn('Client consultation poll note:', err);
+      }
+    };
+    fetchConsultations();
+    const interval = setInterval(fetchConsultations, 3000);
+    return () => clearInterval(interval);
+  }, [activeLiveSessionId]);
+
   const [shopOrders, setShopOrders] = useState<ShopOrder[]>(DEFAULT_SHOP_ORDERS);
   const [storeFilterStatus, setStoreFilterStatus] = useState<string>('ALL');
 
@@ -441,7 +466,24 @@ export default function ClientDashboard() {
         </div>
 
         {/* Dashboard Section Switcher Tabs */}
-        <div className="flex border-b border-[#f3e8d2] mb-6 gap-2">
+        <div className="flex border-b border-[#f3e8d2] mb-6 gap-2 flex-wrap">
+          <button
+            onClick={() => setActiveDashTab('live_consultations')}
+            className={`px-5 py-3 font-extrabold text-xs sm:text-sm border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
+              activeDashTab === 'live_consultations'
+                ? 'border-[#d97706] text-[#b45309] bg-[#fef3c7]/50 rounded-t-2xl'
+                : 'border-transparent text-gray-500 hover:text-gray-800'
+            }`}
+          >
+            <Phone className="w-4 h-4 text-emerald-600 animate-pulse" />
+            <span>Live Chat & Call Room ({clientSessions.length})</span>
+            {activeLiveSessionId && (
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-extrabold animate-pulse">
+                ACTIVE
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => setActiveDashTab('consultations')}
             className={`px-5 py-3 font-extrabold text-xs sm:text-sm border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
@@ -451,7 +493,7 @@ export default function ClientDashboard() {
             }`}
           >
             <Clock className="w-4 h-4 text-[#d97706]" />
-            <span>Consultation Orders & Reports ({orders.length})</span>
+            <span>Kuthi Orders ({orders.length})</span>
           </button>
 
           <button
@@ -470,6 +512,91 @@ export default function ClientDashboard() {
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Main Content Area */}
           <div className="w-full lg:w-2/3 space-y-8">
+
+            {/* ================= TAB 0: LIVE CONSULTATIONS ================= */}
+            {activeDashTab === 'live_consultations' && (
+              <div className="space-y-6">
+                <div className="bg-white rounded-2xl border border-[#f3e8d2] shadow-sm p-6 space-y-4">
+                  <div className="flex items-center justify-between border-b border-[#f3e8d2] pb-4">
+                    <div>
+                      <h2 className="text-xl font-serif font-bold flex items-center gap-2 text-[#0f172a]">
+                        <Phone className="w-5 h-5 text-emerald-600 animate-pulse" />
+                        My In-App Live Consultations
+                      </h2>
+                      <p className="text-xs text-gray-500 mt-0.5">
+                        Access your ongoing 1-on-1 live chat and voice call sessions with empaneled astrologers.
+                      </p>
+                    </div>
+                  </div>
+
+                  {activeLiveSessionId ? (
+                    <LiveConsultationRoom
+                      sessionId={activeLiveSessionId}
+                      currentUserType="CLIENT"
+                      onClose={() => setActiveLiveSessionId(null)}
+                    />
+                  ) : (
+                    <div className="text-center py-10 px-4 border-2 border-dashed border-[#f3e8d2] rounded-2xl bg-amber-50/20 space-y-3">
+                      <MessageSquare className="w-10 h-10 text-[#d97706]/50 mx-auto" />
+                      <h4 className="font-serif font-bold text-base text-[#0f172a]">No Active Live Consultation Session</h4>
+                      <p className="text-xs text-gray-500 max-w-md mx-auto">
+                        You can book a live 1-on-1 chat or voice call with Manipur&apos;s top-rated astrologers from the Astrologers Directory.
+                      </p>
+                      <Link
+                        href="/astrologers"
+                        className="inline-flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs rounded-xl shadow-md hover:shadow-lg transition-all"
+                      >
+                        <Sparkles className="w-4 h-4" />
+                        <span>Consult Top Astrologers Now</span>
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Past Sessions List */}
+                  {clientSessions.length > 0 && (
+                    <div className="pt-4 border-t border-[#f3e8d2] space-y-3">
+                      <h3 className="font-serif font-bold text-sm text-[#0f172a]">Recent Consultation History</h3>
+                      <div className="space-y-2">
+                        {clientSessions.map((sess) => (
+                          <div key={sess.id} className="p-3.5 rounded-xl bg-amber-50/30 border border-[#f3e8d2] flex items-center justify-between text-xs">
+                            <div className="flex items-center space-x-3">
+                              <div className="w-9 h-9 rounded-full bg-amber-500/20 text-[#b45309] font-bold flex items-center justify-center">
+                                {sess.astrologerName?.charAt(0) || 'A'}
+                              </div>
+                              <div>
+                                <h4 className="font-bold text-[#0f172a]">{sess.astrologerName}</h4>
+                                <p className="text-[11px] text-gray-500">
+                                  {sess.mode} ({sess.durationMinutes} mins) • Fee: ₹{sess.totalFee}
+                                </p>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center space-x-2">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
+                                sess.status === 'LIVE' ? 'bg-emerald-100 text-emerald-800' :
+                                sess.status === 'WAITING' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'
+                              }`}>
+                                {sess.status}
+                              </span>
+
+                              <button
+                                onClick={() => {
+                                  setActiveLiveSessionId(sess.id);
+                                  setActiveDashTab('live_consultations');
+                                }}
+                                className="px-3 py-1 bg-[#0b132b] hover:bg-[#1c2541] text-[#fbbf24] font-bold text-[11px] rounded-lg transition cursor-pointer"
+                              >
+                                Open Workspace
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
             
             {/* ================= TAB 1: CONSULTATION ORDERS ================= */}
             {activeDashTab === 'consultations' && (

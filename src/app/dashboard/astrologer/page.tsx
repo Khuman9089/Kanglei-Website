@@ -21,6 +21,7 @@ import { calculateEqualHouses } from '@/engine/houses';
 import { getNakshatraInfo } from '@/engine/nakshatras';
 import { calculatePanchangaDetails } from '@/engine/panchanga';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
+import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 
 // Bengali Formatting Helpers
 function toBengaliDigits(num: number | string): string {
@@ -259,10 +260,58 @@ export default function AstrologerDashboard() {
     }
   };
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'wallet' | 'tools' | 'schedule' | 'profile' | 'astro_products' | 'astro_orders'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'wallet' | 'tools' | 'schedule' | 'profile' | 'astro_products' | 'astro_orders' | 'live_consultation'>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [saveAlert, setSaveAlert] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Live Consultation In-App Call/Chat State
+  const [incomingSession, setIncomingSession] = useState<any>(null);
+  const [activeLiveSessionId, setActiveLiveSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const pollConsultations = async () => {
+      try {
+        const res = await fetch('/api/consultations');
+        const data = await res.json();
+        if (data.sessions && Array.isArray(data.sessions)) {
+          const waiting = data.sessions.find((s: any) => s.status === 'WAITING');
+          if (waiting) {
+            setIncomingSession(waiting);
+          } else {
+            setIncomingSession(null);
+          }
+          const live = data.sessions.find((s: any) => s.status === 'LIVE');
+          if (live && !activeLiveSessionId) {
+            setActiveLiveSessionId(live.id);
+          }
+        }
+      } catch (err) {
+        console.warn('Consultation polling note:', err);
+      }
+    };
+    pollConsultations();
+    const timer = setInterval(pollConsultations, 3000);
+    return () => clearInterval(timer);
+  }, [activeLiveSessionId]);
+
+  const handleAcceptIncomingConsultation = async (sessionId: string) => {
+    try {
+      const res = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'ACCEPT_SESSION', sessionId }),
+      });
+      const data = await res.json();
+      if (data.session) {
+        setActiveLiveSessionId(data.session.id);
+        setIncomingSession(null);
+        setActiveTab('live_consultation');
+      }
+    } catch (err) {
+      console.error('Failed to accept consultation:', err);
+    }
+  };
 
   // Astrologer Vendor Store State
   const [myProducts, setMyProducts] = useState<any[]>([]);
@@ -636,6 +685,7 @@ export default function AstrologerDashboard() {
       action: 'CREATE_PRODUCT',
       product: {
         id: editingAstroProduct.id || 'prod-a' + Date.now(),
+        sku: editingAstroProduct.sku || ('SKU-AST-' + Math.floor(10000 + Math.random() * 90000)),
         title: editingAstroProduct.title,
         category: editingAstroProduct.category || 'Consecrated Remedies',
         price: Number(editingAstroProduct.price),
@@ -949,6 +999,29 @@ Question: ${details.question || 'N/A'}`;
                 Workspace
               </span>
               <div className="space-y-1">
+                <button
+                  onClick={() => { setActiveTab('live_consultation'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'live_consultation'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md font-extrabold'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Phone className="w-4 h-4 text-emerald-500 animate-pulse" />
+                    <span>Live Chat & Call Room</span>
+                  </div>
+                  {activeLiveSessionId ? (
+                    <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-extrabold animate-pulse">
+                      LIVE
+                    </span>
+                  ) : incomingSession ? (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 text-[9px] font-extrabold animate-bounce">
+                      RINGING
+                    </span>
+                  ) : null}
+                </button>
+
                 <button
                   onClick={() => { setActiveTab('overview'); setSidebarOpen(false); }}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
@@ -1346,6 +1419,103 @@ Question: ${details.question || 'N/A'}`;
                     </div>
                   </div>
                 ))}
+            </div>
+          )}
+
+          {/* TAB 0: LIVE CONSULTATION ROOM */}
+          {activeTab === 'live_consultation' && (
+            <div className="space-y-4">
+              <div className={`p-4 rounded-2xl border flex items-center justify-between ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900 shadow-sm'
+              }`}>
+                <div>
+                  <h3 className="font-bold text-lg text-amber-500 flex items-center gap-2">
+                    <Phone className="w-5 h-5 text-emerald-500 animate-pulse" />
+                    Astrologer In-App Consultation Workspace
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Conduct live 1-on-1 chats and voice consultations directly inside KangleiAstro.
+                  </p>
+                </div>
+              </div>
+
+              {activeLiveSessionId ? (
+                <LiveConsultationRoom
+                  sessionId={activeLiveSessionId}
+                  currentUserType="ASTROLOGER"
+                  onClose={() => setActiveLiveSessionId(null)}
+                />
+              ) : (
+                <div className={`text-center p-12 rounded-2xl border space-y-3 ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <MessageSquare className="w-12 h-12 text-slate-400 mx-auto" />
+                  <h4 className="font-bold text-slate-700 text-base">No Active Live Session</h4>
+                  <p className="text-xs text-slate-500 max-w-md mx-auto">
+                    When a client initiates a live consultation, an incoming call banner will alert you here automatically.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* INCOMING CONSULTATION CALL POPUP ALERT */}
+          {incomingSession && (
+            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
+              <div className="bg-slate-900 border-2 border-amber-500 rounded-3xl max-w-md w-full p-6 text-slate-100 shadow-2xl text-center space-y-5 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-emerald-500 to-amber-500 animate-pulse"></div>
+
+                <div className="w-20 h-20 bg-amber-500/20 text-amber-400 border-2 border-amber-500 rounded-full flex items-center justify-center mx-auto ring-8 ring-amber-500/10 animate-bounce">
+                  {incomingSession.mode === 'CALL' ? <Phone className="w-10 h-10" /> : <MessageSquare className="w-10 h-10" />}
+                </div>
+
+                <div className="space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400 block">
+                    🔔 INCOMING CONSULTATION REQUEST
+                  </span>
+                  <h3 className="font-serif font-bold text-2xl text-slate-100">
+                    {incomingSession.clientName}
+                  </h3>
+                  <p className="text-xs text-slate-400">
+                    Requested {incomingSession.durationMinutes} Mins {incomingSession.mode === 'CALL' ? 'Voice Call' : 'Live Chat'} (₹{incomingSession.totalFee} Fee)
+                  </p>
+                </div>
+
+                <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-xs text-left space-y-1">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Client Mobile:</span>
+                    <span className="font-mono text-amber-300">{incomingSession.clientPhone}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Gender / DOB:</span>
+                    <span className="text-slate-200">{incomingSession.clientGender || 'N/A'} · {incomingSession.clientDob || 'N/A'}</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  <button
+                    onClick={async () => {
+                      await fetch('/api/consultations', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'REJECT_SESSION', sessionId: incomingSession.id }),
+                      });
+                      setIncomingSession(null);
+                    }}
+                    className="py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-red-400 font-bold text-xs border border-slate-700 transition"
+                  >
+                    Decline Request
+                  </button>
+
+                  <button
+                    onClick={() => handleAcceptIncomingConsultation(incomingSession.id)}
+                    className="py-3 rounded-2xl bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700 text-slate-950 font-extrabold text-xs shadow-lg transition flex items-center justify-center gap-1.5"
+                  >
+                    <Phone className="w-4 h-4" />
+                    <span>Accept & Join Now</span>
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -2217,7 +2387,14 @@ Question: ${details.question || 'N/A'}`;
                           return (
                             <tr key={p.id} className="hover:bg-[#0b132b]/40 transition-colors">
                               <td className="p-4">
-                                <div className="font-extrabold text-white text-sm">{p.title}</div>
+                                <div className="font-extrabold text-white text-sm flex items-center gap-2">
+                                  <span>{p.title}</span>
+                                  {p.sku && (
+                                    <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono text-[10px] font-extrabold border border-purple-500/30 shrink-0">
+                                      {p.sku}
+                                    </span>
+                                  )}
+                                </div>
                                 <div className="text-amber-300 text-[10px] font-mono">{p.badge}</div>
                               </td>
                               <td className="p-4 text-slate-300 font-medium">{p.category}</td>

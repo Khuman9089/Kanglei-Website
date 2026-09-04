@@ -10,6 +10,7 @@ const ICON_MAP: Record<string, any> = {
   's-2': Heart,
   's-3': Video,
   's-4': Calendar,
+  's-5': Sparkles,
 };
 
 export default function FeaturedServices() {
@@ -42,9 +43,10 @@ export default function FeaturedServices() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, idx) => {
             const Icon = ICON_MAP[service.id] || Sparkles;
+            const logoImage = service.iconUrl || service.imageUrl;
             return (
               <motion.div
                 key={service.id || service.title}
@@ -52,40 +54,36 @@ export default function FeaturedServices() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white p-7 rounded-3xl border border-[#f3e8d2] shadow-[0_10px_30px_rgba(217,119,6,0.04)] hover:border-[#d97706] transition-all hover:-translate-y-1.5 flex flex-col justify-between relative overflow-hidden"
+                className="bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-[0_4px_20px_rgba(217,119,6,0.04)] hover:border-[#d97706] transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
               >
                 <div>
-                  <div className="flex justify-between items-start mb-5">
-                    <div className="w-14 h-14 rounded-2xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706] shadow-xs">
-                      <Icon className="w-7 h-7" />
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706] shadow-xs overflow-hidden p-1 shrink-0">
+                      {logoImage ? (
+                        <img src={logoImage} alt={service.title} className="w-full h-full object-contain rounded-lg" />
+                      ) : (
+                        <Icon className="w-6 h-6" />
+                      )}
                     </div>
-                    <span className="px-2.5 py-1 rounded-md bg-[#fef3c7] text-[#b45309] text-[10px] font-extrabold uppercase tracking-wider border border-[#fde68a]">
-                      {service.badge}
-                    </span>
+                    {service.badge && (
+                      <span className="px-2.5 py-1 rounded-md bg-[#fef3c7] text-[#b45309] text-[10px] font-extrabold uppercase tracking-wider border border-[#fde68a]">
+                        {service.badge}
+                      </span>
+                    )}
                   </div>
 
-                  <h3 className="font-serif font-bold text-xl text-[#0f172a] mb-2">{service.title}</h3>
-                  <p className="text-gray-600 text-xs leading-relaxed mb-6">{service.description}</p>
-
-                  <ul className="space-y-2.5 mb-8 border-t border-[#f3e8d2] pt-4">
-                    {service.features.map((feat: string, fIdx: number) => (
-                      <li key={fIdx} className="flex items-start gap-2 text-xs text-gray-700 font-medium">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-green-600 shrink-0 mt-0.5" />
-                        <span>{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
+                  <h3 className="font-serif font-bold text-base md:text-lg text-[#0f172a] mb-4 leading-snug">{service.title}</h3>
                 </div>
 
-                <div className="pt-4 border-t border-[#f3e8d2] flex items-center justify-between">
+                <div className="pt-4 border-t border-[#f3e8d2] flex items-center justify-between mt-3">
                   <div>
                     <span className="text-[10px] text-gray-500 uppercase tracking-wider block font-bold">Price</span>
-                    <span className="text-xl font-extrabold text-[#b45309]">{service.price}</span>
+                    <span className="text-lg font-extrabold text-[#b45309]">{service.price}</span>
                   </div>
 
                   <Link
                     href={service.link || '/booking'}
-                    className="py-2.5 px-5 rounded-xl bg-[#0f172a] text-[#fbbf24] font-bold text-xs hover:bg-[#1e293b] transition-colors flex items-center gap-1.5 shadow-sm"
+                    className="py-2 px-3.5 rounded-xl bg-[#0f172a] text-[#fbbf24] font-bold text-xs hover:bg-[#1e293b] transition-colors flex items-center gap-1.5 shadow-xs shrink-0"
                   >
                     <span>{service.cta || 'Book Now'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />

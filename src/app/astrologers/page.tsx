@@ -61,7 +61,27 @@ export default function AstrologersDirectoryPage() {
         .then((res) => res.json())
         .then((data) => {
           if (data.astrologers && Array.isArray(data.astrologers)) {
-            setAstrologers(data.astrologers.filter((a: any) => a.active !== false));
+            const normalized = data.astrologers
+              .filter((a: any) => a.active !== false && a.status !== 'SUSPENDED')
+              .map((a: any) => ({
+                id: a.id || 'astro-' + Math.random(),
+                name: a.name || 'Jyotish Guru',
+                badge: a.badge || 'Verified',
+                avatar: a.avatar || a.photoUrl || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
+                specialties: Array.isArray(a.specialties) ? a.specialties : (a.specialty ? [a.specialty] : ['Vedic Astrology', 'Kuthi Yengba']),
+                categoryTags: Array.isArray(a.categoryTags) ? a.categoryTags : ['Marriage', 'Career', 'Love'],
+                languages: typeof a.languages === 'string' ? a.languages : (Array.isArray(a.languages) ? a.languages.join(' · ') : 'Manipuri · English'),
+                experienceYears: a.experienceYears || 5,
+                rating: a.rating || 5.0,
+                consultationsCount: a.consultationsCount || '1k+',
+                pricePerMin: a.pricePerMin || 30,
+                whatsappPhone: a.whatsappPhone || a.whatsappNo || a.phone || '+919862099881',
+                bio: a.bio || 'Vedic Astrologer and Jyotish practitioner providing accurate calculations and life guidance.',
+                isTrending: !!a.isTrending,
+                active: a.active !== false,
+                online: a.online !== false,
+              }));
+            setAstrologers(normalized);
           }
           if (data.settings) {
             setSettings((prev) => ({ ...prev, ...data.settings }));

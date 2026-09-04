@@ -20,7 +20,7 @@
       }
     ],
     "mobile": "+91 98620 12345",
-    "status": "PAYMENT_PENDING",
+    "status": "PAID",
     "address": "Uripok, Imphal West, Manipur, 795001",
     "pincode": "795001",
     "orderRef": "ESTORE-2026-447",
@@ -30,7 +30,7 @@
     "whatsappNo": "+91 98620 12345",
     "shippingFee": 0,
     "totalAmount": 68000,
-    "paymentStatus": "PAYMENT_NOT_RECEIVED",
+    "paymentStatus": "PAYMENT_RECEIVED",
     "adminConfirmed": false,
     "discountAmount": 0,
     "subtotalAmount": 68000
