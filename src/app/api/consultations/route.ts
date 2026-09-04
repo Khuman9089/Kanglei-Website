@@ -252,6 +252,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, signal: newSignal });
     }
 
+    if (action === 'INITIATE_CALL') {
+      const { sessionId, callType, initiatedBy } = body;
+      const idx = sessions.findIndex((s) => s.id === sessionId);
+      if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      sessions[idx].callType = callType || 'VIDEO';
+      sessions[idx].status = 'LIVE';
+      // Clear stale signals from any previous call attempt
+      sessions[idx].signals = [];
+      await writePersistentDataAsync('consultation_sessions', sessions);
+      return NextResponse.json({ success: true, session: sessions[idx] });
+    }
+
+
     if (action === 'UPDATE_TIMER') {
       const { sessionId, remainingSeconds } = body;
       const idx = sessions.findIndex((s) => s.id === sessionId);
