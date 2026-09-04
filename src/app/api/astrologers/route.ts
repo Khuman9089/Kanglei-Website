@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
@@ -265,6 +266,28 @@ export async function POST(req: Request) {
         currentAstrologers.push(astro);
       }
       await writePersistentDataAsync('astrologers', currentAstrologers);
+
+      // Sync to public.astrologers SQL table in Supabase
+      try {
+        await supabase.from('astrologers').upsert({
+          id: astro.id || 'astro-' + Date.now(),
+          name: astro.name,
+          title: astro.badge || 'Vedic Astrologer',
+          specialties: astro.specialties || [],
+          languages: typeof astro.languages === 'string' ? astro.languages.split('·').map((l: string) => l.trim()) : (astro.languages || []),
+          experience_years: astro.experienceYears || 5,
+          rate_per_min: astro.pricePerMin || 15,
+          rating: astro.rating || 5.0,
+          avatar: astro.avatar || '',
+          bio: astro.bio || '',
+          is_online: astro.online !== false,
+          phone: astro.phone || astro.whatsappPhone || '',
+          email: astro.email || '',
+          is_approved: true,
+        }, { onConflict: 'id' });
+      } catch (sbErr) {
+        console.warn('Supabase astrologers table sync warning:', sbErr);
+      }
 
       // Persist in Prisma Database if DATABASE_URL is configured
       if (process.env.DATABASE_URL) {

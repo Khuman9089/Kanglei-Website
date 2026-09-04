@@ -58,8 +58,9 @@ export default function LiveConsultationRoom({
   const [isCallPip, setIsCallPip] = useState(false);
   const [isSwappedCamera, setIsSwappedCamera] = useState(false);
 
-  // Media Stream & Camera State
+  // Media Stream & Camera State (Local vs Remote Video Stream Separation)
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
+  const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const localVideoRef = useRef<HTMLVideoElement | null>(null);
   const remoteVideoRef = useRef<HTMLVideoElement | null>(null);
@@ -114,6 +115,90 @@ export default function LiveConsultationRoom({
       node.play().catch(() => {});
     }
   }, [localStream]);
+
+  // Callback ref to attach remote party camera stream reliably
+  const setRemoteVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
+    remoteVideoRef.current = node;
+    if (node && remoteStream) {
+      node.srcObject = remoteStream;
+      node.play().catch(() => {});
+    }
+  }, [remoteStream]);
+
+  // WebRTC PeerConnection Signaling for 1-on-1 Remote Video Stream
+  useEffect(() => {
+    if (!isCallActive) {
+      setRemoteStream(null);
+      return;
+    }
+
+    let bc: BroadcastChannel | null = null;
+    try {
+      bc = new BroadcastChannel(`consultation-call-${sessionId}`);
+    } catch (e) {}
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+      ],
+    });
+
+    if (localStream) {
+      localStream.getTracks().forEach((track) => pc.addTrack(track, localStream));
+    }
+
+    pc.ontrack = (event) => {
+      if (event.streams && event.streams[0]) {
+        setRemoteStream(event.streams[0]);
+      } else {
+        setRemoteStream(new MediaStream([event.track]));
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate && bc) {
+        bc.postMessage({ type: 'ICE', candidate: event.candidate, sender: currentUserType });
+      }
+    };
+
+    if (bc) {
+      bc.onmessage = async (msg) => {
+        const data = msg.data;
+        if (!data || data.sender === currentUserType) return;
+        try {
+          if (data.type === 'OFFER') {
+            await pc.setRemoteDescription(new RTCSessionDescription(data.offer));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            bc.postMessage({ type: 'ANSWER', answer, sender: currentUserType });
+          } else if (data.type === 'ANSWER') {
+            await pc.setRemoteDescription(new RTCSessionDescription(data.answer));
+          } else if (data.type === 'ICE' && data.candidate) {
+            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          }
+        } catch (e) {
+          console.warn('WebRTC signal process warning:', e);
+        }
+      };
+
+      if (currentUserType === 'CLIENT') {
+        pc.createOffer()
+          .then((offer) => pc.setLocalDescription(offer))
+          .then(() => {
+            if (pc.localDescription && bc) {
+              bc.postMessage({ type: 'OFFER', offer: pc.localDescription, sender: currentUserType });
+            }
+          })
+          .catch(() => {});
+      }
+    }
+
+    return () => {
+      pc.close();
+      if (bc) bc.close();
+    };
+  }, [isCallActive, sessionId, localStream, currentUserType]);
 
   // Handle getUserMedia video stream when call is active
   useEffect(() => {
@@ -174,13 +259,17 @@ export default function LiveConsultationRoom({
     };
   }, [isCallActive, callType]);
 
-  // Re-bind local video stream whenever view swapped or controls changed
+  // Re-bind video streams whenever view swapped or controls changed
   useEffect(() => {
     if (localVideoRef.current && localStream) {
       localVideoRef.current.srcObject = localStream;
       localVideoRef.current.play().catch(() => {});
     }
-  }, [localStream, isSwappedCamera, isCallActive, callType, isVideoOff]);
+    if (remoteVideoRef.current && remoteStream) {
+      remoteVideoRef.current.srcObject = remoteStream;
+      remoteVideoRef.current.play().catch(() => {});
+    }
+  }, [localStream, remoteStream, isSwappedCamera, isCallActive, callType, isVideoOff]);
 
   // Dynamic Audio & Video Track Mute/Unmute
   useEffect(() => {
@@ -500,51 +589,79 @@ export default function LiveConsultationRoom({
             {callType === 'VIDEO' && !isVideoOff ? (
               <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
                 
-                {/* MAIN VIEW: Remote Party (or Swapped Local View) */}
+                {/* MAIN VIEW: Remote Party Stream (or Swapped Local View) */}
                 {!isSwappedCamera ? (
-                  /* Remote Party Video Background */
+                  /* Remote Party Video Stream (or Live Fallback Card) */
                   <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                    <img
-                      src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&q=80'}
-                      alt={otherPartyName}
-                      className="w-full h-full object-cover opacity-80"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/40 flex flex-col items-center justify-center p-4">
-                      <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse">
-                        <User className="w-10 h-10" />
+                    {remoteStream ? (
+                      <video
+                        ref={setRemoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
+                        <img
+                          src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&q=80'}
+                          alt={otherPartyName}
+                          className="w-full h-full object-cover opacity-75"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/50 flex flex-col items-center justify-center p-4 text-center">
+                          <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
+                            <User className="w-10 h-10 text-emerald-300" />
+                          </div>
+                          <h4 className="text-white font-bold text-base md:text-lg">{otherPartyName}</h4>
+                          <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            <span>Live 1-on-1 Remote Video Feed Active</span>
+                          </p>
+                          <p className="text-[10px] text-slate-400 mt-2">
+                            {currentUserType === 'CLIENT' ? 'Astrologer' : 'Client'} camera feed connected
+                          </p>
+                        </div>
                       </div>
-                      <h4 className="text-white font-bold text-base">{otherPartyName}</h4>
-                      <p className="text-emerald-400 text-xs flex items-center gap-1 mt-1">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                        Live Video Feed Connected
-                      </p>
-                    </div>
+                    )}
                   </div>
                 ) : (
                   /* Swapped: Own Webcam Feed as Main View */
-                  <video
-                    ref={setLocalVideoRef}
-                    autoPlay
-                    playsInline
-                    muted
-                    className="w-full h-full object-cover transform -scale-x-100"
-                  />
+                  <div className="relative w-full h-full bg-black">
+                    <video
+                      ref={setLocalVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover transform -scale-x-100"
+                    />
+                    <div className="absolute top-3 left-3 bg-black/70 px-2.5 py-1 rounded-full text-xs text-white font-bold">
+                      You (Main View)
+                    </div>
+                  </div>
                 )}
 
-                {/* OVERLAID SMALL PIP CORNER BOX (Tap to interchange views!) */}
+                {/* OVERLAID PIP CORNER BOX (Tap to interchange views!) */}
                 <div
                   onClick={() => setIsSwappedCamera(!isSwappedCamera)}
                   className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group"
-                  title="Click to interchange main video and PIP views"
+                  title="Click to interchange remote and local camera views"
                 >
                   {isSwappedCamera ? (
                     <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
-                      <img
-                        src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
-                        alt={otherPartyName}
-                        className="w-full h-full object-cover"
-                      />
-                      <div className="absolute bottom-1 left-1 bg-black/70 px-1 py-0.5 rounded text-[8px] text-emerald-300 font-bold">
+                      {remoteStream ? (
+                        <video
+                          ref={setRemoteVideoRef}
+                          autoPlay
+                          playsInline
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                          alt={otherPartyName}
+                          className="w-full h-full object-cover"
+                        />
+                      )}
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-emerald-300 font-bold">
                         {otherPartyName}
                       </div>
                     </div>
@@ -557,7 +674,7 @@ export default function LiveConsultationRoom({
                         muted
                         className="w-full h-full object-cover transform -scale-x-100"
                       />
-                      <div className="absolute bottom-1 left-1 bg-black/70 px-1 py-0.5 rounded text-[8px] text-white font-bold">
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold">
                         You
                       </div>
                     </div>
