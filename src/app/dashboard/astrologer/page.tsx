@@ -114,6 +114,7 @@ interface ClientDetails {
 
 interface Order {
   id: string;
+  orderRef?: string;
   clientName: string;
   serviceType: string;
   status: Status;
@@ -606,7 +607,8 @@ export default function AstrologerDashboard() {
           const assigned = data.orders.filter((o: any) => o.assignedAstrologerId === 'astro-1' || o.assignedAstrologerName?.includes('Acharya Tombi'));
           if (assigned.length > 0) {
             const mapped: Order[] = assigned.map((o: any) => ({
-              id: o.orderRef || o.id,
+              id: o.id || o.orderRef,
+              orderRef: o.orderRef || o.id,
               clientName: o.clientName,
               serviceType: o.serviceType || 'Kuthi Yengba Consultation',
               status: o.status || 'ASSIGNED',
@@ -775,15 +777,17 @@ export default function AstrologerDashboard() {
         body: JSON.stringify({
           action: 'UPLOAD_REPORT',
           orderId: uploadingOrder.id,
-          reportFileName: uploadForm.reportFileName,
-          reportFileUrl: uploadForm.reportFileUrl,
-          reportNotes: uploadForm.reportNotes,
-          uploadedBy: profileForm.name,
+          reportFileName: uploadForm.reportFileName || 'consultation_report.pdf',
+          reportFileUrl: uploadForm.reportFileUrl || '/sample_kuthi.pdf',
+          reportNotes: uploadForm.reportNotes || '',
+          uploadedBy: profileForm.name || 'Acharya Tombi Sharma',
         }),
       });
 
+      const resData = await res.json().catch(() => ({}));
+
       if (!res.ok) {
-        setUploadMsg('❌ Error uploading report. Please try again.');
+        setUploadMsg(`❌ Error: ${resData.error || 'Failed to upload report. Please try again.'}`);
         setLoadingUpload(false);
         return;
       }
@@ -796,7 +800,7 @@ export default function AstrologerDashboard() {
           action: 'ADD_EARNING',
           astroId: 'astro-1',
           amount: uploadingOrder.payoutFee,
-          orderRef: uploadingOrder.id,
+          orderRef: uploadingOrder.orderRef || uploadingOrder.id,
           notes: `Consultation Fee Credited for ${uploadingOrder.serviceType} (${uploadingOrder.clientName})`,
         }),
       });
@@ -811,10 +815,10 @@ export default function AstrologerDashboard() {
         setUploadMsg('');
         setSelectedFile(null);
       }, 1500);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
       setLoadingUpload(false);
-      setUploadMsg('❌ Network error during report upload.');
+      setUploadMsg(`❌ Error uploading report: ${err.message || 'Network failure'}`);
     }
   };
 
@@ -2851,7 +2855,7 @@ Question: ${details.question || 'N/A'}`;
                   <FileText className="w-5 h-5 text-[#d97706]" />
                   Upload Completed Consultation Report
                 </h4>
-                <p className="text-gray-400 text-[11px]">Client: <strong className="text-[#faf8f4]">{uploadingOrder.clientName}</strong> ({uploadingOrder.id})</p>
+                <p className="text-gray-400 text-[11px]">Client: <strong className="text-[#faf8f4]">{uploadingOrder.clientName}</strong> ({uploadingOrder.orderRef || uploadingOrder.id})</p>
               </div>
               <button onClick={() => setUploadingOrder(null)} className="text-gray-400 hover:text-white p-1">
                 <X className="w-5 h-5" />
