@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
 import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
@@ -396,6 +397,20 @@ export async function POST(request: Request) {
       }
       await writePersistentDataAsync('shop_products', products);
 
+      // Sync to public.services table in Supabase
+      try {
+        await supabase.from('services').upsert({
+          id: prod.id,
+          category: prod.category || 'Puja & Rituals',
+          title: prod.title,
+          price: prod.price,
+          description: prod.description || '',
+          active: prod.status === 'APPROVED',
+        }, { onConflict: 'id' });
+      } catch (e) {
+        console.warn('Supabase services sync warning:', e);
+      }
+
       return NextResponse.json({
         success: true,
         message: prod.status === 'PENDING_APPROVAL' ? 'Product submitted for Admin approval!' : 'Product saved & published!',
@@ -515,6 +530,25 @@ export async function POST(request: Request) {
       };
       orders.unshift(newOrder);
       await writePersistentDataAsync('shop_orders', orders);
+
+      // Sync to public.orders table in Supabase
+      try {
+        await supabase.from('orders').insert([{
+          id: newOrder.id,
+          order_ref: newOrder.orderRef,
+          client_name: newOrder.buyerName,
+          mobile: newOrder.mobile,
+          whatsapp_no: newOrder.whatsappNo,
+          delivery_address: `${newOrder.address}, Pincode: ${newOrder.pincode}`,
+          amount: newOrder.totalAmount,
+          service_title: `E-Store Order (${newOrder.items.length} items)`,
+          status: newOrder.status,
+          utr: newOrder.utr,
+          category: 'estore_order',
+        }]);
+      } catch (e) {
+        console.warn('Supabase orders table sync warning:', e);
+      }
 
       // Deduct product and variant stock
       body.items.forEach((item: any) => {
