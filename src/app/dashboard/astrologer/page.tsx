@@ -749,12 +749,16 @@ export default function AstrologerDashboard() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setSelectedFile(file);
-      const objectUrl = URL.createObjectURL(file);
-      setUploadForm((prev) => ({
-        ...prev,
-        reportFileName: file.name,
-        reportFileUrl: objectUrl,
-      }));
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const dataUrl = evt.target?.result as string;
+        setUploadForm((prev) => ({
+          ...prev,
+          reportFileName: file.name,
+          reportFileUrl: dataUrl || '/sample_kuthi.pdf',
+        }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 

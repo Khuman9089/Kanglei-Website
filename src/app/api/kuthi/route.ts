@@ -256,6 +256,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: 'Kuthi Order Payment Status updated live!', orders });
     }
 
+    if (action === 'UPLOAD_REPORT') {
+      const { orderId, reportFileName, reportFileUrl, reportNotes, uploadedBy } = body;
+      const idx = orders.findIndex((o) => o.id === orderId);
+      if (idx !== -1) {
+        orders[idx] = {
+          ...orders[idx],
+          reportReceivedFromAstro: true,
+          reportFileName: reportFileName || 'consultation_report.pdf',
+          reportFileUrl: reportFileUrl || '/sample_kuthi.pdf',
+          reportNotes: reportNotes || '',
+          reportUploadedBy: uploadedBy || 'Acharya Tombi Sharma',
+          reportUploadedAt: new Date().toISOString(),
+          status: 'COMPLETED',
+        };
+
+        try {
+          await supabase.from('orders').update({
+            status: 'COMPLETED',
+            kuthi_file_name: reportFileName,
+          }).eq('id', orderId);
+        } catch (e) {}
+
+        await writePersistentDataAsync('kuthi_orders', orders);
+        return NextResponse.json({ success: true, message: 'Consultation Report uploaded & order completed successfully!', order: orders[idx], orders });
+      } else {
+        return NextResponse.json({ error: 'Order not found' }, { status: 404 });
+      }
+    }
+
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
