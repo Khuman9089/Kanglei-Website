@@ -54,6 +54,32 @@ export interface ConsultationSession {
 
 const DEFAULT_SESSIONS: ConsultationSession[] = [
   {
+    id: 'TEST-SESS-999',
+    mode: 'CALL',
+    callType: 'VIDEO',
+    clientName: 'Test Client User',
+    clientPhone: '+919999999999',
+    astrologerId: 'astro-test',
+    astrologerName: 'Acharya Test Guru',
+    astrologerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
+    status: 'LIVE',
+    durationMinutes: 30,
+    ratePerMin: 35,
+    totalFee: 1050,
+    createdAt: new Date().toISOString(),
+    startedAt: new Date().toISOString(),
+    remainingSeconds: 1800,
+    messages: [
+      {
+        id: 'msg-test-1',
+        sender: 'SYSTEM',
+        text: 'Live 1-on-1 Consultation Test Room active.',
+        timestamp: new Date().toISOString(),
+      },
+    ],
+    signals: [],
+  },
+  {
     id: 'SESS-1001',
     mode: 'CHAT',
     callType: 'AUDIO',

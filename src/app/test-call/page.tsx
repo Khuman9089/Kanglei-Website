@@ -8,32 +8,18 @@ export default function TestCallPage() {
   const [role, setRole] = useState<'CLIENT' | 'ASTROLOGER' | null>(null);
   const [sessionId] = useState<string>('TEST-SESS-999');
 
-  const startTestSession = async (selectedRole: 'CLIENT' | 'ASTROLOGER') => {
-    try {
-      await fetch('/api/consultations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'CREATE_SESSION',
-          id: 'TEST-SESS-999',
-          mode: 'CALL',
-          callType: 'VIDEO',
-          clientName: 'Test Client User',
-          astrologerName: 'Acharya Test Guru',
-          astrologerId: 'astro-test',
-        }),
-      });
-      await fetch('/api/consultations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'ACCEPT_SESSION',
-          sessionId: 'TEST-SESS-999',
-        }),
-      });
-    } catch (e) {}
-
+  const startTestSession = (selectedRole: 'CLIENT' | 'ASTROLOGER') => {
     setRole(selectedRole);
+    fetch('/api/consultations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'INITIATE_CALL',
+        sessionId: 'TEST-SESS-999',
+        callType: 'VIDEO',
+        initiatedBy: selectedRole,
+      }),
+    }).catch(() => {});
   };
 
   if (role) {
