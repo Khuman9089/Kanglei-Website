@@ -171,7 +171,7 @@ export default function ConsultationBookingModal({
         body: JSON.stringify({
           action: 'CREATE_SESSION',
           mode: mode,
-          callType: mode === 'CALL' || mode === 'VIDEO' ? 'VIDEO' : 'AUDIO',
+          callType: mode === 'CALL' ? 'VIDEO' : 'AUDIO',
           clientName: user?.name || 'Verified Client',
           clientPhone: whatsappNo,
           astrologerId: astrologer.id,
