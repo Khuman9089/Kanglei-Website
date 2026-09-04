@@ -43,3 +43,5 @@ next-env.d.ts
 # local data cache
 /data/
 
+
+scratch/
