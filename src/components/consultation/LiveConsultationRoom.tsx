@@ -733,141 +733,115 @@ export default function LiveConsultationRoom({
         }`}>
           <div className="relative w-full flex-1 rounded-3xl bg-slate-950 border border-[#2a3942] overflow-hidden shadow-2xl flex items-center justify-center">
             
-            {/* LIVE WEBCAM VIDEO STREAM DISPLAY */}
+            {/* LIVE NATIVE WEBCAM VIDEO STREAM DISPLAY */}
             {callType === 'VIDEO' && !isVideoOff ? (
               <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                {useJitsiRoom ? (
-                  /* 100% RELIABLE 1-ON-1 WEBRTC VIDEO CALL ROOM (Astrologer ↔ Client) */
-                  <div className="w-full h-full relative bg-black flex items-center justify-center overflow-hidden">
-                    <iframe
-                      src={`https://meet.jit.si/KangleiAstro-LiveRoom-${sessionId}#userInfo.displayName="${encodeURIComponent(
-                        currentUserType === 'CLIENT' ? session.clientName : session.astrologerName
-                      )}"&config.prejoinPageEnabled=false&config.startWithAudioMuted=${isMicMuted}&config.startWithVideoMuted=${isVideoOff}&config.disableDeepLinking=true`}
-                      allow="camera; microphone; display-capture; autoplay; clipboard-write; fullscreen"
-                      className="w-full h-full border-0 rounded-2xl bg-black"
-                    />
-
-                    {/* Mode Toggle Overlay */}
-                    <div className="absolute top-2 right-12 z-40 bg-black/70 backdrop-blur-md px-2.5 py-1 rounded-full text-[10px] text-emerald-400 font-bold border border-emerald-500/30 flex items-center gap-1.5 shadow-md">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span>HD Live 1-on-1 Video Active</span>
-                      <button
-                        onClick={() => setUseJitsiRoom(false)}
-                        className="ml-2 text-slate-300 hover:text-white underline text-[9px] cursor-pointer"
-                      >
-                        Native Mode
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  /* NATIVE WEBRTC CAMERA STREAM MODE */
+                {/* MAIN VIEW: Remote Party Stream (or Local View while connecting) */}
+                {!isSwappedCamera ? (
                   <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                    
-                    {/* MAIN VIEW: Remote Party Stream (or Swapped Local View) */}
-                    {!isSwappedCamera ? (
-                      /* Remote Party Video Stream (or Live Fallback Card) */
-                      <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                        {remoteStream ? (
-                          <video
-                            ref={setRemoteVideoRef}
-                            autoPlay
-                            playsInline
-                            className="w-full h-full object-cover"
-                          />
-                        ) : (
-                          <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
-                            <img
-                              src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&q=80'}
-                              alt={otherPartyName}
-                              className="w-full h-full object-cover opacity-75"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/50 flex flex-col items-center justify-center p-4 text-center">
-                              <div className="w-20 h-20 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
-                                <User className="w-10 h-10 text-emerald-300" />
-                              </div>
-                              <h4 className="text-white font-bold text-base md:text-lg">{otherPartyName}</h4>
-                              <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
-                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                <span>Live 1-on-1 Remote Video Feed Active</span>
-                              </p>
-                              <button
-                                onClick={() => setUseJitsiRoom(true)}
-                                className="mt-3 px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs transition cursor-pointer shadow-md"
-                              >
-                                🚀 Launch Embedded WebRTC Video Room
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
+                    {remoteStream ? (
+                      <video
+                        ref={setRemoteVideoRef}
+                        autoPlay
+                        playsInline
+                        className="w-full h-full object-cover"
+                      />
                     ) : (
-                      /* Swapped: Own Webcam Feed as Main View */
-                      <div className="relative w-full h-full bg-black">
-                        <video
-                          ref={setLocalVideoRef}
-                          autoPlay
-                          playsInline
-                          muted
-                          className="w-full h-full object-cover transform -scale-x-100"
-                        />
-                        <div className="absolute top-3 left-3 bg-black/70 px-2.5 py-1 rounded-full text-xs text-white font-bold">
-                          You (Main View)
-                        </div>
-                      </div>
-                    )}
-
-                    {/* OVERLAID PIP CORNER BOX (Tap to interchange views!) */}
-                    <div
-                      onClick={() => setIsSwappedCamera(!isSwappedCamera)}
-                      className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group"
-                      title="Click to interchange remote and local camera views"
-                    >
-                      {isSwappedCamera ? (
-                        <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
-                          {remoteStream ? (
-                            <video
-                              ref={setRemoteVideoRef}
-                              autoPlay
-                              playsInline
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <img
-                              src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
-                              alt={otherPartyName}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                          <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-emerald-300 font-bold">
-                            {otherPartyName}
-                          </div>
-                        </div>
-                      ) : (
-                        <div className="w-full h-full relative bg-black">
+                      <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
+                        {localStream ? (
                           <video
                             ref={setLocalVideoRef}
                             autoPlay
                             playsInline
                             muted
-                            className="w-full h-full object-cover transform -scale-x-100"
+                            className="w-full h-full object-cover transform -scale-x-100 opacity-80"
                           />
-                          <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold">
-                            You
+                        ) : (
+                          <img
+                            src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=500&q=80'}
+                            alt={otherPartyName}
+                            className="w-full h-full object-cover opacity-70"
+                          />
+                        )}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/50 flex flex-col items-center justify-center p-4 text-center">
+                          <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
+                            <User className="w-8 h-8 text-emerald-300" />
                           </div>
+                          <h4 className="text-white font-bold text-sm md:text-base">{otherPartyName}</h4>
+                          <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                            <span>Connecting 1-on-1 HD Video Feed...</span>
+                          </p>
                         </div>
-                      )}
-
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
-                        <RotateCw className="w-5 h-5 text-white animate-spin" />
                       </div>
-                    </div>
-
-                    <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-emerald-400 font-bold flex items-center gap-1.5 z-20">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                      <span>HD Live Video Call</span>
+                    )}
+                  </div>
+                ) : (
+                  /* Swapped: Own Webcam Feed as Main View */
+                  <div className="relative w-full h-full bg-black">
+                    <video
+                      ref={setLocalVideoRef}
+                      autoPlay
+                      playsInline
+                      muted
+                      className="w-full h-full object-cover transform -scale-x-100"
+                    />
+                    <div className="absolute top-3 left-3 bg-black/70 px-2.5 py-1 rounded-full text-xs text-white font-bold">
+                      You (Main View)
                     </div>
                   </div>
                 )}
+
+                {/* OVERLAID PIP CORNER BOX (Tap to interchange views!) */}
+                <div
+                  onClick={() => setIsSwappedCamera(!isSwappedCamera)}
+                  className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group"
+                  title="Click to interchange remote and local camera views"
+                >
+                  {isSwappedCamera ? (
+                    <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
+                      {remoteStream ? (
+                        <video
+                          ref={setRemoteVideoRef}
+                          autoPlay
+                          playsInline
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <img
+                          src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                          alt={otherPartyName}
+                          className="w-full h-full object-cover opacity-75"
+                        />
+                      )}
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-emerald-300 font-bold">
+                        {otherPartyName}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="w-full h-full relative bg-black">
+                      <video
+                        ref={setLocalVideoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        className="w-full h-full object-cover transform -scale-x-100"
+                      />
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold">
+                        You
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition">
+                    <RotateCw className="w-5 h-5 text-white animate-spin" />
+                  </div>
+                </div>
+
+                <div className="absolute top-3 left-3 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs text-emerald-400 font-bold flex items-center gap-1.5 z-20">
+                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                  <span>1-on-1 HD Live Video</span>
+                </div>
               </div>
             ) : (
               /* VOICE CALL / CAMERA OFF AUDIO WAVEFORM VIEW */
