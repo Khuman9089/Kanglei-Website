@@ -140,7 +140,6 @@ export default function LiveConsultationRoom({
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const processedSignalIdsRef = useRef<Set<string>>(new Set());
 
   const peerConnectionRef = useRef<RTCPeerConnection | null>(null);
   const bcRef = useRef<BroadcastChannel | null>(null);
