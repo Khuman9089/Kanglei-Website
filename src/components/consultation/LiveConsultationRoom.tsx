@@ -116,7 +116,7 @@ export default function LiveConsultationRoom({
   const [isSpeakerMuted, setIsSpeakerMuted] = useState(false);
   const [isCallPip, setIsCallPip] = useState(false);
   const [isSwappedCamera, setIsSwappedCamera] = useState(false);
-  const [useJitsiRoom, setUseJitsiRoom] = useState(true);
+  const [useJitsiRoom, setUseJitsiRoom] = useState(false);
 
   // Media Stream & Camera State (Local vs Remote Video Stream Separation)
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
@@ -140,6 +140,7 @@ export default function LiveConsultationRoom({
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const cameraInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const processedSignalIdsRef = useRef<Set<string>>(new Set());
 
   // Sync consultation session data
   const fetchSession = async () => {
@@ -149,18 +150,21 @@ export default function LiveConsultationRoom({
       if (data.session) {
         setSession(data.session);
         setRemainingSecs(data.session.remainingSeconds ?? 900);
-        if (data.session.mode === 'CALL' && data.session.status === 'LIVE' && !isCallActive) {
-          setIsCallActive(true);
-          setCallType(data.session.callType || 'VIDEO');
+        if (data.session.status === 'LIVE' && !isCallActive) {
+          if (data.session.mode === 'CALL' || data.session.callType === 'VIDEO') {
+            setIsCallActive(true);
+            setCallType(data.session.callType || 'VIDEO');
+          }
         }
 
-        // Process remote WebRTC signaling objects
+        // Process remote WebRTC signaling objects dynamically
         if (isCallActive && data.session.signals && data.session.signals.length > 0 && peerConnectionRef.current) {
           const pc = peerConnectionRef.current;
-          data.session.signals.forEach(async (sig: any) => {
-            if (sig.sender !== currentUserType) {
+          for (const sig of data.session.signals) {
+            if (sig.sender !== currentUserType && !processedSignalIdsRef.current.has(sig.id)) {
+              processedSignalIdsRef.current.add(sig.id);
               try {
-                if (sig.type === 'OFFER' && pc.signalingState === 'stable') {
+                if (sig.type === 'OFFER' && (pc.signalingState === 'stable' || pc.signalingState === 'have-local-offer')) {
                   await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
                   const answer = await pc.createAnswer();
                   await pc.setLocalDescription(answer);
@@ -177,12 +181,12 @@ export default function LiveConsultationRoom({
                   }).catch(() => {});
                 } else if (sig.type === 'ANSWER' && pc.signalingState === 'have-local-offer') {
                   await pc.setRemoteDescription(new RTCSessionDescription(sig.sdp));
-                } else if (sig.type === 'ICE_CANDIDATE' && sig.candidate) {
+                } else if ((sig.type === 'ICE_CANDIDATE' || sig.type === 'ICE') && sig.candidate) {
                   await pc.addIceCandidate(new RTCIceCandidate(sig.candidate));
                 }
               } catch (e) {}
             }
-          });
+          }
         }
       }
     } catch (err) {
@@ -194,9 +198,9 @@ export default function LiveConsultationRoom({
 
   useEffect(() => {
     fetchSession();
-    const interval = setInterval(fetchSession, 2500);
+    const interval = setInterval(fetchSession, 2000);
     return () => clearInterval(interval);
-  }, [sessionId]);
+  }, [sessionId, isCallActive]);
 
   // Callback ref to attach local camera stream reliably across DOM mounts & view swaps
   const setLocalVideoRef = React.useCallback((node: HTMLVideoElement | null) => {
@@ -222,6 +226,10 @@ export default function LiveConsultationRoom({
   useEffect(() => {
     if (!isCallActive) {
       setRemoteStream(null);
+      if (peerConnectionRef.current) {
+        peerConnectionRef.current.close();
+        peerConnectionRef.current = null;
+      }
       return;
     }
 
@@ -234,6 +242,9 @@ export default function LiveConsultationRoom({
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
       ],
     });
     peerConnectionRef.current = pc;
@@ -276,7 +287,7 @@ export default function LiveConsultationRoom({
       try {
         if (data.type === 'OFFER' || data.signalType === 'OFFER') {
           const sdp = data.offer || data.sdp;
-          if (sdp && pc.signalingState === 'stable') {
+          if (sdp && (pc.signalingState === 'stable' || pc.signalingState === 'have-local-offer')) {
             await pc.setRemoteDescription(new RTCSessionDescription(sdp));
             const answer = await pc.createAnswer();
             await pc.setLocalDescription(answer);
@@ -299,7 +310,9 @@ export default function LiveConsultationRoom({
             await pc.setRemoteDescription(new RTCSessionDescription(sdp));
           }
         } else if ((data.type === 'ICE' || data.signalType === 'ICE_CANDIDATE') && data.candidate) {
-          await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          try {
+            await pc.addIceCandidate(new RTCIceCandidate(data.candidate));
+          } catch (iceErr) {}
         }
       } catch (e) {
         console.warn('WebRTC signal handler warning:', e);
@@ -310,7 +323,8 @@ export default function LiveConsultationRoom({
       bc.onmessage = (msg) => handleSignal(msg.data);
     }
 
-    if (localStream) {
+    // Only CLIENT initiates initial offer to avoid glare conflict
+    if (currentUserType === 'CLIENT' && localStream) {
       pc.createOffer()
         .then((offer) => pc.setLocalDescription(offer))
         .then(() => {
@@ -329,7 +343,7 @@ export default function LiveConsultationRoom({
             }).catch(() => {});
           }
         })
-        .catch(() => {});
+        .catch((err) => console.warn('Error creating WebRTC offer:', err));
     }
 
     return () => {
