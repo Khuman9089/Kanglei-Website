@@ -15,6 +15,7 @@ export default function TestCallPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           action: 'CREATE_SESSION',
+          id: 'TEST-SESS-999',
           mode: 'CALL',
           callType: 'VIDEO',
           clientName: 'Test Client User',

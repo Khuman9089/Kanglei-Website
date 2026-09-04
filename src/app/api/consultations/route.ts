@@ -137,7 +137,7 @@ export async function POST(req: Request) {
     const sessions = await readPersistentDataAsync<ConsultationSession[]>('consultation_sessions', DEFAULT_SESSIONS);
 
     if (action === 'CREATE_SESSION') {
-      const newId = `SESS-${Math.floor(100000 + Math.random() * 900000)}`;
+      const newId = body.id || `SESS-${Math.floor(100000 + Math.random() * 900000)}`;
       const duration = Number(body.durationMinutes) || 15;
       const rate = Number(body.ratePerMin) || 35;
       const totalFee = duration * rate;
