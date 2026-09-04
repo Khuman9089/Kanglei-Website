@@ -146,11 +146,83 @@ export default function LiveConsultationRoom({
   const remoteStreamRef = useRef<MediaStream>(new MediaStream());
   const [hasRemoteStream, setHasRemoteStream] = useState(false);
   const [connectionState, setConnectionState] = useState<'DISCONNECTED' | 'CONNECTING' | 'CONNECTED' | 'FAILED'>('DISCONNECTED');
+  const [callVersion, setCallVersion] = useState<number>(0);
   
   const pendingCandidates = useRef<RTCIceCandidateInit[]>([]);
   const processedSigIds = useRef<Set<string>>(new Set());
   const callActiveRef = useRef<boolean>(false);
   const pendingSignalsRef = useRef<any[]>([]);
+
+  // ─────────────────────────────────────────────────────────
+  // Helper: Create fresh RTCPeerConnection instance
+  // ─────────────────────────────────────────────────────────
+  const createPeerConnection = (stream: MediaStream): RTCPeerConnection => {
+    if (pcRef.current) {
+      try { pcRef.current.close(); } catch {}
+      pcRef.current = null;
+    }
+    processedSigIds.current.clear();
+    pendingCandidates.current = [];
+    remoteStreamRef.current = new MediaStream();
+    setHasRemoteStream(false);
+    setConnectionState('CONNECTING');
+
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { urls: 'stun:stun.l.google.com:19302' },
+        { urls: 'stun:stun1.l.google.com:19302' },
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' },
+      ],
+    });
+    pcRef.current = pc;
+
+    stream.getTracks().forEach(track => pc.addTrack(track, stream));
+
+    pc.ontrack = (event) => {
+      console.log('[WebRTC] ontrack received:', event.track.kind);
+      if (event.streams && event.streams[0]) {
+        event.streams[0].getTracks().forEach(t => {
+          if (!remoteStreamRef.current.getTracks().some(existing => existing.id === t.id)) {
+            remoteStreamRef.current.addTrack(t);
+          }
+        });
+      } else if (event.track) {
+        if (!remoteStreamRef.current.getTracks().some(existing => existing.id === event.track.id)) {
+          remoteStreamRef.current.addTrack(event.track);
+        }
+      }
+      setHasRemoteStream(true);
+      setConnectionState('CONNECTED');
+    };
+
+    pc.oniceconnectionstatechange = () => {
+      console.log('[WebRTC] ICE State:', pc.iceConnectionState);
+      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
+        setConnectionState('CONNECTED');
+      } else if (pc.iceConnectionState === 'failed') {
+        setConnectionState('FAILED');
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (!event.candidate || !event.candidate.candidate) return;
+      fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'SIGNAL_CALL',
+          sessionId,
+          signalType: 'ICE_CANDIDATE',
+          sender: currentUserType,
+          candidate: event.candidate.toJSON(),
+        }),
+      }).catch(() => {});
+    };
+
+    return pc;
+  };
 
   // ─────────────────────────────────────────────────────────
   // Helper: process incoming WebRTC signal safely
@@ -166,17 +238,24 @@ export default function LiveConsultationRoom({
       if (type === 'OFFER' && currentUserType === 'ASTROLOGER') {
         const sdp = sig.sdp ?? sig.offer;
         if (!sdp) return;
+
+        let targetPc = pc;
+        if (targetPc.remoteDescription && targetPc.remoteDescription.type && localStreamRef.current) {
+          console.log('[WebRTC] Re-creating PC for new incoming OFFER');
+          targetPc = createPeerConnection(localStreamRef.current);
+        }
+
         console.log('[WebRTC] Astrologer applying OFFER');
-        await pc.setRemoteDescription(new RTCSessionDescription(sdp));
+        await targetPc.setRemoteDescription(new RTCSessionDescription(sdp));
         
         // Drain buffered candidates
         for (const c of pendingCandidates.current) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
+          try { await targetPc.addIceCandidate(new RTCIceCandidate(c)); } catch (e) {}
         }
         pendingCandidates.current = [];
 
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
+        const answer = await targetPc.createAnswer();
+        await targetPc.setLocalDescription(answer);
         await fetch('/api/consultations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -185,7 +264,7 @@ export default function LiveConsultationRoom({
             sessionId,
             signalType: 'ANSWER',
             sender: 'ASTROLOGER',
-            sdp: pc.localDescription,
+            sdp: targetPc.localDescription,
           }),
         });
       } else if (type === 'ANSWER' && currentUserType === 'CLIENT') {
@@ -202,8 +281,9 @@ export default function LiveConsultationRoom({
       } else if (type === 'ICE_CANDIDATE' || type === 'ICE') {
         const cand = sig.candidate;
         if (!cand || !cand.candidate) return;
-        if (pc.remoteDescription && pc.remoteDescription.type) {
-          try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
+        const currentPc = pcRef.current ?? pc;
+        if (currentPc.remoteDescription && currentPc.remoteDescription.type) {
+          try { await currentPc.addIceCandidate(new RTCIceCandidate(cand)); } catch (e) {}
         } else {
           pendingCandidates.current.push(cand);
         }
@@ -267,67 +347,7 @@ export default function LiveConsultationRoom({
   useEffect(() => {
     if (!isCallActive || !localStream) return;
 
-    if (pcRef.current) { pcRef.current.close(); pcRef.current = null; }
-    processedSigIds.current.clear();
-    pendingCandidates.current = [];
-    remoteStreamRef.current = new MediaStream();
-    setHasRemoteStream(false);
-    setConnectionState('CONNECTING');
-
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        { urls: 'stun:stun.l.google.com:19302' },
-        { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' },
-      ],
-    });
-    pcRef.current = pc;
-
-    // Add local tracks BEFORE creating offer
-    localStream.getTracks().forEach(track => pc.addTrack(track, localStream));
-
-    pc.ontrack = (event) => {
-      console.log('[WebRTC] ontrack received:', event.track.kind);
-      if (event.streams && event.streams[0]) {
-        event.streams[0].getTracks().forEach(t => {
-          if (!remoteStreamRef.current.getTracks().some(existing => existing.id === t.id)) {
-            remoteStreamRef.current.addTrack(t);
-          }
-        });
-      } else if (event.track) {
-        if (!remoteStreamRef.current.getTracks().some(existing => existing.id === event.track.id)) {
-          remoteStreamRef.current.addTrack(event.track);
-        }
-      }
-      setHasRemoteStream(true);
-      setConnectionState('CONNECTED');
-    };
-
-    pc.oniceconnectionstatechange = () => {
-      console.log('[WebRTC] ICE State:', pc.iceConnectionState);
-      if (pc.iceConnectionState === 'connected' || pc.iceConnectionState === 'completed') {
-        setConnectionState('CONNECTED');
-      } else if (pc.iceConnectionState === 'failed') {
-        setConnectionState('FAILED');
-      }
-    };
-
-    pc.onicecandidate = (event) => {
-      if (!event.candidate || !event.candidate.candidate) return;
-      fetch('/api/consultations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'SIGNAL_CALL',
-          sessionId,
-          signalType: 'ICE_CANDIDATE',
-          sender: currentUserType,
-          candidate: event.candidate.toJSON(),
-        }),
-      }).catch(() => {});
-    };
+    const pc = createPeerConnection(localStream);
 
     // CLIENT: create & send offer
     if (currentUserType === 'CLIENT') {
@@ -366,7 +386,7 @@ export default function LiveConsultationRoom({
       if (pcRef.current === pc) pcRef.current = null;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isCallActive, localStream, sessionId, currentUserType]);
+  }, [isCallActive, localStream, sessionId, currentUserType, callVersion]);
 
   // ─────────────────────────────────────────────────────────
   // STEP 3: Poll API every 1.2s — sync session & signals
@@ -495,6 +515,7 @@ export default function LiveConsultationRoom({
     callActiveRef.current = true;
     setIsCallActive(true);
     setIsVideoOff(false);
+    setCallVersion(v => v + 1);
     // Persist callType so the other side's polling can detect & join
     try {
       await fetch('/api/consultations', {
