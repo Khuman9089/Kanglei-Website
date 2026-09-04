@@ -92,6 +92,12 @@ function createFallbackMediaStream(label: string): MediaStream {
   return stream;
 }
 
+interface LiveConsultationRoomProps {
+  sessionId: string;
+  currentUserType: 'CLIENT' | 'ASTROLOGER';
+  onClose?: () => void;
+}
+
 export default function LiveConsultationRoom({
   sessionId,
   currentUserType,
