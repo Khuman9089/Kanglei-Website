@@ -125,6 +125,21 @@ const DEFAULT_SESSIONS: ConsultationSession[] = [
   },
 ];
 
+async function getSessionsWithDefaults(): Promise<ConsultationSession[]> {
+  const sessions = await readPersistentDataAsync<ConsultationSession[]>('consultation_sessions', DEFAULT_SESSIONS);
+  let changed = false;
+  for (const def of DEFAULT_SESSIONS) {
+    if (!sessions.some((s) => s.id === def.id)) {
+      sessions.unshift(def);
+      changed = true;
+    }
+  }
+  if (changed) {
+    writePersistentDataAsync('consultation_sessions', sessions).catch(() => {});
+  }
+  return sessions;
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -132,7 +147,7 @@ export async function GET(req: Request) {
     const astrologerId = searchParams.get('astrologerId');
     const clientPhone = searchParams.get('clientPhone');
 
-    const sessions = await readPersistentDataAsync<ConsultationSession[]>('consultation_sessions', DEFAULT_SESSIONS);
+    const sessions = await getSessionsWithDefaults();
 
     if (sessionId) {
       const session = sessions.find((s) => s.id === sessionId);
@@ -160,7 +175,7 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { action } = body;
-    const sessions = await readPersistentDataAsync<ConsultationSession[]>('consultation_sessions', DEFAULT_SESSIONS);
+    const sessions = await getSessionsWithDefaults();
 
     if (action === 'CREATE_SESSION') {
       const newId = body.id || `SESS-${Math.floor(100000 + Math.random() * 900000)}`;
@@ -285,8 +300,11 @@ export async function POST(req: Request) {
 
       sessions[idx].callType = callType || 'VIDEO';
       sessions[idx].status = 'LIVE';
-      // Clear stale signals from any previous call attempt
-      sessions[idx].signals = [];
+      // Prune signals older than 20s so active in-flight offer/answer negotiation isn't wiped out
+      const now = Date.now();
+      sessions[idx].signals = (sessions[idx].signals || []).filter(
+        (sig) => now - new Date(sig.timestamp).getTime() < 20000
+      );
       await writePersistentDataAsync('consultation_sessions', sessions);
       return NextResponse.json({ success: true, session: sessions[idx] });
     }

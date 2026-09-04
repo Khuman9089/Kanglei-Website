@@ -220,6 +220,13 @@ export default function LiveConsultationRoom({
       }
       setHasRemoteStream(true);
       setConnectionState('CONNECTED');
+
+      if (remoteVideoRef.current) {
+        if (remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+          remoteVideoRef.current.srcObject = remoteStreamRef.current;
+        }
+        remoteVideoRef.current.play().catch(() => {});
+      }
     };
 
     pc.oniceconnectionstatechange = () => {
@@ -325,6 +332,9 @@ export default function LiveConsultationRoom({
   useEffect(() => {
     if (!isCallActive) {
       if (localStreamRef.current) {
+        if ((localStreamRef.current as any)._cleanupInterval) {
+          clearInterval((localStreamRef.current as any)._cleanupInterval);
+        }
         localStreamRef.current.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
       }
@@ -361,7 +371,13 @@ export default function LiveConsultationRoom({
         if (vTrack) stream.addTrack(vTrack);
       }
 
-      if (cancelled) { stream.getTracks().forEach(t => t.stop()); return; }
+      if (cancelled) {
+        if ((stream as any)._cleanupInterval) {
+          clearInterval((stream as any)._cleanupInterval);
+        }
+        stream.getTracks().forEach(t => t.stop());
+        return;
+      }
       localStreamRef.current = stream;
       setLocalStream(stream);
     })();
@@ -369,6 +385,9 @@ export default function LiveConsultationRoom({
     return () => {
       cancelled = true;
       if (localStreamRef.current) {
+        if ((localStreamRef.current as any)._cleanupInterval) {
+          clearInterval((localStreamRef.current as any)._cleanupInterval);
+        }
         localStreamRef.current.getTracks().forEach(t => t.stop());
         localStreamRef.current = null;
       }
@@ -468,17 +487,21 @@ export default function LiveConsultationRoom({
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
     if (localVideoRef.current && localStream) {
-      localVideoRef.current.srcObject = localStream;
+      if (localVideoRef.current.srcObject !== localStream) {
+        localVideoRef.current.srcObject = localStream;
+      }
       localVideoRef.current.play().catch(() => {});
     }
-  }, [localStream, isVideoOff]);
+  }, [localStream, isVideoOff, isSwappedCamera]);
 
   useEffect(() => {
-    if (remoteVideoRef.current && hasRemoteStream) {
-      remoteVideoRef.current.srcObject = remoteStreamRef.current;
+    if (remoteVideoRef.current && (hasRemoteStream || remoteStreamRef.current.getTracks().length > 0)) {
+      if (remoteVideoRef.current.srcObject !== remoteStreamRef.current) {
+        remoteVideoRef.current.srcObject = remoteStreamRef.current;
+      }
       remoteVideoRef.current.play().catch(() => {});
     }
-  }, [hasRemoteStream]);
+  }, [hasRemoteStream, isSwappedCamera]);
 
   // Dynamic mute/unmute
   useEffect(() => {
@@ -818,92 +841,86 @@ export default function LiveConsultationRoom({
             {callType === 'VIDEO' && !isVideoOff ? (
               <div className="relative w-full h-full bg-slate-950 flex items-center justify-center overflow-hidden">
                 
-                {/* MAIN VIEW: Remote Party Stream (or Local View if swapped) */}
-                <div className="absolute inset-0 w-full h-full bg-slate-950 overflow-hidden flex items-center justify-center">
-                  {!isSwappedCamera ? (
-                    /* Default Main View: REMOTE PARTY VIDEO STREAM */
-                    <video
-                      ref={remoteVideoRef}
-                      autoPlay
-                      playsInline
-                      className={`w-full h-full object-cover ${!hasRemoteStream ? 'hidden' : 'block'}`}
-                    />
-                  ) : (
-                    /* Swapped Main View: LOCAL WEBCAM VIDEO STREAM */
-                    <video
-                      ref={localVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className={`w-full h-full object-cover transform -scale-x-100 ${!localStream ? 'hidden' : 'block'}`}
-                    />
-                  )}
-
-                  {/* FALLBACK OVERLAY when remote stream is not yet established */}
-                  {(!isSwappedCamera && !hasRemoteStream) && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60 flex flex-col items-center justify-center p-4 text-center z-10">
-                      <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
-                        <User className="w-8 h-8 text-emerald-300" />
-                      </div>
-                      <h4 className="text-white font-bold text-sm md:text-base">{otherPartyName}</h4>
-                      <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-                        <span>
-                          {connectionState === 'CONNECTING' ? 'Connecting 1-on-1 HD Video Feed...' : 'Waiting for Remote Camera...'}
-                        </span>
-                      </p>
-                    </div>
-                  )}
-                </div>
-
-                {/* OVERLAID PIP CORNER BOX (Tap to swap main & corner views) */}
+                {/* 1. REMOTE PARTY VIDEO CONTAINER */}
                 <div
-                  onClick={() => setIsSwappedCamera(!isSwappedCamera)}
-                  className="absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl overflow-hidden border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group"
-                  title="Click to swap remote and local camera views"
+                  className={`transition-all duration-300 overflow-hidden ${
+                    !isSwappedCamera
+                      ? 'absolute inset-0 w-full h-full z-10 flex items-center justify-center bg-slate-950'
+                      : 'absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl border-2 border-emerald-400 shadow-2xl bg-slate-900 z-20 cursor-pointer group flex items-center justify-center'
+                  }`}
+                  onClick={isSwappedCamera ? () => setIsSwappedCamera(false) : undefined}
+                  title={isSwappedCamera ? "Click to enlarge remote video" : undefined}
                 >
-                  {!isSwappedCamera ? (
-                    /* PiP Corner Box: LOCAL WEBCAM VIDEO STREAM */
-                    <div className="w-full h-full relative bg-black flex items-center justify-center">
-                      <video
-                        ref={localVideoRef}
-                        autoPlay
-                        playsInline
-                        muted
-                        className={`w-full h-full object-cover transform -scale-x-100 ${!localStream ? 'hidden' : 'block'}`}
-                      />
-                      {!localStream && (
-                        <div className="text-slate-400 text-[10px] font-bold">No Camera</div>
-                      )}
-                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold z-30">
-                        You
+                  <video
+                    ref={remoteVideoRef}
+                    autoPlay
+                    playsInline
+                    className={`w-full h-full object-cover ${!hasRemoteStream ? 'hidden' : 'block'}`}
+                  />
+                  {!hasRemoteStream && (
+                    !isSwappedCamera ? (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/60 flex flex-col items-center justify-center p-4 text-center z-10">
+                        <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border-2 border-emerald-400 flex items-center justify-center mb-2 animate-pulse shadow-lg">
+                          <User className="w-8 h-8 text-emerald-300" />
+                        </div>
+                        <h4 className="text-white font-bold text-sm md:text-base">{otherPartyName}</h4>
+                        <p className="text-emerald-400 text-xs flex items-center gap-1.5 mt-1 font-medium bg-emerald-950/80 px-3 py-1 rounded-full border border-emerald-500/30">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                          <span>
+                            {connectionState === 'CONNECTING' ? 'Connecting 1-on-1 HD Video Feed...' : 'Waiting for Remote Camera...'}
+                          </span>
+                        </p>
                       </div>
-                    </div>
-                  ) : (
-                    /* PiP Corner Box: REMOTE PARTY VIDEO STREAM */
-                    <div className="w-full h-full relative bg-slate-900 flex items-center justify-center">
-                      <video
-                        ref={remoteVideoRef}
-                        autoPlay
-                        playsInline
-                        className={`w-full h-full object-cover ${!hasRemoteStream ? 'hidden' : 'block'}`}
+                    ) : (
+                      <img
+                        src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                        alt={otherPartyName}
+                        className="w-full h-full object-cover opacity-75"
                       />
-                      {!hasRemoteStream && (
-                        <img
-                          src={session.astrologerAvatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
-                          alt={otherPartyName}
-                          className="w-full h-full object-cover opacity-75"
-                        />
-                      )}
+                    )
+                  )}
+                  {isSwappedCamera && (
+                    <>
                       <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-emerald-300 font-bold z-30">
                         {otherPartyName}
                       </div>
-                    </div>
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition z-30">
+                        <RotateCw className="w-5 h-5 text-white animate-spin" />
+                      </div>
+                    </>
                   )}
+                </div>
 
-                  <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition z-30">
-                    <RotateCw className="w-5 h-5 text-white animate-spin" />
-                  </div>
+                {/* 2. LOCAL WEBCAM VIDEO CONTAINER */}
+                <div
+                  className={`transition-all duration-300 overflow-hidden ${
+                    isSwappedCamera
+                      ? 'absolute inset-0 w-full h-full z-10 flex items-center justify-center bg-slate-950'
+                      : 'absolute bottom-3 right-3 w-28 h-36 md:w-36 md:h-48 rounded-2xl border-2 border-emerald-400 shadow-2xl bg-black z-20 cursor-pointer group flex items-center justify-center'
+                  }`}
+                  onClick={!isSwappedCamera ? () => setIsSwappedCamera(true) : undefined}
+                  title={!isSwappedCamera ? "Click to swap camera views" : undefined}
+                >
+                  <video
+                    ref={localVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className={`w-full h-full object-cover transform -scale-x-100 ${!localStream ? 'hidden' : 'block'}`}
+                  />
+                  {!localStream && !isSwappedCamera && (
+                    <div className="text-slate-400 text-[10px] font-bold">No Camera</div>
+                  )}
+                  {!isSwappedCamera && (
+                    <>
+                      <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[9px] text-white font-bold z-30">
+                        You
+                      </div>
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition z-30">
+                        <RotateCw className="w-5 h-5 text-white animate-spin" />
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {/* WEBCAM STATUS BADGE */}

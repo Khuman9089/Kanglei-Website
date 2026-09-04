@@ -10,16 +10,18 @@ export default function TestCallPage() {
 
   const startTestSession = (selectedRole: 'CLIENT' | 'ASTROLOGER') => {
     setRole(selectedRole);
-    fetch('/api/consultations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'INITIATE_CALL',
-        sessionId: 'TEST-SESS-999',
-        callType: 'VIDEO',
-        initiatedBy: selectedRole,
-      }),
-    }).catch(() => {});
+    if (selectedRole === 'CLIENT') {
+      fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'INITIATE_CALL',
+          sessionId: 'TEST-SESS-999',
+          callType: 'VIDEO',
+          initiatedBy: 'CLIENT',
+        }),
+      }).catch(() => {});
+    }
   };
 
   if (role) {
