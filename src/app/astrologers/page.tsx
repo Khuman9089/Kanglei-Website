@@ -19,6 +19,8 @@ interface AstrologerItem {
   rating: number;
   consultationsCount: string;
   pricePerMin: number;
+  fixedRate?: number;
+  actionButtonType?: 'both' | 'chat_only' | 'call_only';
   whatsappPhone: string;
   bio: string;
   isTrending: boolean;
@@ -36,6 +38,8 @@ export default function AstrologersDirectoryPage() {
     subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
     showRateOnHome: true,
     actionButtonType: 'both' as 'both' | 'chat_only' | 'call_only',
+    rateMode: 'fixed' as 'fixed' | 'per_minute' | 'both' | 'none',
+    defaultFixedRate: 499,
   });
 
   // Filter & Search State
@@ -56,8 +60,19 @@ export default function AstrologersDirectoryPage() {
   };
 
   useEffect(() => {
+    // Try immediate instant hydration from client localStorage cache
+    try {
+      const cached = localStorage.getItem('kanglei_astrologer_settings');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') {
+          setSettings((prev) => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch (e) {}
+
     const fetchAstroData = () => {
-      fetch('/api/astrologers')
+      fetch('/api/astrologers?t=' + Date.now(), { cache: 'no-store' })
         .then((res) => res.json())
         .then((data) => {
           if (data.astrologers && Array.isArray(data.astrologers)) {
@@ -75,6 +90,8 @@ export default function AstrologersDirectoryPage() {
                 rating: a.rating || 5.0,
                 consultationsCount: a.consultationsCount || '1k+',
                 pricePerMin: a.pricePerMin || 30,
+                fixedRate: a.fixedRate || 499,
+                actionButtonType: a.actionButtonType,
                 whatsappPhone: a.whatsappPhone || a.whatsappNo || a.phone || '+919862099881',
                 bio: a.bio || 'Vedic Astrologer and Jyotish practitioner providing accurate calculations and life guidance.',
                 isTrending: !!a.isTrending,
@@ -85,13 +102,16 @@ export default function AstrologersDirectoryPage() {
           }
           if (data.settings) {
             setSettings((prev) => ({ ...prev, ...data.settings }));
+            try {
+              localStorage.setItem('kanglei_astrologer_settings', JSON.stringify(data.settings));
+            } catch (e) {}
           }
         })
         .catch((err) => console.error('Error fetching astrologers directory:', err));
     };
 
     fetchAstroData();
-    const interval = setInterval(fetchAstroData, 2500);
+    const interval = setInterval(fetchAstroData, 3000);
     return () => clearInterval(interval);
   }, []);
 
@@ -294,17 +314,37 @@ export default function AstrologersDirectoryPage() {
                           <span className="text-gray-400 text-[10px]">· {astro.consultationsCount}</span>
                         </div>
 
-                        {settings.showRateOnHome !== false && (
+                        {settings.showRateOnHome !== false && settings.rateMode !== 'none' && (
                           <div className="text-right">
-                            <span className="font-extrabold text-sm text-[#0f172a]">₹{astro.pricePerMin}</span>
-                            <span className="text-[10px] text-gray-500 font-medium">/min</span>
+                            {settings.rateMode === 'fixed' ? (
+                              <div className="flex items-center justify-end gap-1.5">
+                                <span className="font-extrabold text-sm text-[#0f172a]">₹{astro.fixedRate || settings.defaultFixedRate || 499}</span>
+                                <span className="text-[10px] text-[#b45309] font-bold bg-[#fef3c7] px-1.5 py-0.5 rounded border border-[#fde68a]">Fixed Fee</span>
+                              </div>
+                            ) : settings.rateMode === 'both' ? (
+                              <div className="flex flex-col items-end">
+                                <div className="flex items-baseline gap-1">
+                                  <span className="font-extrabold text-sm text-[#0f172a]">₹{astro.fixedRate || settings.defaultFixedRate || 499}</span>
+                                  <span className="text-[9px] text-[#b45309] font-bold">Fixed</span>
+                                </div>
+                                <div className="text-[10px] text-gray-500 font-medium font-mono">
+                                  ₹{astro.pricePerMin || 30}/min
+                                </div>
+                              </div>
+                            ) : (
+                              <div>
+                                <span className="font-extrabold text-sm text-[#0f172a]">₹{astro.pricePerMin || 30}</span>
+                                <span className="text-[10px] text-gray-500 font-medium font-mono">/min</span>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
                     </div>
 
-                    {/* Action Buttons Mode Controlled from Admin Settings */}
-                    {settings.actionButtonType === 'chat_only' ? (
+
+                    {/* Action Buttons Mode Controlled from Admin Settings or Astrologer Override */}
+                    {(astro.actionButtonType || settings.actionButtonType) === 'chat_only' ? (
                       <button
                         onClick={() => handleOpenConsultation(astro, 'CHAT')}
                         className="w-full py-2.5 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
@@ -312,7 +352,7 @@ export default function AstrologersDirectoryPage() {
                         <MessageCircle className="w-4 h-4" />
                         <span>Chat Now</span>
                       </button>
-                    ) : settings.actionButtonType === 'call_only' ? (
+                    ) : (astro.actionButtonType || settings.actionButtonType) === 'call_only' ? (
                       <button
                         onClick={() => handleOpenConsultation(astro, 'CALL')}
                         className="w-full py-2.5 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-all flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
@@ -393,14 +433,14 @@ export default function AstrologersDirectoryPage() {
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
-                      {settings.actionButtonType === 'call_only' ? (
+                      {(astro.actionButtonType || settings.actionButtonType) === 'call_only' ? (
                         <button
                           onClick={() => handleOpenConsultation(astro, 'CALL')}
                           className="px-3 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors cursor-pointer"
                         >
                           Call
                         </button>
-                      ) : settings.actionButtonType === 'chat_only' ? (
+                      ) : (astro.actionButtonType || settings.actionButtonType) === 'chat_only' ? (
                         <button
                           onClick={() => handleOpenConsultation(astro, 'CHAT')}
                           className="px-3 py-1 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-[11px] transition-colors cursor-pointer"

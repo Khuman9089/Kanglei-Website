@@ -1,7 +1,14 @@
 import { NextResponse } from 'next/server';
-
-export const dynamic = 'force-static';
 import prisma from '@/lib/db';
+import { readPersistentDataAsync } from '@/lib/persistentStore';
+
+export const dynamic = 'force-dynamic';
+
+function extractLast10Digits(phoneStr?: string): string {
+  if (!phoneStr) return '';
+  const digits = phoneStr.replace(/\D/g, '');
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+}
 
 const DEMO_CLIENTS: Record<string, any> = {
   'nganba@example.com': {
@@ -51,15 +58,20 @@ export async function POST(request: Request) {
       );
     }
 
-    // Attempt Prisma Database query if DATABASE_URL is configured
+    const cleanId = identifier.trim();
+    const cleanIdLower = cleanId.toLowerCase();
+    const idLast10 = extractLast10Digits(cleanId);
+
+    // 1. Attempt Prisma Database query if DATABASE_URL is configured
     if (process.env.DATABASE_URL) {
       try {
         const dbUser = await prisma.user.findFirst({
           where: {
             OR: [
-              { email: identifier.toLowerCase().trim() },
-              { phone: identifier.trim() },
-              { whatsappNo: identifier.trim() },
+              { email: cleanIdLower },
+              { phone: cleanId },
+              { whatsappNo: cleanId },
+              ...(idLast10 ? [{ phone: { contains: idLast10 } }, { whatsappNo: { contains: idLast10 } }] : []),
             ],
           },
         });
@@ -90,11 +102,55 @@ export async function POST(request: Request) {
           });
         }
       } catch (dbErr) {
-        console.warn('Prisma DB query failed, falling back to demo store:', dbErr);
+        console.warn('Prisma DB query failed, falling back to persistent store:', dbErr);
       }
     }
 
-    // Fallback store handling
+    // 2. Check persistent database (client_base in Supabase & Local JSON)
+    if (role === 'CLIENT' || !role) {
+      try {
+        const clients = await readPersistentDataAsync<any[]>('client_base', []);
+        const matchedClient = clients.find((c) => {
+          if (c.email && c.email.toLowerCase().trim() === cleanIdLower) return true;
+          if (idLast10) {
+            const cPhone10 = extractLast10Digits(c.phone);
+            const cWhatsapp10 = extractLast10Digits(c.whatsappNo);
+            if (cPhone10 === idLast10 || cWhatsapp10 === idLast10) return true;
+          }
+          return false;
+        });
+
+        if (matchedClient) {
+          if (matchedClient.password && matchedClient.password !== password) {
+            return NextResponse.json(
+              { error: 'Incorrect password. Please try again.' },
+              { status: 401 }
+            );
+          }
+
+          return NextResponse.json({
+            success: true,
+            user: {
+              id: matchedClient.id,
+              name: matchedClient.name,
+              email: matchedClient.email,
+              phone: matchedClient.phone,
+              whatsappNo: matchedClient.whatsappNo,
+              sex: matchedClient.sex,
+              address: matchedClient.address,
+              deliveryAddress: matchedClient.deliveryAddress,
+              role: 'CLIENT',
+              joinedAt: matchedClient.joinedAt || new Date().toISOString().split('T')[0],
+            },
+            redirectTo: '/dashboard/client',
+          });
+        }
+      } catch (storeErr) {
+        console.warn('Persistent store client query notice:', storeErr);
+      }
+    }
+
+    // 3. Astrologer Role Fallback
     if (role === 'ASTROLOGER') {
       const astro = DEMO_ASTROLOGERS[identifier] || DEMO_ASTROLOGERS[identifier.trim()];
       return NextResponse.json({
@@ -111,24 +167,22 @@ export async function POST(request: Request) {
         },
         redirectTo: '/dashboard/astrologer',
       });
-    } else {
-      const client = DEMO_CLIENTS[identifier.toLowerCase().trim()];
+    }
+
+    // 4. Client Demo Fallback
+    const demoClient = DEMO_CLIENTS[cleanIdLower];
+    if (demoClient) {
       return NextResponse.json({
         success: true,
-        user: client || {
-          id: 'client-' + Date.now(),
-          name: identifier.split('@')[0] || 'Client',
-          email: identifier.toLowerCase().trim(),
-          phone: '+91 98620 12345',
-          whatsappNo: '+91 98620 12345',
-          sex: 'Male',
-          address: 'Imphal, Manipur',
-          role: 'CLIENT',
-          joinedAt: new Date().toISOString().split('T')[0],
-        },
+        user: demoClient,
         redirectTo: '/dashboard/client',
       });
     }
+
+    return NextResponse.json(
+      { error: 'No account found with these credentials. Please check your email/mobile or sign up.' },
+      { status: 401 }
+    );
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Login failed' }, { status: 500 });
   }

@@ -1,9 +1,9 @@
 {
-  "active": true,
+  "theme": "gold",
   "title": "✨ Special Manipuri Astrological Offer",
-  "description": "Get 20% OFF Kuthi Matching & Full 36-Gun Ashtakoot Compatibility Reports today!",
+  "active": true,
   "imageUrl": "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=300&q=80",
-  "buttonText": "Claim 20% Discount →",
   "buttonLink": "/matching",
-  "theme": "gold"
+  "buttonText": "Claim 20% Discount →",
+  "description": "Get 20% OFF Kuthi Matching & Full 36-Gun Ashtakoot Compatibility Reports today!"
 }

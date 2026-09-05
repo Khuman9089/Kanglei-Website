@@ -56,6 +56,9 @@ export interface KuthiOrder {
   reportUploadedBy?: string;
   reportNotes?: string;
   clientRequirement?: string;
+  faithTradition?: string;
+  couponCode?: string;
+  couponDiscount?: number;
 }
 
 const DEFAULT_KUTHI_ORDERS: KuthiOrder[] = [
@@ -104,50 +107,64 @@ const DEFAULT_KUTHI_ORDERS: KuthiOrder[] = [
 ];
 
 export async function GET() {
+  const localOrders = await readPersistentDataAsync<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
   try {
     const { data, error } = await supabase.from('orders').select('*').order('created_at', { ascending: false });
     if (!error && data && data.length > 0) {
-      const dbOrders: KuthiOrder[] = data.map((d: any) => ({
-        id: d.id,
-        orderRef: d.order_ref || d.id,
-        clientName: d.client_name,
-        sex: d.gender || d.sex || 'Client',
-        mobile: d.mobile || d.whatsapp_no,
-        whatsappNo: d.whatsapp_no || d.mobile,
-        email: d.email || '',
-        kuthiAttached: !!d.kuthi_attached,
-        kuthiFileName: d.kuthi_file_name,
-        kuthiFileUrl: d.kuthi_file_url,
-        dob: d.dob,
-        tob: d.tob,
-        pob: d.pob,
-        utr: d.utr,
-        submittedAt: d.submitted_at || new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        amount: d.amount || d.total_amount || 499,
-        serviceType: d.service_title || d.service_type || 'Kuthi Consultation',
-        status: d.status || 'PENDING',
-        fatherName: d.father_name,
-        motherName: d.mother_name,
-        deliveryAddress: d.delivery_address,
-        category: d.category,
-        assignedAstrologerId: d.assigned_astrologer_id,
-        assignedAstrologerName: d.assigned_astrologer_name,
-        clientRequirement: d.client_requirement,
-        reportReceivedFromAstro: d.report_received_from_astro || d.status === 'COMPLETED',
-        reportFileName: d.report_file_name || d.kuthi_file_name,
-        reportFileUrl: d.report_file_url || d.kuthi_file_url,
-        reportNotes: d.report_notes,
-        reportUploadedBy: d.report_uploaded_by,
-        reportUploadedAt: d.report_uploaded_at,
-      }));
-      return NextResponse.json({ success: true, orders: dbOrders });
+      const dbOrders: KuthiOrder[] = data.map((d: any) => {
+        const localMatch = localOrders.find((lo) => lo.id === d.id || lo.orderRef === (d.order_ref || d.id));
+        return {
+          id: d.id,
+          orderRef: d.order_ref || d.id,
+          clientName: d.client_name,
+          sex: d.gender || d.sex || 'Client',
+          mobile: d.mobile || d.whatsapp_no,
+          whatsappNo: d.whatsapp_no || d.mobile,
+          email: d.email || '',
+          kuthiAttached: !!d.kuthi_attached,
+          kuthiFileName: d.kuthi_file_name,
+          kuthiFileUrl: d.kuthi_file_url,
+          dob: d.dob,
+          tob: d.tob,
+          pob: d.pob,
+          utr: d.utr,
+          submittedAt: d.submitted_at || new Date(d.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          amount: d.amount || d.total_amount || 499,
+          serviceType: d.service_title || d.service_type || 'Kuthi Consultation',
+          status: localMatch?.status || d.status || 'PENDING',
+          paymentStatus:
+            localMatch?.paymentStatus ||
+            d.payment_status ||
+            d.paymentStatus ||
+            (d.status === 'COMPLETED' ? 'PAYMENT_RECEIVED' : 'VERIFICATION_PENDING'),
+          fatherName: d.father_name,
+          motherName: d.mother_name,
+          deliveryAddress: d.delivery_address,
+          category: d.category,
+          assignedAstrologerId: localMatch?.assignedAstrologerId || d.assigned_astrologer_id,
+          assignedAstrologerName: localMatch?.assignedAstrologerName || d.assigned_astrologer_name,
+          clientRequirement: d.client_requirement,
+          reportReceivedFromAstro: d.report_received_from_astro || d.status === 'COMPLETED',
+          reportFileName: d.report_file_name || d.kuthi_file_name,
+          reportFileUrl: d.report_file_url || d.kuthi_file_url,
+          reportNotes: d.report_notes,
+          reportUploadedBy: d.report_uploaded_by,
+          reportUploadedAt: d.report_uploaded_at,
+        };
+      });
+
+      // Merge local orders that are not in dbOrders
+      const dbIds = new Set(dbOrders.map((o) => o.orderRef || o.id));
+      const extraLocal = localOrders.filter((lo) => !dbIds.has(lo.orderRef) && !dbIds.has(lo.id));
+      const merged = [...extraLocal, ...dbOrders];
+
+      return NextResponse.json({ success: true, orders: merged });
     }
   } catch (err) {
     console.warn('Supabase fetch fallback to local:', err);
   }
 
-  const orders = await readPersistentDataAsync<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
-  return NextResponse.json({ success: true, orders });
+  return NextResponse.json({ success: true, orders: localOrders });
 }
 
 export async function POST(req: Request) {
@@ -190,6 +207,9 @@ export async function POST(req: Request) {
         deliveryAddress: order.deliveryAddress || order.rewriteDetails?.deliveryAddress || '',
         category: order.category || 'kuthi_yengba',
         clientRequirement: order.clientRequirement || '',
+        faithTradition: order.faithTradition || '',
+        couponCode: order.couponCode || '',
+        couponDiscount: order.couponDiscount || 0,
       };
 
       // Try inserting into Supabase
@@ -246,6 +266,21 @@ export async function POST(req: Request) {
     }
 
     if (action === 'MARK_COMPLETED' && orderId) {
+      const payoutAmount = Number(body.payoutAmount);
+      const targetAstroId = body.assignedAstrologerId;
+
+      orders = orders.map((o) =>
+        (o.id === orderId || o.orderRef === orderId)
+          ? {
+              ...o,
+              status: 'COMPLETED',
+              walletCredited: true,
+              astrologerPayoutFee: !isNaN(payoutAmount) && payoutAmount > 0 ? payoutAmount : (o as any).astrologerPayoutFee,
+            }
+          : o
+      );
+      await writePersistentDataAsync('kuthi_orders', orders);
+
       try {
         await supabase
           .from('orders')
@@ -253,11 +288,58 @@ export async function POST(req: Request) {
           .or(`id.eq.${orderId},order_ref.eq.${orderId}`);
       } catch (e) {}
 
-      orders = orders.map((o) =>
-        (o.id === orderId || o.orderRef === orderId) ? { ...o, status: 'COMPLETED' } : o
-      );
-      await writePersistentDataAsync('kuthi_orders', orders);
-      return NextResponse.json({ success: true, orders });
+      // If assigned astrologer exists and payout amount provided, credit wallet synchronously
+      let payoutDetails = null;
+      if (targetAstroId && !isNaN(payoutAmount) && payoutAmount > 0) {
+        try {
+          const targetOrder = orders.find((o) => o.id === orderId || o.orderRef === orderId);
+          let astrologers = await readPersistentDataAsync<any[]>('astrologers', []);
+          let transactions = await readPersistentDataAsync<any[]>('wallet_transactions', []);
+
+          const aIdx = astrologers.findIndex((a) => a.id === targetAstroId);
+          if (aIdx !== -1) {
+            const astro = astrologers[aIdx];
+            const prevPending = typeof astro.pendingPayout === 'number' ? astro.pendingPayout : 0;
+            const prevEarnings = typeof astro.totalEarnings === 'number' ? astro.totalEarnings : prevPending;
+            const newPending = prevPending + payoutAmount;
+            const newEarnings = prevEarnings + payoutAmount;
+            const newCount = (astro.completedCount || 0) + 1;
+
+            astrologers[aIdx] = {
+              ...astro,
+              pendingPayout: newPending,
+              totalEarnings: newEarnings,
+              completedCount: newCount,
+            };
+
+            const newTx = {
+              id: 'tx-' + Date.now(),
+              astroId: astro.id,
+              astroName: astro.name,
+              type: 'CREDIT',
+              amount: payoutAmount,
+              description: `Consultation Fee — Kuthi Yengba (${targetOrder?.orderRef || orderId})`,
+              timestamp: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }),
+              status: 'COMPLETED',
+            };
+            transactions.unshift(newTx);
+
+            await writePersistentDataAsync('astrologers', astrologers);
+            await writePersistentDataAsync('wallet_transactions', transactions);
+
+            payoutDetails = {
+              netPayout: payoutAmount,
+              astrologerName: astro.name,
+              astrologerId: astro.id,
+              newWalletBalance: newPending,
+            };
+          }
+        } catch (creditErr) {
+          console.error('Error auto-crediting astrologer wallet for kuthi order:', creditErr);
+        }
+      }
+
+      return NextResponse.json({ success: true, orders, payoutDetails });
     }
 
     if (action === 'UPDATE_PAYMENT_STATUS' && orderId) {
@@ -266,6 +348,35 @@ export async function POST(req: Request) {
         (o.id === orderId || o.orderRef === orderId) ? { ...o, paymentStatus: pStatus } : o
       );
       await writePersistentDataAsync('kuthi_orders', orders);
+
+      // Also sync to consultation_sessions if order is linked
+      try {
+        const targetOrder = orders.find((o) => o.id === orderId || o.orderRef === orderId);
+        if (targetOrder) {
+          const sessions = await readPersistentDataAsync<any[]>('consultation_sessions', []);
+          const sIdx = sessions.findIndex(
+            (s) => s.orderRef === targetOrder.orderRef || 'k-' + s.id === targetOrder.id || s.id === targetOrder.id
+          );
+          if (sIdx !== -1) {
+            const mappedStatus =
+              pStatus === 'PAYMENT_RECEIVED'
+                ? 'VERIFIED'
+                : pStatus === 'PAYMENT_NOT_RECEIVED'
+                ? 'REJECTED'
+                : 'PENDING_VERIFICATION';
+            sessions[sIdx].paymentStatus = mappedStatus;
+            if (mappedStatus === 'VERIFIED') {
+              sessions[sIdx].status = 'CONFIRMED';
+            } else if (mappedStatus === 'REJECTED') {
+              sessions[sIdx].status = 'REJECTED';
+            }
+            await writePersistentDataAsync('consultation_sessions', sessions);
+          }
+        }
+      } catch (e) {
+        console.warn('Sync to consultation_sessions non-critical note:', e);
+      }
+
       return NextResponse.json({ success: true, message: 'Kuthi Order Payment Status updated live!', orders });
     }
 

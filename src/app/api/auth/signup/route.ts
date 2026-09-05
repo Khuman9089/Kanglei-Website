@@ -1,14 +1,30 @@
 import { NextResponse } from 'next/server';
-
-export const dynamic = 'force-dynamic';
 import prisma from '@/lib/db';
 import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
-import { sendRealMobileOtp } from '@/lib/otpService';
+
+export const dynamic = 'force-dynamic';
+
+function extractLast10Digits(phoneStr?: string): string {
+  if (!phoneStr) return '';
+  const digits = phoneStr.replace(/\D/g, '');
+  return digits.length >= 10 ? digits.slice(-10) : digits;
+}
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, whatsappNo, address, sex, password } = body;
+    const {
+      name,
+      email,
+      phone,
+      whatsappNo,
+      address,
+      deliveryAddress,
+      sex,
+      password,
+      firebaseUid,
+      isVerified,
+    } = body;
 
     if (!name || !email || !phone || !password) {
       return NextResponse.json(
@@ -17,87 +33,141 @@ export async function POST(request: Request) {
       );
     }
 
-    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-    const otpExpiresAt = Date.now() + 10 * 60 * 1000;
     const cleanEmail = email.toLowerCase().trim();
     const cleanPhone = phone.trim();
     const cleanWhatsApp = (whatsappNo || phone).trim();
+    const phone10 = extractLast10Digits(cleanPhone);
+    const whatsapp10 = extractLast10Digits(cleanWhatsApp);
 
-    // Store in active OTPs persistent cache
-    const otps = await readPersistentDataAsync<Record<string, any>>('active_otps', {});
-    otps[cleanEmail] = { otpCode, expiresAt: otpExpiresAt, phone: cleanPhone, whatsappNo: cleanWhatsApp };
-    otps[cleanPhone] = { otpCode, expiresAt: otpExpiresAt, email: cleanEmail, whatsappNo: cleanWhatsApp };
-    otps[cleanWhatsApp] = { otpCode, expiresAt: otpExpiresAt, email: cleanEmail, phone: cleanPhone };
-    await writePersistentDataAsync('active_otps', otps);
+    // ─────────────────────────────────────────────────────────────
+    // 1. DUPLICATE CHECK AGAINST DATABASE
+    // ─────────────────────────────────────────────────────────────
+    const clients = await readPersistentDataAsync<any[]>('client_base', []);
 
-    // Dispatch real SMS / WhatsApp OTP directly to user's mobile number
-    const dispatchResult = await sendRealMobileOtp({
-      phone: cleanPhone,
-      whatsappNo: cleanWhatsApp,
-      otpCode,
-    });
+    // Check duplicate email
+    const duplicateEmailClient = clients.find(
+      (c) => c.email && c.email.toLowerCase().trim() === cleanEmail
+    );
+    if (duplicateEmailClient) {
+      return NextResponse.json(
+        { error: 'An account with this email address already exists. Please log in.', field: 'email' },
+        { status: 400 }
+      );
+    }
 
-    // Save directly to Prisma Database if DATABASE_URL is configured
+    // Check duplicate mobile number
+    if (phone10) {
+      const duplicatePhoneClient = clients.find((c) => {
+        const cPhone10 = extractLast10Digits(c.phone);
+        const cWhatsapp10 = extractLast10Digits(c.whatsappNo);
+        return cPhone10 === phone10 || cWhatsapp10 === phone10;
+      });
+      if (duplicatePhoneClient) {
+        return NextResponse.json(
+          { error: 'An account with this mobile number already exists. Please log in.', field: 'phone' },
+          { status: 400 }
+        );
+      }
+    }
+
+    // Check Prisma database if DATABASE_URL is configured
     if (process.env.DATABASE_URL) {
       try {
-        const existingUser = await prisma.user.findUnique({
+        const existingPrismaEmail = await prisma.user.findUnique({
           where: { email: cleanEmail },
         });
+        if (existingPrismaEmail) {
+          return NextResponse.json(
+            { error: 'An account with this email address already exists. Please log in.', field: 'email' },
+            { status: 400 }
+          );
+        }
 
-        if (existingUser) {
-          if (existingUser.isVerified) {
-            return NextResponse.json(
-              { error: 'An account with this email address already exists. Please log in.' },
-              { status: 400 }
-            );
-          } else {
-            await prisma.user.update({
-              where: { email: cleanEmail },
-              data: {
-                name,
-                phone: cleanPhone,
-                whatsappNo: cleanWhatsApp,
-                address,
-                sex: sex || 'Male',
-                hashedPassword: password,
-                otpCode,
-                otpExpiresAt: new Date(otpExpiresAt),
-              },
-            });
-          }
-        } else {
-          await prisma.user.create({
-            data: {
-              name,
-              email: cleanEmail,
-              phone: cleanPhone,
-              whatsappNo: cleanWhatsApp,
-              address,
-              sex: sex || 'Male',
-              hashedPassword: password,
-              otpCode,
-              otpExpiresAt: new Date(otpExpiresAt),
-              role: 'CLIENT',
+        if (phone10) {
+          const existingPrismaPhone = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { phone: { contains: phone10 } },
+                { whatsappNo: { contains: phone10 } },
+              ],
             },
           });
+          if (existingPrismaPhone) {
+            return NextResponse.json(
+              { error: 'An account with this mobile number already exists. Please log in.', field: 'phone' },
+              { status: 400 }
+            );
+          }
         }
+      } catch (prismaErr) {
+        console.warn('Prisma duplicate check notice:', prismaErr);
+      }
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // 2. SAVE NEW CLIENT TO DATABASE (client_base in Supabase & Local JSON)
+    // ─────────────────────────────────────────────────────────────
+    const newClient = {
+      id: `client-${Date.now()}`,
+      name: name.trim(),
+      email: cleanEmail,
+      phone: cleanPhone,
+      whatsappNo: cleanWhatsApp,
+      address: (address || '').trim(),
+      deliveryAddress: (deliveryAddress || address || '').trim(),
+      sex: sex || 'Male',
+      password: password,
+      firebaseUid: firebaseUid || null,
+      role: 'CLIENT',
+      joinedAt: new Date().toISOString().split('T')[0],
+      totalOrders: 0,
+      totalSpent: 0,
+      savedKundlisCount: 0,
+      status: isVerified ? 'VERIFIED' : 'ACTIVE',
+    };
+
+    clients.unshift(newClient);
+    await writePersistentDataAsync('client_base', clients);
+
+    // Also persist to Prisma Database if DATABASE_URL is configured
+    if (process.env.DATABASE_URL) {
+      try {
+        await prisma.user.create({
+          data: {
+            name: newClient.name,
+            email: cleanEmail,
+            phone: cleanPhone,
+            whatsappNo: cleanWhatsApp,
+            address: newClient.address,
+            sex: newClient.sex,
+            hashedPassword: password,
+            isVerified: Boolean(isVerified),
+            role: 'CLIENT',
+          },
+        });
       } catch (dbErr) {
-        console.warn('Prisma Database operation notice, using persistent store:', dbErr);
+        console.warn('Prisma Database create user notice:', dbErr);
       }
     }
 
     return NextResponse.json({
       success: true,
-      message: dispatchResult.message,
-      providerUsed: dispatchResult.providerUsed,
-      sentRealSms: dispatchResult.sent,
-      email: cleanEmail,
-      phone: cleanPhone,
-      whatsappNo: cleanWhatsApp,
-      demoOtpCode: otpCode,
+      message: 'Account registered successfully with verified mobile number.',
+      user: {
+        id: newClient.id,
+        name: newClient.name,
+        email: newClient.email,
+        phone: newClient.phone,
+        whatsappNo: newClient.whatsappNo,
+        address: newClient.address,
+        deliveryAddress: newClient.deliveryAddress,
+        sex: newClient.sex,
+        role: newClient.role,
+        joinedAt: newClient.joinedAt,
+        firebaseUid: newClient.firebaseUid,
+      },
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Registration failed' }, { status: 500 });
   }
 }
-

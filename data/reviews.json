@@ -1,68 +1,68 @@
 [
   {
     "id": "rev-1",
-    "clientName": "Priya S.",
-    "location": "Mumbai, Maharashtra",
     "rating": 5,
-    "comment": "The accuracy of the predictions was remarkable. The career guidance helped me make a crucial decision.",
-    "serviceName": "Career & Financial Outlook",
     "status": "APPROVED",
+    "comment": "The accuracy of the predictions was remarkable. The career guidance helped me make a crucial decision.",
+    "location": "Mumbai, Maharashtra",
+    "createdAt": "12 January 2026",
+    "clientName": "Priya S.",
     "isVerified": true,
-    "createdAt": "12 January 2026"
+    "serviceName": "Career & Financial Outlook"
   },
   {
     "id": "rev-2",
-    "clientName": "Rahul M.",
-    "location": "Delhi, NCR",
     "rating": 5,
-    "comment": "I was skeptical at first, but the detailed birth chart analysis changed my perspective completely.",
-    "serviceName": "Kuthi Yengba Consultation",
     "status": "APPROVED",
+    "comment": "I was skeptical at first, but the detailed birth chart analysis changed my perspective completely.",
+    "location": "Delhi, NCR",
+    "createdAt": "28 January 2026",
+    "clientName": "Rahul M.",
     "isVerified": true,
-    "createdAt": "28 January 2026"
+    "serviceName": "Kuthi Yengba Consultation"
   },
   {
     "id": "rev-3",
-    "clientName": "Ananya K.",
-    "location": "Bangalore, Karnataka",
     "rating": 5,
-    "comment": "The marriage compatibility report was incredibly detailed and accurate. Highly recommended!",
-    "serviceName": "Marriage Matching (পক্ন-ৱাইনবা য়েংবা)",
     "status": "APPROVED",
+    "comment": "The marriage compatibility report was incredibly detailed and accurate. Highly recommended!",
+    "location": "Bangalore, Karnataka",
+    "createdAt": "05 February 2026",
+    "clientName": "Ananya K.",
     "isVerified": true,
-    "createdAt": "05 February 2026"
+    "serviceName": "Marriage Matching (পক্ন-ৱাইনবা য়েংবা)"
   },
   {
     "id": "rev-4",
-    "clientName": "Vikram P.",
-    "location": "Hyderabad, Telangana",
     "rating": 5,
-    "comment": "Best astrology consultation I've ever had. The remedies suggested actually worked!",
-    "serviceName": "Kuthi Yengba Consultation",
     "status": "APPROVED",
+    "comment": "Best astrology consultation I've ever had. The remedies suggested actually worked!",
+    "location": "Hyderabad, Telangana",
+    "createdAt": "14 February 2026",
+    "clientName": "Vikram P.",
     "isVerified": true,
-    "createdAt": "14 February 2026"
+    "serviceName": "Kuthi Yengba Consultation"
   },
   {
     "id": "rev-5",
-    "clientName": "Meera R.",
-    "location": "Chennai, Tamil Nadu",
     "rating": 5,
-    "comment": "The Vimshottari Dasha analysis was spot-on. Every prediction matched my life events.",
-    "serviceName": "30-Page Kuthi Report",
     "status": "APPROVED",
+    "comment": "The Vimshottari Dasha analysis was spot-on. Every prediction matched my life events.",
+    "location": "Chennai, Tamil Nadu",
+    "createdAt": "20 February 2026",
+    "clientName": "Meera R.",
     "isVerified": true,
-    "createdAt": "20 February 2026"
+    "serviceName": "30-Page Kuthi Report"
   },
   {
     "id": "rev-6",
-    "clientName": "Thoibi Ningthoujam",
-    "location": "Imphal East, Manipur",
     "rating": 5,
-    "comment": "Hand-written Kuthi Iba (কুঠি ইবা) was delivered within 24 hours on WhatsApp and physical hardcopy! Excellent service.",
-    "serviceName": "Kuthi Iba (কুঠি ইবা)",
     "status": "APPROVED",
+    "comment": "Hand-written Kuthi Iba (কুঠি ইবা) was delivered within 24 hours on WhatsApp and physical hardcopy! Excellent service.",
+    "location": "Imphal East, Manipur",
+    "createdAt": "25 February 2026",
+    "clientName": "Thoibi Ningthoujam",
     "isVerified": true,
-    "createdAt": "25 February 2026"
+    "serviceName": "Kuthi Iba (কুঠি ইবা)"
   }
 ]

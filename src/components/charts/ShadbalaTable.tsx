@@ -30,59 +30,61 @@ const DEFAULT_SHADBALA_DATA: ShadbalaItem[] = [
 
 export function ShadbalaTable() {
   return (
-    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 sm:p-5 space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3 sm:p-4 space-y-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
         <div>
-          <h3 className="font-sans font-bold text-base sm:text-lg text-slate-900">
+          <h3 className="font-sans font-bold text-sm sm:text-base text-slate-900">
             Shadbala Summary (Planetary Strengths)
           </h3>
-          <p className="text-xs text-slate-500 font-normal">
+          <p className="text-[11px] text-slate-500 font-normal">
             Calculated in Virupas (60 Virupas = 1 Rupa) across Sthana, Dig, Kala, Cheshtha, Naisargika & Drik Balas.
           </p>
         </div>
-        <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
+        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300">
           600 Virupas = 10 Rupas
         </span>
       </div>
 
       <div className="w-full overflow-x-auto">
-        <table className="w-full text-left text-sm font-sans border-collapse">
+        <table className="w-full text-left text-xs font-sans border-collapse">
           <thead>
-            <tr className="border-b border-slate-200 text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              <th className="py-3 px-3.5">PLANET</th>
-              <th className="py-3 px-3.5 text-right">STHANA BALA</th>
-              <th className="py-3 px-3.5 text-right">DIG BALA</th>
-              <th className="py-3 px-3.5 text-right">KALA BALA</th>
-              <th className="py-3 px-3.5 text-right">CHESTHA</th>
-              <th className="py-3 px-3.5 text-right">NAISARGIKA</th>
-              <th className="py-3 px-3.5 text-right">DRIK BALA</th>
-              <th className="py-3 px-3.5 text-right">TOTAL (RUPA)</th>
-              <th className="py-3 px-3.5 text-center">RATIO</th>
-              <th className="py-3 px-3.5 text-center">RANK</th>
-              <th className="py-3 px-3.5 text-center">STATUS</th>
+            <tr className="border-b border-slate-200 text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              <th className="py-2 px-2">PLANET</th>
+              <th className="py-2 px-2 text-right">STHANA BALA</th>
+              <th className="py-2 px-2 text-right">DIG BALA</th>
+              <th className="py-2 px-2 text-right">KALA BALA</th>
+              <th className="py-2 px-2 text-right">CHESTHA</th>
+              <th className="py-2 px-2 text-right">NAISARGIKA</th>
+              <th className="py-2 px-2 text-right">DRIK BALA</th>
+              <th className="py-2 px-2 text-right">TOTAL (RUPA)</th>
+              <th className="py-2 px-2 text-center">RATIO</th>
+              <th className="py-2 px-2 text-center">STATUS</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold text-[11px] sm:text-xs">
             {DEFAULT_SHADBALA_DATA.map((row, idx) => (
               <tr key={idx} className="hover:bg-amber-50/50 transition-colors">
-                <td className="py-3 px-3.5 font-bold text-slate-900 text-sm sm:text-base">
-                  {row.symbol} <span className="font-medium text-slate-500 text-xs">({row.planet})</span>
+                <td className="py-2 px-2 font-bold text-slate-900">
+                  {row.planet} <span className="text-slate-400 font-normal text-[10px]">({row.symbol})</span>
                 </td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.sthanaBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.digBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.kalaBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.cheshthaBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.naisargikaBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.drikBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-bold text-slate-900 font-mono text-sm">{row.totalRupa.toFixed(2)}</td>
-                <td className="py-3 px-3.5 text-center font-mono text-slate-800 text-sm">{row.ratio.toFixed(2)}</td>
-                <td className="py-3 px-3.5 text-center font-bold text-amber-800 text-sm">#{row.rank}</td>
-                <td className="py-3 px-3.5 text-center">
-                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
-                    row.status === 'STRONG'
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : 'bg-amber-100 text-amber-800 border border-amber-300'
-                  }`}>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.sthanaBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.digBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.kalaBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.cheshthaBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.naisargikaBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.drikBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono font-bold text-slate-900">
+                  {row.totalRupa.toFixed(2)}
+                </td>
+                <td className="py-2 px-2 text-center font-mono text-slate-700">{row.ratio.toFixed(2)}</td>
+                <td className="py-2 px-2 text-center">
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                      row.status === 'STRONG'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : 'bg-amber-100 text-amber-800'
+                    }`}
+                  >
                     {row.status}
                   </span>
                 </td>

@@ -1,7 +1,10 @@
 {
   "title": "Talk to Manipur's",
+  "rateMode": "fixed",
   "highlightText": "Top Rated",
+  "fixedRateLabel": "Fixed",
   "showRateOnHome": true,
   "subtitleTagline": "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
-  "actionButtonType": "both"
+  "actionButtonType": "both",
+  "defaultFixedRate": 500
 }

@@ -4,26 +4,26 @@
     "code": "KANGLEI20",
     "type": "PERCENTAGE",
     "value": 20,
-    "minOrderAmount": 499,
     "active": true,
-    "usageCount": 42
+    "usageCount": 42,
+    "minOrderAmount": 499
   },
   {
     "id": "c-2",
     "code": "ASTRO100",
     "type": "FLAT",
     "value": 100,
-    "minOrderAmount": 999,
     "active": true,
-    "usageCount": 19
+    "usageCount": 19,
+    "minOrderAmount": 999
   },
   {
     "id": "c-3",
     "code": "FREESHIP",
     "type": "FREE_SHIPPING",
     "value": 0,
-    "minOrderAmount": 299,
     "active": true,
-    "usageCount": 88
+    "usageCount": 88,
+    "minOrderAmount": 299
   }
 ]

@@ -4,9 +4,11 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Phone, Calendar, Clock, MapPin, FileText, CheckCircle2, 
-  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, MessageSquare, Truck, BookOpen 
+  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, MessageSquare, Truck, BookOpen,
+  Tag, Gift, Percent, AlertCircle, X
 } from 'lucide-react';
 import Link from 'next/link';
+import { ServiceCouponScheme } from '@/app/api/services/coupons/route';
 
 interface KuthiSlot {
   id: string;
@@ -58,6 +60,7 @@ function ManipuriKuthiYengbaContent() {
   const [tob, setTob] = useState('');
   const [pob, setPob] = useState('Imphal, Manipur');
   const [notes, setNotes] = useState('');
+  const [faithTradition, setFaithTradition] = useState<'Hinduism' | 'Sanamahi Laining'>('Hinduism');
 
   // Checkbox: Want to Rewrite Physical Kuthi Paper
   const [wantKuthiRewrite, setWantKuthiRewrite] = useState(false);
@@ -80,9 +83,25 @@ function ManipuriKuthiYengbaContent() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
+  // Service Coupons & Promotional Schemes State
+  const [serviceCoupons, setServiceCoupons] = useState<ServiceCouponScheme[]>([]);
+  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<ServiceCouponScheme | null>(null);
+  const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   useEffect(() => {
     const ref = 'KY-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
+
+    // Fetch active service coupons and promotional schemes
+    fetch('/api/services/coupons?public=true')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.coupons)) {
+          setServiceCoupons(data.coupons.filter((c: any) => c.active));
+        }
+      })
+      .catch((err) => console.error('Error fetching service coupons:', err));
 
     // Fetch live sub-categories from Admin services API
     fetch('/api/services')
@@ -207,10 +226,100 @@ function ManipuriKuthiYengbaContent() {
     setSlots(slots.map((s) => (s.id === id ? { ...s, file } : s)));
   };
 
-  // Calculate Total Amount (Reading Fee + Optional Physical Scroll Fee)
+  // Compute discount for a given coupon scheme
+  const computeDiscount = (coupon: ServiceCouponScheme, count: number, unitPrice: number, baseTotal: number) => {
+    let discount = 0;
+    if (coupon.schemeType === 'FIRST_M_OF_N_AT_PRICE' || coupon.schemeType === 'FIRST_N_AT_PRICE') {
+      if (count >= (coupon.qualifyingQuantity || 1)) {
+        const eligibleCount = Math.min(count, coupon.discountedQuantity || 1);
+        const priceDiff = Math.max(0, unitPrice - (coupon.offerPrice ?? 0));
+        discount = eligibleCount * priceDiff;
+      }
+    } else if (coupon.schemeType === 'PERCENTAGE') {
+      discount = Math.round((baseTotal * (coupon.discountValue || 0)) / 100);
+      if (coupon.maxDiscount && coupon.maxDiscount > 0) {
+        discount = Math.min(discount, coupon.maxDiscount);
+      }
+    } else if (coupon.schemeType === 'FLAT') {
+      discount = Math.min(baseTotal, coupon.discountValue || 0);
+    } else if (coupon.schemeType === 'BUY_X_GET_Y') {
+      if (count >= (coupon.qualifyingQuantity || 2)) {
+        const freeCount = coupon.discountedQuantity || 1;
+        discount = freeCount * unitPrice;
+      }
+    }
+    return Math.max(0, Math.min(discount, baseTotal));
+  };
+
+  // Calculate Base Reading and Physical Scroll Fees
   const baseReadingAmount = pricePerKuthi * slots.length;
   const rewriteAmount = wantKuthiRewrite ? (selectedPhysicalPackage.price * slots.length) : 0;
-  const totalAmount = baseReadingAmount + rewriteAmount;
+
+  // Determine Active Coupon (Manual code override > Best matching Auto-Apply Scheme)
+  let activeCoupon: ServiceCouponScheme | null = appliedCoupon;
+  let isAutoApplied = false;
+
+  if (!activeCoupon) {
+    const eligibleAuto = serviceCoupons
+      .filter((c) => c.active && c.isAutoApply && slots.length >= (c.qualifyingQuantity || 1))
+      .sort((a, b) => {
+        const dA = computeDiscount(a, slots.length, pricePerKuthi, baseReadingAmount);
+        const dB = computeDiscount(b, slots.length, pricePerKuthi, baseReadingAmount);
+        return dB - dA;
+      });
+
+    if (eligibleAuto.length > 0) {
+      activeCoupon = eligibleAuto[0];
+      isAutoApplied = true;
+    }
+  }
+
+  const couponDiscount = activeCoupon
+    ? computeDiscount(activeCoupon, slots.length, pricePerKuthi, baseReadingAmount)
+    : 0;
+
+  const finalReadingAmount = Math.max(0, baseReadingAmount - couponDiscount);
+  const totalAmount = finalReadingAmount + rewriteAmount;
+
+  // 3-Kundli special promo detection for nudges & UI badges
+  const threeKundliScheme = serviceCoupons.find(
+    (c) => c.active && (c.code === '3KUNDLI1' || c.schemeType === 'FIRST_M_OF_N_AT_PRICE')
+  );
+
+  const handleApplyCoupon = (codeToApply?: string) => {
+    const code = (codeToApply || couponCodeInput).trim().toUpperCase();
+    if (!code) {
+      setCouponMessage({ type: 'error', text: 'Please enter a coupon code.' });
+      return;
+    }
+
+    const found = serviceCoupons.find((c) => c.code.toUpperCase() === code && c.active);
+    if (!found) {
+      setCouponMessage({ type: 'error', text: `Coupon code "${code}" is invalid or expired.` });
+      return;
+    }
+
+    if (found.qualifyingQuantity && slots.length < found.qualifyingQuantity) {
+      setCouponMessage({
+        type: 'error',
+        text: `Scheme "${found.code}" requires at least ${found.qualifyingQuantity} Kundlis. Please select ${found.qualifyingQuantity} Kundlis.`,
+      });
+      return;
+    }
+
+    setAppliedCoupon(found);
+    setCouponCodeInput(found.code);
+    setCouponMessage({
+      type: 'success',
+      text: `Coupon "${found.code}" applied! ${found.title}`,
+    });
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCodeInput('');
+    setCouponMessage(null);
+  };
 
   const uploadedFilesCount = slots.filter((s) => s.file !== null).length;
 
@@ -280,6 +389,7 @@ function ManipuriKuthiYengbaContent() {
         tob,
         pob,
         notes,
+        faithTradition,
         wantKuthiRewrite,
         rewriteDetails: wantKuthiRewrite ? {
           fatherName,
@@ -289,6 +399,8 @@ function ManipuriKuthiYengbaContent() {
           deliveryAddress,
         } : null,
         baseReadingAmount,
+        couponCode: activeCoupon?.code || '',
+        couponDiscount,
         rewriteAmount,
         totalAmount,
         utr: utrNumber,
@@ -483,6 +595,55 @@ function ManipuriKuthiYengbaContent() {
                       </button>
                     ))}
                   </div>
+
+                  {/* 3-Kundli Promotional Nudge or Celebratory Offer Badge */}
+                  {threeKundliScheme && slots.length < (threeKundliScheme.qualifyingQuantity || 3) && (
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-300 flex flex-col sm:flex-row items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl">🎁</span>
+                        <div>
+                          <span className="text-xs font-black text-[#b45309] block">
+                            Special Scheme: 1st Kundli at ₹1 only!
+                          </span>
+                          <span className="text-[11px] text-gray-600">
+                            Select {threeKundliScheme.qualifyingQuantity || 3} Kundlis to get 1st Kundli at ₹1, rest at regular rate!
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleCountSelect(threeKundliScheme.qualifyingQuantity || 3)}
+                        className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 shadow-xs shrink-0 cursor-pointer flex items-center gap-1"
+                      >
+                        <span>Select {threeKundliScheme.qualifyingQuantity || 3} Kundlis (Save ₹{pricePerKuthi - 1})</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  {activeCoupon && couponDiscount > 0 && (
+                    <div className="p-3.5 sm:p-4 rounded-2xl bg-emerald-50 border border-emerald-300 flex items-center justify-between gap-3 shadow-xs">
+                      <div className="flex items-center gap-2.5">
+                        <span className="text-xl">🎉</span>
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-black text-emerald-800">
+                              {activeCoupon.title}
+                            </span>
+                            <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-200 text-emerald-900 font-mono font-bold">
+                              {activeCoupon.code}
+                            </span>
+                          </div>
+                          <span className="text-[11px] text-emerald-700">
+                            {isAutoApplied ? 'Auto-applied! ' : ''}1st Kundli at ₹{activeCoupon.offerPrice ?? 1}, rest at regular rate. You save ₹{couponDiscount}!
+                          </span>
+                        </div>
+                      </div>
+                      <span className="px-3 py-1 rounded-lg bg-emerald-600 text-white font-mono font-extrabold text-xs shrink-0 shadow-xs">
+                        -₹{couponDiscount} SAVED
+                      </span>
+                    </div>
+                  )}
                 </div>
 
                 {/* 3. UPLOAD KUTHI FILE BOXES */}
@@ -805,13 +966,175 @@ function ManipuriKuthiYengbaContent() {
                   </AnimatePresence>
                 </div>
 
+                {/* Astrological Faith Tradition Selection */}
+                <div className="bg-[#fffdfa] p-4 sm:p-5 rounded-2xl border border-[#fde68a] shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-gray-800 uppercase tracking-wider">
+                      Astrological Tradition / Faith Preference <span className="text-red-500">*</span>
+                    </label>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
+                      Selected: {faithTradition}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500">
+                    Choose the ritual and astrological tradition you follow for this Kuthi reading:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFaithTradition('Hinduism')}
+                      className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                        faithTradition === 'Hinduism'
+                          ? 'bg-[#fef3c7] text-[#b45309] border-[#d97706] shadow-sm ring-1 ring-[#d97706]'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
+                      }`}
+                    >
+                      <span className="text-base">🕉️</span>
+                      <div className="text-left">
+                        <div className="font-extrabold text-[#0f172a]">Hinduism</div>
+                        <div className="text-[10px] text-gray-500 font-normal">Vedic Manipuri Hindu Tradition</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFaithTradition('Sanamahi Laining')}
+                      className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                        faithTradition === 'Sanamahi Laining'
+                          ? 'bg-[#fef3c7] text-[#b45309] border-[#d97706] shadow-sm ring-1 ring-[#d97706]'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
+                      }`}
+                    >
+                      <span className="text-base">☀️</span>
+                      <div className="text-left">
+                        <div className="font-extrabold text-[#0f172a]">Sanamahi Laining</div>
+                        <div className="text-[10px] text-gray-500 font-normal">Indigenous Sanamahi Tradition</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
+                {/* PROMO COUPON & SPECIAL SCHEME BOX */}
+                <div className="bg-[#fffdfa] p-4 sm:p-5 rounded-2xl border border-[#fde68a] shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
+                      <Gift className="w-4 h-4 text-[#d97706]" />
+                      <span>Promotional Coupon or Scheme Code</span>
+                    </label>
+                    {activeCoupon && (
+                      <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                        {isAutoApplied ? 'Auto Scheme Active' : 'Coupon Applied'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Enter Coupon Code (e.g. 3KUNDLI1, VEDIC20)"
+                      value={couponCodeInput}
+                      onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                      className="flex-1 h-10 px-3.5 rounded-xl border border-gray-300 bg-white font-mono text-xs uppercase tracking-wider text-[#b45309] font-bold focus:border-[#d97706] focus:outline-none"
+                    />
+                    {appliedCoupon ? (
+                      <button
+                        type="button"
+                        onClick={handleRemoveCoupon}
+                        className="px-4 h-10 rounded-xl border border-red-300 bg-red-50 text-red-600 font-bold text-xs hover:bg-red-100 transition-colors flex items-center gap-1 cursor-pointer shrink-0"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                        <span>Remove</span>
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleApplyCoupon()}
+                        className="px-5 h-10 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 shadow-xs transition-opacity cursor-pointer shrink-0"
+                      >
+                        Apply Code
+                      </button>
+                    )}
+                  </div>
+
+                  {couponMessage && (
+                    <p className={`text-xs font-bold flex items-center gap-1 ${
+                      couponMessage.type === 'success' ? 'text-emerald-700' : 'text-red-600'
+                    }`}>
+                      {couponMessage.type === 'success' ? <CheckCircle2 className="w-3.5 h-3.5" /> : <AlertCircle className="w-3.5 h-3.5" />}
+                      <span>{couponMessage.text}</span>
+                    </p>
+                  )}
+
+                  {/* Available Public Offers Chips */}
+                  {serviceCoupons.length > 0 && (
+                    <div className="pt-2 border-t border-[#fde68a]/50">
+                      <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider block mb-1.5">
+                        Available Schemes & Offers:
+                      </span>
+                      <div className="flex flex-wrap gap-2">
+                        {serviceCoupons.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            onClick={() => {
+                              if (c.qualifyingQuantity && slots.length < c.qualifyingQuantity) {
+                                handleCountSelect(c.qualifyingQuantity);
+                              }
+                              handleApplyCoupon(c.code);
+                            }}
+                            className={`px-3 py-1.5 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                              activeCoupon?.code === c.code
+                                ? 'bg-amber-100 border-amber-400 text-[#b45309] ring-1 ring-amber-400'
+                                : 'bg-white border-amber-200 text-gray-700 hover:border-amber-300 hover:bg-amber-50/50'
+                            }`}
+                          >
+                            <Tag className="w-3 h-3 text-[#d97706]" />
+                            <span className="font-mono">{c.code}</span>
+                            <span className="text-[10px] text-gray-500 font-normal">({c.badgeText || c.title})</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {/* PRICE BREAKDOWN CARD */}
+                <div className="bg-[#fefcf6] p-4 sm:p-5 rounded-2xl border border-[#fde68a] space-y-2 text-xs">
+                  <div className="flex justify-between text-gray-600">
+                    <span>Base Kuthi Reading ({slots.length} × ₹{pricePerKuthi}):</span>
+                    <span className="font-bold text-[#0f172a]">₹{baseReadingAmount}</span>
+                  </div>
+
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between text-emerald-700 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+                      <span className="flex items-center gap-1">
+                        <Gift className="w-3.5 h-3.5" />
+                        <span>Discount ({activeCoupon?.code} — {activeCoupon?.title}):</span>
+                      </span>
+                      <span className="font-mono text-sm">-₹{couponDiscount}</span>
+                    </div>
+                  )}
+
+                  {wantKuthiRewrite && (
+                    <div className="flex justify-between text-green-800">
+                      <span>Handwritten Physical Kuthi ({selectedPhysicalPackage.title}):</span>
+                      <span className="font-bold">₹{rewriteAmount}</span>
+                    </div>
+                  )}
+
+                  <div className="pt-2 border-t border-[#fde68a] flex justify-between items-center text-sm">
+                    <span className="font-bold text-gray-700 uppercase tracking-wider text-xs">Total Payable:</span>
+                    <span className="font-serif font-black text-xl text-[#b45309]">₹{totalAmount}</span>
+                  </div>
+                </div>
+
                 {/* Submit Button */}
-                <div className="pt-4 flex justify-end">
+                <div className="pt-2 flex justify-end">
                   <button
                     type="submit"
                     className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
-                    <span>Proceed to UPI Payment Summary (₹{totalAmount})</span>
+                    <span>Proceed to Payment Summary (₹{totalAmount})</span>
                     <ArrowRight className="w-4 h-4" />
                   </button>
                 </div>
@@ -870,9 +1193,20 @@ function ManipuriKuthiYengbaContent() {
                     </div>
                   )}
                   <div className="flex justify-between border-b border-[#fde68a] pb-2">
+                    <span className="text-gray-500">Astrological Faith Tradition:</span>
+                    <span className="font-bold text-[#b45309]">{faithTradition === 'Hinduism' ? '🕉️ Hinduism' : '☀️ Sanamahi Laining'}</span>
+                  </div>
+                  <div className="flex justify-between border-b border-[#fde68a] pb-2">
                     <span className="text-gray-500">Reading Fee ({slots.length} Paper):</span>
                     <span className="font-bold text-[#0f172a]">₹{baseReadingAmount}</span>
                   </div>
+
+                  {couponDiscount > 0 && (
+                    <div className="flex justify-between border-b border-[#fde68a] pb-2 text-emerald-700 bg-emerald-50/70 p-2 rounded-lg">
+                      <span className="font-bold">Special Scheme / Coupon ({activeCoupon?.code}):</span>
+                      <span className="font-bold font-mono">-₹{couponDiscount}</span>
+                    </div>
+                  )}
 
                   {wantKuthiRewrite && (
                     <div className="flex justify-between border-b border-[#fde68a] pb-2">
@@ -1010,6 +1344,10 @@ function ManipuriKuthiYengbaContent() {
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Client Name:</span>
                   <span className="font-bold text-[#0f172a]">{clientName} ({gender})</span>
+                </div>
+                <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
+                  <span className="text-gray-500">Tradition:</span>
+                  <span className="font-bold text-[#b45309]">{faithTradition}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Submitted UTR:</span>

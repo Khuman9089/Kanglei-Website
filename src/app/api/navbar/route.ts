@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export interface NavSubItem {
   id: string;
@@ -123,7 +124,13 @@ const DEFAULT_NAVBAR_CONFIG: NavbarConfig = {
 
 export async function GET() {
   const navConfig = await readPersistentDataAsync<NavbarConfig>('navbar_config', DEFAULT_NAVBAR_CONFIG);
-  return NextResponse.json(navConfig);
+  return NextResponse.json(navConfig, {
+    headers: {
+      'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
+    },
+  });
 }
 
 export async function POST(request: Request) {
@@ -131,11 +138,18 @@ export async function POST(request: Request) {
     const body = await request.json();
     if (body && Array.isArray(body.items)) {
       await writePersistentDataAsync<NavbarConfig>('navbar_config', body);
-      return NextResponse.json({
-        success: true,
-        message: 'Navbar Navigation Menu settings saved successfully!',
-        config: body,
-      });
+      return NextResponse.json(
+        {
+          success: true,
+          message: 'Navbar Navigation Menu settings saved successfully!',
+          config: body,
+        },
+        {
+          headers: {
+            'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+          },
+        }
+      );
     }
     return NextResponse.json({ error: 'Invalid navbar payload' }, { status: 400 });
   } catch (error: any) {

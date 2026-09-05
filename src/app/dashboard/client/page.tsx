@@ -6,7 +6,7 @@ import { motion } from 'framer-motion';
 import { 
   LogOut, FileText, Clock, Download, MapPin, Phone, Mail, 
   Calendar, CreditCard, Plus, Eye, ChevronRight, UserCircle,
-  Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, Star, KeyRound,
+  Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, XCircle, Star, KeyRound,
   Truck, Ban, Printer, MessageSquare, AlertTriangle, ShieldCheck, Image as ImageIcon, Video
 } from 'lucide-react';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
@@ -340,32 +340,52 @@ export default function ClientDashboard() {
     }, 1200);
   };
 
-  // Fetch live orders from /api/kuthi
+  // Fetch live orders from /api/kuthi with real-time polling so admin status updates appear instantly
   useEffect(() => {
-    fetch('/api/kuthi')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.orders && Array.isArray(data.orders)) {
+    let isMounted = true;
+    const fetchOrders = async () => {
+      try {
+        const res = await fetch('/api/kuthi');
+        const data = await res.json();
+        if (isMounted && data.orders && Array.isArray(data.orders)) {
           setOrders(data.orders);
         }
-        setLoadingOrders(false);
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('Error fetching client orders:', err);
-        setLoadingOrders(false);
-      });
+      } finally {
+        if (isMounted) setLoadingOrders(false);
+      }
+    };
+
+    fetchOrders();
+    const interval = setInterval(fetchOrders, 2000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
-  // Fetch live store orders from /api/shop
+  // Fetch live store orders from /api/shop with real-time polling
   useEffect(() => {
-    fetch('/api/shop')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
+    let isMounted = true;
+    const fetchShopOrders = async () => {
+      try {
+        const res = await fetch('/api/shop');
+        const data = await res.json();
+        if (isMounted && data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
           setShopOrders(data.orders);
         }
-      })
-      .catch((err) => console.error('Error fetching shop orders:', err));
+      } catch (err) {
+        console.error('Error fetching shop orders:', err);
+      }
+    };
+
+    fetchShopOrders();
+    const interval = setInterval(fetchShopOrders, 3000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   const handleCancelOrderSubmit = async (e: React.FormEvent) => {
@@ -552,45 +572,121 @@ export default function ClientDashboard() {
                     </div>
                   )}
 
-                  {/* Past Sessions List */}
+                  {/* Live & Booked Consultations List with Real-time Status */}
                   {clientSessions.length > 0 && (
                     <div className="pt-4 border-t border-[#f3e8d2] space-y-3">
-                      <h3 className="font-serif font-bold text-sm text-[#0f172a]">Recent Consultation History</h3>
-                      <div className="space-y-2">
-                        {clientSessions.map((sess) => (
-                          <div key={sess.id} className="p-3.5 rounded-xl bg-amber-50/30 border border-[#f3e8d2] flex items-center justify-between text-xs">
-                            <div className="flex items-center space-x-3">
-                              <div className="w-9 h-9 rounded-full bg-amber-500/20 text-[#b45309] font-bold flex items-center justify-center">
-                                {sess.astrologerName?.charAt(0) || 'A'}
+                      <h3 className="font-serif font-bold text-sm text-[#0f172a] flex items-center justify-between">
+                        <span>My Consultation Sessions & Bookings</span>
+                        <span className="text-xs text-gray-500 font-mono font-normal">
+                          {clientSessions.length} total
+                        </span>
+                      </h3>
+                      <div className="space-y-3">
+                        {clientSessions.map((sess) => {
+                          const isPendingVerification = sess.paymentStatus === 'PENDING_VERIFICATION';
+                          const isVerified = sess.paymentStatus === 'VERIFIED' || sess.status === 'CONFIRMED';
+                          const isLive = sess.status === 'LIVE';
+                          const isCompleted = sess.status === 'COMPLETED';
+                          const rawLink = sess.meetingLink || `/consultation?sessionId=${sess.id}`;
+                          const roomLink = rawLink.includes('role=') ? rawLink : `${rawLink}${rawLink.includes('?') ? '&' : '?'}role=client`;
+
+                          return (
+                            <div key={sess.id} className="p-4 rounded-2xl bg-white border border-[#f3e8d2] shadow-xs space-y-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="flex items-center space-x-3">
+                                  <div className="w-10 h-10 rounded-full bg-amber-500/20 text-[#b45309] font-bold flex items-center justify-center shrink-0">
+                                    {sess.astrologerName?.charAt(0) || 'A'}
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center gap-2">
+                                      <h4 className="font-bold text-[#0f172a] text-sm">{sess.astrologerName}</h4>
+                                      <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#fef3c7] text-[#b45309]">
+                                        {sess.mode === 'CHAT' ? '💬 Chat' : '📞 Call'}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] text-gray-500 font-mono">
+                                      Ref: {sess.orderRef || sess.id} · Total: ₹{sess.totalFee}
+                                    </p>
+                                  </div>
+                                </div>
+
+                                {/* Shift Badge - Morning or Evening */}
+                                <div className="text-right">
+                                  <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-extrabold ${
+                                    sess.shift === 'Evening'
+                                      ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                                      : 'bg-amber-100 text-amber-800 border border-amber-200'
+                                  }`}>
+                                    <span>{sess.shift === 'Evening' ? '🌙' : '☀️'}</span>
+                                    <span>{sess.shift || 'Morning'} Shift</span>
+                                  </span>
+                                  <div className="text-[11px] text-gray-500 mt-0.5 font-medium">
+                                    {sess.scheduledDate || 'Today'}
+                                  </div>
+                                </div>
                               </div>
-                              <div>
-                                <h4 className="font-bold text-[#0f172a]">{sess.astrologerName}</h4>
-                                <p className="text-[11px] text-gray-500">
-                                  {sess.mode} ({sess.durationMinutes} mins) • Fee: ₹{sess.totalFee}
-                                </p>
+
+                              {/* Status & Meeting Link Bar */}
+                              <div className="pt-2 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3 text-xs">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-gray-500 font-medium">Order Status:</span>
+                                  {isCompleted ? (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-extrabold text-[11px] flex items-center gap-1">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-blue-600" />
+                                      <span>Session Completed</span>
+                                    </span>
+                                  ) : isLive ? (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px] flex items-center gap-1 animate-pulse">
+                                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                                      <span>Live In Progress</span>
+                                    </span>
+                                  ) : isVerified ? (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[11px] flex items-center gap-1">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                      <span>Payment Verified by Admin</span>
+                                    </span>
+                                  ) : sess.paymentStatus === 'REJECTED' ? (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 font-extrabold text-[11px] flex items-center gap-1">
+                                      <XCircle className="w-3.5 h-3.5 text-red-600" />
+                                      <span>Payment Rejected / Invalid UTR</span>
+                                    </span>
+                                  ) : (
+                                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[11px] flex items-center gap-1 animate-pulse">
+                                      <Clock className="w-3.5 h-3.5 text-amber-600" />
+                                      <span>Awaiting Admin Payment Verification</span>
+                                    </span>
+                                  )}
+                                </div>
+
+                                <div className="flex items-center gap-2">
+                                  {/* Action Buttons */}
+                                  {isVerified || isLive ? (
+                                    <a
+                                      href={roomLink}
+                                      className="px-4 py-1.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-500 hover:to-green-500 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center gap-1.5"
+                                    >
+                                      <span>Join Consultation Room</span>
+                                      <Sparkles className="w-3.5 h-3.5" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-[11px] text-gray-500 font-mono">
+                                      UTR: {sess.paymentUtr || 'Verification Pending'}
+                                    </span>
+                                  )}
+
+                                  <button
+                                    onClick={() => {
+                                      setActiveLiveSessionId(sess.id);
+                                    }}
+                                    className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-800 font-bold text-xs rounded-xl transition cursor-pointer"
+                                  >
+                                    Open Workspace
+                                  </button>
+                                </div>
                               </div>
                             </div>
-
-                            <div className="flex items-center space-x-2">
-                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold ${
-                                sess.status === 'LIVE' ? 'bg-emerald-100 text-emerald-800' :
-                                sess.status === 'WAITING' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'
-                              }`}>
-                                {sess.status}
-                              </span>
-
-                              <button
-                                onClick={() => {
-                                  setActiveLiveSessionId(sess.id);
-                                  setActiveDashTab('live_consultations');
-                                }}
-                                className="px-3 py-1 bg-[#0b132b] hover:bg-[#1c2541] text-[#fbbf24] font-bold text-[11px] rounded-lg transition cursor-pointer"
-                              >
-                                Open Workspace
-                              </button>
-                            </div>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   )}

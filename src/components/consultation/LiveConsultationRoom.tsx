@@ -446,6 +446,17 @@ export default function LiveConsultationRoom({
   // STEP 3: Poll API every 1.2s — sync session & signals
   // ─────────────────────────────────────────────────────────
   useEffect(() => {
+    // Signal JOIN_ROOM to ensure backend session status is live and ready
+    fetch('/api/consultations', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'JOIN_ROOM',
+        sessionId,
+        participantRole: currentUserType,
+      }),
+    }).catch(() => {});
+
     const fetchSession = async () => {
       try {
         const res = await fetch(`/api/consultations?sessionId=${sessionId}`);
@@ -453,16 +464,21 @@ export default function LiveConsultationRoom({
         if (!data.session) return;
 
         setSession(data.session);
-        if (sessionId === 'TEST-SESS-999') {
-          setRemainingSecs((prev) => (prev > 60 ? prev : 1800));
+        const defaultDurationSecs = (data.session.durationMinutes || 15) * 60;
+        if (typeof data.session.remainingSeconds === 'number' && data.session.remainingSeconds > 0) {
+          setRemainingSecs(data.session.remainingSeconds);
+        } else if (data.session.status !== 'ENDED' && data.session.status !== 'COMPLETED') {
+          setRemainingSecs(defaultDurationSecs);
         } else {
-          setRemainingSecs(data.session.remainingSeconds ?? 900);
+          setRemainingSecs(0);
         }
 
         if (data.session.status === 'LIVE' && !callActiveRef.current) {
-          callActiveRef.current = true;
-          setIsCallActive(true);
-          setCallType(data.session.callType ?? 'VIDEO');
+          if (data.session.mode === 'CALL' || (data.session.signals && data.session.signals.length > 0)) {
+            callActiveRef.current = true;
+            setIsCallActive(true);
+            setCallType(data.session.callType ?? 'VIDEO');
+          }
         }
 
         pendingSignalsRef.current = data.session.signals ?? [];
@@ -515,15 +531,14 @@ export default function LiveConsultationRoom({
     }
   }, [isMicMuted, isVideoOff, localStream]);
 
-  // Timer countdown
+  // Timer countdown: strictly visual countdown, NEVER auto-expires or destroys session
   useEffect(() => {
-    if (!session || session.status !== 'LIVE') return;
-    // Never auto-expire test session TEST-SESS-999
+    if (!session || session.status === 'ENDED' || session.status === 'COMPLETED') return;
     if (sessionId === 'TEST-SESS-999') return;
 
     const timer = setInterval(() => {
-      setRemainingSecs(prev => {
-        if (prev <= 1) { clearInterval(timer); handleEndSession('System Timer Expired'); return 0; }
+      setRemainingSecs((prev) => {
+        if (prev <= 1) return 0;
         return prev - 1;
       });
     }, 1000);
@@ -535,22 +550,16 @@ export default function LiveConsultationRoom({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [session?.messages]);
 
-
-
-
-
-
-
-
-
-
+  // ─────────────────────────────────────────────────────────
+  // Send Message (Text / Image / Kundli Card / Remedy)
+  // ─────────────────────────────────────────────────────────
   const handleSendMessage = async (customText?: string, attachment?: any) => {
-    const textToSend = customText || inputText;
+    const textToSend = customText ?? inputText;
     if (!textToSend.trim() && !attachment) return;
 
     setSending(true);
     try {
-      const res = await fetch('/api/consultations', {
+      await fetch('/api/consultations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -561,27 +570,40 @@ export default function LiveConsultationRoom({
           attachment,
         }),
       });
-      const data = await res.json();
-      if (data.session) {
-        setSession(data.session);
-        if (!customText) setInputText('');
-      }
+      if (!customText) setInputText('');
     } catch (err) {
-      console.error('Error sending message:', err);
+      console.error('Failed to send message:', err);
     } finally {
       setSending(false);
-      setShowAttachMenu(false);
     }
   };
 
-  // Convert Chat to Live Video or Voice Call — notifies remote party via API
+  const handleShareKundli = () => {
+    setShowAttachMenu(false);
+    setShowKundliModal(false);
+    if (!session) return;
+    const dob = session.clientDob || '1996-04-12';
+    const tob = session.clientTob || '08:45 AM';
+    const pob = session.clientPob || 'Imphal West, Manipur';
+
+    handleSendMessage(`🪐 Digital Kundli Details:\n• Name: ${session.clientName}\n• DOB: ${dob}\n• TOB: ${tob}\n• POB: ${pob}`, {
+      type: 'KUNDLI',
+      title: 'Vedic Kundli Details',
+      data: {
+        name: session.clientName,
+        dob,
+        tob,
+        pob,
+        chartType: 'D1 Rashi Chart & Navamsha (D9)',
+      },
+    });
+  };
+
   const handleInitiateCall = async (type: 'AUDIO' | 'VIDEO') => {
     setCallType(type);
-    callActiveRef.current = true;
     setIsCallActive(true);
-    setIsVideoOff(false);
+    callActiveRef.current = true;
     setCallVersion(v => v + 1);
-    // Persist callType so the other side's polling can detect & join
     try {
       await fetch('/api/consultations', {
         method: 'POST',
@@ -661,20 +683,6 @@ export default function LiveConsultationRoom({
     }
   };
 
-  const handleShareKundli = () => {
-    handleSendMessage(`🪐 Client Kundli Birth Details attached:\nDOB: ${session?.clientDob || 'N/A'}, TOB: ${session?.clientTob || 'N/A'}, POB: ${session?.clientPob || 'N/A'}`, {
-      type: 'KUNDLI',
-      title: `${session?.clientName}'s Birth Chart Details`,
-      data: {
-        dob: session?.clientDob,
-        tob: session?.clientTob,
-        pob: session?.clientPob,
-        gender: session?.clientGender,
-      },
-    });
-    setShowKundliModal(false);
-  };
-
   const formatTimer = (secs: number) => {
     const m = Math.floor(secs / 60);
     const s = secs % 60;
@@ -691,6 +699,8 @@ export default function LiveConsultationRoom({
   }
 
   const otherPartyName = currentUserType === 'CLIENT' ? session.astrologerName : session.clientName;
+  const isSessionEnded = session.status === 'ENDED' || session.status === 'COMPLETED' || session.status === 'REJECTED';
+  const isSessionActive = !isSessionEnded;
 
   return (
     <div className="fixed inset-0 z-[999999] w-screen h-[100dvh] max-h-[100dvh] bg-[#0b141a] text-[#e9edef] font-sans flex flex-col overflow-hidden select-none">
@@ -757,7 +767,7 @@ export default function LiveConsultationRoom({
         <div className="flex items-center space-x-1 sm:space-x-2 md:space-x-3 shrink-0">
           
           {/* Live Timer Pill */}
-          {session.status === 'LIVE' && (
+          {isSessionActive && (
             <div className="flex items-center space-x-1 bg-[#111b21] px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded-full border border-amber-500/40 shadow-inner">
               <Clock className="w-3 h-3 text-amber-400 animate-spin" style={{ animationDuration: '3s' }} />
               <span className="font-mono font-bold text-amber-300 text-[10px] sm:text-xs tracking-wider">
@@ -767,7 +777,7 @@ export default function LiveConsultationRoom({
           )}
 
           {/* 📹 Video Call Switch Button */}
-          {session.status === 'LIVE' && (
+          {isSessionActive && (
             <button
               onClick={() => handleInitiateCall('VIDEO')}
               className={`p-1.5 sm:p-2 md:p-2.5 rounded-full border transition cursor-pointer ${
@@ -782,7 +792,7 @@ export default function LiveConsultationRoom({
           )}
 
           {/* 📞 Voice Call Switch Button */}
-          {session.status === 'LIVE' && (
+          {isSessionActive && (
             <button
               onClick={() => handleInitiateCall('AUDIO')}
               className={`p-1.5 sm:p-2 md:p-2.5 rounded-full border transition cursor-pointer ${
@@ -814,7 +824,7 @@ export default function LiveConsultationRoom({
             <span>Kundli</span>
           </button>
 
-          {currentUserType === 'ASTROLOGER' && session.status === 'LIVE' && (
+          {currentUserType === 'ASTROLOGER' && isSessionActive && (
             <button
               onClick={() => setShowRemedyModal(true)}
               className="hidden md:flex items-center space-x-1 text-xs bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/40 px-2.5 py-1 rounded-xl transition cursor-pointer"
@@ -824,7 +834,7 @@ export default function LiveConsultationRoom({
             </button>
           )}
 
-          {session.status === 'LIVE' && (
+          {isSessionActive && (
             <button
               onClick={() => handleEndSession('User ended session')}
               className="bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] sm:text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-red-500/50 flex items-center gap-1 transition shadow cursor-pointer shrink-0"
@@ -838,7 +848,7 @@ export default function LiveConsultationRoom({
       </div>
 
       {/* 2. REAL-TIME VIDEO / VOICE CALL SCREEN DOCK */}
-      {isCallActive && session.status === 'LIVE' && (
+      {isCallActive && isSessionActive && (
         <div className={`bg-[#0b141a] border-b border-[#222d34] flex flex-col items-center justify-between p-2 md:p-4 transition-all duration-300 shrink-0 relative ${
           isCallPip ? 'h-36' : 'h-64 md:h-80'
         }`}>
@@ -1240,7 +1250,7 @@ export default function LiveConsultationRoom({
         )}
 
         {/* 4. WHATSAPP CHAT INPUT BAR (FLUSH SAFE AREA AT BOTTOM) */}
-        {session.status === 'LIVE' ? (
+        {isSessionActive ? (
           <form
             onSubmit={(e) => {
               e.preventDefault();

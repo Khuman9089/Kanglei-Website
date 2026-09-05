@@ -27,6 +27,7 @@ export interface WebRtcSignal {
 
 export interface ConsultationSession {
   id: string;
+  orderRef?: string;
   mode: 'CHAT' | 'CALL';
   callType?: 'AUDIO' | 'VIDEO';
   clientName: string;
@@ -39,11 +40,21 @@ export interface ConsultationSession {
   astrologerName: string;
   astrologerPhone?: string;
   astrologerAvatar?: string;
-  status: 'WAITING' | 'LIVE' | 'ENDED' | 'REJECTED' | 'CANCELLED';
+  status: 'PENDING_VERIFICATION' | 'CONFIRMED' | 'WAITING' | 'LIVE' | 'ENDED' | 'COMPLETED' | 'REJECTED' | 'CANCELLED';
   durationMinutes: number;
   ratePerMin: number;
   totalFee: number;
   createdAt: string;
+  scheduledDate?: string;
+  shift?: 'Morning' | 'Evening';
+  paymentUtr?: string;
+  paymentStatus?: 'PENDING_VERIFICATION' | 'VERIFIED' | 'REJECTED';
+  meetingLink?: string;
+  meetingLinkSent?: boolean;
+  platformFeePercent?: number;
+  platformFee?: number;
+  astrologerNetPayout?: number;
+  walletCredited?: boolean;
   startedAt?: string;
   endedAt?: string;
   remainingSeconds: number;
@@ -62,7 +73,7 @@ const DEFAULT_SESSIONS: ConsultationSession[] = [
     astrologerId: 'astro-test',
     astrologerName: 'Acharya Test Guru',
     astrologerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
-    status: 'LIVE',
+    status: 'ENDED',
     durationMinutes: 30,
     ratePerMin: 35,
     totalFee: 1050,
@@ -164,7 +175,41 @@ export async function GET(req: Request) {
       if (!session) {
         return NextResponse.json({ error: 'Session not found' }, { status: 404 });
       }
+
+      // If session is a confirmed or waiting booking, ensure it is ready to chat/call with valid timer
+      if (session.status !== 'COMPLETED' && session.paymentStatus !== 'REJECTED') {
+        let modified = false;
+        if (session.status === 'ENDED' || session.status === 'CONFIRMED' || session.status === 'WAITING' || session.status === 'PENDING_VERIFICATION') {
+          session.status = 'LIVE';
+          modified = true;
+        }
+        const minSeconds = (session.durationMinutes || 15) * 60;
+        if (!session.remainingSeconds || session.remainingSeconds <= 30) {
+          session.remainingSeconds = minSeconds;
+          modified = true;
+        }
+        if (modified) {
+          writePersistentDataAsync('consultation_sessions', sessions).catch(() => {});
+        }
+      }
+
       return NextResponse.json({ session });
+    }
+
+    // Auto-expire stale WAITING sessions older than 2 minutes
+    let dirty = false;
+    const now = Date.now();
+    sessions.forEach((s) => {
+      if (s.status === 'WAITING' && s.createdAt) {
+        const createdMs = new Date(s.createdAt).getTime();
+        if (!isNaN(createdMs) && now - createdMs > 2 * 60 * 1000) {
+          s.status = 'CANCELLED';
+          dirty = true;
+        }
+      }
+    });
+    if (dirty) {
+      writePersistentDataAsync('consultation_sessions', sessions).catch(() => {});
     }
 
     let filtered = sessions;
@@ -187,16 +232,19 @@ export async function POST(req: Request) {
     const { action } = body;
     const sessions = await getSessionsWithDefaults();
 
-    if (action === 'CREATE_SESSION') {
+    if (action === 'CREATE_SESSION' || action === 'CREATE_BOOKING') {
       const newId = body.id || `SESS-${Math.floor(100000 + Math.random() * 900000)}`;
+      const orderRef = body.orderRef || `CONS-${Math.floor(100000 + Math.random() * 900000)}`;
       const duration = Number(body.durationMinutes) || 15;
       const rate = Number(body.ratePerMin) || 35;
-      const totalFee = duration * rate;
+      const totalFee = Number(body.totalFee) || (duration * rate);
+      const defaultMeetingLink = `/consultation?sessionId=${newId}`;
 
       const newSession: ConsultationSession = {
         id: newId,
+        orderRef: orderRef,
         mode: body.mode || 'CHAT',
-        callType: body.callType || 'AUDIO',
+        callType: body.callType || (body.mode === 'CALL' ? 'VIDEO' : 'AUDIO'),
         clientName: body.clientName || 'Client User',
         clientPhone: body.clientPhone || '+910000000000',
         clientGender: body.clientGender || 'Male',
@@ -207,17 +255,25 @@ export async function POST(req: Request) {
         astrologerName: body.astrologerName || 'Acharya Astrologer',
         astrologerAvatar: body.astrologerAvatar || '',
         astrologerPhone: body.astrologerPhone || '',
-        status: 'WAITING',
+        status: body.status || 'PENDING_VERIFICATION',
         durationMinutes: duration,
         ratePerMin: rate,
         totalFee: totalFee,
         createdAt: new Date().toISOString(),
+        scheduledDate: body.scheduledDate || new Date().toISOString().split('T')[0],
+        shift: body.shift === 'Evening' ? 'Evening' : 'Morning',
+        paymentUtr: body.paymentUtr || body.utr || '',
+        paymentStatus: body.paymentStatus || 'PENDING_VERIFICATION',
+        meetingLink: body.meetingLink || defaultMeetingLink,
+        meetingLinkSent: false,
+        platformFeePercent: body.platformFeePercent ? Number(body.platformFeePercent) : undefined,
+        walletCredited: false,
         remainingSeconds: duration * 60,
         messages: [
           {
             id: `msg-${Date.now()}-1`,
             sender: 'SYSTEM',
-            text: `Consultation request sent to ${body.astrologerName}. Waiting for astrologer to accept...`,
+            text: `Consultation booked with ${body.astrologerName} for ${body.scheduledDate || 'selected date'} (${body.shift || 'Morning'} shift). Awaiting admin payment verification.`,
             timestamp: new Date().toISOString(),
           },
         ],
@@ -227,7 +283,219 @@ export async function POST(req: Request) {
       sessions.unshift(newSession);
       await writePersistentDataAsync('consultation_sessions', sessions);
 
+      // Also sync to kuthi_orders so admin order hubs see this order
+      try {
+        const kuthiOrders = await readPersistentDataAsync<any[]>('kuthi_orders', []);
+        const syncedOrder = {
+          id: 'k-' + newId,
+          orderRef: orderRef,
+          clientName: newSession.clientName,
+          sex: newSession.clientGender || 'Client',
+          mobile: newSession.clientPhone,
+          whatsappNo: newSession.clientPhone,
+          serviceType: `Live ${newSession.mode} (${newSession.shift} Shift)`,
+          amount: newSession.totalFee,
+          utr: newSession.paymentUtr || 'N/A',
+          submittedAt: 'Just Now',
+          status: 'PENDING',
+          paymentStatus: 'VERIFICATION_PENDING',
+          assignedAstrologerId: newSession.astrologerId,
+          assignedAstrologerName: newSession.astrologerName,
+        };
+        const exists = kuthiOrders.find((o) => o.orderRef === orderRef || o.id === syncedOrder.id);
+        if (!exists) {
+          kuthiOrders.unshift(syncedOrder);
+          await writePersistentDataAsync('kuthi_orders', kuthiOrders);
+        }
+      } catch (err) {
+        console.warn('Sync to kuthi_orders non-critical note:', err);
+      }
+
       return NextResponse.json({ success: true, session: newSession });
+    }
+
+    if (action === 'ADMIN_VERIFY_PAYMENT') {
+      const { sessionId, orderRef, meetingLink } = body;
+      const idx = sessions.findIndex((s) => s.id === sessionId || s.orderRef === orderRef);
+      if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      sessions[idx].paymentStatus = 'VERIFIED';
+      sessions[idx].status = 'CONFIRMED';
+      if (meetingLink) {
+        sessions[idx].meetingLink = meetingLink;
+      } else if (!sessions[idx].meetingLink) {
+        sessions[idx].meetingLink = `/consultation?sessionId=${sessions[idx].id}`;
+      }
+
+      sessions[idx].messages.push({
+        id: `msg-${Date.now()}`,
+        sender: 'SYSTEM',
+        text: `✅ Payment Verified by Admin! Order confirmed for ${sessions[idx].scheduledDate || 'scheduled date'} (${sessions[idx].shift || 'Morning'} shift). Meeting link is prepared.`,
+        timestamp: new Date().toISOString(),
+      });
+
+      await writePersistentDataAsync('consultation_sessions', sessions);
+
+      // Sync status to kuthi_orders if present
+      try {
+        const kuthiOrders = await readPersistentDataAsync<any[]>('kuthi_orders', []);
+        const kIdx = kuthiOrders.findIndex((o) => o.orderRef === sessions[idx].orderRef || o.id === 'k-' + sessions[idx].id);
+        if (kIdx !== -1) {
+          kuthiOrders[kIdx].paymentStatus = 'PAYMENT_RECEIVED';
+          kuthiOrders[kIdx].status = 'ASSIGNED';
+          await writePersistentDataAsync('kuthi_orders', kuthiOrders);
+        }
+      } catch (e) {}
+
+      return NextResponse.json({ success: true, session: sessions[idx] });
+    }
+
+    if (action === 'UPDATE_PAYMENT_STATUS' || action === 'ADMIN_UPDATE_PAYMENT_STATUS') {
+      const { sessionId, orderRef, paymentStatus } = body;
+      const idx = sessions.findIndex((s) => s.id === sessionId || s.orderRef === orderRef);
+      if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      const newStatus = paymentStatus || 'PENDING_VERIFICATION';
+      sessions[idx].paymentStatus = newStatus;
+
+      if (newStatus === 'VERIFIED') {
+        sessions[idx].status = 'CONFIRMED';
+        if (!sessions[idx].meetingLink) {
+          sessions[idx].meetingLink = `/consultation?sessionId=${sessions[idx].id}`;
+        }
+      } else if (newStatus === 'REJECTED') {
+        sessions[idx].status = 'REJECTED';
+      } else if (newStatus === 'PENDING_VERIFICATION') {
+        if (sessions[idx].status === 'CONFIRMED' || sessions[idx].status === 'REJECTED') {
+          sessions[idx].status = 'PENDING_VERIFICATION';
+        }
+      }
+
+      sessions[idx].messages.push({
+        id: `msg-${Date.now()}`,
+        sender: 'SYSTEM',
+        text:
+          newStatus === 'VERIFIED'
+            ? `✅ Payment status updated to VERIFIED by Admin! Consultation order confirmed.`
+            : newStatus === 'REJECTED'
+            ? `❌ Payment status updated to REJECTED by Admin. UTR verification failed.`
+            : `⏳ Payment status marked as PENDING VERIFICATION by Admin.`,
+        timestamp: new Date().toISOString(),
+      });
+
+      await writePersistentDataAsync('consultation_sessions', sessions);
+
+      // Bidirectional sync to kuthi_orders if linked
+      try {
+        const kuthiOrders = await readPersistentDataAsync<any[]>('kuthi_orders', []);
+        const kIdx = kuthiOrders.findIndex(
+          (o) => o.orderRef === sessions[idx].orderRef || o.id === 'k-' + sessions[idx].id
+        );
+        if (kIdx !== -1) {
+          kuthiOrders[kIdx].paymentStatus =
+            newStatus === 'VERIFIED'
+              ? 'PAYMENT_RECEIVED'
+              : newStatus === 'REJECTED'
+              ? 'PAYMENT_NOT_RECEIVED'
+              : 'VERIFICATION_PENDING';
+          if (newStatus === 'VERIFIED' && kuthiOrders[kIdx].status === 'PENDING') {
+            kuthiOrders[kIdx].status = 'ASSIGNED';
+          }
+          await writePersistentDataAsync('kuthi_orders', kuthiOrders);
+        }
+      } catch (e) {}
+
+      return NextResponse.json({ success: true, session: sessions[idx] });
+    }
+
+    if (action === 'ADMIN_SEND_LINK') {
+      const { sessionId, orderRef, meetingLink } = body;
+      const idx = sessions.findIndex((s) => s.id === sessionId || s.orderRef === orderRef);
+      if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      const linkToUse = meetingLink || sessions[idx].meetingLink || `/consultation?sessionId=${sessions[idx].id}`;
+      sessions[idx].meetingLink = linkToUse;
+      sessions[idx].meetingLinkSent = true;
+      sessions[idx].status = 'WAITING';
+
+      sessions[idx].messages.push({
+        id: `msg-${Date.now()}`,
+        sender: 'SYSTEM',
+        text: `🔗 Consultation Room Link dispatched: ${linkToUse}. Both client and astrologer may now enter the live session.`,
+        timestamp: new Date().toISOString(),
+      });
+
+      await writePersistentDataAsync('consultation_sessions', sessions);
+      return NextResponse.json({ success: true, session: sessions[idx], meetingLink: linkToUse });
+    }
+
+    if (action === 'ADMIN_COMPLETE_SESSION') {
+      const { sessionId, orderRef, platformFeePercent } = body;
+      const idx = sessions.findIndex((s) => s.id === sessionId || s.orderRef === orderRef);
+      if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      // Admin entered platform fee percentage (e.g. 15 or whatever admin inputs)
+      const feePct = Number(platformFeePercent) >= 0 ? Number(platformFeePercent) : 15;
+      const totalFee = Number(sessions[idx].totalFee) || 499;
+      const platformFee = Math.round((totalFee * feePct) / 100);
+      const netPayout = Math.max(0, totalFee - platformFee);
+
+      sessions[idx].status = 'COMPLETED';
+      sessions[idx].endedAt = new Date().toISOString();
+      sessions[idx].remainingSeconds = 0;
+      sessions[idx].platformFeePercent = feePct;
+      sessions[idx].platformFee = platformFee;
+      sessions[idx].astrologerNetPayout = netPayout;
+      sessions[idx].walletCredited = true;
+
+      sessions[idx].messages.push({
+        id: `msg-${Date.now()}`,
+        sender: 'SYSTEM',
+        text: `Consultation session marked COMPLETED by Admin. Platform fee (${feePct}%): ₹${platformFee}. Net payout credited to astrologer wallet: ₹${netPayout}.`,
+        timestamp: new Date().toISOString(),
+      });
+
+      await writePersistentDataAsync('consultation_sessions', sessions);
+
+      // Automatically credit net payout into Astrologer's Wallet in persistent store
+      try {
+        const astrologers = await readPersistentDataAsync<any[]>('astrologers', []);
+        const targetAstroId = sessions[idx].astrologerId;
+        const aIdx = astrologers.findIndex((a) => a.id === targetAstroId || a.name === sessions[idx].astrologerName);
+        if (aIdx !== -1) {
+          const currentPending = Number(astrologers[aIdx].pendingPayout) || 0;
+          const currentEarnings = Number(astrologers[aIdx].totalEarnings) || 0;
+          const currentCompleted = Number(astrologers[aIdx].completedCount) || 0;
+
+          astrologers[aIdx].pendingPayout = currentPending + netPayout;
+          astrologers[aIdx].totalEarnings = currentEarnings + netPayout;
+          astrologers[aIdx].completedCount = currentCompleted + 1;
+          await writePersistentDataAsync('astrologers', astrologers);
+        }
+      } catch (walletErr) {
+        console.warn('Wallet credit error:', walletErr);
+      }
+
+      // Sync completed status to kuthi_orders
+      try {
+        const kuthiOrders = await readPersistentDataAsync<any[]>('kuthi_orders', []);
+        const kIdx = kuthiOrders.findIndex((o) => o.orderRef === sessions[idx].orderRef || o.id === 'k-' + sessions[idx].id);
+        if (kIdx !== -1) {
+          kuthiOrders[kIdx].status = 'COMPLETED';
+          await writePersistentDataAsync('kuthi_orders', kuthiOrders);
+        }
+      } catch (e) {}
+
+      return NextResponse.json({
+        success: true,
+        session: sessions[idx],
+        payoutDetails: {
+          totalFee,
+          platformFeePercent: feePct,
+          platformFee,
+          netPayout,
+        },
+      });
     }
 
     if (action === 'ACCEPT_SESSION') {
@@ -322,6 +590,21 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, session: sessions[idx] });
     }
 
+    if (action === 'JOIN_ROOM') {
+      const { sessionId, participantRole } = body;
+      const idx = sessions.findIndex((s) => s.id === sessionId);
+      if (idx === -1) return NextResponse.json({ error: 'Session not found' }, { status: 404 });
+
+      if (sessions[idx].status !== 'COMPLETED' && sessions[idx].paymentStatus !== 'REJECTED') {
+        sessions[idx].status = 'LIVE';
+        if (!sessions[idx].remainingSeconds || sessions[idx].remainingSeconds <= 30) {
+          sessions[idx].remainingSeconds = (sessions[idx].durationMinutes || 15) * 60;
+        }
+        await writePersistentDataAsync('consultation_sessions', sessions);
+      }
+      return NextResponse.json({ success: true, session: sessions[idx] });
+    }
+
 
     if (action === 'UPDATE_TIMER') {
       const { sessionId, remainingSeconds } = body;
@@ -336,17 +619,6 @@ export async function POST(req: Request) {
       }
 
       sessions[idx].remainingSeconds = Math.max(0, remainingSeconds);
-      if (remainingSeconds <= 0 && sessions[idx].status === 'LIVE') {
-        sessions[idx].status = 'ENDED';
-        sessions[idx].endedAt = new Date().toISOString();
-        sessions[idx].messages.push({
-          id: `msg-${Date.now()}`,
-          sender: 'SYSTEM',
-          text: `Consultation time expired (${sessions[idx].durationMinutes} mins). Session completed.`,
-          timestamp: new Date().toISOString(),
-        });
-      }
-
       await writePersistentDataAsync('consultation_sessions', sessions);
       return NextResponse.json({ success: true, session: sessions[idx] });
     }

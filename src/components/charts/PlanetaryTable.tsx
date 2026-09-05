@@ -98,28 +98,28 @@ export function PlanetaryTable({ planets }: PlanetaryTableProps) {
   }
 
   return (
-    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 sm:p-5 space-y-3">
-      <h3 className="font-sans font-bold text-base sm:text-lg text-slate-900">
+    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3 sm:p-4 space-y-2.5">
+      <h3 className="font-sans font-bold text-sm sm:text-base text-slate-900">
         Planetary Positions
       </h3>
 
       <div className="w-full overflow-x-auto">
-        <table className="w-full text-left text-sm font-sans border-collapse">
+        <table className="w-full text-left text-xs font-sans border-collapse">
           <thead>
-            <tr className="border-b border-slate-200 text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              <th className="py-3 px-3.5">PLANET</th>
-              <th className="py-3 px-3.5">SIGN</th>
-              <th className="py-3 px-3.5">SIGN LORD</th>
-              <th className="py-3 px-3.5">NAKSHATRA</th>
-              <th className="py-3 px-3.5">NAKSH LORD</th>
-              <th className="py-3 px-3.5">DEGREE</th>
-              <th className="py-3 px-3.5">RETRO</th>
-              <th className="py-3 px-3.5">HOUSE</th>
-              <th className="py-3 px-3.5">STATE</th>
-              <th className="py-3 px-3.5">STATUS</th>
+            <tr className="border-b border-slate-200 text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              <th className="py-2 px-2">PLANET</th>
+              <th className="py-2 px-2">SIGN</th>
+              <th className="py-2 px-2">SIGN LORD</th>
+              <th className="py-2 px-2">NAKSHATRA</th>
+              <th className="py-2 px-2">NAKSH LORD</th>
+              <th className="py-2 px-2">DEGREE</th>
+              <th className="py-2 px-2">RETRO</th>
+              <th className="py-2 px-2">HOUSE</th>
+              <th className="py-2 px-2">STATE</th>
+              <th className="py-2 px-2">STATUS</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold text-[11px] sm:text-xs">
             {allRows.map((planet, idx) => {
               const signLord = planet.signLord || SIGN_LORDS[planet.sign] || '—';
               const nakshLord = planet.nakshatraLord || NAKSHATRA_LORDS[planet.nakshatra] || '—';
@@ -129,18 +129,18 @@ export function PlanetaryTable({ planets }: PlanetaryTableProps) {
 
               return (
                 <tr key={idx} className="hover:bg-amber-50/50 transition-colors">
-                  <td className="py-3 px-3.5 font-bold text-slate-900 uppercase text-sm sm:text-base">
+                  <td className="py-2 px-2 font-bold text-slate-900 uppercase text-xs sm:text-sm">
                     {planet.name}
                   </td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm">{planet.sign}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm">{signLord}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm">{planet.nakshatra}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm">{nakshLord}</td>
-                  <td className="py-3 px-3.5 font-mono text-slate-900 text-sm">{planet.degree}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm">{isRetro}</td>
-                  <td className="py-3 px-3.5 font-mono text-slate-900 text-sm">{planet.house}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm">{state}</td>
-                  <td className="py-3 px-3.5 font-bold text-slate-900 uppercase tracking-tight text-xs sm:text-sm">
+                  <td className="py-2 px-2 text-slate-800">{planet.sign}</td>
+                  <td className="py-2 px-2 text-slate-800">{signLord}</td>
+                  <td className="py-2 px-2 text-slate-800">{planet.nakshatra}</td>
+                  <td className="py-2 px-2 text-slate-800">{nakshLord}</td>
+                  <td className="py-2 px-2 font-mono text-slate-900">{planet.degree}</td>
+                  <td className="py-2 px-2 text-slate-800">{isRetro}</td>
+                  <td className="py-2 px-2 font-mono text-slate-900 text-center">{planet.house}</td>
+                  <td className="py-2 px-2 text-slate-800">{state}</td>
+                  <td className="py-2 px-2 font-bold text-slate-900 uppercase tracking-tight text-[10px] sm:text-xs">
                     {status}
                   </td>
                 </tr>

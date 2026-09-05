@@ -15,6 +15,7 @@ const ICON_MAP: Record<string, any> = {
 
 export default function FeaturedServices() {
   const [services, setServices] = useState<any[]>([]);
+  const [promoScheme, setPromoScheme] = useState<any | null>(null);
 
   useEffect(() => {
     fetch('/api/services')
@@ -25,6 +26,16 @@ export default function FeaturedServices() {
         }
       })
       .catch((err) => console.error('Error loading services:', err));
+
+    fetch('/api/services/coupons?public=true')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.coupons && Array.isArray(data.coupons)) {
+          const bannerOffer = data.coupons.find((c: any) => c.active && c.showBanner);
+          if (bannerOffer) setPromoScheme(bannerOffer);
+        }
+      })
+      .catch((err) => console.error('Error loading promo coupons:', err));
   }, []);
 
   return (
@@ -42,6 +53,41 @@ export default function FeaturedServices() {
             Choose from comprehensive written reports or 1-on-1 live video consultations tailored to your birth chart.
           </p>
         </div>
+
+        {/* Dynamic Promotional Scheme Banner */}
+        {promoScheme && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="mb-8 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b] text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 border border-amber-400/40 relative overflow-hidden"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0 text-2xl shadow-inner">
+                🎉
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-0.5 rounded-full bg-white text-[#b45309] font-black text-[10px] uppercase tracking-wider shadow-xs">
+                    {promoScheme.badgeText || 'Special Offer'}
+                  </span>
+                  <span className="font-serif font-bold text-base sm:text-lg text-white">
+                    {promoScheme.title}
+                  </span>
+                </div>
+                <p className="text-xs text-amber-100 mt-0.5">
+                  {promoScheme.description} Use code <strong className="font-mono text-white bg-black/20 px-1.5 py-0.5 rounded">{promoScheme.code}</strong>
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/manipuri_kuthi_yengba"
+              className="px-5 py-2.5 rounded-xl bg-white text-[#b45309] font-extrabold text-xs shadow-md hover:bg-amber-50 hover:shadow-lg transition-all shrink-0 flex items-center gap-1.5 cursor-pointer"
+            >
+              <span>Order Now & Save</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, idx) => {

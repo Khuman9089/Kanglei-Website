@@ -4,6 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { User, Mail, Phone, MapPin, Lock, Sparkles, CheckCircle2, ArrowRight, ShieldCheck, RefreshCw, KeyRound, MessageSquare, X } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { getFirebaseAuth, RecaptchaVerifier, signInWithPhoneNumber, ConfirmationResult } from '@/lib/firebase';
 
 function AuthContent() {
   const searchParams = useSearchParams();
@@ -55,13 +56,16 @@ function AuthContent() {
   const [loginIdentifier, setLoginIdentifier] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
 
-  // OTP State
+  // OTP & Firebase State
   const [otpInput, setOtpInput] = useState('');
   const [demoOtp, setDemoOtp] = useState('');
-  const [resendTimer, setResendTimer] = useState(30);
+  const [confirmationResult, setConfirmationResult] = useState<ConfirmationResult | null>(null);
+  const [firebaseSent, setFirebaseSent] = useState(false);
+  const [resendTimer, setResendTimer] = useState(60);
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
+
 
   useEffect(() => {
     let timerInterval: any;
@@ -198,12 +202,175 @@ function AuthContent() {
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!name.trim() || !email.trim() || !phone.trim() || !password.trim()) {
+      setErrorMsg('Please fill in all required fields.');
+      return;
+    }
+
+    const rawPhoneDigits = phone.replace(/\D/g, '');
+    if (rawPhoneDigits.length < 10) {
+      setErrorMsg('Please enter a valid 10-digit mobile number.');
+      return;
+    }
+
+    const rawWhatsappDigits = (useDifferentWhatsapp ? whatsappNo : phone).replace(/\D/g, '');
+    if (useDifferentWhatsapp && rawWhatsappDigits.length < 10) {
+      setErrorMsg('Please enter a valid 10-digit WhatsApp mobile number.');
+      return;
+    }
+
+    const fullPhone = `${phoneIsd} ${rawPhoneDigits}`;
+    const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${rawWhatsappDigits}` : fullPhone;
+    const targetE164 = useDifferentWhatsapp ? `${whatsappIsd}${rawWhatsappDigits}` : `${phoneIsd}${rawPhoneDigits}`;
+
     setLoading(true);
 
-    const fullPhone = `${phoneIsd} ${phone.replace(/\D/g, '')}`;
-    const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${whatsappNo.replace(/\D/g, '')}` : fullPhone;
+    try {
+      // 1. Check for duplicate mobile number and email in the database
+      const dupRes = await fetch('/api/auth/check-duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: email.trim(),
+          phone: fullPhone,
+          whatsappNo: fullWhatsapp,
+        }),
+      });
+
+      const dupData = await dupRes.json();
+      if (!dupRes.ok) {
+        setLoading(false);
+        setErrorMsg(dupData.error || 'An account with this email or mobile number already exists. Please log in.');
+        return;
+      }
+
+      // 2. Dispatch real SMS OTP via Google Firebase
+      const auth = getFirebaseAuth();
+      if (!auth) {
+        throw new Error('Firebase Authentication is not available.');
+      }
+
+      // Clean up previous reCAPTCHA instance if any
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch (clearErr) {}
+      }
+
+      const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+        callback: () => {
+          // reCAPTCHA solved
+        },
+        'expired-callback': () => {
+          setErrorMsg('reCAPTCHA expired. Please click Send OTP again.');
+        },
+      });
+      (window as any).recaptchaVerifier = appVerifier;
+
+      const confirmation = await signInWithPhoneNumber(auth, targetE164, appVerifier);
+      setConfirmationResult(confirmation);
+      setFirebaseSent(true);
+      setResendTimer(60);
+      setStep('otp');
+      setSuccessMsg(`Google Firebase SMS verification code sent to ${targetE164}`);
+    } catch (fbErr: any) {
+      console.error('Firebase SMS Auth Error:', fbErr);
+      let friendlyMsg = 'Failed to send SMS OTP via Google Firebase.';
+      if (fbErr.code === 'auth/invalid-phone-number') {
+        friendlyMsg = `Invalid phone number format (${targetE164}). Please verify your ISD code and mobile number.`;
+      } else if (fbErr.code === 'auth/quota-exceeded') {
+        friendlyMsg = 'Firebase SMS quota exceeded for today. Please contact support or try again later.';
+      } else if (fbErr.code === 'auth/too-many-requests') {
+        friendlyMsg = 'Too many requests. Please wait a moment before trying again.';
+      } else if (fbErr.code === 'auth/unauthorized-domain') {
+        friendlyMsg = 'Firebase Domain Authorization: please ensure this domain is added in Firebase Console Auth Settings.';
+      } else if (fbErr.message) {
+        friendlyMsg = fbErr.message;
+      }
+      setErrorMsg(friendlyMsg);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    setErrorMsg('');
+    setSuccessMsg('');
+    setLoading(true);
+
+    const rawPhoneDigits = phone.replace(/\D/g, '');
+    const rawWhatsappDigits = (useDifferentWhatsapp ? whatsappNo : phone).replace(/\D/g, '');
+    const targetE164 = useDifferentWhatsapp ? `${whatsappIsd}${rawWhatsappDigits}` : `${phoneIsd}${rawPhoneDigits}`;
+
+    try {
+      const auth = getFirebaseAuth();
+      if (!auth) throw new Error('Firebase Authentication is not available.');
+
+      if ((window as any).recaptchaVerifier) {
+        try {
+          (window as any).recaptchaVerifier.clear();
+        } catch (e) {}
+      }
+
+      const appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+        size: 'invisible',
+      });
+      (window as any).recaptchaVerifier = appVerifier;
+
+      const confirmation = await signInWithPhoneNumber(auth, targetE164, appVerifier);
+      setConfirmationResult(confirmation);
+      setResendTimer(60);
+      setSuccessMsg(`New Google Firebase SMS OTP sent to ${targetE164}`);
+    } catch (err: any) {
+      console.error('Resend OTP error:', err);
+      setErrorMsg(err.message || 'Failed to resend SMS OTP via Firebase');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    if (!otpInput || otpInput.trim().length !== 6) {
+      setErrorMsg('Please enter a valid 6-digit OTP code.');
+      return;
+    }
+
+    setLoading(true);
+
+    const rawPhoneDigits = phone.replace(/\D/g, '');
+    const rawWhatsappDigits = (useDifferentWhatsapp ? whatsappNo : phone).replace(/\D/g, '');
+    const fullPhone = `${phoneIsd} ${rawPhoneDigits}`;
+    const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${rawWhatsappDigits}` : fullPhone;
     const finalDeliveryAddress = sameDeliveryAddress ? address : (deliveryAddress || address);
 
+    let firebaseUid: string | null = null;
+
+    // 1. Confirm OTP with Google Firebase
+    if (confirmationResult) {
+      try {
+        const userCredential = await confirmationResult.confirm(otpInput.trim());
+        firebaseUid = userCredential.user?.uid || null;
+      } catch (fbErr: any) {
+        setLoading(false);
+        if (fbErr.code === 'auth/invalid-verification-code') {
+          setErrorMsg('Invalid verification code. Please enter the 6-digit code received via SMS.');
+        } else if (fbErr.code === 'auth/code-expired') {
+          setErrorMsg('The verification code has expired. Please click "Resend Code".');
+        } else {
+          setErrorMsg(fbErr.message || 'OTP verification failed.');
+        }
+        return;
+      }
+    }
+
+    // 2. Persist newly verified user directly into the database
     try {
       const res = await fetch('/api/auth/signup', {
         method: 'POST',
@@ -217,6 +384,8 @@ function AuthContent() {
           deliveryAddress: finalDeliveryAddress,
           sex,
           password,
+          firebaseUid,
+          isVerified: true,
         }),
       });
 
@@ -224,101 +393,29 @@ function AuthContent() {
       setLoading(false);
 
       if (!res.ok) {
-        setErrorMsg(data.error || 'Failed to send OTP');
-        return;
-      }
-
-      setDemoOtp(data.demoOtpCode);
-      setResendTimer(30);
-      setStep('otp');
-    } catch (err: any) {
-      setLoading(false);
-      setErrorMsg(err.message || 'Something went wrong');
-    }
-  };
-
-  const handleResendOtp = async () => {
-    setErrorMsg('');
-    setSuccessMsg('');
-    setLoading(true);
-
-    const fullPhone = `${phoneIsd} ${phone.replace(/\D/g, '')}`;
-    const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${whatsappNo.replace(/\D/g, '')}` : fullPhone;
-
-    try {
-      const res = await fetch('/api/auth/resend-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          phone: fullPhone,
-          whatsappNo: fullWhatsapp,
-        }),
-      });
-
-      const data = await res.json();
-      setLoading(false);
-
-      if (!res.ok) {
-        setErrorMsg(data.error || 'Failed to resend OTP');
-        return;
-      }
-
-      setDemoOtp(data.demoOtpCode);
-      setResendTimer(30);
-      setSuccessMsg(`New 6-digit OTP code sent to Mobile No (${fullWhatsapp || fullPhone})`);
-    } catch (err: any) {
-      setLoading(false);
-      setErrorMsg(err.message || 'Failed to resend OTP');
-    }
-  };
-
-  const handleVerifyOtp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg('');
-    setLoading(true);
-
-    try {
-      const fullPhone = `${phoneIsd} ${phone.replace(/\D/g, '')}`;
-      const fullWhatsapp = useDifferentWhatsapp ? `${whatsappIsd} ${whatsappNo.replace(/\D/g, '')}` : fullPhone;
-      const finalDeliveryAddress = sameDeliveryAddress ? address : (deliveryAddress || address);
-
-      const res = await fetch('/api/auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email,
-          phone: fullPhone,
-          whatsappNo: fullWhatsapp,
-          otpCode: otpInput,
-        }),
-      });
-
-      const data = await res.json();
-      setLoading(false);
-
-      if (!res.ok) {
-        setErrorMsg(data.error || 'Invalid OTP code');
+        setErrorMsg(data.error || 'Failed to register account in database');
         return;
       }
 
       const sessionUser = {
-        name: name || 'Nganba Meitei',
-        email: email || 'abc@example.com',
-        phone: fullPhone,
-        whatsappNo: fullWhatsapp,
-        address: address || 'Uripok, Imphal West, Manipur, 795001',
-        deliveryAddress: finalDeliveryAddress,
-        sex: sex || 'Male',
+        id: data.user?.id || `client-${Date.now()}`,
+        name: data.user?.name || name,
+        email: data.user?.email || email,
+        phone: data.user?.phone || fullPhone,
+        whatsappNo: data.user?.whatsappNo || fullWhatsapp,
+        address: data.user?.address || address,
+        deliveryAddress: data.user?.deliveryAddress || finalDeliveryAddress,
+        sex: data.user?.sex || sex,
         role: 'CLIENT',
         memberSince: 'Today',
+        firebaseUid: firebaseUid,
       };
 
       if (typeof window !== 'undefined') {
         localStorage.removeItem('kanglei_logged_out');
         localStorage.setItem('kanglei_user', JSON.stringify(sessionUser));
 
-        // Save into local registered users array for persistent client login
+        // Save into local registered users array for persistent client login resilience
         const existingUsers = JSON.parse(localStorage.getItem('kanglei_registered_users') || '[]');
         const updatedUsers = [...existingUsers.filter((u: any) => u.email !== sessionUser.email), sessionUser];
         localStorage.setItem('kanglei_registered_users', JSON.stringify(updatedUsers));
@@ -326,7 +423,7 @@ function AuthContent() {
         window.dispatchEvent(new Event('user-login-change'));
       }
 
-      setSuccessMsg('✅ Mobile Number verified & account created successfully! Redirecting to Client Dashboard...');
+      setSuccessMsg('✅ Mobile Number verified via Google Firebase! Account created in database. Redirecting...');
       setTimeout(() => {
         window.location.href = '/dashboard/client';
       }, 1200);
@@ -335,6 +432,7 @@ function AuthContent() {
       setErrorMsg(err.message || 'Verification failed');
     }
   };
+
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -666,17 +764,20 @@ function AuthContent() {
                     )}
                   </div>
 
+                  {/* reCAPTCHA Container for Firebase Phone Auth */}
+                  <div id="recaptcha-container" className="flex justify-center my-2"></div>
+
                   {/* Submit Button */}
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
                   >
                     {loading ? (
                       <RefreshCw className="w-4 h-4 animate-spin" />
                     ) : (
                       <>
-                        <span>Send OTP Verification Code</span>
+                        <span>Send Firebase SMS OTP</span>
                         <ArrowRight className="w-4 h-4" />
                       </>
                     )}
@@ -695,44 +796,23 @@ function AuthContent() {
               <div className="bg-white p-6 sm:p-10 rounded-3xl border border-[#f3e8d2] shadow-xl text-center relative overflow-hidden">
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
 
-                <div className="w-14 h-14 rounded-2xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706] mx-auto mb-4 shadow-xs">
+                <div className="w-14 h-14 rounded-2xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706] mx-auto mb-3 shadow-xs">
                   <MessageSquare className="w-7 h-7" />
                 </div>
 
-                <h3 className="font-serif font-bold text-2xl text-[#0f172a] mb-1">Mobile No. OTP Verification</h3>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-800 text-[11px] font-bold uppercase tracking-wider mb-2">
+                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
+                  Google Firebase SMS Auth
+                </div>
+
+                <h3 className="font-serif font-bold text-2xl text-[#0f172a] mb-1">Enter Verification Code</h3>
                 <p className="text-xs text-gray-600 mb-4 max-w-sm mx-auto">
-                  We have sent a 6-digit verification code to your Mobile / WhatsApp:
+                  A 6-digit SMS verification code has been dispatched via Firebase to:
                   <span className="font-extrabold text-[#b45309] text-sm block mt-1">
                     {!useDifferentWhatsapp ? `${phoneIsd} ${phone}` : `${whatsappIsd} ${whatsappNo}`}
                   </span>
                 </p>
 
-                {/* Real SMS / WhatsApp OTP Notification & Direct Link */}
-                {demoOtp && (
-                  <div className="mb-6 space-y-3">
-                    <div className="inline-flex flex-col sm:flex-row items-center gap-2 bg-[#fef3c7] px-4 py-2.5 rounded-2xl border border-[#fde68a] text-xs font-bold text-[#b45309] shadow-xs">
-                      <div className="flex items-center gap-1.5">
-                        <Sparkles className="w-4 h-4 text-[#d97706]" />
-                        <span>SMS / WhatsApp Verification Code:</span>
-                      </div>
-                      <strong className="text-base text-[#0f172a] font-mono tracking-widest bg-white px-3 py-0.5 rounded-lg border border-[#fde68a]">
-                        {demoOtp}
-                      </strong>
-                    </div>
-
-                    <div className="flex items-center justify-center gap-2">
-                      <a
-                        href={`https://wa.me/${((!useDifferentWhatsapp ? `${phoneIsd}${phone}` : `${whatsappIsd}${whatsappNo}`).replace(/\D/g, '').length === 10 ? '91' : '') + (!useDifferentWhatsapp ? `${phoneIsd}${phone}` : `${whatsappIsd}${whatsappNo}`).replace(/\D/g, '')}?text=${encodeURIComponent(`Your KuthiYengpham verification code is: ${demoOtp}`)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-xs shadow-md transition-colors cursor-pointer"
-                      >
-                        <MessageSquare className="w-4 h-4" />
-                        <span>Open Verification Code on WhatsApp →</span>
-                      </a>
-                    </div>
-                  </div>
-                )}
 
                 <form onSubmit={handleVerifyOtp} className="max-w-xs mx-auto space-y-5 font-sans">
                   <div>

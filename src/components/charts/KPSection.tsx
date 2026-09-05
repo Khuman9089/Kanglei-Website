@@ -179,36 +179,36 @@ export function KPSection({ chartData, isLight = true }: KPSectionProps) {
       </div>
 
       {/* ROW 2: FULL-WIDTH CARD: KP PLANETS */}
-      <div className={`p-4 sm:p-5 rounded-2xl border shadow-xs space-y-3 ${
+      <div className={`p-3 sm:p-4 rounded-2xl border shadow-xs space-y-2.5 ${
         isLight ? 'bg-white border-slate-200/90' : 'bg-[#1c2541] border-[#3a506b]'
       }`}>
-        <h3 className="font-sans font-bold text-base sm:text-lg text-slate-900 dark:text-white border-b border-slate-100 pb-2">
+        <h3 className="font-sans font-bold text-sm sm:text-base text-slate-900 dark:text-white border-b border-slate-100 pb-1.5">
           KP Planets
         </h3>
 
         <div className="w-full overflow-x-auto">
-          <table className="w-full text-left text-sm font-sans border-collapse">
+          <table className="w-full text-left text-xs font-sans border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-3.5">PLANET</th>
-                <th className="py-3 px-3.5">CUSP</th>
-                <th className="py-3 px-3.5">SIGN</th>
-                <th className="py-3 px-3.5">SIGN LORD</th>
-                <th className="py-3 px-3.5">STAR</th>
-                <th className="py-3 px-3.5">STAR LORD</th>
-                <th className="py-3 px-3.5">SUB LORD</th>
+              <tr className="border-b border-slate-200 text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+                <th className="py-2 px-2.5">PLANET</th>
+                <th className="py-2 px-2.5">CUSP</th>
+                <th className="py-2 px-2.5">SIGN</th>
+                <th className="py-2 px-2.5">SIGN LORD</th>
+                <th className="py-2 px-2.5">STAR</th>
+                <th className="py-2 px-2.5">STAR LORD</th>
+                <th className="py-2 px-2.5">SUB LORD</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+            <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold text-[11px] sm:text-xs">
               {DEFAULT_KP_PLANETS.map((row, idx) => (
                 <tr key={idx} className="hover:bg-amber-50/50 transition-colors">
-                  <td className="py-3 px-3.5 font-bold text-slate-900 text-sm sm:text-base">{row.planet}</td>
-                  <td className="py-3 px-3.5 font-mono text-slate-800 text-sm sm:text-base">{row.cusp}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm sm:text-base">{row.sign}</td>
-                  <td className="py-3 px-3.5 text-slate-800 font-bold text-sm sm:text-base">{row.signLord}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm sm:text-base">{row.star}</td>
-                  <td className="py-3 px-3.5 text-slate-800 font-bold text-sm sm:text-base">{row.starLord}</td>
-                  <td className="py-3 px-3.5 text-slate-800 font-bold text-sm sm:text-base">{row.subLord}</td>
+                  <td className="py-1.5 px-2.5 font-bold text-slate-900 text-xs sm:text-sm">{row.planet}</td>
+                  <td className="py-1.5 px-2.5 font-mono text-slate-800">{row.cusp}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800">{row.sign}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800 font-bold">{row.signLord}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800">{row.star}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800 font-bold">{row.starLord}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800 font-bold">{row.subLord}</td>
                 </tr>
               ))}
             </tbody>
@@ -217,38 +217,38 @@ export function KPSection({ chartData, isLight = true }: KPSectionProps) {
       </div>
 
       {/* ROW 3: FULL-WIDTH CARD: KP HOUSE CUSPS */}
-      <div className={`p-4 sm:p-5 rounded-2xl border shadow-xs space-y-3 ${
+      <div className={`p-3 sm:p-4 rounded-2xl border shadow-xs space-y-2.5 ${
         isLight ? 'bg-white border-slate-200/90' : 'bg-[#1c2541] border-[#3a506b]'
       }`}>
-        <h3 className="font-sans font-bold text-base sm:text-lg text-slate-900 dark:text-white border-b border-slate-100 pb-2">
+        <h3 className="font-sans font-bold text-sm sm:text-base text-slate-900 dark:text-white border-b border-slate-100 pb-1.5">
           KP House Cusps
         </h3>
 
         <div className="w-full overflow-x-auto">
-          <table className="w-full text-left text-sm font-sans border-collapse">
+          <table className="w-full text-left text-xs font-sans border-collapse">
             <thead>
-              <tr className="border-b border-slate-200 text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-3.5">CUSP</th>
-                <th className="py-3 px-3.5">DEGREE</th>
-                <th className="py-3 px-3.5">SIGN</th>
-                <th className="py-3 px-3.5">SIGN LORD</th>
-                <th className="py-3 px-3.5">STAR</th>
-                <th className="py-3 px-3.5">STAR LORD</th>
-                <th className="py-3 px-3.5">SUB LORD</th>
-                <th className="py-3 px-3.5">SUB-SUB LORD</th>
+              <tr className="border-b border-slate-200 text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+                <th className="py-2 px-2.5">CUSP</th>
+                <th className="py-2 px-2.5">DEGREE</th>
+                <th className="py-2 px-2.5">SIGN</th>
+                <th className="py-2 px-2.5">SIGN LORD</th>
+                <th className="py-2 px-2.5">STAR</th>
+                <th className="py-2 px-2.5">STAR LORD</th>
+                <th className="py-2 px-2.5">SUB LORD</th>
+                <th className="py-2 px-2.5">SUB-SUB LORD</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+            <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold text-[11px] sm:text-xs">
               {DEFAULT_KP_CUSPS.map((row, idx) => (
                 <tr key={idx} className="hover:bg-amber-50/50 transition-colors">
-                  <td className="py-3 px-3.5 font-bold text-slate-900 font-mono text-sm sm:text-base">Cusp {row.cusp}</td>
-                  <td className="py-3 px-3.5 font-mono text-slate-800 text-sm sm:text-base">{row.degree}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm sm:text-base">{row.sign}</td>
-                  <td className="py-3 px-3.5 text-slate-800 font-bold text-sm sm:text-base">{row.signLord}</td>
-                  <td className="py-3 px-3.5 text-slate-800 text-sm sm:text-base">{row.star}</td>
-                  <td className="py-3 px-3.5 text-slate-800 font-bold text-sm sm:text-base">{row.starLord}</td>
-                  <td className="py-3 px-3.5 text-slate-800 font-bold text-sm sm:text-base">{row.subLord}</td>
-                  <td className="py-3 px-3.5 text-slate-800 font-bold text-sm sm:text-base">{row.subSubLord}</td>
+                  <td className="py-1.5 px-2.5 font-bold text-slate-900 font-mono text-xs sm:text-sm">Cusp {row.cusp}</td>
+                  <td className="py-1.5 px-2.5 font-mono text-slate-800">{row.degree}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800">{row.sign}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800 font-bold">{row.signLord}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800">{row.star}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800 font-bold">{row.starLord}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800 font-bold">{row.subLord}</td>
+                  <td className="py-1.5 px-2.5 text-slate-800 font-bold">{row.subSubLord}</td>
                 </tr>
               ))}
             </tbody>

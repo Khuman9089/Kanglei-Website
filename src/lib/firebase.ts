@@ -14,5 +14,11 @@ const firebaseConfig = {
 const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
 const auth = typeof window !== 'undefined' ? getAuth(app) : null;
 
+export function getFirebaseAuth() {
+  const currentApp = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+  return getAuth(currentApp);
+}
+
 export { app, auth, RecaptchaVerifier, signInWithPhoneNumber };
 export type { ConfirmationResult };
+

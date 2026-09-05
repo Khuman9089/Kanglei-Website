@@ -5,6 +5,9 @@ import { supabase } from '@/lib/supabase';
 // Local disk data folder path
 const DATA_DIR = path.join(process.cwd(), 'data');
 
+// In-memory runtime cache for high-speed zero-loss reads across SSR and API requests
+const memoryCache = new Map<string, any>();
+
 function ensureDataDirExists() {
   try {
     if (!fs.existsSync(DATA_DIR)) {
@@ -17,9 +20,10 @@ function ensureDataDirExists() {
 
 /**
  * Read persistent JSON data for a given key.
- * 1. Checks Supabase cloud table `kv_store` first if connected.
- * 2. Falls back to local disk `data/${key}.json`.
- * 3. Falls back to defaultValue.
+ * 1. Checks Supabase cloud table `kv_store` first for multi-instance / deploy persistence.
+ * 2. Checks in-memory server cache.
+ * 3. Checks local disk `data/${key}.json`.
+ * 4. Falls back to defaultValue only if no previous configuration exists.
  */
 export async function readPersistentDataAsync<T>(key: string, defaultValue: T): Promise<T> {
   // 1. Try fetching from Supabase cloud database
@@ -31,22 +35,49 @@ export async function readPersistentDataAsync<T>(key: string, defaultValue: T): 
       .maybeSingle();
 
     if (!error && data && data.value !== undefined && data.value !== null) {
+      memoryCache.set(key, data.value);
       // Sync back to local file system cache
       writePersistentDataLocal(key, data.value);
       return data.value as T;
     }
   } catch (cloudErr) {
-    // Silent fallback to local disk
+    // Silent fallback
   }
 
-  // 2. Fallback to local disk file system
-  return readPersistentDataLocal(key, defaultValue);
+  // 2. Check in-memory runtime cache
+  if (memoryCache.has(key)) {
+    return memoryCache.get(key) as T;
+  }
+
+  // 3. Fallback to local disk file system
+  ensureDataDirExists();
+  const filePath = path.join(DATA_DIR, `${key}.json`);
+  try {
+    if (fs.existsSync(filePath)) {
+      const content = fs.readFileSync(filePath, 'utf8');
+      if (content.trim()) {
+        const parsed = JSON.parse(content) as T;
+        memoryCache.set(key, parsed);
+        return parsed;
+      }
+    }
+    // Only write default if file didn't exist at all
+    fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2), 'utf8');
+    memoryCache.set(key, defaultValue);
+    return defaultValue;
+  } catch (err) {
+    console.error(`Error reading persistent key "${key}":`, err);
+    return defaultValue;
+  }
 }
 
 /**
- * Synchronous local disk reader
+ * Synchronous local disk reader with memory cache
  */
 export function readPersistentData<T>(key: string, defaultValue: T): T {
+  if (memoryCache.has(key)) {
+    return memoryCache.get(key) as T;
+  }
   return readPersistentDataLocal(key, defaultValue);
 }
 
@@ -57,10 +88,13 @@ function readPersistentDataLocal<T>(key: string, defaultValue: T): T {
     if (fs.existsSync(filePath)) {
       const content = fs.readFileSync(filePath, 'utf8');
       if (content.trim()) {
-        return JSON.parse(content) as T;
+        const parsed = JSON.parse(content) as T;
+        memoryCache.set(key, parsed);
+        return parsed;
       }
     }
     fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2), 'utf8');
+    memoryCache.set(key, defaultValue);
     return defaultValue;
   } catch (err) {
     console.error(`Error reading persistent key "${key}":`, err);
@@ -70,13 +104,16 @@ function readPersistentDataLocal<T>(key: string, defaultValue: T): T {
 
 /**
  * Write persistent JSON data for a given key.
- * Writes to both local disk and Supabase cloud database (`kv_store`).
+ * Writes to memory cache, local disk, and Supabase cloud database (`kv_store`).
  */
 export async function writePersistentDataAsync<T>(key: string, data: T): Promise<boolean> {
-  // 1. Write to local disk file
+  // 1. Update in-memory runtime cache
+  memoryCache.set(key, data);
+
+  // 2. Write to local disk file
   writePersistentDataLocal(key, data);
 
-  // 2. Write to Supabase cloud database for zero-loss deployment resilience
+  // 3. Write to Supabase cloud database for zero-loss deployment resilience
   try {
     const { error } = await supabase
       .from('kv_store')
@@ -93,6 +130,7 @@ export async function writePersistentDataAsync<T>(key: string, data: T): Promise
 }
 
 export function writePersistentData<T>(key: string, data: T): boolean {
+  memoryCache.set(key, data);
   writePersistentDataLocal(key, data);
 
   // Fire-and-forget background cloud sync to Supabase

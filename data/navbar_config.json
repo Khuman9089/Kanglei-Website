@@ -1,122 +1,122 @@
 {
+  "cbs": {
+    "kuthiIbaBtnHref": "/manipuri_kuthi",
+    "kuthiIbaBtnText": "Kuthi Iba",
+    "showKuthiIbaBtn": true,
+    "numitLeppaBtnHref": "/numit_leppa_yengba",
+    "numitLeppaBtnText": "Numit Leppa",
+    "showNumitLeppaBtn": true,
+    "kuthiYengbaBtnHref": "/manipuri_kuthi_yengba",
+    "kuthiYengbaBtnText": "Kuthi Yengba",
+    "showKuthiYengbaBtn": true
+  },
   "items": [
     {
       "id": "nav-1",
-      "title": "Horoscopes",
       "href": "/horoscope",
       "type": "link",
-      "active": true,
-      "order": 1
+      "order": 1,
+      "title": "Horoscopes",
+      "active": true
     },
     {
       "id": "nav-2",
-      "title": "Astrologers",
       "href": "/astrologers",
       "type": "link",
-      "active": true,
-      "order": 2
+      "order": 2,
+      "title": "Astrologers",
+      "active": true
     },
     {
       "id": "nav-3",
-      "title": "Services",
       "href": "/services",
       "type": "dropdown",
-      "active": true,
       "order": 3,
+      "title": "Services",
+      "active": true,
       "subItems": [
         {
           "id": "sub-s1",
-          "title": "Kuthi Yengba (Horoscope Reading)",
           "href": "/manipuri_kuthi_yengba",
-          "description": "In-depth Dasha forecast & Vedic remedies",
           "badge": "POPULAR",
-          "active": true
+          "title": "Kuthi Yengba (Horoscope Reading)",
+          "active": true,
+          "description": "In-depth Dasha forecast & Vedic remedies"
         },
         {
           "id": "sub-s2",
-          "title": "Kuthi Iba (Handwritten Creation)",
           "href": "/manipuri_kuthi",
-          "description": "Sacred parchment hand-written birth scroll",
           "badge": "TRADITIONAL",
-          "active": true
+          "title": "Kuthi Iba (Handwritten Creation)",
+          "active": true,
+          "description": "Sacred parchment hand-written birth scroll"
         },
         {
           "id": "sub-s3",
-          "title": "Numit Leppa Yengba",
           "href": "/numit_leppa_yengba",
-          "description": "Auspicious muhurat date selection",
           "badge": "HOT",
-          "active": true
+          "title": "Numit Leppa Yengba",
+          "active": true,
+          "description": "Auspicious muhurat date selection"
         },
         {
           "id": "sub-s4",
-          "title": "Kundli Matching (36-Gun Milan)",
           "href": "/matching",
-          "description": "Marriage compatibility & Manglik check",
-          "active": true
+          "title": "Kundli Matching (36-Gun Milan)",
+          "active": true,
+          "description": "Marriage compatibility & Manglik check"
         }
       ]
     },
     {
       "id": "nav-4",
-      "title": "E-Store",
       "href": "/shop",
       "type": "link",
-      "active": true,
-      "order": 4
+      "order": 4,
+      "title": "E-Store",
+      "active": true
     },
     {
       "id": "nav-5",
-      "title": "Free Tools",
       "href": "/manipuri_free_kuthi",
       "type": "dropdown",
       "badge": "FREE",
-      "active": true,
       "order": 5,
+      "title": "Free Tools",
+      "active": true,
       "subItems": [
         {
           "id": "sub-f1",
-          "title": "Free Manipuri Kundli Generator",
           "href": "/manipuri_free_kuthi",
-          "description": "Generate natal chart PDF instantly",
           "badge": "FREE",
-          "active": true
+          "title": "Free Manipuri Kundli Generator",
+          "active": true,
+          "description": "Generate natal chart PDF instantly"
         },
         {
           "id": "sub-f2",
-          "title": "Free Gun Milan Matcher",
           "href": "/matching",
-          "description": "Quick 36-point Ashtakoot score check",
-          "active": true
+          "title": "Free Gun Milan Matcher",
+          "active": true,
+          "description": "Quick 36-point Ashtakoot score check"
         }
       ]
     },
     {
       "id": "nav-6",
-      "title": "Blog",
       "href": "/blog",
       "type": "link",
-      "active": true,
-      "order": 6
+      "order": 6,
+      "title": "Blog",
+      "active": true
     },
     {
       "id": "nav-7",
-      "title": "Numit Leppa",
       "href": "/numit_leppa_yengba",
       "type": "link",
-      "active": true,
-      "order": 7
+      "order": 7,
+      "title": "Numit Leppa",
+      "active": true
     }
-  ],
-  "cbs": {
-    "showKuthiYengbaBtn": true,
-    "kuthiYengbaBtnText": "Kuthi Yengba",
-    "kuthiYengbaBtnHref": "/manipuri_kuthi_yengba",
-    "showKuthiIbaBtn": true,
-    "kuthiIbaBtnText": "Kuthi Iba",
-    "kuthiIbaBtnHref": "/manipuri_kuthi",
-    "showNumitLeppaBtn": true,
-    "numitLeppaBtnText": "Numit Leppa",
-    "numitLeppaBtnHref": "/numit_leppa_yengba"
-  }
+  ]
 }

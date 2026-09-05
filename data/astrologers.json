@@ -23,9 +23,17 @@
       "Career",
       "Love"
     ],
+    "payoutStatus": "REQUESTED",
+    "totalPaidOut": 5272,
+    "lastPayoutUtr": "UPI-1641339617",
+    "pendingPayout": 1316,
+    "totalEarnings": 6588,
     "whatsappPhone": "+919862099881",
+    "completedCount": 7,
+    "lastPayoutDate": "2026-09-05",
     "experienceYears": 15,
-    "consultationsCount": "50k+"
+    "consultationsCount": "50k+",
+    "payoutRequestedAmount": 0
   },
   {
     "id": "astro-2",

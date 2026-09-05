@@ -148,6 +148,25 @@ export default function AstrologerDashboard() {
   const [astroPasscodeInput, setAstroPasscodeInput] = useState('');
   const [authError, setAuthError] = useState('');
 
+  // Guru Profile Form State
+  const [profileForm, setProfileForm] = useState({
+    name: 'Acharya Tombi Sharma',
+    specialty: 'Vedic Horoscope & Kuthi Yengba Specialist',
+    experience: '15 Years',
+    pricePerMin: 35,
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
+    specialtiesStr: 'Kuthi Yengba, Vedic, Matching',
+    languages: 'Manipuri · English · Hindi',
+    phone: '+91 98620 99881',
+    whatsappNo: '+91 98620 99881',
+    email: 'tombi.sharma@kangleiastro.com',
+    bio: 'Renowned Manipuri Vedic Astrologer specializing in traditional Kuthi Yengba analysis, Vimshottari Dasha predictions, Ashtakoot Gun Milan, and practical remedial measures.',
+    maxDailyOrders: 5,
+    morningSlot: true,
+    afternoonSlot: true,
+    eveningSlot: false,
+  });
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const isAuthed = localStorage.getItem('kanglei_astro_authed') === 'true';
@@ -276,13 +295,31 @@ export default function AstrologerDashboard() {
         const res = await fetch('/api/consultations');
         const data = await res.json();
         if (data.sessions && Array.isArray(data.sessions)) {
-          const waiting = data.sessions.find((s: any) => s.status === 'WAITING');
+          const waiting = data.sessions.find((s: any) => {
+            if (s.status !== 'WAITING') return false;
+            // Check if designated for this astrologer
+            const isForMe = s.astrologerId === 'astro-1' ||
+              (s.astrologerName && profileForm.name && s.astrologerName.toLowerCase().includes(profileForm.name.toLowerCase()));
+            if (!isForMe) return false;
+            // Must be fresh (< 2 minutes old) and not a stale test record
+            const sessionTime = new Date(s.createdAt).getTime();
+            const age = Date.now() - sessionTime;
+            return !isNaN(age) && age >= 0 && age < 2 * 60 * 1000;
+          });
+
           if (waiting) {
             setIncomingSession(waiting);
           } else {
             setIncomingSession(null);
           }
-          const live = data.sessions.find((s: any) => s.status === 'LIVE');
+
+          const live = data.sessions.find((s: any) => {
+            if (s.status !== 'LIVE') return false;
+            const isForMe = s.astrologerId === 'astro-1' ||
+              (s.astrologerName && profileForm.name && s.astrologerName.toLowerCase().includes(profileForm.name.toLowerCase()));
+            return isForMe;
+          });
+
           if (live && !activeLiveSessionId) {
             setActiveLiveSessionId(live.id);
           }
@@ -294,7 +331,7 @@ export default function AstrologerDashboard() {
     pollConsultations();
     const timer = setInterval(pollConsultations, 3000);
     return () => clearInterval(timer);
-  }, [activeLiveSessionId]);
+  }, [activeLiveSessionId, profileForm.name]);
 
   const handleAcceptIncomingConsultation = async (sessionId: string) => {
     try {
@@ -380,25 +417,6 @@ export default function AstrologerDashboard() {
   });
   const [uploadMsg, setUploadMsg] = useState('');
   const [loadingUpload, setLoadingUpload] = useState(false);
-
-  // Guru Profile Form State
-  const [profileForm, setProfileForm] = useState({
-    name: 'Acharya Tombi Sharma',
-    specialty: 'Vedic Horoscope & Kuthi Yengba Specialist',
-    experience: '15 Years',
-    pricePerMin: 35,
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
-    specialtiesStr: 'Kuthi Yengba, Vedic, Matching',
-    languages: 'Manipuri · English · Hindi',
-    phone: '+91 98620 99881',
-    whatsappNo: '+91 98620 99881',
-    email: 'tombi.sharma@kangleiastro.com',
-    bio: 'Renowned Manipuri Vedic Astrologer specializing in traditional Kuthi Yengba analysis, Vimshottari Dasha predictions, Ashtakoot Gun Milan, and practical remedial measures.',
-    maxDailyOrders: 5,
-    morningSlot: true,
-    afternoonSlot: true,
-    eveningSlot: false,
-  });
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -572,7 +590,7 @@ export default function AstrologerDashboard() {
 
   // Fetch live wallet data from /api/astrologers/payout
   const fetchWallet = () => {
-    fetch('/api/astrologers/payout?astroId=astro-1')
+    fetch('/api/astrologers/payout?astroId=astro-1&t=' + Date.now(), { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data.wallet) setWallet(data.wallet);
@@ -737,6 +755,12 @@ export default function AstrologerDashboard() {
         }
       })
       .catch((err) => console.error('Error fetching announcements:', err));
+
+    const pollTimer = setInterval(() => {
+      fetchOrders();
+      fetchWallet();
+    }, 3000);
+    return () => clearInterval(pollTimer);
   }, []);
 
   const handleStatusChange = (id: string, newStatus: Status) => {
@@ -848,6 +872,7 @@ export default function AstrologerDashboard() {
       }
 
       setPayoutMsg(`✅ Payout request for ₹${requestAmount} submitted to Admin!`);
+      fetchWallet();
       setTimeout(() => {
         setShowRequestPayoutModal(false);
         setPayoutMsg('');

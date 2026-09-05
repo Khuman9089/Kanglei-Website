@@ -1,180 +1,180 @@
 [
   {
     "id": "s-1",
+    "cta": "Order Kuthi Yengba",
+    "link": "/manipuri_kuthi_yengba",
     "badge": "Popular",
+    "price": "₹499",
     "title": "Kuthi Yengba (Horoscope Analysis & Remedies)",
-    "description": "In-depth analysis of natal Kundali, Vimshottari Dasha, planetary transits, and customized Manipuri Vedic remedies.",
+    "active": true,
     "features": [
       "D1 Rashi & D9 Navamsha chart analysis",
       "Favorable promotion & job change windows",
       "Personalized wealth accumulation remedies"
     ],
-    "price": "₹499",
-    "cta": "Order Kuthi Yengba",
-    "link": "/manipuri_kuthi_yengba",
     "pageTarget": "/manipuri_kuthi_yengba",
-    "active": true,
+    "description": "In-depth analysis of natal Kundali, Vimshottari Dasha, planetary transits, and customized Manipuri Vedic remedies.",
     "subServices": [
       {
         "id": "sub-101",
-        "title": "Standard Kuthi Yengba (Detailed Dasha & Remedies)",
         "price": 499,
+        "title": "Standard Kuthi Yengba (Detailed Dasha & Remedies)",
         "description": "Complete analysis delivered to your WhatsApp within 12 Hours."
       },
       {
         "id": "sub-102",
-        "title": "Express Fast-Track Kuthi Yengba (Delivered within 4 Hours)",
         "price": 799,
+        "title": "Express Fast-Track Kuthi Yengba (Delivered within 4 Hours)",
         "description": "Priority queue processing delivered within 4 Hours."
       },
       {
         "id": "sub-103",
-        "title": "Comprehensive 5-Year Life Roadmap Kuthi Report",
         "price": 1199,
+        "title": "Comprehensive 5-Year Life Roadmap Kuthi Report",
         "description": "Full 5-year planetary transit timeline and personalized remedies PDF."
       }
     ]
   },
   {
     "id": "s-2",
+    "cta": "Order Kuthi Iba",
+    "link": "/manipuri_kuthi",
     "badge": "Traditional",
+    "price": "₹899",
     "title": "Kuthi Iba (Handwritten Kuthi Creation - কুঠি ইবা)",
-    "description": "Authentic hand-written Kuthi birth scroll prepared on sacred parchment by experienced Vedic Acharyas.",
+    "active": true,
     "features": [
       "Handwritten D1 Rashi & D9 Navamsha charts",
       "Consecrated with sacred Vedic Mantras",
       "Physical home delivery across Manipur & India"
     ],
-    "price": "₹899",
-    "cta": "Order Kuthi Iba",
-    "link": "/manipuri_kuthi",
     "pageTarget": "/manipuri_kuthi",
-    "active": true,
+    "description": "Authentic hand-written Kuthi birth scroll prepared on sacred parchment by experienced Vedic Acharyas.",
     "subServices": [
       {
         "id": "sub-201",
-        "title": "Standard Handwritten Kuthi Paper (Single Child)",
         "price": 899,
+        "title": "Standard Handwritten Kuthi Paper (Single Child)",
         "description": "Traditional handwritten birth scroll on sacred parchment."
       },
       {
         "id": "sub-202",
-        "title": "Premium Gold-Stamped Traditional Kuthi Scroll",
         "price": 1499,
+        "title": "Premium Gold-Stamped Traditional Kuthi Scroll",
         "description": "Deluxe gold-bordered scroll in protective sacred case."
       }
     ]
   },
   {
     "id": "s-3",
+    "cta": "Check Compatibility",
+    "link": "/matching",
     "badge": "High Accuracy",
+    "price": "₹1,299",
     "title": "Pakna Wainaba Yengba (Kundli Matching & 36-Gun Milan)",
-    "description": "Complete 36-Gun Ashtakoot Milan, Manglik Dosh analysis, and mental/emotional compatibility assessment.",
+    "active": true,
     "features": [
       "36-Points Ashtakoot breakdown",
       "Manglik Dosh cancellation check",
       "Favorable marriage timing windows"
     ],
-    "price": "₹1,299",
-    "cta": "Check Compatibility",
-    "link": "/matching",
     "pageTarget": "/matching",
-    "active": true,
+    "description": "Complete 36-Gun Ashtakoot Milan, Manglik Dosh analysis, and mental/emotional compatibility assessment.",
     "subServices": [
       {
         "id": "sub-301",
-        "title": "36-Gun Ashtakoot Match & Manglik Check",
         "price": 1299,
+        "title": "36-Gun Ashtakoot Match & Manglik Check",
         "description": "Detailed 36-point compatibility report for couple pair."
       },
       {
         "id": "sub-302",
-        "title": "Full D9 Navamsha Couple Compatibility & Remedial Report",
         "price": 1999,
+        "title": "Full D9 Navamsha Couple Compatibility & Remedial Report",
         "description": "Comprehensive marriage compatibility with specific remedial pujas."
       }
     ]
   },
   {
     "id": "s-4",
+    "cta": "Book Consultation",
+    "link": "/manipuri_kuthi_yengba?service=s-4",
     "badge": "Best Value",
+    "price": "₹2,499",
     "title": "1-on-1 Live Master Consultation",
-    "description": "Direct face-to-face video consultation with our Master Vedic Astrologer with instant remedial guidance.",
+    "active": true,
     "features": [
       "60 Mins direct video/audio session",
       "Full 5-year Vimshottari Dasha forecast",
       "Recorded session & remedies PDF"
     ],
-    "price": "₹2,499",
-    "cta": "Book Consultation",
-    "link": "/manipuri_kuthi_yengba?service=s-4",
     "pageTarget": "/manipuri_kuthi_yengba",
-    "active": true,
+    "description": "Direct face-to-face video consultation with our Master Vedic Astrologer with instant remedial guidance.",
     "subServices": [
       {
         "id": "sub-401",
-        "title": "30-Minute Video/Phone Session",
         "price": 1499,
+        "title": "30-Minute Video/Phone Session",
         "description": "Direct 30-minute consultation with Master Astrologer."
       },
       {
         "id": "sub-402",
-        "title": "60-Minute Deep Consultation + Recorded Session & PDF Remedies",
         "price": 2499,
+        "title": "60-Minute Deep Consultation + Recorded Session & PDF Remedies",
         "description": "Full 60-minute session with recorded audio and written PDF remedies."
       }
     ]
   },
   {
     "id": "s-5",
+    "cta": "Check Auspicious Date",
+    "link": "/numit_leppa_yengba",
     "badge": "Auspicious",
+    "price": "₹501",
     "title": "Numit Leppa / Numit Yengba (Auspicious Muhurat Date)",
-    "description": "Calculate auspicious dates & shubha muhurat for Yum Sangba, Luhongba, Swasti Puja, Business & Vehicle Purchase.",
+    "active": true,
     "features": [
       "Auspicious Tithi, Nakshatra & Lagna timing",
       "Grahachar & planetary alignment for event",
       "Written Muhurat PDF guidance delivered to WhatsApp"
     ],
-    "price": "₹501",
-    "cta": "Check Auspicious Date",
-    "link": "/numit_leppa_yengba",
     "pageTarget": "/numit_leppa_yengba",
-    "active": true,
+    "description": "Calculate auspicious dates & shubha muhurat for Yum Sangba, Luhongba, Swasti Puja, Business & Vehicle Purchase.",
     "subServices": [
       {
         "id": "sub-501",
-        "title": "Yum Sangba (Housewarming Date)",
         "price": 501,
+        "title": "Yum Sangba (Housewarming Date)",
         "description": "Auspicious muhurat & Griha Pravesh alignment"
       },
       {
         "id": "sub-502",
-        "title": "Luhongba (Marriage & Wedding Date)",
         "price": 751,
+        "title": "Luhongba (Marriage & Wedding Date)",
         "description": "Subha Vivaha muhurat & lagna calculations"
       },
       {
         "id": "sub-503",
-        "title": "Swasti Puja & Naming (Child Naming)",
         "price": 351,
+        "title": "Swasti Puja & Naming (Child Naming)",
         "description": "Nakshatra & auspicious naming date"
       },
       {
         "id": "sub-504",
-        "title": "Business & Office Opening",
         "price": 501,
+        "title": "Business & Office Opening",
         "description": "Shubh Labh & trade inauguration date"
       },
       {
         "id": "sub-505",
-        "title": "Vehicle & Property Registration",
         "price": 351,
+        "title": "Vehicle & Property Registration",
         "description": "Auspicious vehicle delivery & land purchase"
       },
       {
         "id": "sub-506",
-        "title": "General Numit Yengba (Auspicious Date)",
         "price": 401,
+        "title": "General Numit Yengba (Auspicious Date)",
         "description": "General travel, ritual, or important event"
       }
     ]

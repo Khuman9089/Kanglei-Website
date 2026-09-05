@@ -8,10 +8,12 @@ import {
   TrendingUp, BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, UserCheck, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon,
-  Headphones, Mail, Phone, Camera
+  Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift
 } from 'lucide-react';
 import Link from 'next/link';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
+import ServiceCouponsManager from '@/components/admin/ServiceCouponsManager';
+import BloggerPostComposer from '@/components/admin/BloggerPostComposer';
 
 interface Astrologer {
   id: string;
@@ -205,10 +207,12 @@ interface BlogPost {
   coverImage: string;
   author: string;
   authorRole?: string;
+  authorAvatar?: string;
   readTime: string;
   publishedAt: string;
   views: number;
   likes: number;
+  isFeatured?: boolean;
   status: 'PUBLISHED' | 'DRAFT';
 }
 
@@ -263,6 +267,8 @@ interface KuthiOrder {
   reportUploadedAt?: string;
   reportUploadedBy?: string;
   reportNotes?: string;
+  walletCredited?: boolean;
+  astrologerPayoutFee?: number;
 }
 
 const EMPANELED_ASTROLOGERS: Astrologer[] = [
@@ -672,7 +678,7 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'add_astro' | 'astro_profile' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'consultations' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'add_astro' | 'astro_profile' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'service_coupons' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
 
   const [selectedAstrologer, setSelectedAstrologer] = useState<Astrologer | null>(null);
   const [showPasswordUpdateModal, setShowPasswordUpdateModal] = useState(false);
@@ -803,6 +809,168 @@ export default function AdminDashboardPage() {
   const [showCategoryManagerModal, setShowCategoryManagerModal] = useState(false);
   const [newCategoryInput, setNewCategoryInput] = useState('');
   const [showInlineNewCategory, setShowInlineNewCategory] = useState(false);
+  // Live Consultation Orders & Shift Management State
+  const [consultationSessions, setConsultationSessions] = useState<any[]>([]);
+  const [adminPlatformFeePct, setAdminPlatformFeePct] = useState<number>(15);
+  const [editingMeetingLink, setEditingMeetingLink] = useState<{ [id: string]: string }>({});
+  const [actionProcessingId, setActionProcessingId] = useState<string | null>(null);
+  const [consultationActionMsg, setConsultationActionMsg] = useState<string>('');
+
+  useEffect(() => {
+    const fetchConsultations = async () => {
+      try {
+        const res = await fetch('/api/consultations');
+        const data = await res.json();
+        if (data.sessions && Array.isArray(data.sessions)) {
+          setConsultationSessions(data.sessions);
+        }
+      } catch (err) {}
+    };
+    fetchConsultations();
+    const timer = setInterval(fetchConsultations, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleAdminVerifyConsultation = async (session: any) => {
+    setActionProcessingId(session.id);
+    try {
+      const res = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ADMIN_VERIFY_PAYMENT',
+          sessionId: session.id,
+          orderRef: session.orderRef,
+          meetingLink: editingMeetingLink[session.id] || session.meetingLink || `/consultation?sessionId=${session.id}`,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConsultationSessions((prev) =>
+          prev.map((s) => (s.id === session.id ? { ...s, paymentStatus: 'VERIFIED', status: 'CONFIRMED' } : s))
+        );
+        setConsultationActionMsg(`✅ Payment Verified for ${session.clientName}! Order confirmed.`);
+        setTimeout(() => setConsultationActionMsg(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionProcessingId(null);
+    }
+  };
+
+  const handleAdminUpdateConsultationPaymentStatus = async (session: any, nextStatus: string) => {
+    setActionProcessingId(session.id);
+    try {
+      const res = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'UPDATE_PAYMENT_STATUS',
+          sessionId: session.id,
+          orderRef: session.orderRef,
+          paymentStatus: nextStatus,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConsultationSessions((prev) =>
+          prev.map((s) =>
+            s.id === session.id
+              ? {
+                  ...s,
+                  paymentStatus: nextStatus,
+                  status: nextStatus === 'VERIFIED' ? 'CONFIRMED' : nextStatus === 'REJECTED' ? 'REJECTED' : s.status,
+                }
+              : s
+          )
+        );
+        const statusLabel =
+          nextStatus === 'VERIFIED'
+            ? '🟢 VERIFIED'
+            : nextStatus === 'REJECTED'
+            ? '🔴 REJECTED'
+            : '🟡 PENDING VERIFICATION';
+        setConsultationActionMsg(`Payment status for ${session.clientName} updated to ${statusLabel}! Client panel updated.`);
+        setTimeout(() => setConsultationActionMsg(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionProcessingId(null);
+    }
+  };
+
+  const handleAdminSendConsultationLink = async (session: any, customLink?: string) => {
+    setActionProcessingId(session.id);
+    const linkToSend = customLink || editingMeetingLink[session.id] || session.meetingLink || `/consultation?sessionId=${session.id}`;
+    try {
+      const res = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ADMIN_SEND_LINK',
+          sessionId: session.id,
+          orderRef: session.orderRef,
+          meetingLink: linkToSend,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConsultationSessions((prev) =>
+          prev.map((s) => (s.id === session.id ? { ...s, meetingLink: linkToSend, meetingLinkSent: true, status: 'WAITING' } : s))
+        );
+        setConsultationActionMsg(`🔗 Consultation Room Link Dispatched to ${session.clientName} & ${session.astrologerName}!`);
+        setTimeout(() => setConsultationActionMsg(''), 4000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionProcessingId(null);
+    }
+  };
+
+  const handleAdminCompleteConsultation = async (session: any) => {
+    const feePct = Number(adminPlatformFeePct) >= 0 ? Number(adminPlatformFeePct) : 15;
+    const total = Number(session.totalFee) || 499;
+    const fee = Math.round((total * feePct) / 100);
+    const net = Math.max(0, total - fee);
+
+    if (!confirm(`Mark consultation for "${session.clientName}" as COMPLETED?\n\nPlatform Fee: ${feePct}% (-₹${fee})\nAstrologer Net Payout: ₹${net} will be credited to ${session.astrologerName}'s wallet.`)) return;
+
+    setActionProcessingId(session.id);
+    try {
+      const res = await fetch('/api/consultations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'ADMIN_COMPLETE_SESSION',
+          sessionId: session.id,
+          orderRef: session.orderRef,
+          platformFeePercent: feePct,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setConsultationSessions((prev) =>
+          prev.map((s) => (s.id === session.id ? { ...s, status: 'COMPLETED', walletCredited: true } : s))
+        );
+        fetch('/api/astrologers')
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.astrologers) setAstrologers(d.astrologers);
+          })
+          .catch(() => {});
+
+        setConsultationActionMsg(`🎉 Consultation Completed! ₹${data.payoutDetails?.netPayout || net} credited to ${session.astrologerName}'s wallet.`);
+        setTimeout(() => setConsultationActionMsg(''), 5000);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setActionProcessingId(null);
+    }
+  };
   
   // Client Base Management State
   const [clientBase, setClientBase] = useState<ClientUser[]>(INITIAL_CLIENT_BASE);
@@ -1331,11 +1499,24 @@ export default function AdminDashboardPage() {
   });
 
   useEffect(() => {
-    fetch('/api/navbar')
+    try {
+      const cached = localStorage.getItem('kanglei_navbar_config');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.items)) {
+          setNavConfig(parsed);
+        }
+      }
+    } catch (e) {}
+
+    fetch('/api/navbar?t=' + Date.now(), { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
         if (data && Array.isArray(data.items)) {
           setNavConfig(data);
+          try {
+            localStorage.setItem('kanglei_navbar_config', JSON.stringify(data));
+          } catch (e) {}
         }
       })
       .catch(() => {});
@@ -1343,13 +1524,17 @@ export default function AdminDashboardPage() {
 
   const handleSaveNavConfig = async () => {
     try {
+      try {
+        localStorage.setItem('kanglei_navbar_config', JSON.stringify(navConfig));
+      } catch (e) {}
+
       const res = await fetch('/api/navbar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(navConfig),
       });
       if (res.ok) {
-        setSaveAlert('📌 Header Navbar Menu & Dropdown Config Published Live!');
+        setSaveAlert('📌 Header Navbar Menu & Dropdown Config Published Permanently in Cloud Database!');
         setTimeout(() => setSaveAlert(''), 3500);
       }
     } catch (err) {
@@ -1437,6 +1622,9 @@ export default function AdminDashboardPage() {
     subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
     showRateOnHome: true,
     actionButtonType: 'both' as 'both' | 'chat_only' | 'call_only',
+    rateMode: 'fixed' as 'fixed' | 'per_minute' | 'both' | 'none',
+    defaultFixedRate: 499,
+    fixedRateLabel: 'Fixed',
   });
 
   const [apiAstrologers, setApiAstrologers] = useState<any[]>([]);
@@ -1461,17 +1649,37 @@ export default function AdminDashboardPage() {
 
   const handleSaveAstrologerSectionSettings = async () => {
     try {
+      try {
+        localStorage.setItem('kanglei_astrologer_settings', JSON.stringify(astrologerSectionSettings));
+      } catch (e) {}
+
       const res = await fetch('/api/astrologers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ settings: astrologerSectionSettings }),
       });
       if (res.ok) {
-        setSaveAlert('✅ Top Rated Astrologers Section Settings saved live!');
+        setSaveAlert('✅ Top Rated Astrologers Section Settings saved permanently in Cloud Database & Local Storage!');
         setTimeout(() => setSaveAlert(''), 3500);
       }
     } catch (err) {
       console.error('Error saving astrologer section settings:', err);
+    }
+  };
+
+  const handleUpdateAstroActionButtonType = async (id: string, actionType: 'both' | 'chat_only' | 'call_only') => {
+    const updated = apiAstrologers.map((a) => (a.id === id ? { ...a, actionButtonType: actionType } : a));
+    setApiAstrologers(updated);
+    try {
+      await fetch('/api/astrologers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ astrologers: updated }),
+      });
+      setSaveAlert('✅ Astrologer Action Button Mode Updated Live in Database!');
+      setTimeout(() => setSaveAlert(''), 3000);
+    } catch (err) {
+      console.error('Error updating astro action button type:', err);
     }
   };
 
@@ -1484,7 +1692,7 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ astrologers: updated }),
       });
-      setSaveAlert('✅ Homepage Featured Astrologer Selection Updated Live!');
+      setSaveAlert('✅ Homepage Featured Astrologer Selection Updated Live in Database!');
       setTimeout(() => setSaveAlert(''), 3000);
     } catch (err) {
       console.error('Error toggling showOnHome:', err);
@@ -1500,50 +1708,109 @@ export default function AdminDashboardPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ astrologers: updated }),
       });
-      setSaveAlert('✅ Astrologer Rate Updated Live!');
+      setSaveAlert('✅ Astrologer Per-Minute Rate Updated Live in Database!');
       setTimeout(() => setSaveAlert(''), 3000);
     } catch (err) {
       console.error('Error updating astro rate:', err);
     }
   };
 
-  const handleProcessPayoutSubmit = (e: React.FormEvent) => {
+  const handleUpdateAstroFixedRate = async (id: string, newFixedRate: number) => {
+    const updated = apiAstrologers.map((a) => (a.id === id ? { ...a, fixedRate: newFixedRate } : a));
+    setApiAstrologers(updated);
+    try {
+      await fetch('/api/astrologers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ astrologers: updated }),
+      });
+      setSaveAlert('✅ Astrologer Fixed Rate Updated Live in Database!');
+      setTimeout(() => setSaveAlert(''), 3000);
+    } catch (err) {
+      console.error('Error updating astro fixed rate:', err);
+    }
+  };
+
+
+  const handleProcessPayoutSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!payoutModalAstro) return;
 
     const utr = payoutForm.utr || 'UPI-' + Math.floor(1000000000 + Math.random() * 900000000);
-    const amt = payoutForm.amount || payoutModalAstro.pendingPayout;
+    const amt = Number(payoutForm.amount) || payoutModalAstro.pendingPayout;
 
-    setAstrologers((prev) =>
-      prev.map((a) => {
-        if (a.id === payoutModalAstro.id) {
-          const newPending = Math.max(0, a.pendingPayout - amt);
-          const newPaidOut = (a.totalPaidOut || 0) + amt;
-          return {
-            ...a,
-            pendingPayout: newPending,
-            totalPaidOut: newPaidOut,
-            payoutStatus: newPending === 0 ? 'SETTLED' : 'REQUESTED',
-            payoutRequestedAmount: 0,
-            lastPayoutUtr: utr,
-            lastPayoutDate: new Date().toISOString().split('T')[0],
-          };
-        }
-        return a;
-      })
-    );
+    try {
+      const res = await fetch('/api/astrologers/payout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'PROCESS_PAYOUT',
+          astroId: payoutModalAstro.id,
+          amount: amt,
+          utr,
+          paymentMethod: payoutForm.paymentMethod || 'GPay / PhonePe UPI',
+          notes: payoutForm.notes || 'Astrologer Commission Payout Disbursement',
+        }),
+      });
 
-    setSaveAlert(`✅ Payout of ₹${amt.toLocaleString()} successfully disbursed to ${payoutModalAstro.name}! (UTR: ${utr})`);
-    setTimeout(() => setSaveAlert(''), 5000);
-    setPayoutModalAstro(null);
+      const data = await res.json();
+      if (!res.ok) {
+        setSaveAlert(data.error || 'Failed to process payout disbursement');
+        setTimeout(() => setSaveAlert(''), 5000);
+        return;
+      }
+
+      setAstrologers((prev) =>
+        prev.map((a) => {
+          if (a.id === payoutModalAstro.id) {
+            const newPending = data.wallet?.pendingPayout ?? Math.max(0, a.pendingPayout - amt);
+            const newPaidOut = data.wallet?.totalPaidOut ?? ((a.totalPaidOut || 0) + amt);
+            return {
+              ...a,
+              pendingPayout: newPending,
+              totalPaidOut: newPaidOut,
+              totalEarnings: data.wallet?.totalEarnings ?? a.totalEarnings,
+              payoutStatus: newPending === 0 ? 'SETTLED' : 'REQUESTED',
+              payoutRequestedAmount: 0,
+              lastPayoutUtr: utr,
+              lastPayoutDate: new Date().toISOString().split('T')[0],
+            };
+          }
+          return a;
+        })
+      );
+
+      setSaveAlert(`✅ Payout of ₹${amt.toLocaleString()} successfully disbursed to ${payoutModalAstro.name}! (UTR: ${utr})`);
+      setTimeout(() => setSaveAlert(''), 5000);
+      setPayoutModalAstro(null);
+    } catch (err: any) {
+      console.error('Error processing astrologer payout:', err);
+      setSaveAlert('❌ Network error while processing payout disbursement.');
+      setTimeout(() => setSaveAlert(''), 5000);
+    }
   };
 
   // Fetch live services, blog posts, shop catalog, kuthi orders, banner ad, ticker, and astrologers settings on load
   useEffect(() => {
-    fetch('/api/astrologers')
+    try {
+      const cached = localStorage.getItem('kanglei_astrologer_settings');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') {
+          setAstrologerSectionSettings((prev) => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch (e) {}
+
+    fetch('/api/astrologers?t=' + Date.now(), { cache: 'no-store' })
       .then((res) => res.json())
       .then((data) => {
-        if (data.settings) setAstrologerSectionSettings((prev) => ({ ...prev, ...data.settings }));
+        if (data.settings) {
+          setAstrologerSectionSettings((prev) => ({ ...prev, ...data.settings }));
+          try {
+            localStorage.setItem('kanglei_astrologer_settings', JSON.stringify(data.settings));
+          } catch (e) {}
+        }
         if (data.astrologers && Array.isArray(data.astrologers)) {
           setApiAstrologers(data.astrologers);
           setAstrologers(data.astrologers);
@@ -1621,7 +1888,23 @@ export default function AdminDashboardPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.wallets && Array.isArray(data.wallets)) {
-          setAstrologers(data.wallets);
+          setAstrologers((prev) =>
+            prev.map((a) => {
+              const w = data.wallets.find((item: any) => item.id === a.id);
+              if (w) {
+                return {
+                  ...a,
+                  pendingPayout: w.pendingPayout,
+                  totalEarnings: w.totalEarnings,
+                  totalPaidOut: w.totalPaidOut,
+                  lastPayoutUtr: w.lastPayoutUtr || a.lastPayoutUtr,
+                  lastPayoutDate: w.lastPayoutDate || a.lastPayoutDate,
+                  payoutStatus: w.payoutStatus || a.payoutStatus,
+                };
+              }
+              return a;
+            })
+          );
         }
       })
       .catch((err) => console.error('Error fetching astrologer wallets:', err));
@@ -1735,43 +2018,6 @@ export default function AdminDashboardPage() {
     }
   };
 
-  const handleConfirmPayoutDisbursement = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!payoutModalAstro) return;
-
-    try {
-      const res = await fetch('/api/astrologers/payout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'PROCESS_PAYOUT',
-          astroId: payoutModalAstro.id,
-          amount: payoutForm.amount,
-          utr: payoutForm.utr,
-          paymentMethod: payoutForm.paymentMethod,
-          notes: payoutForm.notes,
-        }),
-      });
-
-      const data = await res.json();
-      if (!res.ok) {
-        setSaveAlert(data.error || 'Failed to process payout');
-      } else {
-        setAstrologers((prev) =>
-          prev.map((a) =>
-            a.id === payoutModalAstro.id
-              ? { ...a, pendingPayout: data.wallet.pendingPayout }
-              : a
-          )
-        );
-        setSaveAlert(`✅ ${data.message}`);
-        setPayoutModalAstro(null);
-      }
-    } catch (err: any) {
-      setSaveAlert('Error processing payout disbursement');
-    }
-    setTimeout(() => setSaveAlert(''), 4000);
-  };
 
   const handleForwardToAstrologer = async (o: KuthiOrder, astro: Astrologer) => {
     // 1. Persist assignment in backend API so it syncs to Astrologer Dashboard
@@ -1895,6 +2141,92 @@ export default function AdminDashboardPage() {
     }
   };
 
+  const handleAdminCompleteKuthiOrder = async (order: KuthiOrder) => {
+    const platformFeePct = Number(adminPlatformFeePct) >= 0 ? Number(adminPlatformFeePct) : 15;
+    const orderTotal = Number(order.amount) || 999;
+    const matchingService = services.find(
+      (s) => s.title.toLowerCase() === (order.serviceType || '').toLowerCase() || s.id === (order.serviceType || '')
+    );
+    const calculatedNet = Math.round((orderTotal * (100 - platformFeePct)) / 100);
+    const netPayout = order.astrologerPayoutFee || matchingService?.astroPayoutFee || calculatedNet;
+
+    const assignedAstro = astrologers.find((a) => a.id === order.assignedAstrologerId);
+
+    if (!assignedAstro) {
+      alert(`⚠️ Please assign an astrologer to Order "${order.orderRef}" first so the payout can be credited to their wallet.`);
+      return;
+    }
+
+    if (
+      !confirm(
+        `Mark Kuthi Order "${order.orderRef}" for "${order.clientName}" as COMPLETED?\n\n` +
+        `Order Amount: ₹${orderTotal}\n` +
+        `Platform Commission: ${platformFeePct}%\n` +
+        `Astrologer Net Payout: ₹${netPayout} will be credited immediately to ${assignedAstro.name}'s wallet.`
+      )
+    ) {
+      return;
+    }
+
+    setActionProcessingId(order.id);
+    try {
+      const res = await fetch('/api/kuthi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'MARK_COMPLETED',
+          orderId: order.id,
+          payoutAmount: netPayout,
+          assignedAstrologerId: assignedAstro.id,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        setOrders((prev) =>
+          prev.map((o) =>
+            o.id === order.id
+              ? {
+                  ...o,
+                  status: 'COMPLETED',
+                  walletCredited: true,
+                  reportReceivedFromAstro: true,
+                  astrologerPayoutFee: netPayout,
+                }
+              : o
+          )
+        );
+
+        // Synchronously update astrologers list with the newly credited wallet
+        fetch('/api/astrologers/payout?t=' + Date.now(), { cache: 'no-store' })
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.wallets && Array.isArray(d.wallets)) {
+              setAstrologers((prev) =>
+                prev.map((a) => {
+                  const w = d.wallets.find((item: any) => item.id === a.id);
+                  return w ? { ...a, pendingPayout: w.pendingPayout, totalEarnings: w.totalEarnings, totalPaidOut: w.totalPaidOut } : a;
+                })
+              );
+            }
+          })
+          .catch(() => {});
+
+        setSaveAlert(`🎉 Kuthi Order ${order.orderRef} marked Completed! ₹${netPayout} credited to ${assignedAstro.name}'s wallet.`);
+        setTimeout(() => setSaveAlert(''), 6000);
+      } else {
+        setSaveAlert(data.error || 'Failed to complete order');
+        setTimeout(() => setSaveAlert(''), 4000);
+      }
+    } catch (err: any) {
+      console.error('Error completing kuthi order:', err);
+      setSaveAlert('❌ Network error while completing Kuthi order');
+      setTimeout(() => setSaveAlert(''), 4000);
+    } finally {
+      setActionProcessingId(null);
+    }
+  };
+
   const handleMarkCompleted = (orderId: string) => {
     setOrders((prev) =>
       prev.map((o) => (o.id === orderId ? { ...o, status: 'COMPLETED' } : o))
@@ -1984,25 +2316,31 @@ export default function AdminDashboardPage() {
     setTimeout(() => setSaveAlert(''), 3000);
   };
 
-  const handleSaveBlogPost = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingPost?.title || !editingPost?.content) return;
-
-    const newPost: BlogPost = {
-      id: editingPost.id || 'post-' + Date.now(),
-      slug: editingPost.slug || editingPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      title: editingPost.title,
-      excerpt: editingPost.excerpt || editingPost.title,
-      content: editingPost.content,
-      category: editingPost.category || 'Vedic Guidance',
-      coverImage: editingPost.coverImage || 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1200&auto=format&fit=crop',
-      author: editingPost.author || 'Master Astrologer',
-      readTime: editingPost.readTime || '5 min read',
-      publishedAt: editingPost.publishedAt || new Date().toISOString().split('T')[0],
-      views: editingPost.views || 10,
-      likes: editingPost.likes || 5,
-      status: editingPost.status || 'PUBLISHED',
-    };
+  const handleSaveBlogPost = async (eOrPost?: React.FormEvent | BlogPost) => {
+    let newPost: BlogPost;
+    if (eOrPost && 'title' in eOrPost && 'content' in eOrPost) {
+      newPost = eOrPost as BlogPost;
+    } else {
+      if (eOrPost && 'preventDefault' in eOrPost) {
+        eOrPost.preventDefault();
+      }
+      if (!editingPost?.title || !editingPost?.content) return;
+      newPost = {
+        id: editingPost.id || 'post-' + Date.now(),
+        slug: editingPost.slug || editingPost.title.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        title: editingPost.title,
+        excerpt: editingPost.excerpt || editingPost.title,
+        content: editingPost.content,
+        category: editingPost.category || 'Vedic Guidance',
+        coverImage: editingPost.coverImage || 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1200&auto=format&fit=crop',
+        author: editingPost.author || 'Master Astrologer',
+        readTime: editingPost.readTime || '5 min read',
+        publishedAt: editingPost.publishedAt || new Date().toISOString().split('T')[0],
+        views: editingPost.views || 10,
+        likes: editingPost.likes || 5,
+        status: editingPost.status || 'PUBLISHED',
+      };
+    }
 
     try {
       const res = await fetch('/api/blog', {
@@ -2018,6 +2356,7 @@ export default function AdminDashboardPage() {
       }
     } catch (err: any) {
       setSaveAlert(err.message || 'Failed to save blog post');
+      throw err;
     }
     setTimeout(() => setSaveAlert(''), 3000);
   };
@@ -3067,6 +3406,22 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     {orders.filter(o => o.status !== 'COMPLETED').length}
                   </span>
                 </button>
+
+                {/* 3. Live Consultations Hub */}
+                <button
+                  onClick={() => setActiveTab('consultations')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'consultations'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <MessageCircle className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Live Consultations</span>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f] text-[10px] font-extrabold border border-[#fde68a]">
+                    {consultationSessions.filter(s => s.paymentStatus === 'PENDING_VERIFICATION').length}
+                  </span>
+                </button>
               </div>
             </div>
 
@@ -3129,6 +3484,24 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
                   }`}>
                     Top Menu
+                  </span>
+                </button>
+
+                {/* 4. Service Coupons & Promotional Schemes */}
+                <button
+                  onClick={() => setActiveTab('service_coupons')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'service_coupons'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  }`}
+                >
+                  <Gift className="w-4 h-4 text-[#d97706] shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Service Coupons & Schemes</span>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  }`}>
+                    Offers
                   </span>
                 </button>
               </div>
@@ -3642,6 +4015,21 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </button>
 
               <button
+                onClick={() => setActiveTab('consultations')}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                  activeTab === 'consultations'
+                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
+                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                }`}
+              >
+                <Phone className="w-3.5 h-3.5 text-[#d97706]" />
+                <span>Live Consultations</span>
+                {consultationSessions.filter(s => s.paymentStatus === 'PENDING_VERIFICATION').length > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
+                )}
+              </button>
+
+              <button
                 onClick={() => setActiveTab('shop_orders')}
                 className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
                   activeTab === 'shop_orders' || activeTab === 'shop'
@@ -3859,22 +4247,6 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               </div>
 
-              {/* Multi-Astrologer Workflow Instruction Banner */}
-              <div className="p-6 rounded-2xl bg-gradient-to-r from-[#fef3c7] via-[#fde68a] to-[#fef3c7] text-[#0f172a] border border-[#fde68a] shadow-md relative overflow-hidden">
-                <div className="max-w-2xl relative z-10">
-                  <span className="px-3 py-1 rounded-full bg-white text-[#b45309] font-extrabold text-[10px] uppercase tracking-wider mb-3 inline-block border border-[#fde68a]">
-                    ⚡ Centralized Multi-Astrologer Routing Workflow
-                  </span>
-                  <h3 className="font-serif font-bold text-2xl text-[#b45309] mb-2">How Kuthi Yengba Dispatching Works</h3>
-                  <ol className="text-xs text-[#78350f] space-y-2 mt-3 list-decimal list-inside font-sans font-medium">
-                    <li><strong>Client Submits Order:</strong> Client uploads Kuthi / birth details & submits UPI UTR on `/booking`.</li>
-                    <li><strong>Admin Assigns Astrologer:</strong> Select an empaneled astrologer from the dropdown and click <strong>"Forward Kuthi to Astrologer (WhatsApp)"</strong>.</li>
-                    <li><strong>Astrologer Returns Report:</strong> Astrologer analyzes the Kundali and sends the PDF report back to the Central Admin WhatsApp.</li>
-                    <li><strong>Admin Delivers to Client:</strong> Click <strong>"Forward Report to Client (WhatsApp)"</strong> to dispatch the finished analysis directly to the client's WhatsApp!</li>
-                  </ol>
-                </div>
-              </div>
-
             </div>
           )}
 
@@ -3898,22 +4270,31 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <table className="w-full text-left text-xs font-sans text-[#0f172a]">
                   <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase tracking-wider border-b border-[#fde68a]">
                     <tr>
-                      <th className="px-6 py-3.5">Order Ref</th>
-                      <th className="px-6 py-3.5">Client & Details</th>
-                      <th className="px-6 py-3.5">Kuthi File & Details</th>
-                      <th className="px-6 py-3.5">Assign Astrologer</th>
-                      <th className="px-6 py-3.5 text-center">Step 1: Forward to Astro</th>
-                      <th className="px-6 py-3.5 text-center">Step 2: Astro Status</th>
-                      <th className="px-6 py-3.5 text-right">Step 3: Dispatch to Client</th>
+                      <th className="px-4 py-3.5">Order Ref</th>
+                      <th className="px-4 py-3.5">Client & Details</th>
+                      <th className="px-4 py-3.5">Kuthi File & Details</th>
+                      <th className="px-4 py-3.5">Assign Astrologer</th>
+                      <th className="px-3 py-3.5 text-center">Step 1: Forward to Astro</th>
+                      <th className="px-3 py-3.5 text-center">Step 2: Astro Status</th>
+                      <th className="px-3 py-3.5 text-center">Step 3: Dispatch to Client</th>
+                      <th className="px-4 py-3.5 text-right">Step 4: Payout & Settlement</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-[#fde68a]">
                     {filteredOrders.map((o) => {
                       const assignedAstro = astrologers.find(a => a.id === o.assignedAstrologerId);
+                      const isCompleted = o.status === 'COMPLETED' || o.walletCredited;
+                      const orderTotal = Number(o.amount) || 999;
+                      const platformFeePct = Number(adminPlatformFeePct) >= 0 ? Number(adminPlatformFeePct) : 15;
+                      const matchingService = services.find(
+                        (s) => s.title.toLowerCase() === (o.serviceType || '').toLowerCase() || s.id === (o.serviceType || '')
+                      );
+                      const calculatedNet = Math.round((orderTotal * (100 - platformFeePct)) / 100);
+                      const netPayout = o.astrologerPayoutFee || matchingService?.astroPayoutFee || calculatedNet;
 
                       return (
                         <tr key={o.id} className="hover:bg-[#fefcf6] transition-colors">
-                          <td className="px-6 py-4 space-y-1.5">
+                          <td className="px-4 py-4 space-y-1.5">
                             <div className="font-mono font-bold text-[#b45309] text-sm">{o.orderRef}</div>
                             <div className="text-[10px] text-gray-500 font-mono">UTR: {o.utr}</div>
                             <div className="pt-1">
@@ -3934,8 +4315,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               </select>
                             </div>
                           </td>
-                          <td className="px-6 py-4 font-bold text-[#0f172a]">{o.clientName} ({o.sex})</td>
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-4 font-bold text-[#0f172a]">{o.clientName} ({o.sex})</td>
+                          <td className="px-4 py-4">
                             <button
                               onClick={() => setInspectingOrder(o)}
                               className="group p-2.5 rounded-xl bg-[#fefcf6] hover:bg-[#fef3c7] border border-[#fde68a] text-left w-full cursor-pointer transition-colors"
@@ -3952,7 +4333,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             </button>
                           </td>
 
-                          <td className="px-6 py-4">
+                          <td className="px-4 py-4">
                             <select
                               value={o.assignedAstrologerId || ''}
                               onChange={(e) => handleAssignAstrologer(o.id, e.target.value)}
@@ -3972,11 +4353,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             )}
                           </td>
 
-                          <td className="px-6 py-4 text-center">
+                          <td className="px-3 py-4 text-center">
                             {assignedAstro ? (
                               <button
                                 onClick={() => handleForwardToAstrologer(o, assignedAstro)}
-                                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-[11px] inline-flex items-center gap-1.5 shadow-md transition-all"
+                                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-[11px] inline-flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
                               >
                                 <Share2 className="w-3.5 h-3.5" />
                                 <span>Forward to {assignedAstro.name.split(' ')[0]}</span>
@@ -3986,33 +4367,358 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             )}
                           </td>
 
-                          <td className="px-6 py-4 text-center">
+                          <td className="px-3 py-4 text-center">
                             <button
                               onClick={() => handleToggleReportReceived(o.id)}
-                              className={`px-3 py-1 rounded-full text-[10px] font-extrabold transition-all border ${
+                              className={`px-3 py-1 rounded-full text-[10px] font-extrabold transition-all border cursor-pointer ${
                                 o.reportReceivedFromAstro
-                                  ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                                  : 'bg-[#0b132b] text-gray-400 border-[#3a506b] hover:text-white'
+                                  ? 'bg-green-500/20 text-green-700 border-green-500/40'
+                                  : 'bg-amber-50 text-gray-500 border-gray-300 hover:text-gray-900'
                               }`}
                             >
                               {o.reportReceivedFromAstro ? '✓ Report Received' : '⏳ Awaiting Astro Report'}
                             </button>
                           </td>
 
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-3 py-4 text-center">
                             <a
                               href={`https://wa.me/${o.whatsappNo.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(o.clientName)},%20your%20Kuthi%20report%20for%20Order%20${o.orderRef}%20is%20ready.`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3.5 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-sm"
+                              className="px-3 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
                               <span>Dispatch to Client</span>
                             </a>
                           </td>
+
+                          {/* Step 4: Complete & Credit Wallet Button */}
+                          <td className="px-4 py-4 text-right whitespace-nowrap">
+                            {isCompleted ? (
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold shadow-xs">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>✅ ₹{netPayout} Credited</span>
+                              </div>
+                            ) : (
+                              <button
+                                type="button"
+                                disabled={actionProcessingId === o.id}
+                                onClick={() => handleAdminCompleteKuthiOrder(o)}
+                                className="px-4 py-2 rounded-full bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-xs shadow-md inline-flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98] border border-amber-400/30"
+                                title={`Mark Order Complete and Credit ₹${netPayout} to Astrologer's Wallet`}
+                              >
+                                <span className="font-serif font-black text-sm text-amber-100">$</span>
+                                <span>Complete & Credit Wallet (₹{netPayout})</span>
+                              </button>
+                            )}
+                          </td>
                         </tr>
                       );
                     })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 2B: LIVE CONSULTATIONS (CHAT & CALL ORDERS & SHIFT MANAGEMENT) */}
+          {activeTab === 'consultations' && (
+            <div className="bg-white rounded-2xl border border-[#f3e8d2] shadow-xl overflow-hidden space-y-6 p-6">
+              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#fde68a]">
+                <div>
+                  <h3 className="font-serif font-bold text-[#0f172a] text-2xl flex items-center gap-2">
+                    <span>Live Chat & Call Consultations</span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-mono font-bold">
+                      {consultationSessions.length} Total
+                    </span>
+                  </h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    Verify client payments, manage Morning/Evening shifts, dispatch consultation links, and credit astrologer wallets after platform fee.
+                  </p>
+                </div>
+
+                {/* Admin Platform Fee Setting Bar */}
+                <div className="flex items-center gap-3 bg-[#faf8f5] px-4 py-2.5 rounded-2xl border border-[#f3e8d2]">
+                  <div className="text-right">
+                    <label className="block text-[11px] font-extrabold text-gray-800">
+                      Platform Fee Commission (%)
+                    </label>
+                    <span className="text-[10px] text-gray-500 font-medium">
+                      Admin: {adminPlatformFeePct}% · Astro gets: {100 - adminPlatformFeePct}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1 bg-white px-3 py-1.5 rounded-xl border border-gray-300">
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={adminPlatformFeePct}
+                      onChange={(e) => setAdminPlatformFeePct(Math.max(0, Math.min(100, Number(e.target.value))))}
+                      className="w-12 text-center font-mono font-bold text-sm text-[#b45309] focus:outline-none"
+                    />
+                    <span className="text-xs font-bold text-gray-500">%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Banner Message */}
+              {consultationActionMsg && (
+                <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between animate-fadeIn">
+                  <span>{consultationActionMsg}</span>
+                  <button onClick={() => setConsultationActionMsg('')} className="text-emerald-700 hover:text-emerald-900 font-extrabold cursor-pointer">
+                    ✕
+                  </button>
+                </div>
+              )}
+
+              {/* Status Summary Pills */}
+              <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase">Pending Payment</div>
+                  <div className="text-2xl font-extrabold font-mono text-amber-600 mt-1">
+                    {consultationSessions.filter((s) => s.paymentStatus === 'PENDING_VERIFICATION').length}
+                  </div>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase">Verified / Confirmed</div>
+                  <div className="text-2xl font-extrabold font-mono text-emerald-600 mt-1">
+                    {consultationSessions.filter((s) => s.paymentStatus === 'VERIFIED' && s.status !== 'COMPLETED').length}
+                  </div>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase">Completed Sessions</div>
+                  <div className="text-2xl font-extrabold font-mono text-blue-600 mt-1">
+                    {consultationSessions.filter((s) => s.status === 'COMPLETED').length}
+                  </div>
+                </div>
+                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                  <div className="text-[11px] font-bold text-gray-500 uppercase">Total Revenue</div>
+                  <div className="text-2xl font-extrabold font-mono text-gray-900 mt-1">
+                    ₹{consultationSessions.reduce((acc, s) => acc + (Number(s.totalFee) || 0), 0)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Consultation Bookings Table */}
+              <div className="overflow-x-auto border border-[#f3e8d2] rounded-2xl shadow-xs">
+                <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase tracking-wider border-b border-[#fde68a]">
+                    <tr>
+                      <th className="px-5 py-3.5">Order Ref & Mode</th>
+                      <th className="px-5 py-3.5">Client (OTP Verified)</th>
+                      <th className="px-5 py-3.5">Assigned Astrologer</th>
+                      <th className="px-5 py-3.5">Scheduled Shift</th>
+                      <th className="px-5 py-3.5">Amount & UTR</th>
+                      <th className="px-5 py-3.5">Status & Verification</th>
+                      <th className="px-5 py-3.5 text-right">Admin Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#f3e8d2]">
+                    {consultationSessions.map((s) => {
+                      const isPendingPayment = s.paymentStatus === 'PENDING_VERIFICATION';
+                      const isVerified = s.paymentStatus === 'VERIFIED' || s.status === 'CONFIRMED';
+                      const isCompleted = s.status === 'COMPLETED';
+                      const baseLink = editingMeetingLink[s.id] !== undefined ? editingMeetingLink[s.id] : (s.meetingLink || `/consultation?sessionId=${s.id}`);
+                      const clientLink = baseLink.includes('role=') ? baseLink : `${baseLink}${baseLink.includes('?') ? '&' : '?'}role=client`;
+                      const astroLink = baseLink.includes('role=') ? baseLink : `${baseLink}${baseLink.includes('?') ? '&' : '?'}role=astrologer`;
+
+                      const totalAmt = Number(s.totalFee) || 499;
+                      const platformCut = Math.round((totalAmt * adminPlatformFeePct) / 100);
+                      const netPayout = totalAmt - platformCut;
+
+                      const cleanClientPhone = (s.clientPhone || '').replace(/[^0-9]/g, '');
+                      const cleanAstroPhone = (s.astrologerPhone || '919862099881').replace(/[^0-9]/g, '');
+                      const origin = typeof window !== 'undefined' ? window.location.origin : '';
+
+                      const clientWaMsg = `🙏 Hello ${s.clientName}! Your 1-on-1 consultation with ${s.astrologerName} is confirmed for ${s.scheduledDate} (${s.shift || 'Morning'} shift). Directly open your consultation room: ${origin}${clientLink}`;
+                      const astroWaMsg = `🙏 Guru-ji ${s.astrologerName}! Consultation order confirmed with client ${s.clientName} for ${s.scheduledDate} (${s.shift || 'Morning'} shift). Directly open your astrologer room: ${origin}${astroLink}`;
+
+                      return (
+                        <tr key={s.id} className="hover:bg-[#fefcf6] transition-colors">
+                          <td className="px-5 py-4">
+                            <div className="font-mono font-bold text-gray-900">{s.orderRef || s.id}</div>
+                            <div className="flex items-center gap-1 mt-1">
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                                s.mode === 'CHAT' ? 'bg-amber-100 text-amber-800' : 'bg-blue-100 text-blue-800'
+                              }`}>
+                                {s.mode === 'CHAT' ? '💬 Chat' : '📞 Call'}
+                              </span>
+                              <span className="text-[10px] text-gray-400 font-mono">
+                                {s.durationMinutes}m
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4">
+                            <div className="font-bold text-gray-900">{s.clientName}</div>
+                            <div className="text-[11px] font-mono text-gray-600 flex items-center gap-1 mt-0.5">
+                              <span>{s.clientPhone}</span>
+                              <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">
+                                OTP Verified
+                              </span>
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4">
+                            <div className="font-bold text-[#b45309]">{s.astrologerName}</div>
+                            <div className="text-[10px] text-gray-400 font-mono">
+                              {s.astrologerPhone || 'Assigned Astrologer'}
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4">
+                            <div className="font-bold text-gray-800">{s.scheduledDate || 'Today'}</div>
+                            <span className={`inline-block px-2.5 py-0.5 rounded-full text-[11px] font-extrabold mt-1 ${
+                              s.shift === 'Evening'
+                                ? 'bg-indigo-100 text-indigo-800 border border-indigo-200'
+                                : 'bg-amber-100 text-amber-800 border border-amber-200'
+                            }`}>
+                              {s.shift === 'Evening' ? '🌙 Evening' : '☀️ Morning'}
+                            </span>
+                          </td>
+
+                          <td className="px-5 py-4">
+                            <div className="font-mono font-extrabold text-sm text-gray-900">₹{totalAmt}</div>
+                            <div className="text-[10px] font-mono text-gray-500 truncate max-w-[120px]" title={s.paymentUtr}>
+                              UTR: {s.paymentUtr || 'N/A'}
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4 space-y-1.5">
+                            {isCompleted ? (
+                              <span className="px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 text-[10px] font-extrabold flex items-center gap-1 w-fit">
+                                <CheckCircle2 className="w-3 h-3 text-blue-600" />
+                                <span>Session Completed</span>
+                              </span>
+                            ) : isVerified ? (
+                              <span className="px-2.5 py-1 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold flex items-center gap-1 w-fit">
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                <span>Payment Verified</span>
+                              </span>
+                            ) : s.paymentStatus === 'REJECTED' ? (
+                              <span className="px-2.5 py-1 rounded-full bg-red-100 text-red-800 text-[10px] font-extrabold flex items-center gap-1 w-fit">
+                                <XCircle className="w-3 h-3 text-red-600" />
+                                <span>Payment Rejected</span>
+                              </span>
+                            ) : (
+                              <span className="px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 text-[10px] font-extrabold flex items-center gap-1 w-fit animate-pulse">
+                                <Clock className="w-3 h-3 text-amber-600" />
+                                <span>Awaiting Verification</span>
+                              </span>
+                            )}
+
+                            {/* Real-time Payment Status Controller Dropdown */}
+                            <div className="pt-0.5">
+                              <select
+                                value={s.paymentStatus || (isVerified ? 'VERIFIED' : 'PENDING_VERIFICATION')}
+                                disabled={actionProcessingId === s.id}
+                                onChange={(e) => handleAdminUpdateConsultationPaymentStatus(s, e.target.value)}
+                                className={`w-full px-2 py-1 rounded text-[10px] font-extrabold border focus:outline-none cursor-pointer transition-colors ${
+                                  s.paymentStatus === 'VERIFIED' || isVerified
+                                    ? 'bg-emerald-50 text-emerald-900 border-emerald-400'
+                                    : s.paymentStatus === 'REJECTED'
+                                    ? 'bg-red-50 text-red-900 border-red-400'
+                                    : 'bg-amber-50 text-amber-900 border-amber-400'
+                                }`}
+                              >
+                                <option value="VERIFIED">🟢 Payment Verified</option>
+                                <option value="PENDING_VERIFICATION">🟡 Pending Verification</option>
+                                <option value="REJECTED">🔴 Payment Rejected</option>
+                              </select>
+                            </div>
+                          </td>
+
+                          <td className="px-5 py-4 text-right space-y-2">
+                            <div className="flex flex-col items-end gap-1.5">
+                              {/* Step 6 Action: Admin Verify Payment */}
+                              {isPendingPayment && (
+                                <button
+                                  type="button"
+                                  disabled={actionProcessingId === s.id}
+                                  onClick={() => handleAdminVerifyConsultation(s)}
+                                  className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 cursor-pointer transition-all"
+                                >
+                                  {actionProcessingId === s.id && <RefreshCw className="w-3 h-3 animate-spin" />}
+                                  <CheckCircle2 className="w-3 h-3" />
+                                  <span>Verify Payment</span>
+                                </button>
+                              )}
+
+                              {/* Step 7 Action: Meeting Link & WhatsApp Dispatch */}
+                              <div className="flex items-center gap-1">
+                                <input
+                                  type="text"
+                                  value={baseLink}
+                                  onChange={(e) =>
+                                    setEditingMeetingLink((prev) => ({ ...prev, [s.id]: e.target.value }))
+                                  }
+                                  className="px-2 py-1 text-[10px] font-mono border border-gray-300 rounded-lg w-36 bg-white"
+                                  placeholder="/consultation?sessionId=..."
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => handleAdminSendConsultationLink(s, baseLink)}
+                                  className="px-2.5 py-1 rounded-lg bg-[#0b132b] hover:bg-[#1c2541] text-[#fbbf24] font-bold text-[10px] shadow-xs cursor-pointer"
+                                  title="Save and dispatch link to client & astrologer"
+                                >
+                                  Save Link
+                                </button>
+                              </div>
+
+                              <div className="flex items-center justify-end gap-1 text-[10px]">
+                                <a
+                                  href={`https://wa.me/${cleanClientPhone}?text=${encodeURIComponent(clientWaMsg)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2 py-0.5 rounded bg-green-50 hover:bg-green-100 text-green-700 font-bold border border-green-200 inline-flex items-center gap-0.5"
+                                  title="Send consultation link to client via WhatsApp"
+                                >
+                                  <MessageCircle className="w-3 h-3" />
+                                  <span>Client WhatsApp</span>
+                                </a>
+                                <a
+                                  href={`https://wa.me/${cleanAstroPhone}?text=${encodeURIComponent(astroWaMsg)}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="px-2 py-0.5 rounded bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200 inline-flex items-center gap-0.5"
+                                  title="Send consultation link to astrologer via WhatsApp"
+                                >
+                                  <MessageCircle className="w-3 h-3" />
+                                  <span>Astro WhatsApp</span>
+                                </a>
+                              </div>
+
+                              {/* Step 8 Action: Complete Consultation & Credit Wallet */}
+                              {!isCompleted && (
+                                <button
+                                  type="button"
+                                  disabled={actionProcessingId === s.id}
+                                  onClick={() => handleAdminCompleteConsultation(s)}
+                                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:opacity-95 text-white font-extrabold text-[11px] shadow-sm flex items-center gap-1 cursor-pointer transition-all mt-1"
+                                >
+                                  <DollarSign className="w-3.5 h-3.5" />
+                                  <span>Complete & Credit Wallet (₹{netPayout})</span>
+                                </button>
+                              )}
+
+                              {isCompleted && (
+                                <div className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                                  ✅ ₹{s.astrologerNetPayout || netPayout} Credited (Fee: {s.platformFeePercent || adminPlatformFeePct}%)
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+
+                    {consultationSessions.length === 0 && (
+                      <tr>
+                        <td colSpan={7} className="text-center py-8 text-gray-500 font-medium text-xs">
+                          No consultation bookings yet. When clients book via Chat or Call, their orders will appear here for verification.
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -4046,86 +4752,144 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </button>
               </div>
 
-              {/* BLOG EDITOR FORM MODAL */}
+              {/* BLOGGER.COM STYLE BLOG COMPOSER MODAL */}
               {editingPost && (
-                <form onSubmit={handleSaveBlogPost} className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 font-sans text-xs shadow-xl">
-                  <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
-                    <h4 className="font-serif font-bold text-xl text-[#0f172a]">
-                      {editingPost.id ? 'Edit Blog Article' : 'Compose New Vedic Blog Article'}
-                    </h4>
-                    <button type="button" onClick={() => setEditingPost(null)} className="p-1.5 text-gray-400 hover:text-gray-600 cursor-pointer">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
-                    <div className="sm:col-span-8">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Title</label>
-                      <input
-                        type="text"
-                        required
-                        value={editingPost.title || ''}
-                        onChange={(e) => setEditingPost({ ...editingPost, title: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
-                      />
-                    </div>
-                    <div className="sm:col-span-4">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Category</label>
-                      <select
-                        value={editingPost.category || 'Transits & Dashas'}
-                        onChange={(e) => setEditingPost({ ...editingPost, category: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
-                      >
-                        <option value="Transits & Dashas">Transits & Dashas</option>
-                        <option value="Marriage Compatibility">Marriage Compatibility</option>
-                        <option value="Vedic Guidance">Vedic Guidance</option>
-                        <option value="Planetary Remedies">Planetary Remedies</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">Article Content</label>
-                    <textarea
-                      rows={8}
-                      required
-                      value={editingPost.content || ''}
-                      onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
-                      className="w-full p-4 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs font-mono"
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-2">
-                    <button type="button" onClick={() => setEditingPost(null)} className="px-5 py-2.5 rounded-xl bg-white border border-gray-300 text-gray-700 text-xs font-bold cursor-pointer">Cancel</button>
-                    <button type="submit" className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer">Publish Live →</button>
-                  </div>
-                </form>
+                <BloggerPostComposer
+                  post={editingPost}
+                  theme={theme}
+                  onSave={async (savedPost) => {
+                    await handleSaveBlogPost(savedPost);
+                  }}
+                  onClose={() => setEditingPost(null)}
+                  astrologersList={astrologers.map((a) => ({
+                    name: a.name,
+                    avatar: a.avatar,
+                    specialty: a.specialty,
+                  }))}
+                />
               )}
 
-              <div className="bg-white rounded-2xl border border-[#f3e8d2] overflow-hidden shadow-md">
-                <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase border-b border-[#fde68a]">
-                    <tr>
-                      <th className="px-6 py-3.5">Title</th>
-                      <th className="px-6 py-3.5">Category</th>
-                      <th className="px-6 py-3.5">Author</th>
-                      <th className="px-6 py-3.5 text-right">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#fde68a]">
-                    {blogPosts.map((post) => (
-                      <tr key={post.id} className="hover:bg-[#fefcf6]">
-                        <td className="px-6 py-4 font-bold text-[#0f172a] max-w-xs truncate">{post.title}</td>
-                        <td className="px-6 py-4 text-[#b45309] font-bold">{post.category}</td>
-                        <td className="px-6 py-4 text-gray-600">{post.author}</td>
-                        <td className="px-6 py-4 text-right space-x-2">
-                          <button onClick={() => setEditingPost(post)} className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#b45309] border border-[#fde68a] text-[10px] font-bold cursor-pointer">Edit</button>
-                          <button onClick={() => handleDeletePost(post.id)} className="px-3 py-1.5 rounded-xl bg-red-50 text-red-700 border border-red-200 text-[10px] font-bold cursor-pointer">Delete</button>
-                        </td>
+              {/* BLOG ARTICLES CATALOG TABLE */}
+              <div className="bg-white rounded-3xl border border-[#f3e8d2] overflow-hidden shadow-md">
+                <div className="p-4 sm:p-6 bg-[#fffdfa] border-b border-[#fde68a] flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-serif font-bold text-lg text-[#0f172a]">All Published & Draft Articles</h4>
+                    <p className="text-xs text-gray-500">Manage editorial articles, open in Blogger composer, or preview live</p>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-extrabold text-xs border border-[#fde68a]">
+                    {blogPosts.length} Total Articles
+                  </span>
+                </div>
+
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                    <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase border-b border-[#fde68a]">
+                      <tr>
+                        <th className="px-6 py-3.5">Article</th>
+                        <th className="px-6 py-3.5">Category</th>
+                        <th className="px-6 py-3.5">Author</th>
+                        <th className="px-6 py-3.5">Status</th>
+                        <th className="px-6 py-3.5">Performance</th>
+                        <th className="px-6 py-3.5 text-right">Actions</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-[#fde68a]">
+                      {blogPosts.map((post) => (
+                        <tr key={post.id} className="hover:bg-[#fefcf6] transition-colors">
+                          {/* Article Title & Thumbnail */}
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-3">
+                              <div className="w-14 h-10 rounded-xl overflow-hidden bg-gray-100 border border-[#fde68a] shrink-0">
+                                <img
+                                  src={post.coverImage || 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1200&auto=format&fit=crop'}
+                                  alt={post.title}
+                                  className="w-full h-full object-cover"
+                                />
+                              </div>
+                              <div className="max-w-xs sm:max-w-sm">
+                                <span className="font-serif font-bold text-sm text-[#0f172a] line-clamp-1 block">
+                                  {post.title}
+                                </span>
+                                <span className="text-[11px] font-mono text-gray-400 block truncate">
+                                  /blog/{post.slug}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          {/* Category */}
+                          <td className="px-6 py-4">
+                            <span className="px-2.5 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-bold text-[10px] uppercase tracking-wider border border-[#fde68a]">
+                              {post.category}
+                            </span>
+                          </td>
+
+                          {/* Author */}
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              {post.authorAvatar && (
+                                <img
+                                  src={post.authorAvatar}
+                                  alt={post.author}
+                                  className="w-6 h-6 rounded-full object-cover border"
+                                />
+                              )}
+                              <span className="font-bold text-[#0f172a]">{post.author}</span>
+                            </div>
+                          </td>
+
+                          {/* Status */}
+                          <td className="px-6 py-4">
+                            <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
+                              post.status === 'DRAFT'
+                                ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            }`}>
+                              {post.status === 'DRAFT' ? 'Draft' : 'Published'}
+                            </span>
+                          </td>
+
+                          {/* Performance */}
+                          <td className="px-6 py-4 font-mono text-gray-600">
+                            <div className="text-[11px] space-y-0.5">
+                              <div>👁️ {post.views || 0} views</div>
+                              <div>❤️ {post.likes || 0} likes</div>
+                            </div>
+                          </td>
+
+                          {/* Actions */}
+                          <td className="px-6 py-4 text-right space-x-2">
+                            <Link
+                              href={`/blog/${post.slug}`}
+                              target="_blank"
+                              className="px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                              title="View Article Live"
+                            >
+                              <Eye className="w-3 h-3 text-gray-500" />
+                              <span>View</span>
+                            </Link>
+                            <button
+                              onClick={() => setEditingPost(post)}
+                              className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white shadow-xs text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer hover:opacity-95"
+                              title="Edit in Blogger Composer"
+                            >
+                              <Edit className="w-3 h-3" />
+                              <span>Composer</span>
+                            </button>
+                            <button
+                              onClick={() => handleDeletePost(post.id)}
+                              className="px-3 py-1.5 rounded-xl bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 text-[10px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                              title="Delete Article"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              <span>Delete</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}
@@ -7072,34 +7836,45 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* Homepage & Astrologers Directory Rate & Action Button Controls */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-[#fde68a]">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-[#fde68a]">
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Show Per-Minute Rates on Website Cards (Home & Astrologers Page)?
+                      Rate Pricing Mode (Home & Astrologers Page) *
                     </label>
-                    <div className="flex items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() => setAstrologerSectionSettings({ ...astrologerSectionSettings, showRateOnHome: !astrologerSectionSettings.showRateOnHome })}
-                        className={`px-4 py-2.5 rounded-xl text-xs font-extrabold border transition-all cursor-pointer ${
-                          astrologerSectionSettings.showRateOnHome !== false
-                            ? 'bg-green-100 text-green-800 border-green-300'
-                            : 'bg-gray-100 text-gray-600 border-gray-300'
-                        }`}
-                      >
-                        {astrologerSectionSettings.showRateOnHome !== false ? '🟢 Display Rates (e.g. ₹35/min)' : '⚪ Hide Rates on Website'}
-                      </button>
-                    </div>
+                    <select
+                      value={astrologerSectionSettings.rateMode || 'fixed'}
+                      onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, rateMode: e.target.value as any })}
+                      className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
+                    >
+                      <option value="fixed">🏷️ Fixed Rate (e.g. ₹499 Fixed Session)</option>
+                      <option value="per_minute">⏱️ Per-Minute Rate (e.g. ₹35/min)</option>
+                      <option value="both">⚡ Both (e.g. ₹35/min · ₹499 Fixed)</option>
+                      <option value="none">⚪ Hide All Rates</option>
+                    </select>
                   </div>
 
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
-                      Action Buttons Mode (Homepage & Astrologers Page)
+                      Default Fixed Consultation Fee (₹) *
+                    </label>
+                    <input
+                      type="number"
+                      min={99}
+                      max={10000}
+                      value={astrologerSectionSettings.defaultFixedRate || 499}
+                      onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, defaultFixedRate: Number(e.target.value) })}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                      Action Buttons Mode (Call / Chat Control) *
                     </label>
                     <select
                       value={astrologerSectionSettings.actionButtonType || 'both'}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, actionButtonType: e.target.value as any })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
                       <option value="both">💬 Chat & 📞 Call (Dual Buttons Side-by-Side)</option>
                       <option value="chat_only">💬 Chat Only (Single Full-Width Button)</option>
@@ -7149,27 +7924,64 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <p className="text-xs text-gray-600 line-clamp-2">{astro.specialty || (astro.specialties && astro.specialties.join(' · '))}</p>
 
                         <div className="pt-3 border-t border-[#fde68a] space-y-2 text-xs">
-                          {/* Price Per Minute Control */}
-                          <div className="flex items-center justify-between bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a]">
-                            <span className="text-gray-700 font-bold">Homepage Rate (₹/min):</span>
-                            <div className="flex items-center gap-1">
-                              <span className="text-[#b45309] font-bold">₹</span>
-                              <input
-                                type="number"
-                                min={10}
-                                max={500}
-                                value={astro.pricePerMin || 35}
-                                onChange={(e) => handleUpdateAstroRate(astro.id, Number(e.target.value))}
-                                className="w-16 h-8 px-2 rounded-lg bg-white border border-gray-300 text-[#b45309] font-mono font-bold text-center text-xs focus:border-[#d97706] focus:outline-none"
-                              />
-                              <span className="text-[10px] text-gray-500 font-mono">/min</span>
+                          {/* Rates Control: Fixed Rate & Per Minute Rate */}
+                          <div className="grid grid-cols-2 gap-2 bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a]">
+                            <div>
+                              <span className="text-[10px] text-gray-700 font-bold block mb-1">Fixed Fee (₹):</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[#b45309] font-bold text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  min={99}
+                                  max={10000}
+                                  value={astro.fixedRate || astrologerSectionSettings.defaultFixedRate || 499}
+                                  onChange={(e) => handleUpdateAstroFixedRate(astro.id, Number(e.target.value))}
+                                  className="w-full h-8 px-2 rounded-lg bg-white border border-gray-300 text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                />
+                              </div>
                             </div>
+
+                            <div>
+                              <span className="text-[10px] text-gray-700 font-bold block mb-1">Per Min (₹/min):</span>
+                              <div className="flex items-center gap-1">
+                                <span className="text-[#b45309] font-bold text-xs">₹</span>
+                                <input
+                                  type="number"
+                                  min={10}
+                                  max={500}
+                                  value={astro.pricePerMin || 35}
+                                  onChange={(e) => handleUpdateAstroRate(astro.id, Number(e.target.value))}
+                                  className="w-full h-8 px-2 rounded-lg bg-white border border-gray-300 text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Call / Chat Action Mode Control */}
+                          <div className="bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a]">
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-[10px] text-gray-700 font-bold">Action Mode (Call / Chat):</span>
+                              <span className="text-[9px] text-gray-400">
+                                {astro.actionButtonType ? 'Custom' : `Inherit (${astrologerSectionSettings.actionButtonType || 'both'})`}
+                              </span>
+                            </div>
+                            <select
+                              value={astro.actionButtonType || ''}
+                              onChange={(e) => handleUpdateAstroActionButtonType(astro.id, (e.target.value || undefined) as any)}
+                              className="w-full h-8 px-2 rounded-lg bg-white border border-gray-300 text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
+                            >
+                              <option value="">⚙️ Inherit Section Setting ({astrologerSectionSettings.actionButtonType || 'both'})</option>
+                              <option value="both">💬 Chat & 📞 Call (Both)</option>
+                              <option value="chat_only">💬 Chat Only</option>
+                              <option value="call_only">📞 Call Only</option>
+                            </select>
                           </div>
 
                           <div className="flex justify-between text-gray-700">
                             <span>WhatsApp Contact:</span>
                             <span className="font-bold text-[#b45309] font-mono">{astro.whatsappPhone || astro.whatsappNo}</span>
                           </div>
+
 
                           {/* MANAGE ASTROLOGER TOOLS PERMISSIONS BUTTON */}
                           <div className="pt-2">
@@ -7361,106 +8173,6 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </table>
                 </div>
               </div>
-
-              {/* PAYOUT DISBURSEMENT MODAL */}
-              {payoutModalAstro && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                  <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={() => setPayoutModalAstro(null)} />
-                  <div className="relative w-full max-w-md bg-[#1c2541] rounded-2xl border border-[#3a506b] shadow-2xl p-6 space-y-4 z-10 text-xs">
-                    <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
-                      <div>
-                        <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Disburse Payout to Astrologer</h4>
-                        <p className="text-gray-400 text-[11px]">{payoutModalAstro.name} ({payoutModalAstro.whatsappNo})</p>
-                      </div>
-                      <button onClick={() => setPayoutModalAstro(null)} className="text-gray-400 hover:text-white p-1">
-                        <X className="w-5 h-5" />
-                      </button>
-                    </div>
-
-                    <form onSubmit={handleConfirmPayoutDisbursement} className="space-y-4 font-sans">
-                      <div className="bg-[#0b132b] p-3 rounded-xl border border-[#3a506b] flex justify-between items-center">
-                        <span className="text-gray-400">Available Wallet Balance:</span>
-                        <span className="font-mono font-bold text-base text-green-400">₹{payoutModalAstro.pendingPayout.toLocaleString()}</span>
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-300 font-bold mb-1 uppercase tracking-wider text-[10px]">
-                          Payout Amount (₹)<span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          type="number"
-                          required
-                          min={1}
-                          max={payoutModalAstro.pendingPayout}
-                          value={payoutForm.amount || ''}
-                          onChange={(e) => setPayoutForm({ ...payoutForm, amount: Number(e.target.value) })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-[#fbbf24] font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none"
-                        />
-                        <p className="text-[10px] text-gray-500 mt-1">This amount will be deducted directly from the astrologer&apos;s wallet balance.</p>
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-300 font-bold mb-1 uppercase tracking-wider text-[10px]">
-                          Payment Method<span className="text-red-400">*</span>
-                        </label>
-                        <select
-                          value={payoutForm.paymentMethod}
-                          onChange={(e) => setPayoutForm({ ...payoutForm, paymentMethod: e.target.value })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-medium text-xs focus:border-[#d97706] focus:outline-none"
-                        >
-                          <option value="GPay / PhonePe UPI">GPay / PhonePe UPI Direct</option>
-                          <option value="Paytm / BHIM UPI">Paytm / BHIM UPI</option>
-                          <option value="Bank NEFT / IMPS Transfer">Bank NEFT / IMPS Transfer</option>
-                          <option value="Cash / Manual Settlement">Cash / Manual Settlement</option>
-                        </select>
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-300 font-bold mb-1 uppercase tracking-wider text-[10px]">
-                          Transaction UTR / Reference Number<span className="text-red-400">*</span>
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 42981099238"
-                          value={payoutForm.utr}
-                          onChange={(e) => setPayoutForm({ ...payoutForm, utr: e.target.value })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-sky-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-gray-300 font-bold mb-1 uppercase tracking-wider text-[10px]">
-                          Notes / Description
-                        </label>
-                        <input
-                          type="text"
-                          placeholder="Payout remarks"
-                          value={payoutForm.notes}
-                          onChange={(e) => setPayoutForm({ ...payoutForm, notes: e.target.value })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white text-xs focus:border-[#d97706] focus:outline-none"
-                        />
-                      </div>
-
-                      <div className="flex justify-end gap-2 pt-2 border-t border-[#3a506b]">
-                        <button
-                          type="button"
-                          onClick={() => setPayoutModalAstro(null)}
-                          className="px-4 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          type="submit"
-                          className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95"
-                        >
-                          Confirm & Deduct ₹{payoutForm.amount.toLocaleString()} From Wallet
-                        </button>
-                      </div>
-                    </form>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -9666,6 +10378,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               </div>
             </div>
+          )}
+
+          {/* TAB: SERVICE COUPONS & PROMOTIONAL SCHEMES */}
+          {activeTab === 'service_coupons' && (
+            <ServiceCouponsManager theme={theme} />
           )}
 
         </main>

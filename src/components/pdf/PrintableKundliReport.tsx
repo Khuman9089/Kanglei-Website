@@ -9,6 +9,7 @@ import KPSection from '../charts/KPSection';
 import AshtakvargaSection from '../charts/AshtakvargaSection';
 import AllDivisionalBengaliCharts from '../charts/AllDivisionalBengaliCharts';
 import FreeReportSection from '../charts/FreeReportSection';
+import DashaTimeline from '../charts/DashaTimeline';
 
 interface PrintableKundliReportProps {
   name: string;
@@ -30,25 +31,19 @@ export async function downloadDirectPDF(elementId: string, filename: string) {
   }
 
   try {
-    const html2pdf = (await import('html2pdf.js')).default;
-    const opt = {
-      margin: 0.3,
-      filename: filename,
-      image: { type: 'jpeg' as const, quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        letterRendering: true,
-        windowWidth: 1000,
+    const { downloadPDF } = await import('dompdf.js');
+    await downloadPDF(
+      element,
+      {
+        format: 'a4',
+        orientation: 'portrait',
+        pagination: true,
+        compress: true,
       },
-      jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' as const },
-      pagebreak: { mode: ['css', 'legacy'] },
-    };
-
-    await html2pdf().set(opt).from(element).save();
+      filename
+    );
   } catch (err) {
-    console.error('PDF generation error, falling back to print window:', err);
+    console.warn('WASM dompdf failed, triggering instant browser print:', err);
     window.print();
   }
 }
@@ -242,21 +237,45 @@ export function PrintableKundliReport({
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-         PAGE 7: ALL DIVISIONAL VARGA CHARTS
+         PAGE 7: VIMSHOTTARI DASHA TIMELINE
          ───────────────────────────────────────────────────────────── */}
       <div className="space-y-8 page-break-after">
         <div className="border-b border-slate-200 pb-3">
-          <h2 className="text-2xl font-serif font-bold text-[#b45309]">05. All Divisional Varga Charts (D1 through D60)</h2>
+          <h2 className="text-2xl font-serif font-bold text-[#b45309]">05. Vimshottari Mahadasha &amp; Antardasha Timelines</h2>
+        </div>
+        <DashaTimeline
+          dashas={chartData.dashas?.map((d: any, i: number) => ({
+            id: `dasha-${i}`,
+            planet: d.lord || d.planet || 'Ketu',
+            startDate: d.startDate ? new Date(d.startDate).toLocaleDateString() : 'Birth',
+            endDate: d.endDate ? new Date(d.endDate).toLocaleDateString() : '',
+            subPeriods: d.subPeriods?.map((sub: any, subIdx: number) => ({
+              id: `dasha-${i}-${subIdx}`,
+              planet: sub.lord || sub.planet,
+              startDate: sub.startDate ? new Date(sub.startDate).toLocaleDateString() : '',
+              endDate: sub.endDate ? new Date(sub.endDate).toLocaleDateString() : '',
+            })),
+          })) || []}
+          currentDate={new Date().toLocaleDateString()}
+        />
+      </div>
+
+      {/* ─────────────────────────────────────────────────────────────
+         PAGE 8: ALL DIVISIONAL VARGA CHARTS
+         ───────────────────────────────────────────────────────────── */}
+      <div className="space-y-8 page-break-after">
+        <div className="border-b border-slate-200 pb-3">
+          <h2 className="text-2xl font-serif font-bold text-[#b45309]">06. All Divisional Varga Charts (D1 through D60)</h2>
         </div>
         <AllDivisionalBengaliCharts chartData={chartData} isLight={true} />
       </div>
 
       {/* ─────────────────────────────────────────────────────────────
-         PAGE 8: FREE REPORT & HOROSCOPE PREDICTIONS
+         PAGE 9: FREE REPORT & HOROSCOPE PREDICTIONS
          ───────────────────────────────────────────────────────────── */}
       <div className="space-y-8 page-break-after">
         <div className="border-b border-slate-200 pb-3">
-          <h2 className="text-2xl font-serif font-bold text-[#b45309]">06. Detailed Horoscope & Prediction Analysis</h2>
+          <h2 className="text-2xl font-serif font-bold text-[#b45309]">07. Detailed Horoscope &amp; Prediction Analysis</h2>
         </div>
         <FreeReportSection name={name} gender={gender} isLight={true} />
       </div>

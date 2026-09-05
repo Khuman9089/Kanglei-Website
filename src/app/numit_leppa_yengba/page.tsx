@@ -55,6 +55,7 @@ function NumitLeppaYengbaContent() {
   const [tob, setTob] = useState('');
   const [pob, setPob] = useState('Imphal, Manipur');
   const [notes, setNotes] = useState('');
+  const [faithTradition, setFaithTradition] = useState<'Hinduism' | 'Sanamahi Laining'>('Hinduism');
 
   // Checkbox: Want Physical Written Numit Leppa Document
   const [wantPhysicalDelivery, setWantPhysicalDelivery] = useState(false);
@@ -279,6 +280,7 @@ function NumitLeppaYengbaContent() {
         tob,
         pob,
         notes,
+        faithTradition,
         wantPhysicalDelivery,
         deliveryDetails: wantPhysicalDelivery ? {
           fatherName,
@@ -796,6 +798,54 @@ function NumitLeppaYengbaContent() {
                   </AnimatePresence>
                 </div>
 
+                {/* Astrological Faith Tradition Selection */}
+                <div className="bg-[#fffdfa] p-4 sm:p-5 rounded-2xl border border-[#fde68a] shadow-xs space-y-3">
+                  <div className="flex items-center justify-between">
+                    <label className="block text-[11px] font-bold text-gray-800 uppercase tracking-wider">
+                      Astrological Tradition / Faith Preference <span className="text-red-500">*</span>
+                    </label>
+                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
+                      Selected: {faithTradition}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-gray-500">
+                    Choose the ritual and astrological tradition you follow for this Numit Yengba consultation:
+                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setFaithTradition('Hinduism')}
+                      className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                        faithTradition === 'Hinduism'
+                          ? 'bg-[#fef3c7] text-[#b45309] border-[#d97706] shadow-sm ring-1 ring-[#d97706]'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
+                      }`}
+                    >
+                      <span className="text-base">🕉️</span>
+                      <div className="text-left">
+                        <div className="font-extrabold text-[#0f172a]">Hinduism</div>
+                        <div className="text-[10px] text-gray-500 font-normal">Vedic Manipuri Hindu Tradition</div>
+                      </div>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setFaithTradition('Sanamahi Laining')}
+                      className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                        faithTradition === 'Sanamahi Laining'
+                          ? 'bg-[#fef3c7] text-[#b45309] border-[#d97706] shadow-sm ring-1 ring-[#d97706]'
+                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
+                      }`}
+                    >
+                      <span className="text-base">☀️</span>
+                      <div className="text-left">
+                        <div className="font-extrabold text-[#0f172a]">Sanamahi Laining</div>
+                        <div className="text-[10px] text-gray-500 font-normal">Indigenous Sanamahi Tradition</div>
+                      </div>
+                    </button>
+                  </div>
+                </div>
+
                 {/* Submit Button */}
                 <div className="pt-4 flex justify-end">
                   <button
@@ -855,6 +905,10 @@ function NumitLeppaYengbaContent() {
                     <span className="font-bold text-[#b45309]">
                       {customReason.trim() ? `${selectedReason.title} — ${customReason.trim()}` : selectedReason.title} (₹{selectedReason.price} × {slots.length})
                     </span>
+                  </div>
+                  <div className="flex justify-between border-b border-[#fde68a] pb-2">
+                    <span className="text-gray-500">Astrological Faith Tradition:</span>
+                    <span className="font-bold text-[#b45309]">{faithTradition === 'Hinduism' ? '🕉️ Hinduism' : '☀️ Sanamahi Laining'}</span>
                   </div>
 
                   {wantPhysicalDelivery && (
@@ -997,6 +1051,10 @@ function NumitLeppaYengbaContent() {
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Purpose:</span>
                   <span className="font-bold text-[#0f172a]">{selectedReason.title}</span>
+                </div>
+                <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
+                  <span className="text-gray-500">Tradition:</span>
+                  <span className="font-bold text-[#b45309]">{faithTradition}</span>
                 </div>
                 <div className="flex justify-between border-b border-[#f3e8d2] pb-2">
                   <span className="text-gray-500">Submitted UTR:</span>

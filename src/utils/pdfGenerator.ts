@@ -14,11 +14,51 @@ export async function generateDirectPDFDownload(
     return;
   }
 
-  // Find all individual printable section blocks marked with 'pdf-card' or 'a4-page-sheet'
+  // 1. PRIMARY FAST WASM VECTOR ENGINE (dompdf.js)
+  // Runs in Web Worker off the main thread — prevents browser "Page Unresponsive" freezing
+  try {
+    if (onProgress) onProgress(20, 'Initializing high-speed WASM vector engine...');
+    const { downloadPDF } = await import('dompdf.js');
+
+    if (onProgress) onProgress(45, 'Generating vector A4 PDF in Web Worker (1-2s)...');
+    await downloadPDF(
+      targetElement,
+      {
+        format: 'a4',
+        orientation: 'portrait',
+        pagination: true,
+        compress: true,
+        useCORS: true,
+        onProgress: (p) => {
+          if (onProgress && p.stage) {
+            const pct =
+              p.stage === 'collecting'
+                ? 35
+                : p.stage === 'countingPages'
+                ? 60
+                : p.stage === 'rendering'
+                ? 85
+                : 98;
+            onProgress(pct, `Rendering vector pages (${p.stage})...`);
+          }
+        },
+      },
+      filename
+    );
+
+    if (onProgress) onProgress(100, 'Download complete!');
+    return;
+  } catch (wasmErr) {
+    console.warn('WASM dompdf.js encountered an issue, running non-blocking canvas engine fallback:', wasmErr);
+  }
+
+  // 2. RESILIENT FALLBACK: Non-blocking Chunked Canvas Engine
+  // Yields to the browser event loop with setTimeout to guarantee the UI thread stays responsive
   const cards = targetElement.querySelectorAll('.pdf-card, .a4-page-sheet');
   
   if (cards.length === 0) {
     console.error('No printable cards found for capture');
+    window.print();
     return;
   }
 
@@ -39,102 +79,106 @@ export async function generateDirectPDFDownload(
   let isFirstPage = true;
 
   const totalCards = cards.length;
+  const canvases: (HTMLCanvasElement | null)[] = new Array(totalCards).fill(null);
+  const batchSize = 2;
 
-  for (let index = 0; index < totalCards; index++) {
-    const progressPercent = Math.round(((index + 1) / totalCards) * 95);
-    if (onProgress) {
-      onProgress(progressPercent, `Processing section ${index + 1} of ${totalCards}...`);
+  for (let b = 0; b < totalCards; b += batchSize) {
+    // Yield to the browser event loop so the page stays completely responsive
+    await new Promise((resolve) => setTimeout(resolve, 20));
+
+    const batchIndices: number[] = [];
+    for (let i = b; i < Math.min(b + batchSize, totalCards); i++) {
+      batchIndices.push(i);
     }
 
-    const cardEl = cards[index] as HTMLElement;
+    if (onProgress) {
+      const progressPercent = Math.min(90, Math.round(((b + 1) / totalCards) * 90));
+      onProgress(progressPercent, `Rendering section ${b + 1} of ${totalCards}...`);
+    }
 
-    // Create an off-screen container for crisp card capture
-    const container = document.createElement('div');
-    container.style.position = 'fixed';
-    container.style.top = '0';
-    container.style.left = '-9999px';
-    container.style.width = '794px'; // ~210mm in px at 96 DPI
-    container.style.backgroundColor = '#ffffff';
-    container.style.color = '#0f172a';
-    container.style.boxSizing = 'border-box';
-    container.style.padding = '16px';
-    container.style.zIndex = '-9999';
-
-    const clonedCard = cardEl.cloneNode(true) as HTMLElement;
-    clonedCard.style.width = '100%';
-    clonedCard.style.margin = '0';
-
-    container.appendChild(clonedCard);
-    document.body.appendChild(container);
-
-    try {
-      const canvas = await html2canvas(clonedCard, {
-        scale: 1.3,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff',
-        windowWidth: 794,
-        onclone: (clonedDoc) => {
-          // Sanitize CSS text in all <style> tags to eliminate lab() / oklab() / oklch() / lch()
-          const styleTags = clonedDoc.querySelectorAll('style');
-          styleTags.forEach((styleTag) => {
-            if (styleTag.textContent) {
-              styleTag.textContent = styleTag.textContent
-                .replace(/lab\([^)]+\)/gi, 'rgb(15, 23, 42)')
-                .replace(/oklab\([^)]+\)/gi, 'rgb(15, 23, 42)')
-                .replace(/oklch\([^)]+\)/gi, 'rgb(15, 23, 42)')
-                .replace(/lch\([^)]+\)/gi, 'rgb(15, 23, 42)');
-            }
+    await Promise.all(
+      batchIndices.map(async (idx) => {
+        const cardEl = cards[idx] as HTMLElement;
+        try {
+          canvases[idx] = await html2canvas(cardEl, {
+            scale: 1.25,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff',
+            imageTimeout: 0,
+            removeContainer: true,
           });
+        } catch (err) {
+          console.error(`Error rendering card ${idx + 1}:`, err);
+        }
+      })
+    );
+  }
 
-          const allElements = clonedDoc.getElementsByTagName('*');
-          for (let i = 0; i < allElements.length; i++) {
-            const el = allElements[i] as HTMLElement;
-            if (!el || !el.style) continue;
+  if (onProgress) {
+    onProgress(92, 'Assembling multi-page A4 PDF...');
+  }
 
-            try {
-              const compStyle = clonedDoc.defaultView?.getComputedStyle(el);
-              if (compStyle) {
-                const checkAndSanitize = (propName: string, fallbackVal: string) => {
-                  const val = compStyle[propName as any];
-                  if (val && (val.includes('lab(') || val.includes('okl'))) {
-                    el.style.setProperty(propName, fallbackVal);
-                  }
-                };
+  // Assemble the canvases into the PDF document with seamless multi-page slicing
+  for (let index = 0; index < totalCards; index++) {
+    const canvas = canvases[index];
+    if (!canvas) continue;
 
-                checkAndSanitize('color', '#0f172a');
-                checkAndSanitize('background-color', '#ffffff');
-                checkAndSanitize('border-color', '#e2e8f0');
-                checkAndSanitize('outline-color', '#e2e8f0');
-                checkAndSanitize('fill', '#0f172a');
-                checkAndSanitize('stroke', '#0f172a');
-                checkAndSanitize('stop-color', '#0f172a');
+    const cardImgWidth = canvas.width;
+    const cardImgHeight = (canvas.height * contentWidth) / cardImgWidth;
 
-                if (compStyle.boxShadow && (compStyle.boxShadow.includes('lab(') || compStyle.boxShadow.includes('okl'))) {
-                  el.style.boxShadow = 'none';
-                }
-              }
-            } catch (e) {}
-          }
-        },
-      });
-
-      const imgData = canvas.toDataURL('image/jpeg', 0.92);
-      const cardImgHeight = (canvas.height * contentWidth) / canvas.width;
-
-      // Check if card fits on current page; if not, add a new page
+    // Handle both fitting cards and extra-long cards that span multiple A4 pages seamlessly
+    if (cardImgHeight <= contentHeight) {
+      // Fits within a single page or remaining page height
       if (!isFirstPage && currentY + cardImgHeight > pdfHeight - pageMargin) {
         pdf.addPage();
         currentY = pageMargin;
       }
 
+      const imgData = canvas.toDataURL('image/jpeg', 0.88);
       pdf.addImage(imgData, 'JPEG', pageMargin, currentY, contentWidth, cardImgHeight, undefined, 'FAST');
       currentY += cardImgHeight + 4; // 4mm spacing between cards
       isFirstPage = false;
-    } catch (err) {
-      console.error(`Error rendering card ${index + 1}:`, err);
-    } finally {
-      document.body.removeChild(container);
+    } else {
+      // Section is longer than a single A4 page! Slice into consecutive A4 pages without cutting any text
+      let remainingHeight = canvas.height;
+      let sourceY = 0;
+      const pagePixelHeight = (contentHeight * cardImgWidth) / contentWidth;
+
+      while (remainingHeight > 0) {
+        if (!isFirstPage) {
+          pdf.addPage();
+          currentY = pageMargin;
+        }
+
+        const slicePixelHeight = Math.min(remainingHeight, pagePixelHeight);
+
+        // Create temporary slice canvas
+        const sliceCanvas = document.createElement('canvas');
+        sliceCanvas.width = cardImgWidth;
+        sliceCanvas.height = slicePixelHeight;
+        const ctx = sliceCanvas.getContext('2d');
+
+        if (ctx) {
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, cardImgWidth, slicePixelHeight);
+          ctx.drawImage(
+            canvas,
+            0, sourceY, cardImgWidth, slicePixelHeight,
+            0, 0, cardImgWidth, slicePixelHeight
+          );
+
+          const sliceImgData = sliceCanvas.toDataURL('image/jpeg', 0.88);
+          const sliceMmHeight = (slicePixelHeight * contentWidth) / cardImgWidth;
+
+          pdf.addImage(sliceImgData, 'JPEG', pageMargin, currentY, contentWidth, sliceMmHeight, undefined, 'FAST');
+          currentY += sliceMmHeight + 4;
+        }
+
+        sourceY += slicePixelHeight;
+        remainingHeight -= slicePixelHeight;
+        isFirstPage = false;
+      }
     }
   }
 

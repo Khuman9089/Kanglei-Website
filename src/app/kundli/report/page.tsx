@@ -63,6 +63,15 @@ export default function DownloadKundliReportPage({
     }
   };
 
+  const handleInstantPDFDownload = async () => {
+    if (!user) {
+      setIsAuthModalOpen(true);
+      return;
+    }
+    const filename = `${name.replace(/\s+/g, '_')}_Vedic_Kundli_A4_Report.pdf`;
+    await downloadDirectPDF('printable-kundli-document', filename);
+  };
+
   const handleAuthSuccess = (userData: any) => {
     setUser(userData);
     setIsAuthModalOpen(false);

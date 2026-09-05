@@ -136,7 +136,7 @@ export function Navbar() {
   const [mobileExpandedId, setMobileExpandedId] = useState<string | null>(null);
   const [cartCount, setCartCount] = useState(0);
 
-  // Dynamic Navigation Configuration
+  // Dynamic Navigation Configuration with instant localStorage hydration
   const [navConfig, setNavConfig] = useState<NavbarConfig>(DEFAULT_NAVBAR_CONFIG);
 
   const pathname = usePathname();
@@ -150,15 +150,45 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    // Fetch live navbar configuration
-    fetch('/api/navbar')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && Array.isArray(data.items)) {
-          setNavConfig(data);
+    // 1. Instant hydration from client localStorage cache
+    try {
+      const cached = localStorage.getItem('kanglei_navbar_config');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && Array.isArray(parsed.items)) {
+          setNavConfig(parsed);
         }
-      })
-      .catch(() => {});
+      }
+    } catch (e) {}
+
+    // 2. Fetch live navbar configuration from cloud database
+    const fetchNav = () => {
+      fetch('/api/navbar?t=' + Date.now(), { cache: 'no-store' })
+        .then((res) => res.json())
+        .then((data) => {
+          if (data && Array.isArray(data.items)) {
+            setNavConfig(data);
+            try {
+              localStorage.setItem('kanglei_navbar_config', JSON.stringify(data));
+            } catch (e) {}
+          }
+        })
+        .catch(() => {});
+    };
+
+    fetchNav();
+
+    // 3. Listen for cross-tab or admin updates
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'kanglei_navbar_config' && e.newValue) {
+        try {
+          const parsed = JSON.parse(e.newValue);
+          if (parsed && Array.isArray(parsed.items)) setNavConfig(parsed);
+        } catch (err) {}
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
   }, []);
 
   const loadUser = () => {

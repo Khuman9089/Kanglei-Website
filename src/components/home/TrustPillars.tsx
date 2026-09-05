@@ -29,7 +29,7 @@ const PILLARS = [
 
 export default function TrustPillars() {
   return (
-    <section className="py-8 sm:py-10 bg-[#fffdfa] text-[#0f172a]">
+    <section className="hidden md:block py-8 sm:py-10 bg-[#fffdfa] text-[#0f172a]">
       <div className="max-w-7xl mx-auto px-4 md:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {PILLARS.map((p, idx) => {

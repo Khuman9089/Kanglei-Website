@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { MessageCircle, Phone, ArrowRight, CheckCircle2, Star } from 'lucide-react';
 import Link from 'next/link';
+import ConsultationBookingModal from '@/components/consultation/ConsultationBookingModal';
 
 interface TopAstrologer {
   id: string;
@@ -16,6 +17,8 @@ interface TopAstrologer {
   rating: number;
   consultationsCount: string;
   pricePerMin: number;
+  fixedRate?: number;
+  actionButtonType?: 'both' | 'chat_only' | 'call_only';
   whatsappPhone: string;
   active?: boolean;
   showOnHome?: boolean;
@@ -29,11 +32,28 @@ export default function TopAstrologersSection() {
     subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
     showRateOnHome: true,
     actionButtonType: 'both' as 'both' | 'chat_only' | 'call_only',
+    rateMode: 'fixed' as 'fixed' | 'per_minute' | 'both' | 'none',
+    defaultFixedRate: 499,
   });
 
+  const [selectedAstrologerForModal, setSelectedAstrologerForModal] = useState<any>(null);
+  const [modalMode, setModalMode] = useState<'CHAT' | 'CALL'>('CHAT');
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+
   useEffect(() => {
+    // Instant client-side hydration from localStorage cache
+    try {
+      const cached = localStorage.getItem('kanglei_astrologer_settings');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed && typeof parsed === 'object') {
+          setSettings((prev) => ({ ...prev, ...parsed }));
+        }
+      }
+    } catch (e) {}
+
     const fetchAstroData = () => {
-      fetch('/api/astrologers')
+      fetch('/api/astrologers?t=' + Date.now(), { cache: 'no-store' })
         .then((res) => res.json())
         .then((data) => {
           if (data.astrologers && Array.isArray(data.astrologers)) {
@@ -42,20 +62,31 @@ export default function TopAstrologersSection() {
           }
           if (data.settings) {
             setSettings((prev) => ({ ...prev, ...data.settings }));
+            try {
+              localStorage.setItem('kanglei_astrologer_settings', JSON.stringify(data.settings));
+            } catch (e) {}
           }
         })
         .catch((err) => console.error('Error fetching astrologers:', err));
     };
 
     fetchAstroData();
-    const interval = setInterval(fetchAstroData, 2500);
+    const interval = setInterval(fetchAstroData, 3000);
     return () => clearInterval(interval);
   }, []);
 
   const handleStartChatCall = (astro: TopAstrologer, type: 'Chat' | 'Call') => {
-    const msg = `🙏 Hello! I want to start a live ${type.toLowerCase()} consultation with ${astro.name} on KangleiAstro.`;
-    const cleanPhone = astro.whatsappPhone ? astro.whatsappPhone.replace(/[^0-9]/g, '') : '919862099881';
-    window.open(`https://wa.me/${cleanPhone}?text=${encodeURIComponent(msg)}`, '_blank');
+    setSelectedAstrologerForModal({
+      id: astro.id,
+      name: astro.name,
+      avatar: astro.avatar,
+      pricePerMin: astro.pricePerMin || 35,
+      fixedRate: astro.fixedRate || settings.defaultFixedRate || 499,
+      whatsappPhone: astro.whatsappPhone,
+      specialties: astro.specialties,
+    });
+    setModalMode(type.toUpperCase() as 'CHAT' | 'CALL');
+    setIsBookingModalOpen(true);
   };
 
   return (
@@ -147,28 +178,48 @@ export default function TopAstrologersSection() {
                     <span className="text-gray-400 text-[11px]">· {astro.consultationsCount}</span>
                   </div>
 
-                  {settings.showRateOnHome !== false && (
+                  {settings.showRateOnHome !== false && settings.rateMode !== 'none' && (
                     <div className="text-right">
-                      <span className="font-extrabold text-base text-[#0f172a]">₹{astro.pricePerMin}</span>
-                      <span className="text-[10px] text-gray-500 font-medium">/min</span>
+                      {settings.rateMode === 'fixed' ? (
+                        <div className="flex items-center justify-end gap-1.5">
+                          <span className="font-extrabold text-base text-[#0f172a]">₹{astro.fixedRate || settings.defaultFixedRate || 499}</span>
+                          <span className="text-[10px] text-[#b45309] font-bold bg-[#fef3c7] px-1.5 py-0.5 rounded border border-[#fde68a]">Fixed Fee</span>
+                        </div>
+                      ) : settings.rateMode === 'both' ? (
+                        <div className="flex flex-col items-end">
+                          <div className="flex items-baseline gap-1">
+                            <span className="font-extrabold text-sm text-[#0f172a]">₹{astro.fixedRate || settings.defaultFixedRate || 499}</span>
+                            <span className="text-[9px] text-[#b45309] font-bold">Fixed</span>
+                          </div>
+                          <div className="text-[10px] text-gray-500 font-medium font-mono">
+                            ₹{astro.pricePerMin || 35}/min
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <span className="font-extrabold text-base text-[#0f172a]">₹{astro.pricePerMin || 35}</span>
+                          <span className="text-[10px] text-gray-500 font-medium font-mono">/min</span>
+                        </div>
+                      )}
                     </div>
                   )}
+
                 </div>
               </div>
 
-              {/* Chat & Call Action Buttons (Controlled from Admin Panel) */}
-              {settings.actionButtonType === 'chat_only' ? (
+              {/* Chat & Call Action Buttons (Controlled from Admin Panel or Astrologer Override) */}
+              {(astro.actionButtonType || settings.actionButtonType) === 'chat_only' ? (
                 <button
                   onClick={() => handleStartChatCall(astro, 'Chat')}
-                  className="w-full py-2.5 px-4 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                  className="w-full py-2.5 px-4 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                 >
                   <MessageCircle className="w-4 h-4" />
                   <span>Chat Now</span>
                 </button>
-              ) : settings.actionButtonType === 'call_only' ? (
+              ) : (astro.actionButtonType || settings.actionButtonType) === 'call_only' ? (
                 <button
                   onClick={() => handleStartChatCall(astro, 'Call')}
-                  className="w-full py-2.5 px-4 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                  className="w-full py-2.5 px-4 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                 >
                   <Phone className="w-4 h-4" />
                   <span>Call Now</span>
@@ -177,7 +228,7 @@ export default function TopAstrologersSection() {
                 <div className="grid grid-cols-2 gap-2.5">
                   <button
                     onClick={() => handleStartChatCall(astro, 'Chat')}
-                    className="w-full py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                    className="w-full py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <MessageCircle className="w-3.5 h-3.5" />
                     <span>Chat</span>
@@ -185,7 +236,7 @@ export default function TopAstrologersSection() {
 
                   <button
                     onClick={() => handleStartChatCall(astro, 'Call')}
-                    className="w-full py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs"
+                    className="w-full py-2 px-3 rounded-full border border-emerald-500 text-emerald-700 hover:bg-emerald-600 hover:text-white font-bold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-2xs cursor-pointer"
                   >
                     <Phone className="w-3.5 h-3.5" />
                     <span>Call</span>
@@ -197,6 +248,14 @@ export default function TopAstrologersSection() {
         </div>
 
       </div>
+
+      {/* MULTI-STEP CONSULTATION BOOKING MODAL */}
+      <ConsultationBookingModal
+        astrologer={selectedAstrologerForModal}
+        mode={modalMode}
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+      />
     </section>
   );
 }

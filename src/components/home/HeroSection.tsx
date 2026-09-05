@@ -294,17 +294,34 @@ export default function HeroSection() {
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </motion.div>
+
+              {/* Free Match Making (Kundli Milan) Button Below Panchang Card (Desktop View) */}
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.15 }}
+              >
+                <Link
+                  href="/matching"
+                  className="w-full py-3.5 px-5 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs sm:text-sm shadow-md hover:shadow-lg hover:opacity-95 transition-all flex items-center justify-center gap-2 border border-[#fde68a]"
+                >
+                  <Heart className="w-4 h-4 fill-white/20 text-white shrink-0" />
+                  <span>Free Match Making (Kundli Milan)</span>
+                  <ArrowRight className="w-4 h-4 shrink-0" />
+                </Link>
+              </motion.div>
             </div>
           )}
 
-          {/* RIGHT COLUMN: FREE MATCH MAKING BUTTON + FREE KUNDLI REPORT FORM CARD (col-span-12 lg:col-span-8) */}
+          {/* RIGHT COLUMN: FREE KUNDLI REPORT FORM CARD (col-span-12 lg:col-span-8) */}
           <div className="lg:col-span-8 flex flex-col gap-4">
             
-            {/* Free Match Making Button (Above Form, Below Top Menu) */}
+            {/* Free Match Making Button (Shown on mobile only, as desktop view has it below panchang card) */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.4 }}
+              className="lg:hidden"
             >
               <Link
                 href="/matching"

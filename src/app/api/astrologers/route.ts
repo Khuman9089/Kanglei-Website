@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase';
 import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export interface AstrologerItem {
   id: string;
@@ -37,6 +38,8 @@ export interface AstrologerItem {
   rating?: number;
   consultationsCount?: string;
   pricePerMin?: number;
+  fixedRate?: number;
+  actionButtonType?: 'both' | 'chat_only' | 'call_only';
   bio?: string;
   isTrending?: boolean;
   active?: boolean;
@@ -55,8 +58,11 @@ export interface AstrologerSectionSettings {
   title: string;
   highlightText: string;
   subtitleTagline: string;
-  showRateOnHome: boolean; // Toggle rate display (e.g. ₹35/min) on homepage
+  showRateOnHome: boolean; // Toggle rate display on homepage
   actionButtonType: 'both' | 'chat_only' | 'call_only'; // Control button function (Chat, Call, or Both)
+  rateMode: 'fixed' | 'per_minute' | 'both' | 'none'; // Rate mode: fixed fee, per-minute rate, both, or hide
+  defaultFixedRate: number; // Default fixed consultation rate (e.g. ₹499)
+  fixedRateLabel?: string; // Label display e.g. "Fixed"
 }
 
 const DEFAULT_SECTION_SETTINGS: AstrologerSectionSettings = {
@@ -65,7 +71,11 @@ const DEFAULT_SECTION_SETTINGS: AstrologerSectionSettings = {
   subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
   showRateOnHome: true,
   actionButtonType: 'both',
+  rateMode: 'fixed',
+  defaultFixedRate: 499,
+  fixedRateLabel: 'Fixed',
 };
+
 
 const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
   {
@@ -80,6 +90,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 5.0,
     consultationsCount: '50k+',
     pricePerMin: 35,
+    fixedRate: 499,
     whatsappPhone: '+919862099881',
     email: 'tombi.sharma@kangleiastro.com',
     bio: 'Master Vedic Astrologer with 15+ years of expertise in Kuthi Yengba, Dasha remedies, and marital compatibility.',
@@ -100,6 +111,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 4.9,
     consultationsCount: '10k+',
     pricePerMin: 28,
+    fixedRate: 399,
     whatsappPhone: '+919862099881',
     email: 'saanvi.sharma@kangleiastro.com',
     bio: 'Specialist in intuitive Tarot reading, relationship counseling, and psychological birth chart insights.',
@@ -120,6 +132,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 5.0,
     consultationsCount: '25k+',
     pricePerMin: 30,
+    fixedRate: 449,
     whatsappPhone: '+919774033411',
     email: 'ningthem.meitei@kangleiastro.com',
     bio: 'Senior Jyotish Scholar specializing in 36-Gun Ashtakoot matching, Manglik remedies, and business timing.',
@@ -140,6 +153,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 5.0,
     consultationsCount: '15k+',
     pricePerMin: 25,
+    fixedRate: 349,
     whatsappPhone: '+919856177122',
     email: 'gurumayum.sharma@kangleiastro.com',
     bio: 'Numerology and Palmistry specialist providing practical gemstones, Mantras, and life alignment remedies.',
@@ -160,6 +174,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 4.9,
     consultationsCount: '12k+',
     pricePerMin: 34,
+    fixedRate: 499,
     whatsappPhone: '+919862099881',
     email: 'lokamayi.devi@kangleiastro.com',
     bio: 'Renowned Face Reading expert and spiritual healer focusing on love guidance and career clarity.',
@@ -180,6 +195,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 4.8,
     consultationsCount: '35k+',
     pricePerMin: 45,
+    fixedRate: 599,
     whatsappPhone: '+919862099881',
     email: 'amarmani@kangleiastro.com',
     bio: 'Vastu Shastra and corporate astrology advisor with 20 years of experience guiding property and investment choices.',
@@ -200,6 +216,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 5.0,
     consultationsCount: '40k+',
     pricePerMin: 40,
+    fixedRate: 549,
     whatsappPhone: '+919862099881',
     email: 'raghuvardas@kangleiastro.com',
     bio: 'Prashna Kundli expert offering instant precise answers to immediate burning life questions.',
@@ -220,6 +237,7 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
     rating: 5.0,
     consultationsCount: '18k+',
     pricePerMin: 32,
+    fixedRate: 449,
     whatsappPhone: '+919862099881',
     email: 'abhas.sharma@kangleiastro.com',
     bio: 'Nadi astrology practitioner specializing in karmic patterns and precise planetary timing.',
@@ -232,11 +250,32 @@ const DEFAULT_ASTROLOGERS: AstrologerItem[] = [
 
 export async function GET() {
   const settings = await readPersistentDataAsync<AstrologerSectionSettings>('astrologer_settings', DEFAULT_SECTION_SETTINGS);
-  const astrologers = await readPersistentDataAsync<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
-  return NextResponse.json({
-    settings,
-    astrologers,
+  let astrologers = await readPersistentDataAsync<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
+
+  const mergedSettings: AstrologerSectionSettings = { ...DEFAULT_SECTION_SETTINGS, ...settings };
+  astrologers = astrologers.map((a) => {
+    const defaultItem = DEFAULT_ASTROLOGERS.find((d) => d.id === a.id);
+    return {
+      ...a,
+      pricePerMin: a.pricePerMin || defaultItem?.pricePerMin || 35,
+      fixedRate: a.fixedRate || defaultItem?.fixedRate || mergedSettings.defaultFixedRate || 499,
+      actionButtonType: a.actionButtonType || mergedSettings.actionButtonType || 'both',
+    };
   });
+
+  return NextResponse.json(
+    {
+      settings: mergedSettings,
+      astrologers,
+    },
+    {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+      },
+    }
+  );
 }
 
 import prisma from '@/lib/db';
@@ -248,7 +287,7 @@ export async function POST(req: Request) {
     let currentAstrologers = await readPersistentDataAsync<AstrologerItem[]>('astrologers', DEFAULT_ASTROLOGERS);
 
     if (body.settings) {
-      currentSettings = { ...currentSettings, ...body.settings };
+      currentSettings = { ...DEFAULT_SECTION_SETTINGS, ...currentSettings, ...body.settings };
       await writePersistentDataAsync('astrologer_settings', currentSettings);
     }
 
@@ -257,9 +296,20 @@ export async function POST(req: Request) {
       await writePersistentDataAsync('astrologers', currentAstrologers);
     }
 
+    // Handle single action dispatch
+    if (body.action === 'UPDATE_STATUS' && body.id) {
+      currentAstrologers = currentAstrologers.map((a) =>
+        a.id === body.id ? { ...a, status: body.status } : a
+      );
+      await writePersistentDataAsync('astrologers', currentAstrologers);
+    } else if (body.action === 'DELETE_ASTROLOGER' && body.id) {
+      currentAstrologers = currentAstrologers.filter((a) => a.id !== body.id);
+      await writePersistentDataAsync('astrologers', currentAstrologers);
+    }
+
     const astro = body.astrologer || body.updateAstrologer;
     if (astro && astro.name) {
-      const idx = currentAstrologers.findIndex((a) => a.id === astro.id || a.whatsappPhone === astro.whatsappNo);
+      const idx = currentAstrologers.findIndex((a) => a.id === astro.id || (astro.whatsappNo && a.whatsappPhone === astro.whatsappNo));
       if (idx !== -1) {
         currentAstrologers[idx] = { ...currentAstrologers[idx], ...astro };
       } else {
@@ -317,11 +367,18 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      settings: currentSettings,
-      astrologers: currentAstrologers,
-    });
+    return NextResponse.json(
+      {
+        success: true,
+        settings: currentSettings,
+        astrologers: currentAstrologers,
+      },
+      {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        },
+      }
+    );
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to update astrologers' }, { status: 500 });
   }

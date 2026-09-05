@@ -32,55 +32,59 @@ const DEFAULT_BHAVA_DATA: BhavaItem[] = [
 
 export function BhavaBalaTable() {
   return (
-    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-4 sm:p-5 space-y-3">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+    <div className="w-full rounded-2xl bg-white border border-slate-200/90 shadow-xs p-3 sm:p-4 space-y-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2">
         <div>
-          <h3 className="font-sans font-bold text-base sm:text-lg text-slate-900">
+          <h3 className="font-sans font-bold text-sm sm:text-base text-slate-900">
             Bhava Bala Summary (12 House Strengths)
           </h3>
-          <p className="text-xs text-slate-500 font-normal">
+          <p className="text-[11px] text-slate-500 font-normal">
             Evaluates the net functional capability & potency of all 12 Houses in Rupas.
           </p>
         </div>
-        <span className="text-xs font-bold px-3 py-1 rounded-full bg-[#fef08a] text-slate-900 border border-[#facc15]">
+        <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-[#fef08a] text-slate-900 border border-[#facc15]">
           12 Houses Evaluated
         </span>
       </div>
 
       <div className="w-full overflow-x-auto">
-        <table className="w-full text-left text-sm font-sans border-collapse">
+        <table className="w-full text-left text-xs font-sans border-collapse">
           <thead>
-            <tr className="border-b border-slate-200 text-xs font-extrabold text-slate-500 uppercase tracking-wider">
-              <th className="py-3 px-3.5">HOUSE</th>
-              <th className="py-3 px-3.5">SIGN</th>
-              <th className="py-3 px-3.5">HOUSE LORD</th>
-              <th className="py-3 px-3.5 text-right">ADHIPATI BALA</th>
-              <th className="py-3 px-3.5 text-right">BHAVA DIG BALA</th>
-              <th className="py-3 px-3.5 text-right">BHAVA DRIK BALA</th>
-              <th className="py-3 px-3.5 text-right">TOTAL (RUPAS)</th>
-              <th className="py-3 px-3.5 text-center">RANK</th>
-              <th className="py-3 px-3.5 text-center">STRENGTH</th>
+            <tr className="border-b border-slate-200 text-[10px] sm:text-xs font-extrabold text-slate-500 uppercase tracking-wider">
+              <th className="py-2 px-2">HOUSE</th>
+              <th className="py-2 px-2">SIGN</th>
+              <th className="py-2 px-2">HOUSE LORD</th>
+              <th className="py-2 px-2 text-right">ADHIPATI BALA</th>
+              <th className="py-2 px-2 text-right">BHAVA DIG BALA</th>
+              <th className="py-2 px-2 text-right">BHAVA DRIK BALA</th>
+              <th className="py-2 px-2 text-right">TOTAL (RUPAS)</th>
+              <th className="py-2 px-2 text-center">RANK</th>
+              <th className="py-2 px-2 text-center">STRENGTH</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold">
+          <tbody className="divide-y divide-slate-100 text-slate-800 font-semibold text-[11px] sm:text-xs">
             {DEFAULT_BHAVA_DATA.map((row, idx) => (
               <tr key={idx} className="hover:bg-amber-50/50 transition-colors">
-                <td className="py-3 px-3.5 font-bold text-slate-900 text-sm sm:text-base">
-                  House {row.house} <span className="font-medium text-slate-500 text-xs">({row.houseName})</span>
+                <td className="py-2 px-2 font-bold text-slate-900">
+                  H{row.house} <span className="font-normal text-slate-500 text-[10px]">({row.houseName})</span>
                 </td>
-                <td className="py-3 px-3.5 text-slate-800 text-sm">{row.sign}</td>
-                <td className="py-3 px-3.5 text-slate-800 font-semibold text-sm">{row.lord}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.adhipatiBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.digBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-mono text-slate-800 text-sm">{row.drikBala.toFixed(1)}</td>
-                <td className="py-3 px-3.5 text-right font-bold text-slate-900 font-mono text-sm">{row.totalRupa.toFixed(2)}</td>
-                <td className="py-3 px-3.5 text-center font-bold text-amber-800 text-sm">#{row.rank}</td>
-                <td className="py-3 px-3.5 text-center">
-                  <span className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-extrabold ${
-                    row.strength === 'POWERFUL'
-                      ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                      : 'bg-amber-100 text-amber-800 border border-amber-300'
-                  }`}>
+                <td className="py-2 px-2 text-slate-800">{row.sign}</td>
+                <td className="py-2 px-2 text-slate-800 font-semibold">{row.lord}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.adhipatiBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.digBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono text-slate-700">{row.drikBala.toFixed(1)}</td>
+                <td className="py-2 px-2 text-right font-mono font-bold text-slate-900">{row.totalRupa.toFixed(2)}</td>
+                <td className="py-2 px-2 text-center font-bold text-amber-800">#{row.rank}</td>
+                <td className="py-2 px-2 text-center">
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                      row.strength === 'POWERFUL'
+                        ? 'bg-emerald-100 text-emerald-800'
+                        : row.strength === 'MODERATE'
+                        ? 'bg-blue-100 text-blue-800'
+                        : 'bg-slate-100 text-slate-700'
+                    }`}
+                  >
                     {row.strength}
                   </span>
                 </td>
