@@ -28,7 +28,7 @@ interface AstrologerItem {
   online: boolean;
 }
 
-const CATEGORIES = ['All', 'Love', 'Education', 'Career', 'Marriage', 'Health', 'Wealth'];
+const DEFAULT_CATEGORIES = ['Love', 'Education', 'Career', 'Marriage', 'Health', 'Wealth'];
 
 export default function AstrologersDirectoryPage() {
   const [astrologers, setAstrologers] = useState<AstrologerItem[]>([]);
@@ -40,6 +40,7 @@ export default function AstrologersDirectoryPage() {
     actionButtonType: 'both' as 'both' | 'chat_only' | 'call_only',
     rateMode: 'fixed' as 'fixed' | 'per_minute' | 'both' | 'none',
     defaultFixedRate: 499,
+    categories: DEFAULT_CATEGORIES,
   });
 
   // Filter & Search State
@@ -217,7 +218,7 @@ export default function AstrologersDirectoryPage() {
 
           {/* Category Filter Pills (Horizontal Scroll) */}
           <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pt-1 pb-1">
-            {CATEGORIES.map((cat) => (
+            {['All', ...(Array.isArray(settings.categories) && settings.categories.length > 0 ? settings.categories : DEFAULT_CATEGORIES)].map((cat) => (
               <button
                 key={cat}
                 onClick={() => setActiveCategory(cat)}

@@ -57,6 +57,6 @@
       "action": "got his Career Horoscope reading from Acharya Tombi"
     }
   ],
-  "active": true,
-  "speedSeconds": 65
+  "active": false,
+  "speedSeconds": 120
 }

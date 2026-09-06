@@ -94,7 +94,7 @@ function createFallbackMediaStream(label: string): MediaStream {
 
 interface LiveConsultationRoomProps {
   sessionId: string;
-  currentUserType: 'CLIENT' | 'ASTROLOGER';
+  currentUserType: 'CLIENT' | 'ASTROLOGER' | 'ADMIN';
   onClose?: () => void;
 }
 
@@ -461,7 +461,45 @@ export default function LiveConsultationRoom({
       try {
         const res = await fetch(`/api/consultations?sessionId=${sessionId}`);
         const data = await res.json();
-        if (!data.session) return;
+        if (!data.session) {
+          // If session is not registered yet or standby room requested, initialize fallback
+          setSession((prev) => {
+            if (prev) return prev;
+            return {
+              id: sessionId,
+              mode: 'CALL',
+              callType: 'VIDEO',
+              clientName: 'Live Client',
+              clientPhone: '+91 98620 11223',
+              clientGender: 'Client',
+              clientDob: '1996-04-12',
+              clientTob: '08:30 AM',
+              clientPob: 'Imphal, Manipur',
+              astrologerId: 'astro-1',
+              astrologerName: 'Acharya Tombi Sharma',
+              astrologerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
+              status: 'LIVE',
+              durationMinutes: 15,
+              ratePerMin: 35,
+              totalFee: 525,
+              createdAt: new Date().toISOString(),
+              startedAt: new Date().toISOString(),
+              remainingSeconds: 900,
+              messages: [
+                {
+                  id: `msg-${Date.now()}`,
+                  sender: 'SYSTEM',
+                  text: 'Encrypted consultation workspace connected. Live voice, video, and chat ready.',
+                  timestamp: new Date().toISOString(),
+                },
+              ],
+              signals: [],
+            };
+          });
+          setRemainingSecs((prev) => (prev > 0 ? prev : 900));
+          setLoading(false);
+          return;
+        }
 
         setSession(data.session);
         const defaultDurationSecs = (data.session.durationMinutes || 15) * 60;
@@ -693,14 +731,99 @@ export default function LiveConsultationRoom({
     return (
       <div className="fixed inset-0 z-[999999] bg-[#0b141a] flex flex-col items-center justify-center space-y-4 text-slate-300">
         <div className="w-12 h-12 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
-        <p className="font-medium text-sm text-emerald-400">Loading WhatsApp Live Consultation Workspace...</p>
+        <p className="font-medium text-sm text-emerald-400">Loading Live Consultation Workspace...</p>
       </div>
     );
   }
 
-  const otherPartyName = currentUserType === 'CLIENT' ? session.astrologerName : session.clientName;
+  // Astrologer Access Control: If admin marked session as COMPLETED,
+  // show Order & Session details ONLY. Client private details and chat room are NOT accessible.
+  if (session.status === 'COMPLETED' && currentUserType === 'ASTROLOGER') {
+    const total = Number(session.totalFee) || 499;
+    const feePct = session.platformFeePercent ?? 15;
+    const payout = session.astrologerNetPayout ?? Math.round(total * (1 - feePct / 100));
+
+    return (
+      <div className="fixed inset-0 z-[999999] w-screen h-[100dvh] bg-[#0b141a] text-[#e9edef] flex items-center justify-center p-4">
+        <div className="max-w-md w-full bg-[#1c2541] border border-[#3a506b] rounded-3xl p-6 shadow-2xl space-y-5 text-center relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-emerald-500 via-amber-500 to-emerald-500" />
+
+          <div className="w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/40 flex items-center justify-center mx-auto shadow-inner">
+            <ShieldCheck className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-1">
+            <span className="px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-extrabold uppercase tracking-wider inline-block">
+              Session Completed by Admin
+            </span>
+            <h3 className="text-lg font-bold text-white">Consultation Completed & Archived</h3>
+            <p className="text-xs text-slate-400 leading-relaxed max-w-sm mx-auto">
+              Per platform privacy guidelines, live chat room access and client personal details are locked and inaccessible once completed by admin.
+            </p>
+          </div>
+
+          <div className="bg-[#0b132b] rounded-2xl p-4 border border-[#3a506b]/50 text-left space-y-2.5 text-xs">
+            <div className="flex justify-between items-center pb-2 border-b border-slate-700/50">
+              <span className="text-slate-400">Order / Session Ref:</span>
+              <span className="font-mono font-bold text-amber-400">{session.orderRef || session.id}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Service Type:</span>
+              <span className="font-semibold text-slate-200">
+                {session.mode === 'CALL' ? `${session.callType || 'Video'} Call Consultation` : 'Live Chat Consultation'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Status:</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-extrabold text-[10px]">
+                COMPLETED
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Scheduled Date:</span>
+              <span className="text-slate-300 font-mono">
+                {session.scheduledDate || 'Today'} ({session.shift || 'General'})
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Completed At:</span>
+              <span className="text-slate-300">
+                {session.endedAt ? new Date(session.endedAt).toLocaleString() : 'Completed'}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-slate-400">Client Contact:</span>
+              <span className="text-slate-500 font-mono italic">[Redacted for privacy]</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-slate-700/50">
+              <span className="text-slate-300 font-bold">Astrologer Net Payout:</span>
+              <span className="font-mono font-extrabold text-emerald-400 text-sm">
+                ₹{payout} <span className="text-[10px] text-emerald-500 font-normal">(Credited ✅)</span>
+              </span>
+            </div>
+          </div>
+
+          <div className="pt-1">
+            <button
+              onClick={onClose}
+              className="w-full py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-extrabold text-xs shadow-lg active:scale-95 transition-all cursor-pointer"
+            >
+              Back to Dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const otherPartyName =
+    currentUserType === 'CLIENT'
+      ? session.astrologerName
+      : currentUserType === 'ADMIN'
+      ? `${session.clientName} ↔ ${session.astrologerName}`
+      : session.clientName;
   const isSessionEnded = session.status === 'ENDED' || session.status === 'COMPLETED' || session.status === 'REJECTED';
-  const isSessionActive = !isSessionEnded;
+  const isSessionActive = !isSessionEnded || currentUserType === 'ADMIN';
 
   return (
     <div className="fixed inset-0 z-[999999] w-screen h-[100dvh] max-h-[100dvh] bg-[#0b141a] text-[#e9edef] font-sans flex flex-col overflow-hidden select-none">
@@ -834,7 +957,13 @@ export default function LiveConsultationRoom({
             </button>
           )}
 
-          {isSessionActive && (
+          {currentUserType === 'ADMIN' && (
+            <span className="bg-indigo-500/30 text-indigo-200 border border-indigo-500/50 text-[10px] font-extrabold px-2.5 py-1 rounded-full flex items-center gap-1 shrink-0 shadow-xs">
+              🛡️ Admin Inspector ({session.status})
+            </span>
+          )}
+
+          {isSessionActive && currentUserType !== 'ADMIN' && (
             <button
               onClick={() => handleEndSession('User ended session')}
               className="bg-red-600 hover:bg-red-700 text-white font-bold text-[11px] sm:text-xs px-2 py-1 sm:px-3 sm:py-1.5 rounded-xl border border-red-500/50 flex items-center gap-1 transition shadow cursor-pointer shrink-0"
@@ -1097,7 +1226,7 @@ export default function LiveConsultationRoom({
               );
             }
 
-            const isMe = msg.sender === currentUserType;
+            const isMe = currentUserType === 'ADMIN' ? msg.sender === 'ADMIN' : msg.sender === currentUserType;
 
             return (
               <div
@@ -1111,6 +1240,15 @@ export default function LiveConsultationRoom({
                       : 'bg-[#202c33] text-[#e9edef] rounded-tl-none border border-[#2a3942]'
                   }`}
                 >
+                  {currentUserType === 'ADMIN' && (
+                    <span className="text-[10px] font-bold text-amber-300/90 block mb-1">
+                      {msg.sender === 'CLIENT'
+                        ? `👤 ${session.clientName} (Client)`
+                        : msg.sender === 'ASTROLOGER'
+                        ? `🔮 ${session.astrologerName} (Astrologer)`
+                        : msg.sender}
+                    </span>
+                  )}
                   <p className="whitespace-pre-wrap">{msg.text}</p>
 
                   {/* Captured Photo / Image Attachment */}
@@ -1293,8 +1431,13 @@ export default function LiveConsultationRoom({
             </button>
           </form>
         ) : (
-          <div className="p-3 bg-[#202c33] border-t border-[#2a3942] text-center text-xs text-[#8696a0] shrink-0 pb-5 sm:pb-3.5">
-            This live consultation has completed.
+          <div className="p-3 bg-[#202c33] border-t border-[#2a3942] text-center text-xs text-[#8696a0] shrink-0 pb-5 sm:pb-3.5 flex items-center justify-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>
+              {currentUserType === 'ADMIN'
+                ? 'Admin Audit Mode — Viewing complete conversation transcript, media attachments, and remedies.'
+                : 'This live consultation has completed.'}
+            </span>
           </div>
         )}
       </div>

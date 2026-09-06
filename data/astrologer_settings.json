@@ -1,6 +1,14 @@
 {
   "title": "Talk to Manipur's",
   "rateMode": "fixed",
+  "categories": [
+    "Love",
+    "Education",
+    "Career",
+    "Marriage",
+    "Health",
+    "Wealth"
+  ],
   "highlightText": "Top Rated",
   "fixedRateLabel": "Fixed",
   "showRateOnHome": true,

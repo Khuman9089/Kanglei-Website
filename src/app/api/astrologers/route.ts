@@ -63,6 +63,7 @@ export interface AstrologerSectionSettings {
   rateMode: 'fixed' | 'per_minute' | 'both' | 'none'; // Rate mode: fixed fee, per-minute rate, both, or hide
   defaultFixedRate: number; // Default fixed consultation rate (e.g. ₹499)
   fixedRateLabel?: string; // Label display e.g. "Fixed"
+  categories?: string[]; // Dynamic categories menu for /astrologers page
 }
 
 const DEFAULT_SECTION_SETTINGS: AstrologerSectionSettings = {
@@ -74,6 +75,7 @@ const DEFAULT_SECTION_SETTINGS: AstrologerSectionSettings = {
   rateMode: 'fixed',
   defaultFixedRate: 499,
   fixedRateLabel: 'Fixed',
+  categories: ['Love', 'Education', 'Career', 'Marriage', 'Health', 'Wealth'],
 };
 
 

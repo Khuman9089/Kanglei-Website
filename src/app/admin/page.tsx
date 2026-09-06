@@ -8,12 +8,13 @@ import {
   TrendingUp, BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, UserCheck, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon,
-  Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift
+  Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift, ArrowLeft, ArrowRight
 } from 'lucide-react';
 import Link from 'next/link';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
 import ServiceCouponsManager from '@/components/admin/ServiceCouponsManager';
 import BloggerPostComposer from '@/components/admin/BloggerPostComposer';
+import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 
 interface Astrologer {
   id: string;
@@ -815,6 +816,7 @@ export default function AdminDashboardPage() {
   const [editingMeetingLink, setEditingMeetingLink] = useState<{ [id: string]: string }>({});
   const [actionProcessingId, setActionProcessingId] = useState<string | null>(null);
   const [consultationActionMsg, setConsultationActionMsg] = useState<string>('');
+  const [adminInspectingSessionId, setAdminInspectingSessionId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchConsultations = async () => {
@@ -1616,6 +1618,8 @@ export default function AdminDashboardPage() {
     }));
   };
 
+  const DEFAULT_ASTRO_CATEGORIES = ['Love', 'Education', 'Career', 'Marriage', 'Health', 'Wealth'];
+
   const [astrologerSectionSettings, setAstrologerSectionSettings] = useState({
     title: "Talk to Manipur's",
     highlightText: "Top Rated",
@@ -1625,7 +1629,97 @@ export default function AdminDashboardPage() {
     rateMode: 'fixed' as 'fixed' | 'per_minute' | 'both' | 'none',
     defaultFixedRate: 499,
     fixedRateLabel: 'Fixed',
+    categories: DEFAULT_ASTRO_CATEGORIES,
   });
+
+  const [newAstroCategoryInput, setNewAstroCategoryInput] = useState('');
+  const [editingCategoryIdx, setEditingCategoryIdx] = useState<number | null>(null);
+  const [editingCategoryValue, setEditingCategoryValue] = useState('');
+
+  const handleAddAstroCategory = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = newAstroCategoryInput.trim();
+    if (!trimmed) return;
+    const currentCats = Array.isArray(astrologerSectionSettings.categories) && astrologerSectionSettings.categories.length > 0 
+      ? astrologerSectionSettings.categories 
+      : DEFAULT_ASTRO_CATEGORIES;
+    if (currentCats.some((c) => c.toLowerCase() === trimmed.toLowerCase())) {
+      setSaveAlert(`⚠️ Category "${trimmed}" already exists!`);
+      setTimeout(() => setSaveAlert(''), 2500);
+      return;
+    }
+    const updatedCats = [...currentCats, trimmed];
+    setAstrologerSectionSettings((prev) => ({ ...prev, categories: updatedCats }));
+    setNewAstroCategoryInput('');
+  };
+
+  const handleRemoveAstroCategory = (catToRemove: string) => {
+    const currentCats = Array.isArray(astrologerSectionSettings.categories) && astrologerSectionSettings.categories.length > 0 
+      ? astrologerSectionSettings.categories 
+      : DEFAULT_ASTRO_CATEGORIES;
+    const updatedCats = currentCats.filter((c) => c !== catToRemove);
+    setAstrologerSectionSettings((prev) => ({ ...prev, categories: updatedCats }));
+  };
+
+  const handleMoveAstroCategory = (index: number, direction: 'left' | 'right') => {
+    const currentCats = [...(Array.isArray(astrologerSectionSettings.categories) && astrologerSectionSettings.categories.length > 0 
+      ? astrologerSectionSettings.categories 
+      : DEFAULT_ASTRO_CATEGORIES)];
+    const targetIndex = direction === 'left' ? index - 1 : index + 1;
+    if (targetIndex < 0 || targetIndex >= currentCats.length) return;
+    const temp = currentCats[index];
+    currentCats[index] = currentCats[targetIndex];
+    currentCats[targetIndex] = temp;
+    setAstrologerSectionSettings((prev) => ({ ...prev, categories: currentCats }));
+  };
+
+  const handleStartEditCategory = (index: number, currentVal: string) => {
+    setEditingCategoryIdx(index);
+    setEditingCategoryValue(currentVal);
+  };
+
+  const handleSaveEditCategory = (index: number) => {
+    const trimmed = editingCategoryValue.trim();
+    if (!trimmed) {
+      setEditingCategoryIdx(null);
+      return;
+    }
+    const currentCats = [...(Array.isArray(astrologerSectionSettings.categories) && astrologerSectionSettings.categories.length > 0 
+      ? astrologerSectionSettings.categories 
+      : DEFAULT_ASTRO_CATEGORIES)];
+    currentCats[index] = trimmed;
+    setAstrologerSectionSettings((prev) => ({ ...prev, categories: currentCats }));
+    setEditingCategoryIdx(null);
+  };
+
+  const handleResetAstroCategories = () => {
+    setAstrologerSectionSettings((prev) => ({ ...prev, categories: DEFAULT_ASTRO_CATEGORIES }));
+    setSaveAlert('🔄 Astrologer categories reset to default set: Love, Education, Career, Marriage, Health, Wealth');
+    setTimeout(() => setSaveAlert(''), 3000);
+  };
+
+  const handleToggleAstroCategoryTag = async (astroId: string, category: string) => {
+    const currentList = apiAstrologers.length > 0 ? apiAstrologers : astrologers;
+    const updated = currentList.map((a) => {
+      if (a.id !== astroId) return a;
+      const existingTags = Array.isArray(a.categoryTags) ? [...a.categoryTags] : [];
+      const hasTag = existingTags.includes(category);
+      const newTags = hasTag ? existingTags.filter((t) => t !== category) : [...existingTags, category];
+      return { ...a, categoryTags: newTags };
+    });
+    setApiAstrologers(updated);
+    try {
+      await fetch('/api/astrologers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ astrologers: updated }),
+      });
+      setSaveAlert(`✅ Category tag "${category}" updated for Astrologer!`);
+      setTimeout(() => setSaveAlert(''), 2000);
+    } catch (err) {
+      console.error('Error toggling astrologer category tag:', err);
+    }
+  };
 
   const [apiAstrologers, setApiAstrologers] = useState<any[]>([]);
   const [adminConsultationSessions, setAdminConsultationSessions] = useState<any[]>([]);
@@ -4686,6 +4780,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                   <MessageCircle className="w-3 h-3" />
                                   <span>Astro WhatsApp</span>
                                 </a>
+                                <button
+                                  type="button"
+                                  onClick={() => setAdminInspectingSessionId(s.id)}
+                                  className="px-2 py-0.5 rounded bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold border border-indigo-200 inline-flex items-center gap-0.5 cursor-pointer"
+                                  title="Inspect full live chat room, media attachments & remedies"
+                                >
+                                  <MessageSquare className="w-3 h-3" />
+                                  <span>View Chat</span>
+                                </button>
                               </div>
 
                               {/* Step 8 Action: Complete Consultation & Credit Wallet */}
@@ -4722,6 +4825,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </tbody>
                 </table>
               </div>
+
+              {/* ADMIN LIVE CHAT ROOM INSPECTOR OVERLAY */}
+              {adminInspectingSessionId && (
+                <LiveConsultationRoom
+                  sessionId={adminInspectingSessionId}
+                  currentUserType="ADMIN"
+                  onClose={() => setAdminInspectingSessionId(null)}
+                />
+              )}
             </div>
           )}
 
@@ -7884,6 +7996,191 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               </div>
 
+              {/* CATEGORY MENU CMS CONTROLS FOR /astrologers */}
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 shadow-md">
+                <div className="flex flex-wrap justify-between items-center gap-4 border-b border-[#fde68a] pb-3">
+                  <div>
+                    <h3 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
+                      <Tag className="w-5 h-5 text-[#d97706]" />
+                      <span>Astrologers Directory Category Menu Controls (/astrologers)</span>
+                    </h3>
+                    <p className="text-xs text-gray-500">
+                      Customize the category navigation pills (Love, Education, Career, Marriage, Health, Wealth) on <code className="bg-amber-50 text-[#b45309] px-1.5 py-0.5 rounded border border-amber-200 font-mono">/astrologers</code>. Add, edit, reorder, or remove according to your needs.
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={handleResetAstroCategories}
+                      className="px-3.5 py-2 rounded-xl bg-gray-50 border border-gray-300 hover:bg-gray-100 text-gray-700 font-bold text-xs flex items-center gap-1.5 cursor-pointer transition-all"
+                      title="Reset to default categories: Love, Education, Career, Marriage, Health, Wealth"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 text-gray-500" />
+                      <span>Reset Defaults</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveAstrologerSectionSettings}
+                      className="px-5 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                    >
+                      <Save className="w-4 h-4" />
+                      <span>Save Menu Live</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Add Category Form & Quick Add Suggestions */}
+                <div className="bg-[#fefcf6] p-4 rounded-2xl border border-[#fde68a] space-y-3">
+                  <form onSubmit={handleAddAstroCategory} className="flex flex-col sm:flex-row items-center gap-2">
+                    <div className="relative flex-1 w-full">
+                      <Tag className="w-4 h-4 text-amber-500 absolute left-3.5 top-3.5" />
+                      <input
+                        type="text"
+                        placeholder="Enter category name (e.g. Kundli, Palmistry, Finance, Spiritual)..."
+                        value={newAstroCategoryInput}
+                        onChange={(e) => setNewAstroCategoryInput(e.target.value)}
+                        className="w-full h-10 pl-10 pr-4 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#d97706]"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      disabled={!newAstroCategoryInput.trim()}
+                      className="w-full sm:w-auto h-10 px-5 rounded-xl bg-[#c69214] hover:bg-[#b45309] disabled:opacity-50 text-white font-extrabold text-xs shadow-sm flex items-center justify-center gap-1.5 cursor-pointer shrink-0 transition-all"
+                    >
+                      <Plus className="w-4 h-4" />
+                      <span>Add Category</span>
+                    </button>
+                  </form>
+
+                  {/* Suggested quick adds */}
+                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] pt-1">
+                    <span className="text-gray-500 font-semibold">Quick Add:</span>
+                    {['Finance', 'Spiritual', 'Kundli', 'Vedic', 'Palmistry', 'Tarot', 'Vastu', 'Remedies', 'Gemstones']
+                      .filter((s) => !(astrologerSectionSettings.categories || DEFAULT_ASTRO_CATEGORIES).map(c => c.toLowerCase()).includes(s.toLowerCase()))
+                      .slice(0, 6)
+                      .map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          type="button"
+                          onClick={() => {
+                            const currentCats = Array.isArray(astrologerSectionSettings.categories) && astrologerSectionSettings.categories.length > 0
+                              ? astrologerSectionSettings.categories
+                              : DEFAULT_ASTRO_CATEGORIES;
+                            setAstrologerSectionSettings((prev) => ({ ...prev, categories: [...currentCats, suggestion] }));
+                          }}
+                          className="px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-[#b45309] hover:bg-amber-100 font-bold transition-all cursor-pointer"
+                        >
+                          + {suggestion}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+
+                {/* Active Category Badges with Order, Edit & Delete */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="font-bold text-gray-700">
+                      Active Categories in Navigation ({ (astrologerSectionSettings.categories || DEFAULT_ASTRO_CATEGORIES).length } total):
+                    </span>
+                    <span className="text-[11px] text-gray-400">
+                      (&quot;All&quot; is automatically shown as the first pill on the live site)
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2.5 pt-1">
+                    {(astrologerSectionSettings.categories || DEFAULT_ASTRO_CATEGORIES).map((cat, idx) => {
+                      const totalCats = (astrologerSectionSettings.categories || DEFAULT_ASTRO_CATEGORIES).length;
+                      const isEditing = editingCategoryIdx === idx;
+
+                      return (
+                        <div
+                          key={`${cat}-${idx}`}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white border border-[#fde68a] shadow-xs text-xs group hover:border-[#d97706] transition-all"
+                        >
+                          {/* Order Buttons */}
+                          <div className="flex items-center gap-0.5">
+                            <button
+                              type="button"
+                              disabled={idx === 0}
+                              onClick={() => handleMoveAstroCategory(idx, 'left')}
+                              className="p-1 rounded hover:bg-amber-100 text-gray-400 hover:text-gray-700 disabled:opacity-20 disabled:hover:bg-transparent cursor-pointer"
+                              title="Move Left"
+                            >
+                              <ArrowLeft className="w-3 h-3" />
+                            </button>
+                            <button
+                              type="button"
+                              disabled={idx === totalCats - 1}
+                              onClick={() => handleMoveAstroCategory(idx, 'right')}
+                              className="p-1 rounded hover:bg-amber-100 text-gray-400 hover:text-gray-700 disabled:opacity-20 disabled:hover:bg-transparent cursor-pointer"
+                              title="Move Right"
+                            >
+                              <ArrowRight className="w-3 h-3" />
+                            </button>
+                          </div>
+
+                          {/* Category Name or Inline Edit */}
+                          {isEditing ? (
+                            <div className="flex items-center gap-1">
+                              <input
+                                type="text"
+                                value={editingCategoryValue}
+                                onChange={(e) => setEditingCategoryValue(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleSaveEditCategory(idx);
+                                  if (e.key === 'Escape') setEditingCategoryIdx(null);
+                                }}
+                                autoFocus
+                                className="w-24 h-6 px-1.5 rounded border border-[#d97706] text-xs font-bold text-[#0f172a] focus:outline-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleSaveEditCategory(idx)}
+                                className="p-1 rounded bg-emerald-600 text-white hover:bg-emerald-700 cursor-pointer"
+                                title="Save"
+                              >
+                                <Check className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ) : (
+                            <span
+                              onClick={() => handleStartEditCategory(idx, cat)}
+                              className="font-bold text-[#0f172a] px-1 cursor-pointer hover:text-[#b45309]"
+                              title="Click to rename"
+                            >
+                              {cat}
+                            </span>
+                          )}
+
+                          {/* Edit Button */}
+                          {!isEditing && (
+                            <button
+                              type="button"
+                              onClick={() => handleStartEditCategory(idx, cat)}
+                              className="p-1 rounded hover:bg-amber-50 text-gray-400 hover:text-[#b45309] cursor-pointer"
+                              title="Edit Category Name"
+                            >
+                              <Edit className="w-3 h-3" />
+                            </button>
+                          )}
+
+                          {/* Delete Button */}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveAstroCategory(cat)}
+                            className="p-1 rounded-full hover:bg-red-50 text-gray-400 hover:text-red-600 cursor-pointer"
+                            title={`Remove "${cat}" category`}
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
               {/* ASTROLOGERS CARDS GRID FOR WEBSITE DISPLAY */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
                 {(apiAstrologers.length > 0 ? apiAstrologers : astrologers).map((astro) => {
@@ -7982,6 +8279,38 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <span className="font-bold text-[#b45309] font-mono">{astro.whatsappPhone || astro.whatsappNo}</span>
                           </div>
 
+                          {/* Directory Category Tags for this Astrologer */}
+                          <div className="bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a] space-y-1.5">
+                            <div className="flex items-center justify-between">
+                              <span className="text-[10px] text-gray-700 font-bold flex items-center gap-1">
+                                <Tag className="w-3 h-3 text-[#d97706]" />
+                                <span>Directory Category Tags:</span>
+                              </span>
+                              <span className="text-[9px] text-gray-400">
+                                {(astro.categoryTags || []).length} active
+                              </span>
+                            </div>
+                            <div className="flex flex-wrap gap-1">
+                              {(astrologerSectionSettings.categories || DEFAULT_ASTRO_CATEGORIES).map((cat) => {
+                                const isAssigned = (astro.categoryTags || []).includes(cat);
+                                return (
+                                  <button
+                                    key={cat}
+                                    type="button"
+                                    onClick={() => handleToggleAstroCategoryTag(astro.id, cat)}
+                                    className={`px-2 py-0.5 rounded-md text-[10px] font-bold border transition-all cursor-pointer ${
+                                      isAssigned
+                                        ? 'bg-[#c69214] text-white border-[#c69214] shadow-2xs'
+                                        : 'bg-white text-gray-600 border-gray-200 hover:border-[#c69214]'
+                                    }`}
+                                    title={`Click to ${isAssigned ? 'remove' : 'add'} ${cat} tag for ${astro.name}`}
+                                  >
+                                    {isAssigned ? '✓ ' : '+ '}{cat}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
 
                           {/* MANAGE ASTROLOGER TOOLS PERMISSIONS BUTTON */}
                           <div className="pt-2">
