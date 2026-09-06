@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 
 export interface ConsultationMessage {
   id: string;
-  sender: 'CLIENT' | 'ASTROLOGER' | 'SYSTEM';
+  sender: 'CLIENT' | 'ASTROLOGER' | 'SYSTEM' | 'ADMIN';
   text: string;
   timestamp: string;
   attachment?: {

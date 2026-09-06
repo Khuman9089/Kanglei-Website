@@ -823,7 +823,7 @@ export default function LiveConsultationRoom({
       ? `${session.clientName} ↔ ${session.astrologerName}`
       : session.clientName;
   const isSessionEnded = session.status === 'ENDED' || session.status === 'COMPLETED' || session.status === 'REJECTED';
-  const isSessionActive = !isSessionEnded || currentUserType === 'ADMIN';
+  const isSessionActive = !isSessionEnded;
 
   return (
     <div className="fixed inset-0 z-[999999] w-screen h-[100dvh] max-h-[100dvh] bg-[#0b141a] text-[#e9edef] font-sans flex flex-col overflow-hidden select-none">
@@ -1226,7 +1226,7 @@ export default function LiveConsultationRoom({
               );
             }
 
-            const isMe = currentUserType === 'ADMIN' ? msg.sender === 'ADMIN' : msg.sender === currentUserType;
+            const isMe = currentUserType === 'ADMIN' ? false : msg.sender === currentUserType;
 
             return (
               <div
@@ -1388,7 +1388,12 @@ export default function LiveConsultationRoom({
         )}
 
         {/* 4. WHATSAPP CHAT INPUT BAR (FLUSH SAFE AREA AT BOTTOM) */}
-        {isSessionActive ? (
+        {currentUserType === 'ADMIN' ? (
+          <div className="p-3 bg-[#202c33] border-t border-[#2a3942] text-center text-xs text-[#8696a0] shrink-0 pb-5 sm:pb-3.5 flex items-center justify-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span>Admin Audit Mode — Inspecting conversation transcript, media attachments, and remedies.</span>
+          </div>
+        ) : isSessionActive ? (
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -1433,11 +1438,7 @@ export default function LiveConsultationRoom({
         ) : (
           <div className="p-3 bg-[#202c33] border-t border-[#2a3942] text-center text-xs text-[#8696a0] shrink-0 pb-5 sm:pb-3.5 flex items-center justify-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-400" />
-            <span>
-              {currentUserType === 'ADMIN'
-                ? 'Admin Audit Mode — Viewing complete conversation transcript, media attachments, and remedies.'
-                : 'This live consultation has completed.'}
-            </span>
+            <span>This live consultation has completed.</span>
           </div>
         )}
       </div>
