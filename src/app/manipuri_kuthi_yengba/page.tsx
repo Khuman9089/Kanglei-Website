@@ -966,51 +966,62 @@ function ManipuriKuthiYengbaContent() {
                   </AnimatePresence>
                 </div>
 
-                {/* Astrological Faith Tradition Selection */}
-                <div className="bg-[#fffdfa] p-4 sm:p-5 rounded-2xl border border-[#fde68a] shadow-xs space-y-3">
+                {/* Astrological Faith Tradition Selection (Mandatory Choice: Hinduism vs Sanamahi Laining) */}
+                <div className="bg-[#fffdfa] p-4 sm:p-5 rounded-2xl border-2 border-[#d97706]/40 shadow-sm space-y-3">
                   <div className="flex items-center justify-between">
-                    <label className="block text-[11px] font-bold text-gray-800 uppercase tracking-wider">
-                      Astrological Tradition / Faith Preference <span className="text-red-500">*</span>
+                    <label className="block text-xs font-black text-[#0f172a] uppercase tracking-wider flex items-center gap-1.5">
+                      <span>Religious Faith & Kuthi Tradition</span>
+                      <span className="text-red-500">*</span>
                     </label>
-                    <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
-                      Selected: {faithTradition}
+                    <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
+                      Active: {faithTradition === 'Hinduism' ? '🕉️ Hinduism' : '☀️ Sanamahi Laining'}
                     </span>
                   </div>
-                  <p className="text-[11px] text-gray-500">
-                    Choose the ritual and astrological tradition you follow for this Kuthi reading:
+                  <p className="text-[11px] text-slate-600 font-medium">
+                    Please select whether your Kuthi reading follows Vedic Hindu traditions (with Gotra & Lahiri Ayanamsha) or indigenous Sanamahi Laining (with Yek Salai):
                   </p>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <button
                       type="button"
                       onClick={() => setFaithTradition('Hinduism')}
-                      className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                      className={`py-3 px-4 rounded-2xl border-2 text-xs font-bold transition-all cursor-pointer flex items-center gap-3 ${
                         faithTradition === 'Hinduism'
-                          ? 'bg-[#fef3c7] text-[#b45309] border-[#d97706] shadow-sm ring-1 ring-[#d97706]'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
+                          ? 'bg-[#fef3c7] text-[#92400e] border-[#d97706] shadow-md ring-2 ring-[#d97706]/30'
+                          : 'bg-white text-slate-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
                       }`}
                     >
-                      <span className="text-base">🕉️</span>
+                      <span className="text-2xl">🕉️</span>
                       <div className="text-left">
-                        <div className="font-extrabold text-[#0f172a]">Hinduism</div>
-                        <div className="text-[10px] text-gray-500 font-normal">Vedic Manipuri Hindu Tradition</div>
+                        <div className="font-black text-sm text-[#0f172a]">Hinduism (হিন্দু ধর্ম)</div>
+                        <div className="text-[10px] text-slate-600 font-medium">Vedic Manipuri Hindu · Gotra Based</div>
                       </div>
                     </button>
 
                     <button
                       type="button"
                       onClick={() => setFaithTradition('Sanamahi Laining')}
-                      className={`py-3 px-4 rounded-xl border text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2.5 ${
+                      className={`py-3 px-4 rounded-2xl border-2 text-xs font-bold transition-all cursor-pointer flex items-center gap-3 ${
                         faithTradition === 'Sanamahi Laining'
-                          ? 'bg-[#fef3c7] text-[#b45309] border-[#d97706] shadow-sm ring-1 ring-[#d97706]'
-                          : 'bg-white text-gray-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
+                          ? 'bg-[#fef3c7] text-[#92400e] border-[#d97706] shadow-md ring-2 ring-[#d97706]/30'
+                          : 'bg-white text-slate-700 border-gray-200 hover:border-[#fde68a] hover:bg-[#fefcf6]'
                       }`}
                     >
-                      <span className="text-base">☀️</span>
+                      <span className="text-2xl">☀️</span>
                       <div className="text-left">
-                        <div className="font-extrabold text-[#0f172a]">Sanamahi Laining</div>
-                        <div className="text-[10px] text-gray-500 font-normal">Indigenous Sanamahi Tradition</div>
+                        <div className="font-black text-sm text-[#0f172a]">Sanamahi Laining (সনামহী লাইনিং)</div>
+                        <div className="text-[10px] text-slate-600 font-medium">Indigenous Meetei · 7 Yek Salai Based</div>
                       </div>
                     </button>
+                  </div>
+
+                  {/* Contextual Gotra or Yek Salai indicator */}
+                  <div className="pt-2 border-t border-[#fde68a]/60 flex items-center justify-between text-[11px] text-slate-700">
+                    <span className="font-semibold">
+                      {faithTradition === 'Hinduism' ? '🕉️ Reading format: Gotra, Tithi, Nakshatra & Vedic Lagna' : '☀️ Reading format: 7 Yek Salai, Meetei Numit Leppa & Apokpa Laining'}
+                    </span>
+                    <span className="px-2 py-0.5 rounded-lg bg-white border border-[#fde68a] font-mono text-[10px] font-bold text-[#b45309]">
+                      Verified for Kuthi Order
+                    </span>
                   </div>
                 </div>
 

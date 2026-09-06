@@ -90,6 +90,8 @@ interface KuthiOrder {
     lagna?: string;
     moonSign?: string;
     gotra?: string;
+    yek?: string;
+    faithTradition?: 'Hinduism' | 'Sanamahi Laining' | string;
   };
   d1Planets: BengaliPlanetInfo[];
   d9Planets: BengaliPlanetInfo[];
@@ -149,6 +151,8 @@ const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [
       tob: '08:30 AM',
       pob: 'Imphal East, Manipur',
       gotra: 'Ningthouja',
+      yek: 'Ningthouja (Mangang)',
+      faithTradition: 'Hinduism',
       kuthiAttached: true,
       kuthiFileName: 'thoibi_original_kuthi_scan.pdf',
       question: 'Looking for matching with groom born in Kakching. Awaiting Manglik dosh verification and auspicious wedding period in 2026.',
@@ -195,7 +199,9 @@ const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [
       dob: '24 Oct 1998',
       tob: '09:45 AM',
       pob: 'Imphal West, Manipur',
-      gotra: 'Khuman',
+      gotra: 'Sandilya',
+      yek: 'Khuman',
+      faithTradition: 'Sanamahi Laining',
       kuthiAttached: true,
       kuthiFileName: 'sanatombi_birth_kuthi.jpg',
       question: 'Government recruitment exam upcoming in November. Requesting planetary remedies for Rahu-Saturn transit and career gemstone guidance.',
@@ -242,7 +248,9 @@ const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [
       dob: '18 Nov 1987',
       tob: '11:05 PM',
       pob: 'Moirang, Manipur',
-      gotra: 'Luwang',
+      gotra: 'Kasyapa',
+      yek: 'Luwang',
+      faithTradition: 'Hinduism',
       kuthiAttached: false,
       question: 'Full 14-page handwritten Kuthi report dispatched with detailed Mahadasha timeline and Navagraha remedies.',
       lagna: 'Dhanu (ধনু)',
@@ -355,6 +363,69 @@ export default function AstrologerMobileDashboard() {
 
   // Real consultation polling from /api/consultations for Live Call tab
   const [dbConsultations, setDbConsultations] = useState<any[]>([]);
+
+  // Announcements & Banner Carousel State (Matches Desktop Dashboard)
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [dismissedAnnouncements, setDismissedAnnouncements] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/announcements')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.announcements && Array.isArray(data.announcements)) {
+          setAnnouncements(data.announcements.filter((a: any) => a.isActive));
+        }
+      })
+      .catch((err) => console.error('Error fetching mobile announcements:', err));
+
+    // Also fetch live assigned kuthi orders to sync tradition & client details
+    fetch('/api/kuthi')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.orders && Array.isArray(data.orders)) {
+          const assigned = data.orders.filter((o: any) => 
+            !o.assignedAstrologerId || 
+            o.assignedAstrologerId === 'astro-1' || 
+            o.assignedAstrologerName?.includes('Acharya Tombi') ||
+            o.assignedAstrologerName?.includes('tombi')
+          );
+          if (assigned.length > 0) {
+            const mappedOrders: KuthiOrder[] = assigned.map((o: any) => ({
+              id: o.id || o.orderRef,
+              orderRef: o.orderRef || o.id,
+              clientName: o.clientName,
+              serviceType: o.serviceType || 'Kuthi Yengba Consultation',
+              status: o.status || 'ASSIGNED',
+              date: o.submittedAt || 'Today',
+              payoutFee: o.amount ? Math.round(o.amount * 0.6) : 599,
+              clientDetails: {
+                sex: o.sex || 'Client',
+                mobile: o.mobile || o.whatsappNo || '+91 98620 99881',
+                whatsappNo: o.whatsappNo || o.mobile || '+91 98620 99881',
+                email: o.email || '',
+                dob: o.dob || '24 Oct 1998',
+                tob: o.tob || '09:45 AM',
+                pob: o.pob || 'Imphal, Manipur',
+                gotra: o.gotra || 'Sandilya',
+                yek: o.yek || 'Khuman',
+                faithTradition: o.faithTradition || 'Hinduism',
+                kuthiAttached: !!o.kuthiAttached,
+                kuthiFileName: o.kuthiFileName || '',
+                question: o.question || '',
+                lagna: 'Vrischika (বৃশ্চিক)',
+                moonSign: 'Vrishabha (বৃষ)',
+              },
+              d1Planets: INITIAL_KUTHI_ORDERS[0].d1Planets,
+              d9Planets: INITIAL_KUTHI_ORDERS[0].d9Planets,
+              lagnaIndex: 7,
+              navLagnaIndex: 3,
+            }));
+            setKuthiOrders(mappedOrders);
+          }
+        }
+      })
+      .catch((e) => console.warn('Could not sync kuthi orders for mobile view:', e));
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -829,6 +900,97 @@ export default function AstrologerMobileDashboard() {
               exit={{ opacity: 0, y: -8 }}
               className="space-y-5"
             >
+              {/* ADMIN ANNOUNCEMENTS, PROMO ADS & URGENT NOTICES (Exact Match to Desktop) */}
+              {announcements.filter((a) => !dismissedAnnouncements.includes(a.id)).length > 0 && (
+                <section className="space-y-2.5">
+                  {announcements
+                    .filter((a) => !dismissedAnnouncements.includes(a.id))
+                    .map((ann) => (
+                      <div
+                        key={ann.id}
+                        className={`p-3.5 sm:p-4 rounded-2xl border shadow-sm relative overflow-hidden flex flex-col gap-3 transition-all ${
+                          isDark
+                            ? ann.type === 'PROMO_AD'
+                              ? 'bg-gradient-to-br from-purple-950/90 via-[#1c2541] to-[#0b132b] border-purple-500/50 text-white'
+                              : ann.type === 'URGENT_NOTICE'
+                              ? 'bg-gradient-to-br from-amber-950/90 via-[#1c2541] to-[#0b132b] border-amber-500/50 text-white'
+                              : 'bg-gradient-to-br from-blue-950/90 via-[#1c2541] to-[#0b132b] border-blue-500/50 text-white'
+                            : ann.type === 'PROMO_AD'
+                            ? 'bg-gradient-to-br from-purple-50 via-white to-purple-50/50 border-purple-300 text-slate-900 shadow-xs'
+                            : ann.type === 'URGENT_NOTICE'
+                            ? 'bg-gradient-to-br from-amber-50 via-white to-amber-50/50 border-amber-300 text-slate-900 shadow-xs'
+                            : 'bg-gradient-to-br from-sky-50 via-white to-sky-50/50 border-sky-300 text-slate-900 shadow-xs'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          {ann.imageUrl ? (
+                            <img
+                              src={ann.imageUrl}
+                              alt={ann.title}
+                              className="w-11 h-11 object-cover rounded-xl border border-slate-200 dark:border-white/20 shrink-0"
+                            />
+                          ) : (
+                            <div className={`w-10 h-10 rounded-xl border flex items-center justify-center shrink-0 ${
+                              isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200'
+                            }`}>
+                              <Bell className={`w-5 h-5 ${
+                                ann.type === 'PROMO_AD' ? 'text-purple-500' : ann.type === 'URGENT_NOTICE' ? 'text-amber-500' : 'text-sky-500'
+                              }`} />
+                            </div>
+                          )}
+
+                          <div className="flex-1 min-w-0 pr-6">
+                            <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                              <span className={`px-2 py-0.2 rounded-full text-[8.5px] font-black uppercase border ${
+                                ann.type === 'PROMO_AD' ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30' :
+                                ann.type === 'URGENT_NOTICE' ? 'bg-amber-500/20 text-amber-800 dark:text-amber-300 border-amber-500/30' :
+                                'bg-sky-500/20 text-sky-800 dark:text-sky-300 border-sky-500/30'
+                              }`}>
+                                {ann.type.replace('_', ' ')}
+                              </span>
+                              <span className={`text-[9.5px] font-medium ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
+                                Audience: {ann.targetAudience}
+                              </span>
+                            </div>
+                            <h4 className={`font-serif font-bold text-xs sm:text-sm leading-snug ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                              {ann.title}
+                            </h4>
+                            <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-gray-300' : 'text-slate-700 font-medium'}`}>
+                              {ann.message}
+                            </p>
+                          </div>
+
+                          {/* Dismiss X Button on top-right */}
+                          <button
+                            onClick={() => setDismissedAnnouncements((prev) => [...prev, ann.id])}
+                            className={`absolute top-3 right-3 p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
+                              isDark
+                                ? 'bg-[#0b132b]/80 hover:bg-[#0b132b] text-gray-400 hover:text-white border-[#3a506b]'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-300'
+                            }`}
+                            title="Dismiss announcement"
+                          >
+                            <X className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+
+                        {/* Action Link Button */}
+                        {ann.actionText && (
+                          <div className="pt-1 flex justify-end">
+                            <a
+                              href={ann.actionUrl || '#'}
+                              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-[11px] shadow-xs hover:opacity-95 transition-opacity font-sans flex items-center gap-1"
+                            >
+                              <span>{ann.actionText}</span>
+                              <span>→</span>
+                            </a>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </section>
+              )}
+
               {/* Daily Panchanga Ribbon */}
               <section className="space-y-2">
                 <div className="flex items-center justify-between px-1">
@@ -902,12 +1064,12 @@ export default function AstrologerMobileDashboard() {
                         </span>
                       )}
                     </div>
-                    <h3 className="text-xs font-serif font-bold">Kuthi Order Hub</h3>
-                    <p className="text-[10px] opacity-70 leading-tight">
+                    <h3 className="text-xs font-serif font-bold text-slate-900 dark:text-white">Kuthi Order Hub</h3>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-tight">
                       Client birth documents, Kuthi matching, & report delivery (No Live Call)
                     </p>
                   </div>
-                  <div className="pt-2 flex items-center text-[10px] font-bold text-[#d97706] dark:text-[#fbbf24]">
+                  <div className="pt-2 flex items-center text-[10px] font-bold text-[#b45309] dark:text-[#fbbf24]">
                     <span>Manage Orders →</span>
                   </div>
                 </div>
@@ -921,15 +1083,15 @@ export default function AstrologerMobileDashboard() {
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
                         <Video className="w-4 h-4" />
                       </div>
                       <span className="px-2 py-0.5 rounded-full bg-emerald-500 text-white text-[9px] font-extrabold animate-pulse">
                         LIVE
                       </span>
                     </div>
-                    <h3 className="text-xs font-serif font-bold">Live Call & Chat</h3>
-                    <p className="text-[10px] opacity-70 leading-tight">
+                    <h3 className="text-xs font-serif font-bold text-slate-900 dark:text-white">Live Call & Chat</h3>
+                    <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-tight">
                       1-on-1 real-time voice, video, & encrypted live chat room
                     </p>
                   </div>
@@ -1013,16 +1175,16 @@ export default function AstrologerMobileDashboard() {
               {/* Quick Summary Cards (Matching Desktop Version) */}
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
                 <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <span className="text-[10px] opacity-70 block">Kuthi Orders</span>
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block">Kuthi Orders</span>
                   <strong className="text-base font-serif font-bold text-[#b45309] dark:text-[#fbbf24]">{kuthiOrders.length}</strong>
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <span className="text-[10px] opacity-70 block">Live Call Queue</span>
-                  <strong className="text-base font-serif font-bold text-emerald-500">{liveAppointments.length}</strong>
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block">Live Call Queue</span>
+                  <strong className="text-base font-serif font-bold text-emerald-600 dark:text-emerald-400">{liveAppointments.length}</strong>
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <span className="text-[10px] opacity-70 block">Wallet Payout</span>
-                  <strong className="text-base font-mono font-bold text-green-500">₹{walletBalance.toLocaleString()}</strong>
+                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block">Wallet Payout</span>
+                  <strong className="text-base font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{walletBalance.toLocaleString()}</strong>
                 </div>
               </div>
             </motion.div>
@@ -1115,26 +1277,48 @@ export default function AstrologerMobileDashboard() {
                     </div>
 
                     {/* Birth Details & Paper Kuthi Info */}
-                    <div className={`p-2.5 rounded-xl border text-[10px] space-y-1 ${
+                    <div className={`p-2.5 rounded-xl border text-[10px] space-y-1.5 ${
                       isDark ? 'bg-[#0b132b]/80 border-[#3a506b]/50' : 'bg-slate-50 border-slate-200'
                     }`}>
+                      {/* Religious Tradition Highlight Badge */}
+                      <div className="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-[#3a506b]/40">
+                        <span className="font-bold text-slate-500 dark:text-slate-400">Faith Tradition:</span>
+                        <span className={`px-2 py-0.5 rounded-md font-bold text-[9.5px] border ${
+                          order.clientDetails.faithTradition === 'Sanamahi Laining'
+                            ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-500/40'
+                            : 'bg-orange-100 text-orange-950 border-orange-300 dark:bg-orange-950/60 dark:text-orange-200 dark:border-orange-500/40'
+                        }`}>
+                          {order.clientDetails.faithTradition === 'Sanamahi Laining' ? '☀️ Sanamahi Laining' : '🕉️ Hinduism'}
+                        </span>
+                      </div>
+
                       <div className="flex justify-between">
-                        <span className="opacity-70">জন্ম তারিখ / সময়:</span>
-                        <span className="font-mono font-bold">{order.clientDetails.dob} · {order.clientDetails.tob}</span>
+                        <span className="text-slate-500 dark:text-slate-400">জন্ম তারিখ / সময়:</span>
+                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{order.clientDetails.dob} · {order.clientDetails.tob}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="opacity-70">জন্মস্থান (POB):</span>
-                        <span className="font-medium truncate max-w-[190px]">{order.clientDetails.pob}</span>
+                        <span className="text-slate-500 dark:text-slate-400">জন্মস্থান (POB):</span>
+                        <span className="font-medium truncate max-w-[190px] text-slate-800 dark:text-slate-200">{order.clientDetails.pob}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="opacity-70">Paper Kuthi:</span>
+                        <span className="text-slate-500 dark:text-slate-400">
+                          {order.clientDetails.faithTradition === 'Sanamahi Laining' ? 'Yek Salai:' : 'Gotra:'}
+                        </span>
+                        <span className="font-bold text-[#b45309] dark:text-[#fbbf24]">
+                          {order.clientDetails.faithTradition === 'Sanamahi Laining' 
+                            ? (order.clientDetails.yek || order.clientDetails.gotra || 'Khuman')
+                            : (order.clientDetails.gotra || 'Sandilya')}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-slate-500 dark:text-slate-400">Paper Kuthi:</span>
                         {order.clientDetails.kuthiAttached ? (
-                          <span className="text-amber-600 dark:text-amber-300 font-bold flex items-center gap-1">
+                          <span className="text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1">
                             <Paperclip className="w-3 h-3 text-[#d97706]" />
                             <span className="truncate max-w-[170px]">{order.clientDetails.kuthiFileName}</span>
                           </span>
                         ) : (
-                          <span className="opacity-60 italic">Birth Details Mode</span>
+                          <span className="text-slate-500 dark:text-slate-400 italic font-medium">Birth Details Mode</span>
                         )}
                       </div>
                     </div>
@@ -1633,24 +1817,24 @@ export default function AstrologerMobileDashboard() {
                     <ShieldCheck className="w-4 h-4 text-[#d97706] dark:text-[#fbbf24]" />
                   </h2>
                   <p className="text-[11px] font-semibold text-[#b45309] dark:text-[#fbbf24]">Master Vedic Astrologer & Kuthi Specialist</p>
-                  <p className="text-[10px] opacity-70 mt-0.5">15+ Years Experience · 50k+ Kuthi Consultations</p>
+                  <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">15+ Years Experience · 50k+ Kuthi Consultations</p>
                 </div>
 
                 <div className={`grid grid-cols-3 gap-2 pt-2 border-t text-center text-xs ${
                   isDark ? 'border-[#3a506b]/50' : 'border-slate-200'
                 }`}>
                   <div>
-                    <span className="text-[10px] opacity-70 block">Rating</span>
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold block">Rating</span>
                     <span className="font-extrabold text-[#d97706] dark:text-[#fbbf24] flex items-center justify-center gap-0.5">
                       <Star className="w-3 h-3 fill-current" /> 5.0
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] opacity-70 block">Live Call</span>
-                    <span className="font-extrabold font-mono">₹35/min</span>
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold block">Live Call</span>
+                    <span className="font-extrabold font-mono text-slate-800 dark:text-slate-200">₹35/min</span>
                   </div>
                   <div>
-                    <span className="text-[10px] opacity-70 block">Kuthi Yengba</span>
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold block">Kuthi Yengba</span>
                     <span className="font-extrabold text-emerald-600 dark:text-emerald-300 font-mono">₹499</span>
                   </div>
                 </div>
@@ -1674,7 +1858,7 @@ export default function AstrologerMobileDashboard() {
 
                 <div className="flex items-baseline justify-between">
                   <span className="text-2xl font-black text-[#b45309] dark:text-[#fbbf24] font-mono">₹{walletBalance.toLocaleString()}</span>
-                  <span className="text-[11px] opacity-70">80% Share Earned</span>
+                  <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">80% Share Earned</span>
                 </div>
 
                 <button
@@ -1838,35 +2022,51 @@ export default function AstrologerMobileDashboard() {
 
                 <div className="space-y-3 text-xs">
                   {/* Birth Specs */}
-                  <div className={`p-3 rounded-2xl border space-y-1.5 ${
-                    isDark ? 'bg-[#0b132b]/80 border-[#3a506b]/50' : 'bg-slate-50 border-slate-200'
+                  <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                    isDark ? 'bg-[#0b132b]/80 border-[#3a506b]/50 text-slate-200' : 'bg-slate-50 border-slate-200 text-slate-900'
                   }`}>
+                    {/* Religious Tradition Highlight */}
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-[#3a506b]/40">
+                      <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400">Faith Tradition:</span>
+                      <span className={`px-2.5 py-0.5 rounded-md font-extrabold text-[10px] border ${
+                        inspectingKuthi.clientDetails.faithTradition === 'Sanamahi Laining'
+                          ? 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-500/40'
+                          : 'bg-orange-100 text-orange-950 border-orange-300 dark:bg-orange-950/60 dark:text-orange-200 dark:border-orange-500/40'
+                      }`}>
+                        {inspectingKuthi.clientDetails.faithTradition === 'Sanamahi Laining' ? '☀️ Sanamahi Laining (Indigenous)' : '🕉️ Hinduism (Vedic)'}
+                      </span>
+                    </div>
+
                     <div className="flex justify-between">
-                      <span className="opacity-70">Client Name:</span>
-                      <span className="font-bold">{inspectingKuthi.clientName} ({inspectingKuthi.clientDetails.sex})</span>
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">Client Name:</span>
+                      <span className="font-bold text-slate-900 dark:text-white">{inspectingKuthi.clientName} ({inspectingKuthi.clientDetails.sex})</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="opacity-70">Mobile / WhatsApp:</span>
-                      <span className="font-mono text-amber-500 font-bold">{inspectingKuthi.clientDetails.mobile}</span>
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">Mobile / WhatsApp:</span>
+                      <span className="font-mono text-[#b45309] dark:text-amber-400 font-bold">{inspectingKuthi.clientDetails.mobile}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="opacity-70">Date of Birth:</span>
-                      <span className="font-mono font-bold">{inspectingKuthi.clientDetails.dob}</span>
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">Date of Birth:</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{inspectingKuthi.clientDetails.dob}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="opacity-70">Time of Birth:</span>
-                      <span className="font-mono font-bold">{inspectingKuthi.clientDetails.tob}</span>
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">Time of Birth:</span>
+                      <span className="font-mono font-bold text-slate-900 dark:text-white">{inspectingKuthi.clientDetails.tob}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="opacity-70">Place of Birth:</span>
-                      <span className="font-medium">{inspectingKuthi.clientDetails.pob}</span>
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">Place of Birth:</span>
+                      <span className="font-medium text-slate-900 dark:text-white">{inspectingKuthi.clientDetails.pob}</span>
                     </div>
-                    {inspectingKuthi.clientDetails.gotra && (
-                      <div className="flex justify-between">
-                        <span className="opacity-70">Gotra (সালয়):</span>
-                        <span className="font-bold">{inspectingKuthi.clientDetails.gotra}</span>
-                      </div>
-                    )}
+                    <div className="flex justify-between">
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">
+                        {inspectingKuthi.clientDetails.faithTradition === 'Sanamahi Laining' ? 'Yek Salai:' : 'Gotra (সালয়):'}
+                      </span>
+                      <span className="font-bold text-[#b45309] dark:text-[#fbbf24]">
+                        {inspectingKuthi.clientDetails.faithTradition === 'Sanamahi Laining'
+                          ? (inspectingKuthi.clientDetails.yek || inspectingKuthi.clientDetails.gotra || 'Khuman')
+                          : (inspectingKuthi.clientDetails.gotra || 'Sandilya')}
+                      </span>
+                    </div>
                   </div>
 
                   {/* Paper Kuthi Attachment */}

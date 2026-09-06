@@ -108,6 +108,9 @@ interface ClientDetails {
     lat?: string;
   };
   question?: string;
+  faithTradition?: string;
+  gotra?: string;
+  yek?: string;
   utr: string;
   amount: number;
 }
@@ -643,6 +646,9 @@ export default function AstrologerDashboard() {
                 groomDetails: o.groomDetails,
                 brideDetails: o.brideDetails,
                 question: o.question,
+                faithTradition: o.faithTradition || (o.gotra ? 'Hinduism' : o.yek ? 'Sanamahi Laining' : 'Hinduism'),
+                gotra: o.gotra || '',
+                yek: o.yek || '',
                 utr: o.utr || '429810441920',
                 amount: o.amount || 499,
               },
@@ -1825,7 +1831,16 @@ Question: ${details.question || 'N/A'}`;
                           <td className={`p-4 font-mono font-bold ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>{order.id}</td>
                           <td className="p-4 font-bold">
                             <span className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>{order.clientName}</span>
-                            <span className={`text-[10px] block font-normal ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>{order.clientDetails.sex}</span>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className={`text-[10px] font-normal ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>{order.clientDetails.sex}</span>
+                              <span className={`px-1.5 py-0.2 rounded text-[9px] font-bold border ${
+                                order.clientDetails.faithTradition === 'Sanamahi Laining'
+                                  ? 'bg-amber-100 text-amber-950 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200'
+                                  : 'bg-orange-100 text-orange-950 border-orange-300 dark:bg-orange-950/60 dark:text-orange-200'
+                              }`}>
+                                {order.clientDetails.faithTradition === 'Sanamahi Laining' ? '☀️ Sanamahi' : '🕉️ Hinduism'}
+                              </span>
+                            </div>
                           </td>
                           <td className={`p-4 font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>{order.serviceType}</td>
                           <td className="p-4">
@@ -2894,6 +2909,24 @@ Question: ${details.question || 'N/A'}`;
                     <div className="col-span-2">
                       <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Place of Birth</span>
                       <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>{inspectingClient.clientDetails.pob || 'See Kuthi Document'}</strong>
+                    </div>
+                    <div className="col-span-2 p-2.5 rounded-xl border flex items-center justify-between mt-1 bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/40">
+                      <div>
+                        <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 block">Faith Tradition & Identity</span>
+                        <strong className="text-xs text-amber-900 dark:text-amber-200">
+                          {inspectingClient.clientDetails.faithTradition === 'Sanamahi Laining' ? '☀️ Sanamahi Laining (Indigenous Meetei)' : '🕉️ Hinduism (Vedic Manipuri)'}
+                        </strong>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 block">
+                          {inspectingClient.clientDetails.faithTradition === 'Sanamahi Laining' ? 'Yek Salai' : 'Gotra (সালয়)'}
+                        </span>
+                        <strong className="text-xs text-[#b45309] dark:text-[#fbbf24]">
+                          {inspectingClient.clientDetails.faithTradition === 'Sanamahi Laining'
+                            ? (inspectingClient.clientDetails.yek || inspectingClient.clientDetails.gotra || 'Khuman')
+                            : (inspectingClient.clientDetails.gotra || 'Sandilya')}
+                        </strong>
+                      </div>
                     </div>
                   </div>
                 )}
