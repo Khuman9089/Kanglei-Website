@@ -15,6 +15,7 @@ export interface KuthiOrder {
   kuthiAttached: boolean;
   kuthiFileName?: string;
   kuthiFileUrl?: string;
+  uploadedFiles?: string[];
   dob?: string;
   tob?: string;
   pob?: string;
@@ -73,6 +74,7 @@ const DEFAULT_KUTHI_ORDERS: KuthiOrder[] = [
     kuthiAttached: true,
     kuthiFileName: 'nganba_kuthi_paper.pdf',
     kuthiFileUrl: '/sample_kuthi.pdf',
+    uploadedFiles: ['nganba_kuthi_paper.pdf', 'nganba_palm_kundli.pdf'],
     dob: '1995-05-15',
     tob: '10:30 AM',
     pob: 'Imphal West',
@@ -124,6 +126,7 @@ export async function GET() {
           kuthiAttached: !!d.kuthi_attached,
           kuthiFileName: d.kuthi_file_name,
           kuthiFileUrl: d.kuthi_file_url,
+          uploadedFiles: d.uploaded_files || localMatch?.uploadedFiles || (d.kuthi_file_name ? [d.kuthi_file_name] : undefined),
           dob: d.dob,
           tob: d.tob,
           pob: d.pob,
@@ -185,9 +188,16 @@ export async function POST(req: Request) {
         mobile: order.mobile || order.whatsappNo,
         whatsappNo: order.whatsappNo || order.mobile,
         email: order.email || '',
-        kuthiAttached: !!order.kuthiAttached,
-        kuthiFileName: order.kuthiFileName || '',
+        kuthiAttached: !!order.kuthiAttached || !!order.kuthiFileName || (Array.isArray(order.uploadedFiles) && order.uploadedFiles.length > 0) || (Array.isArray(order.fileNames) && order.fileNames.length > 0),
+        kuthiFileName: order.kuthiFileName || (order.uploadedFiles && order.uploadedFiles[0]) || (order.fileNames && order.fileNames[0]) || '',
         kuthiFileUrl: order.kuthiFileUrl || '',
+        uploadedFiles: (Array.isArray(order.uploadedFiles) && order.uploadedFiles.length > 0)
+          ? order.uploadedFiles
+          : (Array.isArray(order.fileNames) && order.fileNames.length > 0)
+            ? order.fileNames
+            : order.kuthiFileName
+              ? [order.kuthiFileName]
+              : [],
         dob: order.dob || '',
         tob: order.tob || '',
         pob: order.pob || '',

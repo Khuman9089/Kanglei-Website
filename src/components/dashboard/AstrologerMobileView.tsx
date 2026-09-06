@@ -86,6 +86,8 @@ interface KuthiOrder {
     pob: string;
     kuthiAttached: boolean;
     kuthiFileName?: string;
+    kuthiFileUrl?: string;
+    uploadedFiles?: string[];
     question?: string;
     lagna?: string;
     moonSign?: string;
@@ -155,6 +157,8 @@ const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [
       faithTradition: 'Hinduism',
       kuthiAttached: true,
       kuthiFileName: 'thoibi_original_kuthi_scan.pdf',
+      kuthiFileUrl: '/sample_kuthi.pdf',
+      uploadedFiles: ['thoibi_original_kuthi_scan.pdf', 'groom_kundli_page1.jpg', 'family_horoscope_notes.pdf'],
       question: 'Looking for matching with groom born in Kakching. Awaiting Manglik dosh verification and auspicious wedding period in 2026.',
       lagna: 'Vrishabha (বৃষ)',
       moonSign: 'Dhanu (ধনু)',
@@ -204,6 +208,8 @@ const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [
       faithTradition: 'Sanamahi Laining',
       kuthiAttached: true,
       kuthiFileName: 'sanatombi_birth_kuthi.jpg',
+      kuthiFileUrl: '/sample_kuthi.pdf',
+      uploadedFiles: ['sanatombi_birth_kuthi.jpg', 'sanatombi_janampatri_page2.jpg'],
       question: 'Government recruitment exam upcoming in November. Requesting planetary remedies for Rahu-Saturn transit and career gemstone guidance.',
       lagna: 'Vrischika (বৃশ্চিক)',
       moonSign: 'Vrishabha (বৃষ)',
@@ -411,6 +417,8 @@ export default function AstrologerMobileDashboard() {
                 faithTradition: o.faithTradition || 'Hinduism',
                 kuthiAttached: !!o.kuthiAttached,
                 kuthiFileName: o.kuthiFileName || '',
+                kuthiFileUrl: o.kuthiFileUrl || '/sample_kuthi.pdf',
+                uploadedFiles: o.uploadedFiles || (o.kuthiFileName ? [o.kuthiFileName] : []),
                 question: o.question || '',
                 lagna: 'Vrischika (বৃশ্চিক)',
                 moonSign: 'Vrishabha (বৃষ)',
@@ -1359,15 +1367,33 @@ export default function AstrologerMobileDashboard() {
                           <span>Bengali Chart</span>
                         </button>
 
-                        <a
-                          href={`https://wa.me/${order.clientDetails.whatsappNo.replace(/[^0-9]/g, '')}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="p-1.5 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30"
-                          title="WhatsApp Text"
-                        >
-                          <MessageCircle className="w-3.5 h-3.5" />
-                        </a>
+                        {order.clientDetails.kuthiAttached && (
+                          <button
+                            onClick={() => {
+                              const files = (order.clientDetails.uploadedFiles && order.clientDetails.uploadedFiles.length > 0)
+                                ? order.clientDetails.uploadedFiles
+                                : [order.clientDetails.kuthiFileName || 'kuthi_file.pdf'];
+                              const fileUrl = order.clientDetails.kuthiFileUrl || '/sample_kuthi.pdf';
+                              files.forEach((name, idx) => {
+                                setTimeout(() => {
+                                  const a = document.createElement('a');
+                                  a.href = fileUrl;
+                                  a.download = name;
+                                  a.target = '_blank';
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  document.body.removeChild(a);
+                                }, idx * 350);
+                              });
+                            }}
+                            className={`p-1.5 rounded-xl border text-[10px] font-bold flex items-center gap-1 cursor-pointer transition-transform active:scale-95 ${
+                              isDark ? 'bg-amber-500/15 border-amber-500/30 text-amber-400 hover:bg-amber-500/25' : 'bg-amber-100 border-amber-300 text-amber-900 hover:bg-amber-200'
+                            }`}
+                            title={`Download all uploaded files (${(order.clientDetails.uploadedFiles || [order.clientDetails.kuthiFileName]).length})`}
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                          </button>
+                        )}
                       </div>
 
                       {order.status !== 'COMPLETED' ? (
@@ -1592,7 +1618,7 @@ export default function AstrologerMobileDashboard() {
                             <div className={`p-2 rounded-xl border text-[10px] flex items-center justify-between ${
                               isDark ? 'bg-[#0b132b]/60 border-[#3a506b]/30 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
                             }`}>
-                              <span className="text-slate-500">Contact: {phone}</span>
+                              <span className="text-slate-500 font-medium">In-App Live Session</span>
                               <span className="font-medium text-amber-500">{scheduledTime}</span>
                             </div>
                           )}
@@ -2041,9 +2067,11 @@ export default function AstrologerMobileDashboard() {
                       <span className="text-slate-600 dark:text-slate-400 font-medium">Client Name:</span>
                       <span className="font-bold text-slate-900 dark:text-white">{inspectingKuthi.clientName} ({inspectingKuthi.clientDetails.sex})</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-slate-600 dark:text-slate-400 font-medium">Mobile / WhatsApp:</span>
-                      <span className="font-mono text-[#b45309] dark:text-amber-400 font-bold">{inspectingKuthi.clientDetails.mobile}</span>
+                    <div className="flex justify-between items-center">
+                      <span className="text-slate-600 dark:text-slate-400 font-medium">Contact Details:</span>
+                      <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-[10px] font-semibold border border-slate-200 dark:border-slate-700">
+                        Protected by Admin
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-600 dark:text-slate-400 font-medium">Date of Birth:</span>
@@ -2069,24 +2097,95 @@ export default function AstrologerMobileDashboard() {
                     </div>
                   </div>
 
-                  {/* Paper Kuthi Attachment */}
-                  {inspectingKuthi.clientDetails.kuthiAttached && (
-                    <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 space-y-2">
-                      <span className="text-[10px] uppercase font-bold text-[#b45309] dark:text-[#fbbf24] flex items-center gap-1">
-                        <Paperclip className="w-3.5 h-3.5" />
-                        <span>Attached Paper Kuthi Document</span>
-                      </span>
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-mono font-bold">{inspectingKuthi.clientDetails.kuthiFileName}</span>
-                        <button
-                          onClick={() => alert(`Downloading ${inspectingKuthi.clientDetails.kuthiFileName} for offline inspection`)}
-                          className="px-2.5 py-1 rounded-lg bg-amber-500 text-slate-950 font-extrabold text-[10px] shadow"
-                        >
-                          Download
-                        </button>
+                  {/* Paper Kuthi Attachment & Multi-file Download */}
+                  {inspectingKuthi.clientDetails.kuthiAttached && (() => {
+                    const files: string[] = (inspectingKuthi.clientDetails.uploadedFiles && inspectingKuthi.clientDetails.uploadedFiles.length > 0)
+                      ? inspectingKuthi.clientDetails.uploadedFiles
+                      : (inspectingKuthi.clientDetails.kuthiFileName ? [inspectingKuthi.clientDetails.kuthiFileName] : []);
+                    const fileUrl = inspectingKuthi.clientDetails.kuthiFileUrl || '/sample_kuthi.pdf';
+
+                    return (
+                      <div className="p-3.5 rounded-2xl bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/30 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[10.5px] uppercase font-bold text-[#b45309] dark:text-[#fbbf24] flex items-center gap-1.5">
+                            <Paperclip className="w-3.5 h-3.5" />
+                            <span>Uploaded Kundli / Kuthi ({files.length})</span>
+                          </span>
+                          {files.length > 1 && (
+                            <button
+                              onClick={() => {
+                                files.forEach((name, idx) => {
+                                  setTimeout(() => {
+                                    const a = document.createElement('a');
+                                    a.href = fileUrl;
+                                    a.download = name;
+                                    a.target = '_blank';
+                                    document.body.appendChild(a);
+                                    a.click();
+                                    document.body.removeChild(a);
+                                  }, idx * 350);
+                                });
+                              }}
+                              className="px-2.5 py-1 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-[10px] shadow flex items-center gap-1 active:scale-95 transition-transform cursor-pointer"
+                            >
+                              <Download className="w-3 h-3" />
+                              <span>Download All ({files.length})</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* List of uploaded files */}
+                        <div className="space-y-1.5">
+                          {files.map((fileName, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center justify-between p-2 rounded-xl bg-white/80 dark:bg-[#0b132b]/80 border border-amber-500/20 text-xs"
+                            >
+                              <div className="flex items-center gap-2 overflow-hidden mr-2">
+                                <FileText className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                                <span className="font-mono text-[11px] font-bold truncate text-slate-800 dark:text-slate-200">
+                                  {fileName}
+                                </span>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  const a = document.createElement('a');
+                                  a.href = fileUrl;
+                                  a.download = fileName;
+                                  a.target = '_blank';
+                                  document.body.appendChild(a);
+                                  a.click();
+                                  document.body.removeChild(a);
+                                }}
+                                className="px-2.5 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-[#b45309] dark:text-amber-300 font-extrabold text-[10px] flex items-center gap-1 shrink-0 active:scale-95 transition-transform cursor-pointer"
+                              >
+                                <Download className="w-3 h-3" />
+                                <span>Download</span>
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+
+                        {files.length === 1 && (
+                          <button
+                            onClick={() => {
+                              const a = document.createElement('a');
+                              a.href = fileUrl;
+                              a.download = files[0];
+                              a.target = '_blank';
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                            }}
+                            className="w-full py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 text-white font-extrabold text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 transition-transform cursor-pointer"
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Download Kuthi Document</span>
+                          </button>
+                        )}
                       </div>
-                    </div>
-                  )}
+                    );
+                  })()}
 
                   {/* Query */}
                   {inspectingKuthi.clientDetails.question && (

@@ -91,6 +91,7 @@ interface ClientDetails {
   kuthiAttached: boolean;
   kuthiFileName?: string;
   kuthiFileUrl?: string;
+  uploadedFiles?: string[];
   groomDetails?: {
     name: string;
     dob: string;
@@ -558,6 +559,7 @@ export default function AstrologerDashboard() {
         kuthiAttached: true,
         kuthiFileName: 'ibomcha_kuthi_scan.pdf',
         kuthiFileUrl: '/sample_kuthi.pdf',
+        uploadedFiles: ['ibomcha_kuthi_scan.pdf', 'ibomcha_birth_chart_pg2.pdf', 'palmistry_photo.jpg'],
         question: 'Looking for promotion and business expansion opportunities in late 2026.',
         utr: '918230491823',
         amount: 1499,
@@ -581,6 +583,7 @@ export default function AstrologerDashboard() {
         kuthiAttached: true,
         kuthiFileName: 'rajen_paper_kuthi.jpg',
         kuthiFileUrl: '/sample_kuthi.pdf',
+        uploadedFiles: ['rajen_paper_kuthi.jpg', 'rajen_palm_scan.pdf'],
         question: 'Health concerns and Rahu Mahadasha remedies.',
         utr: '109283019283',
         amount: 999,
@@ -643,6 +646,7 @@ export default function AstrologerDashboard() {
                 kuthiAttached: !!o.kuthiAttached,
                 kuthiFileName: o.kuthiFileName,
                 kuthiFileUrl: o.kuthiFileUrl,
+                uploadedFiles: o.uploadedFiles || (o.kuthiFileName ? [o.kuthiFileName] : []),
                 groomDetails: o.groomDetails,
                 brideDetails: o.brideDetails,
                 question: o.question,
@@ -889,8 +893,7 @@ export default function AstrologerDashboard() {
   const handleCopyClientDetails = (order: Order) => {
     const details = order.clientDetails;
     const summary = `Client: ${order.clientName} (${details.sex})
-Mobile: ${details.mobile}
-WhatsApp: ${details.whatsappNo}
+Contact: [Protected for Privacy]
 Email: ${details.email}
 DOB: ${details.dob || 'Attached in Kuthi Document'}
 TOB: ${details.tob || 'Attached in Kuthi Document'}
@@ -1925,13 +1928,15 @@ Question: ${details.question || 'N/A'}`;
                           <td className="p-4 font-mono font-bold text-[#fbbf24]">{order.id}</td>
                           <td className="p-4">
                             <strong className="text-white text-sm block">{order.clientName}</strong>
-                            <span className="text-gray-400 text-[11px] block">{order.clientDetails.mobile}</span>
+                            <span className="text-slate-400 text-[10px] italic block">Contact Protected</span>
                           </td>
                           <td className="p-4">
                             {order.clientDetails.kuthiAttached ? (
                               <span className="text-xs text-amber-300 font-bold flex items-center gap-1">
                                 <Paperclip className="w-3.5 h-3.5 text-amber-400" />
-                                {order.clientDetails.kuthiFileName || 'Paper Kuthi Uploaded'}
+                                {order.clientDetails.uploadedFiles && order.clientDetails.uploadedFiles.length > 1
+                                  ? `${order.clientDetails.uploadedFiles.length} Kuthi Files Uploaded`
+                                  : (order.clientDetails.kuthiFileName || 'Paper Kuthi Uploaded')}
                               </span>
                             ) : (
                               <span className="text-xs text-gray-400 italic">Birth Details Mode</span>
@@ -2683,7 +2688,7 @@ Question: ${details.question || 'N/A'}`;
                               <td className="p-4 font-mono font-bold text-[#fbbf24]">{ord.orderRef}</td>
                               <td className="p-4">
                                 <div className="font-extrabold text-white">{ord.buyerName}</div>
-                                <div className="text-amber-300 font-mono text-[10px]">{ord.whatsappNo || ord.mobile}</div>
+                                <div className="text-slate-400 text-[10px] italic">Client Contact Protected</div>
                               </td>
                               <td className="p-4">
                                 {astroItems.map((it: any, idx: number) => (
@@ -2819,36 +2824,115 @@ Question: ${details.question || 'N/A'}`;
 
             <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
               
-              {/* Kuthi File Attachment Box */}
-              <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-4 ${
-                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-200 text-slate-900'
-              }`}>
-                <div>
-                  <span className={`font-bold text-xs uppercase tracking-wider block ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>Attached Physical Kuthi File</span>
-                  <strong className={`text-sm block mt-0.5 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
-                    {inspectingClient.clientDetails.kuthiAttached ? inspectingClient.clientDetails.kuthiFileName : 'No Physical Paper Uploaded (Use Birth Details Below)'}
-                  </strong>
-                </div>
+              {/* Kuthi File Attachment Box & Multi-file Downloads */}
+              {(() => {
+                const files: string[] = (inspectingClient.clientDetails.uploadedFiles && inspectingClient.clientDetails.uploadedFiles.length > 0)
+                  ? inspectingClient.clientDetails.uploadedFiles
+                  : (inspectingClient.clientDetails.kuthiFileName ? [inspectingClient.clientDetails.kuthiFileName] : []);
+                const fileUrl = inspectingClient.clientDetails.kuthiFileUrl || '/sample_kuthi.pdf';
 
-                {inspectingClient.clientDetails.kuthiAttached ? (
-                  <a
-                    href={inspectingClient.clientDetails.kuthiFileUrl || '/sample_kuthi.pdf'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    download
-                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-bold text-xs flex items-center gap-2 shadow-md shrink-0"
-                  >
-                    <Download className="w-4 h-4" />
-                    <span>Download Kuthi File</span>
-                  </a>
-                ) : (
-                  <span className={`px-3 py-1.5 rounded-xl border font-bold text-xs ${
-                    theme === 'dark' ? 'bg-[#1e293b] text-gray-300 border-[#3a506b]' : 'bg-slate-200 text-slate-800 border-slate-300'
+                const handleDownloadAll = () => {
+                  files.forEach((name, idx) => {
+                    setTimeout(() => {
+                      const a = document.createElement('a');
+                      a.href = fileUrl;
+                      a.download = name;
+                      a.target = '_blank';
+                      document.body.appendChild(a);
+                      a.click();
+                      document.body.removeChild(a);
+                    }, idx * 350);
+                  });
+                };
+
+                return inspectingClient.clientDetails.kuthiAttached ? (
+                  <div className={`p-5 rounded-2xl border space-y-3.5 ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-200 text-slate-900'
                   }`}>
-                    Birth Details Mode
-                  </span>
-                )}
-              </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold text-xs uppercase tracking-wider block ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
+                            Customer Uploaded Kundli / Kuthi
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-500 text-[10px] font-extrabold">
+                            {files.length} {files.length === 1 ? 'File' : 'Files'} Attached
+                          </span>
+                        </div>
+                        <p className={`text-xs mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                          Original birth charts, scans, and documents uploaded by the customer
+                        </p>
+                      </div>
+
+                      {/* Download All Button */}
+                      <button
+                        onClick={handleDownloadAll}
+                        className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-bold text-xs flex items-center gap-2 shadow-md shrink-0 transition-all active:scale-95 cursor-pointer"
+                      >
+                        <Download className="w-4 h-4" />
+                        <span>Download All Uploaded ({files.length})</span>
+                      </button>
+                    </div>
+
+                    {/* Files list */}
+                    <div className="space-y-2 pt-1">
+                      {files.map((fileName, idx) => (
+                        <div
+                          key={idx}
+                          className={`flex items-center justify-between p-3 rounded-xl border text-xs ${
+                            theme === 'dark' ? 'bg-[#1c2541]/70 border-[#3a506b]/50' : 'bg-white border-slate-200'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0 mr-3">
+                            <FileText className="w-4 h-4 text-amber-400 shrink-0" />
+                            <div className="truncate">
+                              <span className="font-mono font-bold block truncate">{fileName}</span>
+                              <span className={`text-[10px] block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                                Original Customer Document • Part {idx + 1}
+                              </span>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => {
+                              const a = document.createElement('a');
+                              a.href = fileUrl;
+                              a.download = fileName;
+                              a.target = '_blank';
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                            }}
+                            className={`px-3 py-1.5 rounded-lg border font-bold text-xs flex items-center gap-1.5 shrink-0 transition-colors cursor-pointer ${
+                              theme === 'dark'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30 hover:bg-amber-500/30'
+                                : 'bg-amber-50 text-amber-900 border-amber-200 hover:bg-amber-100'
+                            }`}
+                          >
+                            <Download className="w-3.5 h-3.5" />
+                            <span>Download</span>
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className={`p-5 rounded-2xl border flex items-center justify-between ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-200 text-slate-900'
+                  }`}>
+                    <div>
+                      <span className={`font-bold text-xs uppercase tracking-wider block ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>Attached Physical Kuthi File</span>
+                      <strong className={`text-sm block mt-0.5 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                        No Physical Paper Uploaded (Use Birth Details Below)
+                      </strong>
+                    </div>
+                    <span className={`px-3 py-1.5 rounded-xl border font-bold text-xs ${
+                      theme === 'dark' ? 'bg-[#1e293b] text-gray-300 border-[#3a506b]' : 'bg-slate-200 text-slate-800 border-slate-300'
+                    }`}>
+                      Birth Details Mode
+                    </span>
+                  </div>
+                );
+              })()}
 
               {/* Complete Client Details */}
               <div className={`p-5 rounded-2xl border space-y-4 text-xs ${
@@ -2862,8 +2946,12 @@ Question: ${details.question || 'N/A'}`;
                     <strong className={`text-base ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{inspectingClient.clientName} ({inspectingClient.clientDetails.sex})</strong>
                   </div>
                   <div className="text-right">
-                    <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>WhatsApp Contact</span>
-                    <strong className={`text-sm font-mono ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>{inspectingClient.clientDetails.whatsappNo}</strong>
+                    <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Contact Details</span>
+                    <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold border inline-block mt-0.5 ${
+                      theme === 'dark' ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200'
+                    }`}>
+                      Protected by Admin
+                    </span>
                   </div>
                 </div>
 
