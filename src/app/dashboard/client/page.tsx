@@ -48,7 +48,7 @@ const MOCK_USER = {
   address: "",
   deliveryAddress: "",
   sameAsResident: true,
-  deliveryAddresses: [],
+  deliveryAddresses: [] as string[],
   memberSince: "2026"
 };
 

@@ -4313,7 +4313,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </span>
                   </div>
                   <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
-                    ₹{orders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (o.payoutFee || (Number(o.amount) ? Math.round(Number(o.amount) * 0.6) : 0)), 0).toLocaleString()}
+                    ₹{orders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + ((o as any).payoutFee || (Number(o.amount) ? Math.round(Number(o.amount) * 0.6) : 0)), 0).toLocaleString()}
                   </span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Pending Astrologer Payout Pool</span>
                 </div>
