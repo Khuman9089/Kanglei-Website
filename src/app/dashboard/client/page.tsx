@@ -7,7 +7,7 @@ import {
   LogOut, FileText, Clock, Download, MapPin, Phone, Mail, 
   Calendar, CreditCard, Plus, Eye, ChevronRight, UserCircle,
   Activity, ShoppingBag, FileDown, CheckCircle2, Sparkles, X, XCircle, Star, KeyRound,
-  Truck, Ban, Printer, MessageSquare, AlertTriangle, ShieldCheck, Image as ImageIcon, Video
+  Truck, Ban, Printer, MessageSquare, AlertTriangle, ShieldCheck, Image as ImageIcon, Video, RotateCcw
 } from 'lucide-react';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 
@@ -40,17 +40,15 @@ interface KuthiOrder {
 }
 
 const MOCK_USER = {
-  name: "Nganba Meitei",
-  email: "abc@gmail.com",
-  phone: "+91 90123 45678",
-  whatsapp: "+91 90123 45678",
-  sex: "Male",
-  address: "Uripok, Imphal West, Manipur, 795001",
-  deliveryAddress: "Uripok, Imphal West, Manipur, 795001",
+  name: "",
+  email: "",
+  phone: "",
+  whatsapp: "",
+  sex: "",
+  address: "",
+  deliveryAddress: "",
   sameAsResident: true,
-  deliveryAddresses: [
-    "Uripok Tourangbam Leikai, Imphal West, Manipur - 795001",
-  ],
+  deliveryAddresses: [],
   memberSince: "2026"
 };
 
@@ -82,61 +80,9 @@ interface ShopOrder {
   cancelledAt?: string;
 }
 
-const DEFAULT_SHOP_ORDERS: ShopOrder[] = [
-  {
-    id: "shop-order-101",
-    orderRef: "ESTORE-2026-981",
-    buyerName: "Nganba Meitei",
-    mobile: "+91 90123 45678",
-    address: "Uripok Tourangbam Leikai, Imphal West, Manipur - 795001",
-    pincode: "795001",
-    items: [
-      {
-        productId: "prod-1",
-        title: "Natural Ceylon Yellow Sapphire (Pukhraj) 5.25 Ratti",
-        price: 6999,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop",
-        sellerName: "Acharya Tombi Sharma",
-      }
-    ],
-    totalAmount: 6999,
-    utr: "928371049281",
-    status: "ENERGIZING",
-    orderedAt: "01 Mar 2026",
-    courierPartner: "BlueDart Express",
-    trackingNumber: "BD-89210492IN",
-  },
-  {
-    id: "shop-order-102",
-    orderRef: "ESTORE-2026-412",
-    buyerName: "Nganba Meitei",
-    mobile: "+91 90123 45678",
-    address: "Uripok, Imphal West, Manipur - 795001",
-    pincode: "795001",
-    items: [
-      {
-        productId: "prod-5",
-        title: "Natural 5 Mukhi Nepal Rudraksha Mala (108+1 Beads)",
-        price: 999,
-        quantity: 1,
-        image: "https://images.unsplash.com/photo-1611080626919-7cf5a9dbab5b?q=80&w=800&auto=format&fit=crop",
-        sellerName: "KangleiAstro Store",
-      }
-    ],
-    totalAmount: 999,
-    utr: "881029481029",
-    status: "DELIVERED",
-    orderedAt: "24 Feb 2026",
-    courierPartner: "Delhivery Surface",
-    trackingNumber: "DEL-481920492",
-  }
-];
+const DEFAULT_SHOP_ORDERS: ShopOrder[] = [];
 
-const KUNDLI_PROFILES = [
-  { name: "Nganba Meitei", dob: "15 May 1995", tob: "10:30 AM", place: "Imphal West, Manipur" },
-  { name: "Thoibi Ningthoujam", dob: "12 Apr 1996", tob: "08:30 AM", place: "Imphal East, Manipur" },
-];
+const KUNDLI_PROFILES: any[] = [];
 
 const getStatusBadge = (status: string) => {
   switch (status) {
@@ -372,7 +318,7 @@ export default function ClientDashboard() {
       try {
         const res = await fetch('/api/shop');
         const data = await res.json();
-        if (isMounted && data.orders && Array.isArray(data.orders) && data.orders.length > 0) {
+        if (isMounted && data.orders && Array.isArray(data.orders)) {
           setShopOrders(data.orders);
         }
       } catch (err) {
@@ -856,7 +802,7 @@ export default function ClientDashboard() {
                                     {formatBadge}
                                   </div>
                                   <p className="text-xs text-gray-500 mt-0.5">
-                                    Uploaded by Guru: <strong className="text-gray-700">{order.reportUploadedBy || order.assignedAstrologerName || 'Acharya Tombi Sharma'}</strong> • Order {order.orderRef}
+                                    Uploaded by Guru: <strong className="text-gray-700">{order.reportUploadedBy || order.assignedAstrologerName || 'Assigned Vedic Guru'}</strong> • Order {order.orderRef}
                                   </p>
                                   {order.reportNotes && (
                                     <p className="text-xs text-gray-600 italic mt-1.5 bg-[#fefcf6] p-2.5 rounded-xl border border-[#f3e8d2]">
@@ -1045,7 +991,7 @@ export default function ClientDashboard() {
                           {/* Items Grid */}
                           <div className="space-y-3">
                             {sOrder.items.map((item, idx) => (
-                              <div key={idx} className="flex items-center justify-between p-3.5 rounded-2xl border border-[#f3e8d2] bg-[#fffdfa]">
+                              <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3.5 rounded-2xl border border-[#f3e8d2] bg-[#fffdfa]">
                                 <div className="flex items-center gap-3.5">
                                   {item.image && (
                                     <img src={item.image} alt={item.title} className="w-14 h-14 object-cover rounded-xl border border-gray-200 shrink-0" />
@@ -1060,8 +1006,20 @@ export default function ClientDashboard() {
                                     </p>
                                   </div>
                                 </div>
-                                <div className="font-serif font-bold text-base text-[#0f172a] shrink-0">
-                                  ₹{(item.price * item.quantity).toLocaleString()}
+                                <div className="flex items-center justify-between sm:justify-end gap-3 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#f8ecda]">
+                                  <div className="font-serif font-bold text-base text-[#0f172a]">
+                                    ₹{(item.price * item.quantity).toLocaleString()}
+                                  </div>
+                                  {isDelivered && (
+                                    <Link
+                                      href={`/shop/returns?orderRef=${encodeURIComponent(sOrder.orderRef)}&product=${encodeURIComponent(item.title)}`}
+                                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-[#b45309] font-bold text-xs shadow-xs hover:shadow transition-all"
+                                      title="Request 100% Return or Replacement"
+                                    >
+                                      <RotateCcw className="w-3.5 h-3.5 text-[#b45309]" />
+                                      <span>Return / Replace</span>
+                                    </Link>
+                                  )}
                                 </div>
                               </div>
                             ))}
@@ -1087,7 +1045,7 @@ export default function ClientDashboard() {
 
                           {/* Action Footer Buttons */}
                           <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#f3e8d2]">
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               {/* Request Cancellation Button */}
                               {!isCancelled && !isDelivered && (
                                 <button
@@ -1101,6 +1059,17 @@ export default function ClientDashboard() {
                                   <Ban className="w-3.5 h-3.5" />
                                   <span>Request Cancellation</span>
                                 </button>
+                              )}
+
+                              {/* Return / Replace Order Button if Delivered */}
+                              {isDelivered && (
+                                <Link
+                                  href={`/shop/returns?orderRef=${encodeURIComponent(sOrder.orderRef)}`}
+                                  className="px-4 py-2.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-[#b45309] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                                >
+                                  <RotateCcw className="w-3.5 h-3.5 text-[#b45309]" />
+                                  <span>Return / Replace</span>
+                                </Link>
                               )}
 
                               {/* Download Invoice / Receipt Button */}
@@ -1117,15 +1086,13 @@ export default function ClientDashboard() {
                               </button>
                             </div>
 
-                            <a
-                              href={`https://wa.me/919876543210?text=${encodeURIComponent(`Hi KangleiAstro Team, I have a question regarding my E-Store Order ${sOrder.orderRef}`)}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
+                            <Link
+                              href="/contact"
                               className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs flex items-center gap-1.5 transition-colors shadow-xs"
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
                               <span>Support Help</span>
-                            </a>
+                            </Link>
                           </div>
                         </div>
                       );
@@ -1254,7 +1221,7 @@ export default function ClientDashboard() {
                   {selectedReportOrder.reportFileName || `${selectedReportOrder.serviceType} Report`}
                 </div>
                 <div className="text-xs text-gray-600 mt-1">
-                  Prepared by: <strong className="text-[#b45309]">{selectedReportOrder.reportUploadedBy || selectedReportOrder.assignedAstrologerName || 'Acharya Tombi Sharma'}</strong>
+                  Prepared by: <strong className="text-[#b45309]">{selectedReportOrder.reportUploadedBy || selectedReportOrder.assignedAstrologerName || 'Assigned Vedic Guru'}</strong>
                 </div>
               </div>
 

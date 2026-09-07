@@ -10,34 +10,8 @@ function extractLast10Digits(phoneStr?: string): string {
   return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
-const DEMO_CLIENTS: Record<string, any> = {
-  'nganba@example.com': {
-    id: 'client-1',
-    name: 'Nganba Meitei',
-    email: 'nganba@example.com',
-    phone: '+91 98620 12345',
-    whatsappNo: '+91 98620 12345',
-    sex: 'Male',
-    address: 'Uripok, Imphal West, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-01-15',
-  },
-};
-
-const DEMO_ASTROLOGERS: Record<string, any> = {
-  '+91 98620 99881': {
-    id: 'astro-1',
-    name: 'Acharya Tombi Sharma',
-    email: 'tombi@kangleiastro.com',
-    phone: '+91 98620 99881',
-    whatsappNo: '+91 98620 99881',
-    specialty: 'Vedic Horoscope & Kuthi Yengba Specialist',
-    completedCount: 142,
-    pendingPayout: 3500,
-    role: 'ASTROLOGER',
-    joinedAt: '2024-06-10',
-  },
-};
+const DEMO_CLIENTS: Record<string, any> = {};
+const DEMO_ASTROLOGERS: Record<string, any> = {};
 
 export async function POST(request: Request) {
   try {
@@ -150,23 +124,56 @@ export async function POST(request: Request) {
       }
     }
 
-    // 3. Astrologer Role Fallback
+    // 3. Astrologer Role Authentication
     if (role === 'ASTROLOGER') {
-      const astro = DEMO_ASTROLOGERS[identifier] || DEMO_ASTROLOGERS[identifier.trim()];
-      return NextResponse.json({
-        success: true,
-        user: astro || {
-          id: 'astro-' + Date.now(),
-          name: 'Empaneled Astrologer',
-          email: 'astrologer@kangleiastro.com',
-          phone: identifier,
-          whatsappNo: identifier,
-          specialty: 'Vedic Astrology Specialist',
-          role: 'ASTROLOGER',
-          joinedAt: new Date().toISOString().split('T')[0],
-        },
-        redirectTo: '/dashboard/astrologer',
-      });
+      try {
+        const astrologers = await readPersistentDataAsync<any[]>('astrologers', []);
+        const matchedAstro = astrologers.find((a) => {
+          if (a.username && a.username.toLowerCase().trim() === cleanIdLower) return true;
+          if (a.email && a.email.toLowerCase().trim() === cleanIdLower) return true;
+          if (a.phone && a.phone.trim() === cleanId) return true;
+          if (a.whatsappPhone && a.whatsappPhone.trim() === cleanId) return true;
+          if (a.whatsappNo && a.whatsappNo.trim() === cleanId) return true;
+          if (idLast10) {
+            const p10 = extractLast10Digits(a.phone);
+            const w10 = extractLast10Digits(a.whatsappPhone || a.whatsappNo);
+            if (p10 === idLast10 || w10 === idLast10) return true;
+          }
+          return false;
+        });
+
+        if (matchedAstro) {
+          if (matchedAstro.password && matchedAstro.password !== password) {
+            return NextResponse.json(
+              { error: 'Incorrect astrologer password. Please try again.' },
+              { status: 401 }
+            );
+          }
+
+          return NextResponse.json({
+            success: true,
+            user: {
+              id: matchedAstro.id,
+              name: matchedAstro.name,
+              email: matchedAstro.email || '',
+              phone: matchedAstro.phone || matchedAstro.whatsappPhone || matchedAstro.whatsappNo || '',
+              whatsappNo: matchedAstro.whatsappPhone || matchedAstro.whatsappNo || matchedAstro.phone || '',
+              specialty: matchedAstro.specialty || (Array.isArray(matchedAstro.specialties) ? matchedAstro.specialties.join(', ') : 'Vedic Astrologer'),
+              avatar: matchedAstro.avatar || '',
+              role: 'ASTROLOGER',
+              joinedAt: matchedAstro.joinedAt || new Date().toISOString().split('T')[0],
+            },
+            redirectTo: '/dashboard/astrologer',
+          });
+        }
+      } catch (astroErr) {
+        console.warn('Persistent store astrologer query notice:', astroErr);
+      }
+
+      return NextResponse.json(
+        { error: 'No registered astrologer found with these credentials. Please contact the administrator.' },
+        { status: 401 }
+      );
     }
 
     // 4. Client Demo Fallback

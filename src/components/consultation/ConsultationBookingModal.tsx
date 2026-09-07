@@ -117,23 +117,35 @@ export default function ConsultationBookingModal({
       .catch(() => {});
   }, []);
 
-  // Check login state upon opening
+  // Check login state upon opening — If user is already signed in to website, skip Sign In/Sign Up
   useEffect(() => {
     if (isOpen) {
       setAuthError('');
       setAuthSuccess('');
       try {
         const savedUserStr = localStorage.getItem('kanglei_user');
-        const isAuthed = localStorage.getItem('kanglei_client_authed') === 'true';
+        const isLoggedOut = localStorage.getItem('kanglei_logged_out') === 'true';
 
+        if (savedUserStr && !isLoggedOut) {
+          const u = JSON.parse(savedUserStr);
+          if (u && (u.name || u.email || u.phone || u.mobile)) {
+            setCurrentUser(u);
+            localStorage.setItem('kanglei_client_authed', 'true');
+            setStep(2); // Seamlessly proceed to Date & Shift selection!
+            return;
+          }
+        }
+
+        const isAuthed = localStorage.getItem('kanglei_client_authed') === 'true';
         if (savedUserStr && isAuthed) {
           const u = JSON.parse(savedUserStr);
           setCurrentUser(u);
-          setStep(2); // If already signed in, proceed directly to Date & Shift
-        } else {
-          setCurrentUser(null);
-          setStep(1); // COMPULSORY Sign In / Sign Up
+          setStep(2);
+          return;
         }
+
+        setCurrentUser(null);
+        setStep(1); // Only ask for Sign In / Sign Up if user has no active session
       } catch (e) {
         setStep(1);
       }
@@ -310,9 +322,9 @@ export default function ConsultationBookingModal({
     setPaymentError('');
 
     const orderRef = `CONS-${Math.floor(100000 + Math.random() * 900000)}`;
-    const clientPhone = currentUser?.phone || currentUser?.whatsappNo || `${signupIsd} ${signupPhone.replace(/\D/g, '')}` || '+91 98620 12345';
+    const clientPhone = currentUser?.phone || currentUser?.mobile || currentUser?.whatsappNo || `${signupIsd} ${signupPhone.replace(/\D/g, '')}` || '+91 98620 12345';
     const clientEmail = currentUser?.email || signupEmail || 'client@kangleiastro.com';
-    const clientName = currentUser?.name || signupName || 'Verified Client';
+    const clientName = currentUser?.name || currentUser?.fullName || signupName || 'Verified Client';
 
     if (paymentMethod === 'manual_upi') {
       try {

@@ -17,6 +17,27 @@ export interface PayUSiteSettings {
   prodPaymentUrl?: string;
 }
 
+export interface BranchOffice {
+  id: string;
+  name: string;
+  address: string;
+  pincode?: string;
+  phone?: string;
+  email?: string;
+  timing?: string;
+}
+
+export interface ContactSettings {
+  brandName: string;
+  phone: string;
+  email: string;
+  address: string;
+  pincode: string;
+  timing?: string;
+  mapEmbedUrl?: string;
+  branchOffices: BranchOffice[];
+}
+
 export interface SiteSettings {
   headerSettings: {
     supportTiming: string;
@@ -31,6 +52,7 @@ export interface SiteSettings {
     qrNotes: string;
   };
   payuSettings?: PayUSiteSettings;
+  contactSettings?: ContactSettings;
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
@@ -58,6 +80,15 @@ const DEFAULT_SETTINGS: SiteSettings = {
     prodMerchantKey: '',
     prodMerchantSalt: '',
     prodPaymentUrl: 'https://secure.payu.in/_payment',
+  },
+  contactSettings: {
+    brandName: 'KuthiYengpham by KangleiAstro',
+    phone: '9999999999',
+    email: 'ccare@kuthiyengpham.in',
+    address: 'Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur',
+    pincode: '795005',
+    timing: 'Monday – Saturday: 9:30 AM – 6:00 PM IST',
+    branchOffices: [],
   },
 };
 
@@ -92,11 +123,18 @@ export async function POST(request: Request) {
       };
     }
 
+    if (body.contactSettings) {
+      currentSettings.contactSettings = {
+        ...(currentSettings.contactSettings || DEFAULT_SETTINGS.contactSettings),
+        ...body.contactSettings,
+      };
+    }
+
     await writePersistentDataAsync('site_settings', currentSettings);
 
     return NextResponse.json({
       success: true,
-      message: 'Site Settings, Payment UPI QR & PayU Gateway Config saved live!',
+      message: 'Site Settings, Payment UPI QR, PayU Gateway & Contact Details saved live!',
       settings: currentSettings,
     });
   } catch (err: any) {

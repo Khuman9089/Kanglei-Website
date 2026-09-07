@@ -43,6 +43,7 @@ export function Footer() {
               <li><Link href="/manipuri_free_kuthi" className="hover:text-[#fbbf24] transition-colors">Free Kundli Generator</Link></li>
               <li><Link href="/matching" className="hover:text-[#fbbf24] transition-colors">Kundli Matching (Gun Milan)</Link></li>
               <li><Link href="/services" className="hover:text-[#fbbf24] transition-colors">Services & Reports</Link></li>
+              <li><Link href="/contact" className="hover:text-[#fbbf24] transition-colors">Contact Us & Offices</Link></li>
             </ul>
           </div>
 
@@ -59,19 +60,24 @@ export function Footer() {
           <div>
             <h4 className="font-serif text-lg font-bold text-[#fbbf24] mb-4">Contact & Support</h4>
             <ul className="space-y-2.5 text-xs text-gray-300">
-              <li className="font-medium text-white">support@kuthiyengpham.in</li>
-              <li className="font-medium text-white">+91 98765 43210</li>
+              <li className="font-medium text-white">ccare@kuthiyengpham.in</li>
+              <li className="font-medium text-white">+91 99999 99999</li>
               <li className="text-gray-400">Live Support: 9:30 AM – 6:00 PM IST</li>
+              <li className="pt-1">
+                <Link href="/contact" className="text-[#fbbf24] font-bold hover:underline inline-flex items-center gap-1">
+                  <span>Visit Office / Send Message →</span>
+                </Link>
+              </li>
             </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-[#1e293b] flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-4">
-          <p>&copy; {new Date().getFullYear()} KuthiYengpham by KangleiAstro. All rights reserved.</p>
-          <div className="flex gap-6">
-            <a href="#" className="hover:underline">Privacy Policy</a>
-            <a href="#" className="hover:underline">Terms of Service</a>
-            <a href="#" className="hover:underline">Refund Policy</a>
+          <p>&copy; {new Date().getFullYear()} KuthiYengpham by KangleiAstro &bull; Oinam Robert Singh. All rights reserved.</p>
+          <div className="flex flex-wrap gap-6">
+            <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/return-policy" className="hover:text-white transition-colors">Return & Refund Policy</Link>
           </div>
         </div>
       </div>

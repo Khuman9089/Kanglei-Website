@@ -63,101 +63,10 @@ export interface ConsultationSession {
   remedyRecommended?: string;
 }
 
-const DEFAULT_SESSIONS: ConsultationSession[] = [
-  {
-    id: 'TEST-SESS-999',
-    mode: 'CALL',
-    callType: 'VIDEO',
-    clientName: 'Test Client User',
-    clientPhone: '+919999999999',
-    astrologerId: 'astro-test',
-    astrologerName: 'Acharya Test Guru',
-    astrologerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
-    status: 'ENDED',
-    durationMinutes: 30,
-    ratePerMin: 35,
-    totalFee: 1050,
-    createdAt: new Date().toISOString(),
-    startedAt: new Date().toISOString(),
-    remainingSeconds: 1800,
-    messages: [
-      {
-        id: 'msg-test-1',
-        sender: 'SYSTEM',
-        text: 'Live 1-on-1 Consultation Test Room active.',
-        timestamp: new Date().toISOString(),
-      },
-    ],
-    signals: [],
-  },
-  {
-    id: 'SESS-1001',
-    mode: 'CHAT',
-    callType: 'AUDIO',
-    clientName: 'Laishram Sanatomba',
-    clientPhone: '+919862001122',
-    clientGender: 'Male',
-    clientDob: '1996-04-12',
-    clientTob: '08:45',
-    clientPob: 'Imphal West, Manipur',
-    astrologerId: 'astro-1',
-    astrologerName: 'Acharya Tombi Sharma',
-    astrologerAvatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
-    status: 'ENDED',
-    durationMinutes: 15,
-    ratePerMin: 35,
-    totalFee: 525,
-    createdAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    startedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-    endedAt: new Date(Date.now() - 3600000 * 2 + 900000).toISOString(),
-    remainingSeconds: 0,
-    messages: [
-      {
-        id: 'msg-1',
-        sender: 'SYSTEM',
-        text: 'Consultation session started between Laishram Sanatomba and Acharya Tombi Sharma.',
-        timestamp: new Date(Date.now() - 3600000 * 2).toISOString(),
-      },
-      {
-        id: 'msg-2',
-        sender: 'CLIENT',
-        text: 'Taramanna Guru-ji, I am asking about my career promotion in 2026.',
-        timestamp: new Date(Date.now() - 3600000 * 2 + 60000).toISOString(),
-      },
-      {
-        id: 'msg-3',
-        sender: 'ASTROLOGER',
-        text: 'Radhe Radhe! Let me look into your D-10 Dashamsha chart. Jupiter transit in 10th house indicates strong promotion opportunities starting October 2026.',
-        timestamp: new Date(Date.now() - 3600000 * 2 + 120000).toISOString(),
-      },
-    ],
-    signals: [],
-    remedyRecommended: 'Yellow Sapphire (Pukhraj) & Chant Vishnu Sahasranama on Thursdays',
-  },
-];
+const DEFAULT_SESSIONS: ConsultationSession[] = [];
 
 async function getSessionsWithDefaults(): Promise<ConsultationSession[]> {
-  const sessions = await readPersistentDataAsync<ConsultationSession[]>('consultation_sessions', DEFAULT_SESSIONS);
-  let changed = false;
-  for (const def of DEFAULT_SESSIONS) {
-    const existing = sessions.find((s) => s.id === def.id);
-    if (!existing) {
-      sessions.unshift({ ...def });
-      changed = true;
-    } else if (def.id === 'TEST-SESS-999') {
-      // Auto-revive test session if it was previously ended or out of time
-      if (existing.status !== 'LIVE' || !existing.remainingSeconds || existing.remainingSeconds <= 60) {
-        existing.status = 'LIVE';
-        existing.remainingSeconds = 3600;
-        existing.durationMinutes = 60;
-        existing.callType = 'VIDEO';
-        changed = true;
-      }
-    }
-  }
-  if (changed) {
-    writePersistentDataAsync('consultation_sessions', sessions).catch(() => {});
-  }
+  const sessions = await readPersistentDataAsync<ConsultationSession[]>('consultation_sessions', []);
   return sessions;
 }
 

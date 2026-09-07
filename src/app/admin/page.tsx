@@ -9,7 +9,7 @@ import {
   DollarSign, Filter, Share2, UserCheck, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon,
   Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift, ArrowLeft, ArrowRight,
-  CreditCard
+  CreditCard, Building2, MapPin, RotateCcw
 } from 'lucide-react';
 import Link from 'next/link';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
@@ -273,62 +273,7 @@ interface KuthiOrder {
   astrologerPayoutFee?: number;
 }
 
-const EMPANELED_ASTROLOGERS: Astrologer[] = [
-  {
-    id: 'astro-1',
-    name: 'Acharya Tombi Sharma',
-    username: 'tombi_guru',
-    specialty: 'Vedic Horoscope & Kuthi Yengba Specialist',
-    phone: '+91 98620 99881',
-    whatsappNo: '+91 98620 99881',
-    address: 'Uripok, Imphal West, Manipur',
-    experienceYears: 15,
-    completedCount: 142,
-    pendingPayout: 3500,
-    totalEarnings: 12750,
-    totalPaidOut: 9250,
-    payoutStatus: 'REQUESTED',
-    payoutRequestedAmount: 3500,
-    lastPayoutUtr: 'UPI-20268940129',
-    lastPayoutDate: '2026-08-25',
-  },
-  {
-    id: 'astro-2',
-    name: 'Pandit Ningthem Meitei',
-    username: 'ningthem_meitei',
-    specialty: 'Marriage Compatibility & Dasha Remedies',
-    phone: '+91 97740 33411',
-    whatsappNo: '+91 97740 33411',
-    address: 'Thoubal Mayai Leikai, Manipur',
-    experienceYears: 12,
-    completedCount: 98,
-    pendingPayout: 2250,
-    totalEarnings: 8450,
-    totalPaidOut: 6200,
-    payoutStatus: 'IDLE',
-    payoutRequestedAmount: 0,
-    lastPayoutUtr: 'UPI-20268940088',
-    lastPayoutDate: '2026-08-20',
-  },
-  {
-    id: 'astro-3',
-    name: 'Guru Sanatomba',
-    username: 'sanatomba_guru',
-    specialty: 'Navamsha D9 Chart & Gemstone Analysis',
-    phone: '+91 98561 77122',
-    whatsappNo: '+91 98561 77122',
-    address: 'Bishnupur Bazar, Manipur',
-    experienceYears: 18,
-    completedCount: 64,
-    pendingPayout: 1750,
-    totalEarnings: 5950,
-    totalPaidOut: 4200,
-    payoutStatus: 'IDLE',
-    payoutRequestedAmount: 0,
-    lastPayoutUtr: 'UPI-20268939912',
-    lastPayoutDate: '2026-08-18',
-  },
-];
+const EMPANELED_ASTROLOGERS: Astrologer[] = [];
 
 const INITIAL_SERVICES: ManagedService[] = [
   {
@@ -443,70 +388,7 @@ const INITIAL_SERVICES: ManagedService[] = [
   },
 ];
 
-const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [
-  {
-    id: 'k-1',
-    orderRef: 'KY-2026-8941',
-    clientName: 'Nganba Meitei',
-    sex: 'Male',
-    mobile: '+91 98620 12345',
-    whatsappNo: '+91 98620 12345',
-    email: 'nganba@example.com',
-    kuthiAttached: true,
-    kuthiFileName: 'nganba_kuthi_paper.pdf',
-    kuthiFileUrl: '/sample_kuthi.pdf',
-    dob: '1995-05-15',
-    tob: '10:30 AM',
-    pob: 'Imphal West',
-    question: 'Please check career prospects in 2026 and marriage compatibility.',
-    utr: '429810394812',
-    submittedAt: 'Today, 10:15 AM',
-    amount: 499,
-    status: 'PENDING',
-  },
-  {
-    id: 'k-2',
-    orderRef: 'KY-2026-8942',
-    clientName: 'Thoibi Ningthoujam',
-    sex: 'Female',
-    mobile: '+91 98561 88210',
-    whatsappNo: '+91 98561 88210',
-    email: 'thoibi@example.com',
-    kuthiAttached: false,
-    dob: '1996-04-12',
-    tob: '08:30 AM',
-    pob: 'Imphal East',
-    question: 'Asking about health remedies for Rahu Dasha.',
-    utr: '429810441920',
-    submittedAt: 'Today, 09:40 AM',
-    amount: 499,
-    status: 'ASSIGNED',
-    assignedAstrologerId: 'astro-1',
-    assignedAstrologerName: 'Acharya Tombi Sharma',
-  },
-  {
-    id: 'k-3',
-    orderRef: 'KY-2026-8939',
-    clientName: 'Laishram Rajen',
-    sex: 'Male',
-    mobile: '+91 97740 55120',
-    whatsappNo: '+91 97740 55120',
-    email: 'rajen@example.com',
-    kuthiAttached: true,
-    kuthiFileName: 'rajen_kundali_scan.jpg',
-    kuthiFileUrl: '/sample_kundali_scan.jpg',
-    dob: '1992-11-20',
-    tob: '05:45 PM',
-    pob: 'Bishnupur',
-    utr: '429809112830',
-    submittedAt: 'Yesterday, 04:20 PM',
-    amount: 499,
-    status: 'COMPLETED',
-    assignedAstrologerId: 'astro-2',
-    assignedAstrologerName: 'Pandit Ningthem Meitei',
-    reportReceivedFromAstro: true,
-  },
-];
+const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [];
 
 interface CustomerReview {
   id: string;
@@ -537,68 +419,7 @@ interface ClientUser {
   status: 'ACTIVE' | 'VERIFIED' | 'SUSPENDED';
 }
 
-const INITIAL_CLIENT_BASE: ClientUser[] = [
-  {
-    id: 'client-1',
-    name: 'Nganba Meitei',
-    email: 'nganba@example.com',
-    phone: '+91 98620 12345',
-    whatsappNo: '+91 98620 12345',
-    sex: 'Male',
-    address: 'Uripok, Imphal West, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-01-15',
-    totalOrders: 3,
-    totalSpent: 1497,
-    savedKundlisCount: 4,
-    status: 'VERIFIED',
-  },
-  {
-    id: 'client-2',
-    name: 'Thoibi Ningthoujam',
-    email: 'thoibi.n@gmail.com',
-    phone: '+91 97740 98765',
-    whatsappNo: '+91 97740 98765',
-    sex: 'Female',
-    address: 'Thoubal Mayai Leikai, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-02-02',
-    totalOrders: 2,
-    totalSpent: 998,
-    savedKundlisCount: 2,
-    status: 'VERIFIED',
-  },
-  {
-    id: 'client-3',
-    name: 'Ibomcha Singh',
-    email: 'ibomcha.singh@yahoo.com',
-    phone: '+91 98561 22334',
-    whatsappNo: '+91 98561 22334',
-    sex: 'Male',
-    address: 'Bishnupur Bazar, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-02-14',
-    totalOrders: 1,
-    totalSpent: 499,
-    savedKundlisCount: 1,
-    status: 'ACTIVE',
-  },
-  {
-    id: 'client-4',
-    name: 'Yaiphabi Devi',
-    email: 'yaiphabi.devi@outlook.com',
-    phone: '+91 88374 11223',
-    whatsappNo: '+91 88374 11223',
-    sex: 'Female',
-    address: 'Porompat, Imphal East, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-02-20',
-    totalOrders: 4,
-    totalSpent: 2496,
-    savedKundlisCount: 5,
-    status: 'VERIFIED',
-  },
-];
+const INITIAL_CLIENT_BASE: ClientUser[] = [];
 
 export default function AdminDashboardPage() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -680,7 +501,7 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'consultations' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'add_astro' | 'astro_profile' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'service_coupons' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'consultations' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_returns' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'add_astro' | 'astro_profile' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'service_coupons' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
 
   const [selectedAstrologer, setSelectedAstrologer] = useState<Astrologer | null>(null);
   const [showPasswordUpdateModal, setShowPasswordUpdateModal] = useState(false);
@@ -694,7 +515,7 @@ export default function AdminDashboardPage() {
   const [editingSlider, setEditingSlider] = useState<Partial<ShopSliderItem> | null>(null);
   const [showSliderModal, setShowSliderModal] = useState(false);
 
-  // Site Settings & Payment UPI QR & PayU State
+  // Site Settings & Payment UPI QR, PayU & Office Contacts State
   const [siteSettings, setSiteSettings] = useState({
     headerSettings: {
       supportTiming: 'Live Support (9:30 AM – 6:00 PM IST)',
@@ -721,6 +542,23 @@ export default function AdminDashboardPage() {
       prodMerchantSalt: '',
       prodPaymentUrl: 'https://secure.payu.in/_payment',
     },
+    contactSettings: {
+      brandName: 'KuthiYengpham by KangleiAstro',
+      phone: '9999999999',
+      email: 'ccare@kuthiyengpham.in',
+      address: 'Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur',
+      pincode: '795005',
+      timing: 'Monday – Saturday: 9:30 AM – 6:00 PM IST',
+      branchOffices: [] as Array<{
+        id: string;
+        name: string;
+        address: string;
+        pincode?: string;
+        phone?: string;
+        email?: string;
+        timing?: string;
+      }>,
+    },
   });
   const [savingSettings, setSavingSettings] = useState(false);
 
@@ -728,15 +566,24 @@ export default function AdminDashboardPage() {
     fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
-        if (data.headerSettings || data.upiSettings || data.payuSettings) {
+        if (data && (data.headerSettings || data.upiSettings || data.payuSettings || data.contactSettings)) {
           setSiteSettings((prev) => ({
             headerSettings: { ...prev.headerSettings, ...(data.headerSettings || {}) },
             upiSettings: { ...prev.upiSettings, ...(data.upiSettings || {}) },
             payuSettings: { ...prev.payuSettings, ...(data.payuSettings || {}) },
+            contactSettings: {
+              ...prev.contactSettings,
+              ...(data.contactSettings || {}),
+              branchOffices: Array.isArray(data.contactSettings?.branchOffices)
+                ? data.contactSettings.branchOffices
+                : (prev.contactSettings?.branchOffices || [])
+            },
           }));
         }
       })
       .catch((err) => console.error('Error fetching site settings in admin:', err));
+
+    fetchReturnRequests();
   }, []);
 
   const handleSaveSiteSettings = async (e?: React.FormEvent) => {
@@ -751,12 +598,93 @@ export default function AdminDashboardPage() {
       const data = await res.json();
       setSavingSettings(false);
       if (data.success) {
-        setSaveAlert('✅ Top Support Header & Payment UPI QR Settings saved live!');
+        setSaveAlert('✅ Top Support Header, UPI QR & Office Contact Settings saved live!');
         setTimeout(() => setSaveAlert(''), 4000);
       }
     } catch (err) {
       setSavingSettings(false);
       alert('Failed to save settings');
+    }
+  };
+
+  // E-Store Return & Replacement Requests State
+  const [returnRequests, setReturnRequests] = useState<any[]>([]);
+  const [loadingReturns, setLoadingReturns] = useState(false);
+  const [selectedReturnForModal, setSelectedReturnForModal] = useState<any>(null);
+  const [returnFilter, setReturnFilter] = useState<'ALL' | 'PENDING' | 'APPROVED' | 'REJECTED' | 'RESOLVED'>('ALL');
+  const [returnAdminNoteInput, setReturnAdminNoteInput] = useState('');
+
+  const fetchReturnRequests = () => {
+    setLoadingReturns(true);
+    fetch('/api/shop/returns')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && Array.isArray(data.returns)) {
+          setReturnRequests(data.returns);
+        }
+      })
+      .catch((err) => console.warn('Could not fetch returns:', err))
+      .finally(() => setLoadingReturns(false));
+  };
+
+  const handleUpdateReturnStatus = async (id: string, status: string, notes?: string) => {
+    try {
+      const res = await fetch('/api/shop/returns', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status, adminNotes: notes !== undefined ? notes : returnAdminNoteInput }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        fetchReturnRequests();
+        if (selectedReturnForModal && selectedReturnForModal.id === id) {
+          setSelectedReturnForModal({ ...selectedReturnForModal, status, adminNotes: notes !== undefined ? notes : returnAdminNoteInput });
+        }
+        setSaveAlert(`✅ Return request marked as ${status}!`);
+        setTimeout(() => setSaveAlert(''), 4000);
+      }
+    } catch (e) {
+      alert('Failed to update return request');
+    }
+  };
+
+  // One-Time Astrologer Invite Generator State
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [inviteName, setInviteName] = useState('');
+  const [invitePhone, setInvitePhone] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteExpiryDays, setInviteExpiryDays] = useState(7);
+  const [generatedInviteLink, setGeneratedInviteLink] = useState('');
+  const [isGeneratingInvite, setIsGeneratingInvite] = useState(false);
+  const [copiedInvite, setCopiedInvite] = useState(false);
+
+  const handleGenerateAstrologerInvite = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setIsGeneratingInvite(true);
+    setCopiedInvite(false);
+    try {
+      const res = await fetch('/api/astrologers/invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: inviteName,
+          phone: invitePhone,
+          email: inviteEmail,
+          expiryDays: inviteExpiryDays,
+        }),
+      });
+      const data = await res.json();
+      if (data.success && data.invite) {
+        const origin = typeof window !== 'undefined' ? window.location.origin : '';
+        const fullLink = `${origin}/auth/astrologer-signup?token=${encodeURIComponent(data.invite.token)}`;
+        setGeneratedInviteLink(fullLink);
+      } else {
+        alert(data.error || 'Failed to generate invite token');
+      }
+    } catch (err) {
+      alert('Network error generating invite');
+    } finally {
+      setIsGeneratingInvite(false);
     }
   };
 
@@ -3824,6 +3752,30 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     {shopSliders.length} Banners
                   </span>
                 </button>
+
+                {/* 7. Returns & Replacements */}
+                <button
+                  onClick={() => setActiveTab('shop_returns')}
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'shop_returns'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <RotateCcw className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="flex-1 text-center font-bold px-2 leading-tight">Returns & Replacements</span>
+                  {returnRequests.filter((r) => r.status === 'PENDING').length > 0 ? (
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold animate-pulse">
+                      {returnRequests.filter((r) => r.status === 'PENDING').length} New
+                    </span>
+                  ) : (
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                      theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                    }`}>
+                      {returnRequests.length}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -4315,9 +4267,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Gross Revenue</span>
-                    <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">+30.6%</span>
+                    <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                      {orders.length > 0 ? `${orders.filter(o => o.status === 'COMPLETED').length} Completed` : '₹0'}
+                    </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>₹48,950</span>
+                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
+                    ₹{orders.reduce((sum, o) => sum + (Number(o.amount) || 0), 0).toLocaleString()}
+                  </span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Total Kuthi Yengba Collections</span>
                 </div>
 
@@ -4326,7 +4282,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Active Astrologers</span>
-                    <span className="text-[11px] font-bold text-[#b45309] bg-[#fef3c7] px-2 py-0.5 rounded-full border border-[#fde68a]">3 Empaneled</span>
+                    <span className="text-[11px] font-bold text-[#b45309] bg-[#fef3c7] px-2 py-0.5 rounded-full border border-[#fde68a]">
+                      {astrologers.length} Empaneled
+                    </span>
                   </div>
                   <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>{astrologers.length} Gurus</span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Ready for Kuthi Assignments</span>
@@ -4350,8 +4308,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Astrologer Payouts</span>
-                    <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">₹250 / Kuthi</span>
+                    <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
+                      {orders.filter(o => o.status === 'COMPLETED').length} Settled
+                    </span>
                   </div>
+                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
+                    ₹{orders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + (o.payoutFee || (Number(o.amount) ? Math.round(Number(o.amount) * 0.6) : 0)), 0).toLocaleString()}
+                  </span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Pending Astrologer Payout Pool</span>
                 </div>
 
@@ -4362,11 +4325,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 2: KUTHI ORDERS & MULTI-ASTROLOGER ROUTING HUB */}
           {(activeTab === 'dashboard' || activeTab === 'kuthi') && (
-            <div className="bg-white rounded-2xl border border-[#f3e8d2] shadow-xl overflow-hidden">
-              <div className="p-6 border-b border-[#fde68a] bg-[#fefcf6] flex flex-wrap items-center justify-between gap-4">
+            <div className={`rounded-2xl border shadow-xl overflow-hidden transition-colors ${
+              theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'
+            }`}>
+              <div className={`p-6 border-b flex flex-wrap items-center justify-between gap-4 transition-colors ${
+                theme === 'dark' ? 'bg-[#141d36] border-[#3a506b]/40 text-white' : 'bg-[#fefcf6] border-[#fde68a] text-[#0f172a]'
+              }`}>
                 <div>
-                  <h3 className="font-serif font-bold text-[#0f172a] text-xl">Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
-                  <p className="text-xs text-gray-500">Assign orders to astrologers via WhatsApp & deliver finished reports back to clients</p>
+                  <h3 className={`font-serif font-bold text-xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Assign orders to astrologers via WhatsApp & deliver finished reports back to clients</p>
                 </div>
 
                 <div className="flex items-center gap-2">
@@ -4533,10 +4500,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 2B: LIVE CONSULTATIONS (CHAT & CALL ORDERS & SHIFT MANAGEMENT) */}
           {activeTab === 'consultations' && (
-            <div className="bg-white rounded-2xl border border-[#f3e8d2] shadow-xl overflow-hidden space-y-6 p-6">
-              <div className="flex flex-wrap items-center justify-between gap-4 pb-4 border-b border-[#fde68a]">
+            <div className={`rounded-2xl border shadow-xl overflow-hidden space-y-6 p-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap items-center justify-between gap-4 pb-4 border-b ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-[#0f172a] text-2xl flex items-center gap-2">
+                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
                     <span>Live Chat & Call Consultations</span>
                     <span className="px-2.5 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-mono font-bold">
                       {consultationSessions.length} Total
@@ -5025,13 +4992,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 4A: E-STORE CLIENT ORDERS HUB */}
           {(activeTab === 'shop_orders' || activeTab === 'shop') && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-3xl border border-[#fde68a] gap-4 shadow-md">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
                     <ShoppingBag className="w-3.5 h-3.5 text-[#d97706]" />
                     E-Store Orders & Payment Verification
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
                     Client Shipping Orders & UTR Ledger
                   </h3>
                   <p className="text-xs text-gray-500">
@@ -5809,7 +5776,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {activeTab === 'shop_astro_products' && (
             <div className="space-y-6">
               {/* Header Banner */}
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4 shadow-xl">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a] shadow-md'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-extrabold uppercase mb-2 border border-purple-500/30">
                     <Award className="w-3.5 h-3.5 text-purple-400" />
@@ -6315,13 +6282,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {activeTab === 'announcements' && (
             <div className="space-y-6">
               {/* Header Banner */}
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4 shadow-xl">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a] shadow-md'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-extrabold uppercase mb-2 border border-amber-500/30">
                     <Bell className="w-3.5 h-3.5 text-amber-400" />
                     Astrologer Broadcast Center & Notice Board CMS
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
                     Astrologer Announcements, Promo Ads & Notices
                   </h3>
                   <p className="text-xs text-gray-400">
@@ -6410,13 +6377,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 4C: ASSIGN DELIVERY & COURIER LOGISTICS HUB */}
           {activeTab === 'shop_delivery' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a] shadow-md'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-extrabold uppercase mb-2 border border-sky-500/30">
                     <Truck className="w-3.5 h-3.5 text-sky-300" />
                     Delivery Assignment & Shipping Logistics
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
                     Assign Delivery Partners & Issuing Tracking AWBs
                   </h3>
                   <p className="text-xs text-gray-400">
@@ -6683,26 +6650,529 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
           )}
 
+          {/* TAB 4D: E-STORE RETURN & REPLACEMENT REQUESTS */}
+          {activeTab === 'shop_returns' && (
+            <div className="space-y-6">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                    <RotateCcw className="w-3.5 h-3.5 text-[#d97706]" />
+                    E-Shop Return & Replacement Management
+                  </div>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                    Customer Return & Replacement Requests ({returnRequests.length})
+                  </h3>
+                  <p className="text-xs text-gray-500">
+                    Review damaged in transit claims, defective items, wrong delivery photos, and approve replacements or refunds.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    type="button"
+                    onClick={fetchReturnRequests}
+                    className="px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loadingReturns ? 'animate-spin' : ''}`} />
+                    <span>Refresh Requests</span>
+                  </button>
+                  <Link
+                    href="/shop/returns"
+                    target="_blank"
+                    className="px-4 py-2 rounded-xl bg-[#0f172a] text-white font-bold text-xs flex items-center gap-1.5 hover:bg-black transition-colors"
+                  >
+                    <span>View Customer Return Form</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Status Filter Tabs */}
+              <div className="flex flex-wrap gap-2">
+                {[
+                  { id: 'ALL', label: 'All Requests', count: returnRequests.length },
+                  { id: 'PENDING', label: 'Pending Review', count: returnRequests.filter((r) => r.status === 'PENDING').length },
+                  { id: 'APPROVED', label: 'Approved (Replacement / Refund)', count: returnRequests.filter((r) => r.status?.startsWith('APPROVED')).length },
+                  { id: 'RESOLVED', label: 'Resolved / Closed', count: returnRequests.filter((r) => r.status === 'RESOLVED').length },
+                  { id: 'REJECTED', label: 'Rejected', count: returnRequests.filter((r) => r.status === 'REJECTED').length },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setReturnFilter(tab.id as any)}
+                    className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+                      returnFilter === tab.id
+                        ? 'bg-[#b45309] text-white shadow-sm'
+                        : 'bg-white text-gray-700 border border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <span>{tab.label}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                      returnFilter === tab.id ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-700'
+                    }`}>
+                      {tab.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* RETURNS TABLE */}
+              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
+                {returnRequests.length === 0 ? (
+                  <div className="p-12 text-center space-y-3">
+                    <RotateCcw className="w-12 h-12 text-gray-300 mx-auto" />
+                    <h4 className="font-serif font-bold text-lg text-gray-800">No Return or Replacement Requests Found</h4>
+                    <p className="text-xs text-gray-500 max-w-sm mx-auto">
+                      Customer claims submitted through the online return form will appear here with uploaded photos.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs font-sans text-[#0f172a]">
+                      <thead className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold border-b border-[#fde68a]">
+                        <tr>
+                          <th className="p-4">RMA Ref & Date</th>
+                          <th className="p-4">Customer Details</th>
+                          <th className="p-4">Product & Order ID</th>
+                          <th className="p-4">Type & Reason</th>
+                          <th className="p-4 text-center">Defect Photos</th>
+                          <th className="p-4">Status</th>
+                          <th className="p-4 text-center">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 font-medium">
+                        {returnRequests
+                          .filter((req) => {
+                            if (returnFilter === 'ALL') return true;
+                            if (returnFilter === 'PENDING') return req.status === 'PENDING';
+                            if (returnFilter === 'APPROVED') return req.status?.startsWith('APPROVED');
+                            if (returnFilter === 'RESOLVED') return req.status === 'RESOLVED';
+                            if (returnFilter === 'REJECTED') return req.status === 'REJECTED';
+                            return true;
+                          })
+                          .map((req) => (
+                            <tr key={req.id} className="hover:bg-amber-50/40 transition-colors">
+                              <td className="p-4 space-y-1">
+                                <span className="font-mono font-bold text-xs text-[#b45309] block">{req.id}</span>
+                                <span className="text-[10px] text-gray-400 block">
+                                  {new Date(req.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+                                </span>
+                              </td>
+
+                              <td className="p-4 space-y-0.5">
+                                <span className="font-bold text-gray-900 block">{req.customerName}</span>
+                                <a href={`tel:${req.customerPhone}`} className="text-emerald-700 font-mono text-[11px] block hover:underline">
+                                  📞 {req.customerPhone}
+                                </a>
+                                {req.customerEmail && (
+                                  <span className="text-gray-500 text-[10px] block">{req.customerEmail}</span>
+                                )}
+                              </td>
+
+                              <td className="p-4 space-y-0.5">
+                                <span className="font-bold text-gray-900 block">{req.productTitle}</span>
+                                <span className="font-mono text-[11px] text-gray-600 block">
+                                  Order Ref: <strong className="text-[#0f172a]">{req.orderRef}</strong>
+                                </span>
+                              </td>
+
+                              <td className="p-4 space-y-1">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold uppercase inline-block ${
+                                  req.requestType === 'REPLACEMENT' ? 'bg-sky-100 text-sky-800' : 'bg-emerald-100 text-emerald-800'
+                                }`}>
+                                  {req.requestType === 'REPLACEMENT' ? '🔄 Free Replacement' : '💰 100% Refund'}
+                                </span>
+                                <span className="text-[11px] text-gray-600 block">
+                                  {req.reason === 'DAMAGED_TRANSIT' && 'Damaged in transit'}
+                                  {req.reason === 'WRONG_ITEM' && 'Wrong product sent'}
+                                  {req.reason === 'DEFECTIVE_QUALITY' && 'Defective / Quality issue'}
+                                  {req.reason === 'OTHER' && 'Other issue'}
+                                </span>
+                              </td>
+
+                              <td className="p-4 text-center">
+                                {req.photos && req.photos.length > 0 ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedReturnForModal(req);
+                                      setReturnAdminNoteInput(req.adminNotes || '');
+                                    }}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 border border-amber-200 text-[#b45309] font-bold text-xs cursor-pointer transition-colors"
+                                  >
+                                    <ImageIcon className="w-3.5 h-3.5 text-[#d97706]" />
+                                    <span>{req.photos.length} Photos</span>
+                                  </button>
+                                ) : (
+                                  <span className="text-gray-400 text-[11px] italic">No photos</span>
+                                )}
+                              </td>
+
+                              <td className="p-4">
+                                <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider inline-block ${
+                                  req.status === 'PENDING' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+                                  req.status === 'APPROVED_REPLACEMENT' ? 'bg-sky-100 text-sky-800 border border-sky-300' :
+                                  req.status === 'APPROVED_REFUND' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                                  req.status === 'RESOLVED' ? 'bg-gray-100 text-gray-800 border border-gray-300' :
+                                  'bg-rose-100 text-rose-800 border border-rose-300'
+                                }`}>
+                                  {req.status === 'PENDING' && '● Pending Review'}
+                                  {req.status === 'APPROVED_REPLACEMENT' && '✓ Replacement Approved'}
+                                  {req.status === 'APPROVED_REFUND' && '✓ Refund Approved'}
+                                  {req.status === 'RESOLVED' && '✓ Resolved / Dispatched'}
+                                  {req.status === 'REJECTED' && '✕ Rejected'}
+                                </span>
+                              </td>
+
+                              <td className="p-4 text-center">
+                                <div className="flex items-center justify-center gap-1.5">
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setSelectedReturnForModal(req);
+                                      setReturnAdminNoteInput(req.adminNotes || '');
+                                    }}
+                                    className="px-3 py-1.5 rounded-xl bg-[#0f172a] text-white hover:bg-black font-bold text-xs transition-colors cursor-pointer"
+                                  >
+                                    Inspect & Act
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* RETURN INSPECT & ACTIONS MODAL */}
+              {selectedReturnForModal && (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/70 backdrop-blur-xs flex items-center justify-center p-4">
+                  <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#fde68a] p-6 space-y-5 text-xs text-[#0f172a] shadow-2xl max-h-[90vh] overflow-y-auto">
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-xl bg-amber-100 text-[#b45309] flex items-center justify-center font-bold">
+                          <RotateCcw className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="font-serif font-bold text-lg text-gray-900">
+                            Return Claim: {selectedReturnForModal.id}
+                          </h4>
+                          <span className="text-gray-500 text-[11px]">
+                            Order Ref: {selectedReturnForModal.orderRef} • {selectedReturnForModal.customerName}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedReturnForModal(null)}
+                        className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 cursor-pointer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-[#faf8f5] border border-gray-200">
+                      <div>
+                        <span className="text-gray-500 text-[10px] uppercase font-bold block">Product</span>
+                        <strong className="text-gray-900 text-xs">{selectedReturnForModal.productTitle}</strong>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 text-[10px] uppercase font-bold block">Preference</span>
+                        <strong className="text-[#b45309] text-xs">
+                          {selectedReturnForModal.requestType === 'REPLACEMENT' ? '🔄 Free Replacement' : '💰 Full Refund'}
+                        </strong>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 text-[10px] uppercase font-bold block">Customer Phone</span>
+                        <a href={`tel:${selectedReturnForModal.customerPhone}`} className="text-emerald-700 font-mono font-bold">
+                          {selectedReturnForModal.customerPhone}
+                        </a>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 text-[10px] uppercase font-bold block">Refund Bank/UPI</span>
+                        <span className="font-mono text-gray-800 text-[11px]">
+                          {selectedReturnForModal.refundDetails || 'Original payment method'}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <span className="text-gray-700 font-bold block">Customer Description:</span>
+                      <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 text-gray-800 text-xs">
+                        {selectedReturnForModal.reasonDetails || 'No additional comment provided.'}
+                      </div>
+                    </div>
+
+                    {/* UPLOADED DEFECT PHOTOS */}
+                    {selectedReturnForModal.photos && selectedReturnForModal.photos.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-gray-800 font-bold block">
+                          Uploaded Defect / Damage Photos ({selectedReturnForModal.photos.length}):
+                        </span>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                          {selectedReturnForModal.photos.map((imgSrc: string, iIdx: number) => (
+                            <a
+                              key={iIdx}
+                              href={imgSrc}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="block rounded-xl overflow-hidden border border-gray-300 aspect-square group relative bg-gray-100"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={imgSrc}
+                                alt={`Customer proof ${iIdx + 1}`}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                              />
+                              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-xs font-bold">
+                                Click to Expand ↗
+                              </div>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Admin Notes */}
+                    <div className="space-y-1">
+                      <label className="text-gray-700 font-bold block">Admin Decision / Inspection Notes:</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Courier damaged package confirmed; dispatched replacement parcel via DTDC #9841..."
+                        value={returnAdminNoteInput}
+                        onChange={(e) => setReturnAdminNoteInput(e.target.value)}
+                        className="w-full h-10 px-3 rounded-xl border border-gray-300 text-xs text-gray-800 focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    {/* Action Buttons */}
+                    <div className="pt-3 border-t border-gray-200 flex flex-wrap justify-between items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleUpdateReturnStatus(selectedReturnForModal.id, 'REJECTED')}
+                        className="px-4 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-xs transition-colors cursor-pointer"
+                      >
+                        ✕ Reject Claim
+                      </button>
+
+                      <div className="flex flex-wrap items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateReturnStatus(selectedReturnForModal.id, 'APPROVED_REPLACEMENT')}
+                          className="px-4 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          ✓ Approve Replacement
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateReturnStatus(selectedReturnForModal.id, 'APPROVED_REFUND')}
+                          className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          ✓ Approve 100% Refund
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdateReturnStatus(selectedReturnForModal.id, 'RESOLVED')}
+                          className="px-4 py-2 rounded-xl bg-[#0f172a] hover:bg-black text-white font-bold text-xs transition-colors cursor-pointer"
+                        >
+                          ✓ Mark Resolved
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           {/* TAB 5A: EMPANELED ASTROLOGER ACCOUNTS & PROFILES */}
           {activeTab === 'astrologers' && (
-            <div className="bg-white rounded-2xl border border-[#f3e8d2] shadow-xl p-6 space-y-6 text-[#0f172a]">
-              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#fde68a] gap-4">
+            <div className={`rounded-2xl border shadow-xl p-6 space-y-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-4 ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Empaneled Astrologer Accounts & Profiles</h3>
-                  <p className="text-xs text-gray-500 font-sans font-medium">Manage registered Astrologers, edit profiles, hold/suspend access, or delete accounts</p>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Empaneled Astrologer Accounts & Profiles</h3>
+                  <p className={`text-xs font-sans font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Manage registered Astrologers, generate single-use invite links, or edit profiles</p>
                 </div>
-                <button
-                  onClick={() => {
-                    setEditingAstroId(null);
-                    setNewAstroForm(DEFAULT_ASTRO_FORM);
-                    setActiveTab('add_astro');
-                  }}
-                  className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-md cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>+ Register New Astrologer</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => {
+                      setInviteName('');
+                      setInvitePhone('');
+                      setInviteEmail('');
+                      setGeneratedInviteLink('');
+                      setCopiedInvite(false);
+                      setShowInviteModal(true);
+                    }}
+                    className="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-extrabold text-xs border border-amber-300 flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                  >
+                    <Share2 className="w-4 h-4 text-[#d97706]" />
+                    <span>🔗 Generate One-Time Sign-Up Link</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setEditingAstroId(null);
+                      setNewAstroForm(DEFAULT_ASTRO_FORM);
+                      setActiveTab('add_astro');
+                    }}
+                    className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-md cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>+ Register New Astrologer</span>
+                  </button>
+                </div>
               </div>
+
+              {/* ONE-TIME ASTROLOGER SIGN-UP LINK GENERATOR MODAL */}
+              {showInviteModal && (
+                <div className="fixed inset-0 z-50 bg-[#0f172a]/70 backdrop-blur-xs flex items-center justify-center p-4">
+                  <div className="bg-white w-full max-w-lg rounded-3xl border border-[#fde68a] p-6 sm:p-7 space-y-5 text-xs text-[#0f172a] shadow-2xl">
+                    <div className="flex justify-between items-center border-b border-gray-200 pb-3">
+                      <div className="flex items-center gap-2">
+                        <div className="w-9 h-9 rounded-xl bg-amber-100 text-[#b45309] flex items-center justify-center font-bold">
+                          <Share2 className="w-5 h-5 text-[#d97706]" />
+                        </div>
+                        <div>
+                          <h4 className="font-serif font-bold text-lg text-gray-900">
+                            One-Time Astrologer Sign-Up Link
+                          </h4>
+                          <span className="text-gray-500 text-[11px]">Valid for strictly 1 successful registration session</span>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowInviteModal(false)}
+                        className="p-1 rounded-lg hover:bg-gray-100 text-gray-500 cursor-pointer"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {!generatedInviteLink ? (
+                      <form onSubmit={handleGenerateAstrologerInvite} className="space-y-4">
+                        <div>
+                          <label className="block text-[11px] font-bold text-gray-800 mb-1">
+                            Astrologer Name (Optional prefill)
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Acharya Tomba Sharma"
+                            value={inviteName}
+                            onChange={(e) => setInviteName(e.target.value)}
+                            className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#faf8f5] text-xs font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-800 mb-1">
+                              WhatsApp / Phone Number
+                            </label>
+                            <input
+                              type="text"
+                              placeholder="e.g. 9862012345"
+                              value={invitePhone}
+                              onChange={(e) => setInvitePhone(e.target.value)}
+                              className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#faf8f5] text-xs font-mono font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[11px] font-bold text-gray-800 mb-1">
+                              Link Validity (Days)
+                            </label>
+                            <input
+                              type="number"
+                              min={1}
+                              max={30}
+                              value={inviteExpiryDays}
+                              onChange={(e) => setInviteExpiryDays(Number(e.target.value))}
+                              className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#faf8f5] text-xs font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
+                            />
+                          </div>
+                        </div>
+
+                        <div className="p-3.5 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 text-[11px] leading-relaxed">
+                          🔒 <strong>Security Guarantee:</strong> This creates a cryptographic single-use invitation token. Once the astrologer completes sign-up, the link is permanently locked and cannot be reused or forwarded.
+                        </div>
+
+                        <button
+                          type="submit"
+                          disabled={isGeneratingInvite}
+                          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#b45309] text-white font-extrabold text-xs shadow-md hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          <span>{isGeneratingInvite ? 'Generating Secure Link...' : 'Generate Single-Use Invite Link →'}</span>
+                        </button>
+                      </form>
+                    ) : (
+                      <div className="space-y-4">
+                        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 space-y-2">
+                          <div className="flex items-center gap-2 text-emerald-800 font-bold text-xs">
+                            <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <span>Single-Use Invitation Link Ready!</span>
+                          </div>
+                          <p className="text-[11px] text-emerald-900">
+                            Send this link directly to the astrologer via WhatsApp or Email. It will automatically expire as soon as they complete their registration.
+                          </p>
+                        </div>
+
+                        <div>
+                          <label className="block font-bold text-gray-800 text-[11px] mb-1">
+                            Generated Invitation URL:
+                          </label>
+                          <div className="p-3 rounded-xl bg-gray-100 border border-gray-300 font-mono text-[11px] text-[#0f172a] break-all select-all">
+                            {generatedInviteLink}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              navigator.clipboard.writeText(
+                                `Namaste ${inviteName ? inviteName : ''}! Here is your exclusive, one-time invitation link to register as an empaneled Astrologer on KuthiYengpham: ${generatedInviteLink} (Note: This link is valid for a single registration session).`
+                              );
+                              setCopiedInvite(true);
+                              setTimeout(() => setCopiedInvite(false), 3000);
+                            }}
+                            className="py-3 px-4 rounded-xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-bold text-xs border border-amber-300 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                          >
+                            <Copy className="w-4 h-4" />
+                            <span>{copiedInvite ? 'Copied to Clipboard!' : 'Copy Link & Text'}</span>
+                          </button>
+
+                          <a
+                            href={`https://wa.me/${invitePhone ? `91${invitePhone.replace(/\D/g, '')}` : ''}?text=${encodeURIComponent(
+                              `Namaste ${inviteName ? inviteName : ''}! Here is your exclusive one-time invitation link to join KuthiYengpham as a verified Astrologer: ${generatedInviteLink}\n\nNote: This link is valid for a single registration.`
+                            )}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#20bd5a] text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors"
+                          >
+                            <MessageCircle className="w-4 h-4" />
+                            <span>Share on WhatsApp</span>
+                          </a>
+                        </div>
+
+                        <div className="pt-2 text-center">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setGeneratedInviteLink('');
+                              setInviteName('');
+                              setInvitePhone('');
+                            }}
+                            className="text-gray-500 hover:underline text-xs"
+                          >
+                            + Generate Another Invite Link
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* LIVE CHAT & CALL SESSION MONITORING CARD */}
               <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white space-y-4 shadow-xl">
@@ -6980,10 +7450,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5B: REGISTER / EDIT EMPANELED ASTROLOGER ACCOUNT & PASSWORD */}
           {activeTab === 'add_astro' && (
-            <div className="bg-white rounded-3xl border border-[#f3e8d2] shadow-xl p-6 sm:p-8 space-y-6 text-[#0f172a]">
-              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#fde68a] gap-4">
+            <div className={`rounded-3xl border shadow-xl p-6 sm:p-8 space-y-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-4 ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
                     {editingAstroId ? 'Edit Empaneled Jyotish Guru Account' : 'Register New Empaneled Jyotish Guru'}
                   </h3>
                   <p className="text-xs text-gray-500 font-sans font-medium">
@@ -7904,7 +8374,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* TOP RATED ASTROLOGERS SECTION CMS FORM */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 shadow-md">
+              <div className={`p-6 rounded-3xl border space-y-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
                 <div className="flex flex-wrap justify-between items-center gap-4 border-b border-[#fde68a] pb-3">
                   <div>
                     <h3 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
@@ -8355,10 +8825,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5B: ASTROLOGER WALLETS & PAYOUT DISBURSEMENT */}
           {activeTab === 'astro_payouts' && (
-            <div className="bg-[#1c2541] rounded-2xl border border-[#3a506b]/40 shadow-md p-6 space-y-6">
-              <div className="flex justify-between items-center pb-4 border-b border-[#3a506b]/40">
+            <div className={`rounded-2xl border shadow-md p-6 space-y-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex justify-between items-center pb-4 border-b ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Astrologer Wallet Balances & Commission Payouts</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>Astrologer Wallet Balances & Commission Payouts</h3>
                   <p className="text-xs text-[#5c7a99] font-sans">Monitor online astrologers, consultation counts, wallet balances, pending payout requests, and process UPI disbursements</p>
                 </div>
               </div>
@@ -8523,13 +8993,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5C: ASTROLOGER ASSIGN LIST (DEDICATED VIEW) */}
           {activeTab === 'astro_assign_list' && (
-            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl space-y-6 text-left font-sans">
-              <div className="flex flex-wrap justify-between items-center pb-4 border-b border-[#fde68a] gap-3">
+            <div className={`p-6 sm:p-8 rounded-3xl border shadow-xl space-y-6 text-left font-sans transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-3 ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
                 <div>
                   <span className="px-3.5 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase tracking-wider border border-[#fde68a] inline-block mb-1">
                     Guru & Jyotish Dispatching
                   </span>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Astrologers Assigned Orders List</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Astrologers Assigned Orders List</h3>
                   <p className="text-xs text-gray-500">Track Kuthi, Numit Yengba, and Matching orders assigned to empaneled Gurus</p>
                 </div>
                 <button
@@ -8635,8 +9105,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* TOP CARD: ADD NEW SERVICE PACKAGE FORM */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] shadow-md space-y-5 text-[#0f172a]">
-                <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#fde68a] pb-4">
+              <div className={`p-6 rounded-3xl border shadow-md space-y-5 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+                <div className={`flex flex-wrap items-center justify-between gap-4 border-b pb-4 ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center font-bold shadow-md">
                       <Plus className="w-5 h-5" />
@@ -9053,9 +9523,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB: CLIENT BASE / USER DIRECTORY */}
           {activeTab === 'clients' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a] flex items-center gap-2">
+                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
                     <Users className="w-6 h-6 text-[#d97706]" />
                     <span>Client Base & Customer Directory</span>
                   </h3>
@@ -9340,9 +9810,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 6: SITE SETTINGS & UPI QR CONFIGURATION */}
           {(activeTab === 'settings' || activeTab === 'upi') && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Header Support Bar & Merchant UPI QR Settings</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Header Support Bar & Merchant UPI QR Settings</h3>
                   <p className="text-xs text-gray-500">Manage website top support header, customer helpline info, UPI merchant handles & payment QR codes</p>
                 </div>
                 <button
@@ -9847,6 +10317,389 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               </div>
 
+              {/* CARD 4: OFFICIAL CONTACT DETAILS & BRANCH OFFICES CMS */}
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-600 to-amber-800 text-white flex items-center justify-center font-bold shadow-md">
+                      <Building2 className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif font-bold text-xl text-[#b45309]">
+                          Official Contact Details & Branch Offices CMS
+                        </h4>
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 text-[10px] font-extrabold uppercase tracking-wider">
+                          Website Sync
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Update central office address, contact numbers, and add/remove regional branch offices displayed on the website (/contact)
+                      </p>
+                    </div>
+                  </div>
+
+                  <Link
+                    href="/contact"
+                    target="_blank"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#b45309] font-bold text-xs border border-amber-300 transition-colors"
+                  >
+                    <span>View /contact Page</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </Link>
+                </div>
+
+                {/* SECTION A: CENTRAL / HEAD OFFICE DETAILS */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-extrabold text-[#b45309] uppercase tracking-wider">
+                    <MapPin className="w-4 h-4 text-[#d97706]" />
+                    <span>1. Head Office Registered Details</span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Brand / Organization Name <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="KuthiYengpham by KangleiAstro"
+                        value={siteSettings.contactSettings?.brandName || ''}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          contactSettings: {
+                            ...siteSettings.contactSettings,
+                            brandName: e.target.value
+                          }
+                        })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Helpline / Contact Phone <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="9999999999"
+                        value={siteSettings.contactSettings?.phone || ''}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          contactSettings: {
+                            ...siteSettings.contactSettings,
+                            phone: e.target.value
+                          }
+                        })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Official Support Email <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        placeholder="ccare@kuthiyengpham.in"
+                        value={siteSettings.contactSettings?.email || ''}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          contactSettings: {
+                            ...siteSettings.contactSettings,
+                            email: e.target.value
+                          }
+                        })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div className="sm:col-span-2">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Registered Office Address <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur"
+                        value={siteSettings.contactSettings?.address || ''}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          contactSettings: {
+                            ...siteSettings.contactSettings,
+                            address: e.target.value
+                          }
+                        })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                      <span className="text-[10px] text-gray-400 mt-1 block">
+                        Full road & locality name (e.g. Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur)
+                      </span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Pincode <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="795005"
+                        value={siteSettings.contactSettings?.pincode || ''}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          contactSettings: {
+                            ...siteSettings.contactSettings,
+                            pincode: e.target.value
+                          }
+                        })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                      Operating Schedule / Timings
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Monday – Saturday: 9:30 AM – 6:00 PM IST"
+                      value={siteSettings.contactSettings?.timing || ''}
+                      onChange={(e) => setSiteSettings({
+                        ...siteSettings,
+                        contactSettings: {
+                          ...siteSettings.contactSettings,
+                          timing: e.target.value
+                        }
+                      })}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 text-xs focus:border-[#d97706] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                {/* SECTION B: REGIONAL BRANCH OFFICES MANAGER */}
+                <div className="pt-4 border-t border-[#fde68a] space-y-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <span className="text-xs font-extrabold text-[#b45309] uppercase tracking-wider block">
+                        2. Regional Branch Offices (Show on Website)
+                      </span>
+                      <p className="text-[11px] text-gray-500">
+                        Add branches in other districts or towns in Manipur. Visitors will see them under Regional Branches on /contact.
+                      </p>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newBranch = {
+                          id: 'branch-' + Date.now(),
+                          name: `Branch Office ${((siteSettings.contactSettings?.branchOffices?.length || 0) + 1)}`,
+                          address: '',
+                          pincode: '',
+                          phone: siteSettings.contactSettings?.phone || '',
+                          email: siteSettings.contactSettings?.email || '',
+                          timing: '10:00 AM – 5:00 PM IST',
+                        };
+                        setSiteSettings({
+                          ...siteSettings,
+                          contactSettings: {
+                            ...siteSettings.contactSettings,
+                            branchOffices: [...(siteSettings.contactSettings?.branchOffices || []), newBranch]
+                          }
+                        });
+                      }}
+                      className="px-4 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-bold text-xs border border-amber-300 flex items-center gap-1.5 transition-colors cursor-pointer self-start sm:self-auto"
+                    >
+                      <Plus className="w-4 h-4 text-[#d97706]" />
+                      <span>+ Add Branch Office</span>
+                    </button>
+                  </div>
+
+                  {(!siteSettings.contactSettings?.branchOffices || siteSettings.contactSettings.branchOffices.length === 0) ? (
+                    <div className="p-4 rounded-2xl bg-amber-50/60 border border-dashed border-amber-300 text-center text-gray-600 text-xs">
+                      No branch offices added yet. Click <strong>&quot;+ Add Branch Office&quot;</strong> above to list a regional branch on the website.
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {siteSettings.contactSettings.branchOffices.map((branch, bIdx) => (
+                        <div
+                          key={branch.id || bIdx}
+                          className="p-4 rounded-2xl bg-[#fefcf6] border border-gray-200 space-y-3 relative"
+                        >
+                          <div className="flex items-center justify-between border-b border-gray-200 pb-2">
+                            <span className="font-bold text-xs text-[#b45309] flex items-center gap-1.5">
+                              <Building2 className="w-3.5 h-3.5 text-[#d97706]" />
+                              <span>Branch #{bIdx + 1}</span>
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const filtered = siteSettings.contactSettings.branchOffices.filter((_, idx) => idx !== bIdx);
+                                setSiteSettings({
+                                  ...siteSettings,
+                                  contactSettings: {
+                                    ...siteSettings.contactSettings,
+                                    branchOffices: filtered
+                                  }
+                                });
+                              }}
+                              className="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition-colors cursor-pointer flex items-center gap-1 text-[11px] font-bold"
+                              title="Delete this branch"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>Remove Branch</span>
+                            </button>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                Branch Name / Title *
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Branch Office — Uripok"
+                                value={branch.name}
+                                onChange={(e) => {
+                                  const updated = [...siteSettings.contactSettings.branchOffices];
+                                  updated[bIdx] = { ...updated[bIdx], name: e.target.value };
+                                  setSiteSettings({
+                                    ...siteSettings,
+                                    contactSettings: { ...siteSettings.contactSettings, branchOffices: updated }
+                                  });
+                                }}
+                                className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs font-bold text-gray-800 focus:border-[#d97706] focus:outline-none"
+                              />
+                            </div>
+
+                            <div className="sm:col-span-2">
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                Branch Address *
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="e.g. Uripok Kangchup Road, Imphal West, Manipur"
+                                value={branch.address}
+                                onChange={(e) => {
+                                  const updated = [...siteSettings.contactSettings.branchOffices];
+                                  updated[bIdx] = { ...updated[bIdx], address: e.target.value };
+                                  setSiteSettings({
+                                    ...siteSettings,
+                                    contactSettings: { ...siteSettings.contactSettings, branchOffices: updated }
+                                  });
+                                }}
+                                className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-gray-800 focus:border-[#d97706] focus:outline-none"
+                              />
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                Pincode
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="795001"
+                                value={branch.pincode || ''}
+                                onChange={(e) => {
+                                  const updated = [...siteSettings.contactSettings.branchOffices];
+                                  updated[bIdx] = { ...updated[bIdx], pincode: e.target.value };
+                                  setSiteSettings({
+                                    ...siteSettings,
+                                    contactSettings: { ...siteSettings.contactSettings, branchOffices: updated }
+                                  });
+                                }}
+                                className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs font-mono text-gray-800 focus:border-[#d97706] focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                Phone Number
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="9862012345"
+                                value={branch.phone || ''}
+                                onChange={(e) => {
+                                  const updated = [...siteSettings.contactSettings.branchOffices];
+                                  updated[bIdx] = { ...updated[bIdx], phone: e.target.value };
+                                  setSiteSettings({
+                                    ...siteSettings,
+                                    contactSettings: { ...siteSettings.contactSettings, branchOffices: updated }
+                                  });
+                                }}
+                                className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs font-mono text-gray-800 focus:border-[#d97706] focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                Email
+                              </label>
+                              <input
+                                type="email"
+                                placeholder="uripok@kuthiyengpham.in"
+                                value={branch.email || ''}
+                                onChange={(e) => {
+                                  const updated = [...siteSettings.contactSettings.branchOffices];
+                                  updated[bIdx] = { ...updated[bIdx], email: e.target.value };
+                                  setSiteSettings({
+                                    ...siteSettings,
+                                    contactSettings: { ...siteSettings.contactSettings, branchOffices: updated }
+                                  });
+                                }}
+                                className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs font-mono text-gray-800 focus:border-[#d97706] focus:outline-none"
+                              />
+                            </div>
+
+                            <div>
+                              <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                                Timings
+                              </label>
+                              <input
+                                type="text"
+                                placeholder="10:00 AM – 5:00 PM"
+                                value={branch.timing || ''}
+                                onChange={(e) => {
+                                  const updated = [...siteSettings.contactSettings.branchOffices];
+                                  updated[bIdx] = { ...updated[bIdx], timing: e.target.value };
+                                  setSiteSettings({
+                                    ...siteSettings,
+                                    contactSettings: { ...siteSettings.contactSettings, branchOffices: updated }
+                                  });
+                                }}
+                                className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-gray-800 focus:border-[#d97706] focus:outline-none"
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                  <button
+                    type="button"
+                    onClick={handleSaveSiteSettings}
+                    disabled={savingSettings}
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-amber-600 to-amber-800 text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{savingSettings ? 'Saving Office Details...' : 'Save Office Address & Branches Live →'}</span>
+                  </button>
+                </div>
+              </div>
+
               {/* ADMIN MASTER PASSWORD UPDATE BOX */}
               <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 text-xs text-[#0f172a] shadow-md">
                 <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
@@ -9910,9 +10763,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB: 970x90 BANNER AD CMS */}
           {activeTab === 'banner' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">970 x 90 Leaderboard Ad Space CMS</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>970 x 90 Leaderboard Ad Space CMS</h3>
                   <p className="text-xs text-gray-500">Control website-wide header banner image, title, short description, button text, & target link live</p>
                 </div>
                 <button
@@ -10093,9 +10946,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* Header Card */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] flex flex-wrap justify-between items-center gap-4 shadow-md">
+              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a] flex items-center gap-2">
+                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
                     <Sparkles className="w-6 h-6 text-[#d97706]" />
                     <span>Live Activity Marquee Ticker CMS</span>
                   </h3>
@@ -10357,13 +11210,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* Header Card */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] flex flex-wrap justify-between items-center gap-4 shadow-md">
+              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
                     <Star className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
                     Customer Reviews Moderation Hub
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
                     Client Reviews & Testimonials CMS
                   </h3>
                   <p className="text-xs text-gray-500">
@@ -10513,9 +11366,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB: NAVBAR NAVIGATION MENU CONTROLLER */}
           {activeTab === 'navbar' && (
-            <div className="space-y-6 text-[#0f172a] font-sans">
+            <div className={`space-y-6 font-sans ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
               {/* TOP HEADER BAR */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] shadow-md flex flex-wrap items-center justify-between gap-4">
+              <div className={`p-6 rounded-3xl border shadow-md flex flex-wrap items-center justify-between gap-4 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center font-bold shadow-md">
                     <Menu className="w-6 h-6 text-white" />

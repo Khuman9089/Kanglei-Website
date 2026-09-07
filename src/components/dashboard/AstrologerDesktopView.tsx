@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { 
   Moon, LayoutDashboard, FileText, Users, Settings, 
   Search, Bell, CheckCircle2, XCircle, ArrowUpRight, 
-  ArrowDownLeft, MessageSquare, ShieldCheck, Lock, TrendingUp, 
+  ArrowDownLeft, ArrowLeft, MessageSquare, ShieldCheck, Lock, TrendingUp, 
   BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   Wallet, RefreshCw, Send, UploadCloud, Upload, User, Phone, Mail, MapPin, Paperclip,
@@ -154,17 +154,17 @@ export default function AstrologerDashboard() {
 
   // Guru Profile Form State
   const [profileForm, setProfileForm] = useState({
-    name: 'Acharya Tombi Sharma',
-    specialty: 'Vedic Horoscope & Kuthi Yengba Specialist',
-    experience: '15 Years',
-    pricePerMin: 35,
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80',
-    specialtiesStr: 'Kuthi Yengba, Vedic, Matching',
-    languages: 'Manipuri · English · Hindi',
-    phone: '+91 98620 99881',
-    whatsappNo: '+91 98620 99881',
-    email: 'tombi.sharma@kangleiastro.com',
-    bio: 'Renowned Manipuri Vedic Astrologer specializing in traditional Kuthi Yengba analysis, Vimshottari Dasha predictions, Ashtakoot Gun Milan, and practical remedial measures.',
+    name: '',
+    specialty: '',
+    experience: '',
+    pricePerMin: 0,
+    avatar: '',
+    specialtiesStr: '',
+    languages: '',
+    phone: '',
+    whatsappNo: '',
+    email: '',
+    bio: '',
     maxDailyOrders: 5,
     morningSlot: true,
     afternoonSlot: true,
@@ -173,22 +173,39 @@ export default function AstrologerDashboard() {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const isAuthed = localStorage.getItem('kanglei_astro_authed') === 'true';
-      const savedUser = localStorage.getItem('kanglei_user');
-      if (isAuthed || (savedUser && JSON.parse(savedUser).role === 'ASTROLOGER')) {
-        setIsAuthenticated(true);
+      const savedUserStr = localStorage.getItem('kanglei_user');
+      if (savedUserStr) {
+        try {
+          const u = JSON.parse(savedUserStr);
+          if (u && u.role === 'ASTROLOGER' && u.name) {
+            setIsAuthenticated(true);
+            setProfileForm((prev) => ({
+              ...prev,
+              name: u.name || '',
+              phone: u.phone || '',
+              whatsappNo: u.whatsappNo || '',
+              email: u.email || '',
+              specialty: u.specialty || '',
+              avatar: u.avatar || '',
+            }));
+            return;
+          }
+        } catch (e) {}
       }
+      // If no valid registered astrologer session exists, clear and require login
+      localStorage.removeItem('kanglei_astro_authed');
+      setIsAuthenticated(false);
     }
   }, []);
 
   const handleAstroLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setAuthError('');
-    const inputUser = astroUsernameInput.trim() || 'astrologer';
+    const inputUser = astroUsernameInput.trim();
     const inputPwd = astroPasscodeInput.trim();
 
-    if (!inputPwd || inputPwd.length < 4) {
-      setAuthError('❌ Please enter a valid Username and Password (minimum 4 characters).');
+    if (!inputUser || !inputPwd || inputPwd.length < 4) {
+      setAuthError('❌ Please enter your registered Astrologer Username/Phone and Password.');
       return;
     }
 
@@ -210,6 +227,18 @@ export default function AstrologerDashboard() {
       }
 
       localStorage.setItem('kanglei_astro_authed', 'true');
+      if (data.user) {
+        localStorage.setItem('kanglei_user', JSON.stringify(data.user));
+        setProfileForm((prev) => ({
+          ...prev,
+          name: data.user.name || '',
+          phone: data.user.phone || '',
+          whatsappNo: data.user.whatsappNo || '',
+          email: data.user.email || '',
+          specialty: data.user.specialty || '',
+          avatar: data.user.avatar || '',
+        }));
+      }
       setIsAuthenticated(true);
       setAstroUsernameInput('');
       setAstroPasscodeInput('');
@@ -222,6 +251,23 @@ export default function AstrologerDashboard() {
     localStorage.removeItem('kanglei_astro_authed');
     localStorage.removeItem('kanglei_user');
     setIsAuthenticated(false);
+    setProfileForm({
+      name: '',
+      specialty: '',
+      experience: '',
+      pricePerMin: 0,
+      avatar: '',
+      specialtiesStr: '',
+      languages: '',
+      phone: '',
+      whatsappNo: '',
+      email: '',
+      bio: '',
+      maxDailyOrders: 5,
+      morningSlot: true,
+      afternoonSlot: true,
+      eveningSlot: false,
+    });
   };
 
   // Password Change Modal State
@@ -284,7 +330,7 @@ export default function AstrologerDashboard() {
     }
   };
 
-  const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'wallet' | 'tools' | 'schedule' | 'profile' | 'astro_products' | 'astro_orders' | 'live_consultation'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'consultations' | 'wallet' | 'tools' | 'schedule' | 'profile' | 'astro_products' | 'astro_orders' | 'astro_returns' | 'live_consultation'>('overview');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [saveAlert, setSaveAlert] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -357,6 +403,12 @@ export default function AstrologerDashboard() {
   const [myShopOrders, setMyShopOrders] = useState<any[]>([]);
   const [editingAstroProduct, setEditingAstroProduct] = useState<any>(null);
   const [shopCategories, setShopCategories] = useState<string[]>(['Gemstones', 'Astrology Books', 'Yantras & Mala', 'Puja Items', 'Consecrated Remedies']);
+
+  // Astrologer Returns & Replacements State
+  const [astroReturns, setAstroReturns] = useState<any[]>([]);
+  const [returnStatusFilter, setReturnStatusFilter] = useState<'ALL' | 'PENDING' | 'APPROVED_REPLACEMENT' | 'APPROVED_REFUND' | 'REJECTED' | 'RESOLVED'>('ALL');
+  const [selectedReturnDetail, setSelectedReturnDetail] = useState<any | null>(null);
+  const [loadingReturns, setLoadingReturns] = useState<boolean>(false);
 
   // Allowed Tools permitted by Admin (defaults to all active tools in registry)
   const [allowedTools, setAllowedTools] = useState<string[]>(ACTIVE_TOOLS_REGISTRY.map((t) => t.id));
@@ -468,128 +520,16 @@ export default function AstrologerDashboard() {
   // Wallet & Transactions State
   const [wallet, setWallet] = useState<WalletData>({
     astroId: 'astro-1',
-    pendingPayout: 3500,
-    totalPaidOut: 9250,
-    totalEarnings: 12750,
-    lastUpdated: '2026-08-26',
+    pendingPayout: 0,
+    totalPaidOut: 0,
+    totalEarnings: 0,
+    lastUpdated: new Date().toISOString().split('T')[0],
   });
 
-  const [transactions, setTransactions] = useState<WalletTransaction[]>([
-    {
-      id: 'tx-101',
-      type: 'CREDIT',
-      amount: 599,
-      orderRef: 'KY-2026-8939',
-      notes: 'Consultation Fee Credited for Kuthi Yengba (Laishram Rajen)',
-      timestamp: 'Yesterday, 04:25 PM',
-    },
-    {
-      id: 'tx-102',
-      type: 'DEBIT',
-      amount: 2500,
-      utr: 'UPI/62091823901/BANK_DISBURSEMENT',
-      paymentMethod: 'UPI Direct Transfer',
-      notes: 'Admin Payout Disbursement to GPay +91 98620 99881',
-      timestamp: '24 Aug 2026, 02:15 PM',
-    },
-    {
-      id: 'tx-103',
-      type: 'CREDIT',
-      amount: 779,
-      orderRef: 'KY-2026-8942',
-      notes: 'Consultation Fee Credited for Marriage Matching (Thoibi)',
-      timestamp: 'Today, 10:15 AM',
-    },
-  ]);
+  const [transactions, setTransactions] = useState<WalletTransaction[]>([]);
 
   // Active Orders State
-  const [orders, setOrders] = useState<Order[]>([
-    {
-      id: 'KY-2026-8942',
-      clientName: 'Thoibi Ningthoujam',
-      serviceType: 'Marriage Matching',
-      status: 'ASSIGNED',
-      date: 'Today, 09:40 AM',
-      payoutFee: 779,
-      clientDetails: {
-        sex: 'Female',
-        mobile: '+91 98561 88210',
-        whatsappNo: '+91 98561 88210',
-        email: 'thoibi@example.com',
-        dob: '1996-04-12',
-        tob: '08:30 AM',
-        pob: 'Imphal East, Manipur',
-        kuthiAttached: false,
-        groomDetails: {
-          name: 'Tomba Khangembam',
-          dob: '1994-08-20',
-          tob: '06:15 AM',
-          pob: 'Thoubal, Manipur',
-          long: '93.99',
-          lat: '24.63',
-        },
-        brideDetails: {
-          name: 'Thoibi Ningthoujam',
-          dob: '1996-04-12',
-          tob: '08:30 AM',
-          pob: 'Imphal East, Manipur',
-          long: '93.95',
-          lat: '24.82',
-        },
-        question: 'Please check 36-Gun Ashtakoot compatibility and Manglik Dosh for both. Also suggest a favorable marriage date in 2026.',
-        utr: '429810441920',
-        amount: 1299,
-      },
-    },
-    {
-      id: 'KY-2026-8945',
-      clientName: 'Ibomcha Singh',
-      serviceType: 'Career Outlook',
-      status: 'IN_ANALYSIS',
-      date: 'Yesterday, 11:30 AM',
-      payoutFee: 899,
-      clientDetails: {
-        sex: 'Male',
-        mobile: '+91 97740 22150',
-        whatsappNo: '+91 97740 22150',
-        email: 'ibomcha@example.com',
-        dob: '1988-11-05',
-        tob: '02:45 PM',
-        pob: 'Bishnupur, Manipur',
-        kuthiAttached: true,
-        kuthiFileName: 'ibomcha_kuthi_scan.pdf',
-        kuthiFileUrl: '/sample_kuthi.pdf',
-        uploadedFiles: ['ibomcha_kuthi_scan.pdf', 'ibomcha_birth_chart_pg2.pdf', 'palmistry_photo.jpg'],
-        question: 'Looking for promotion and business expansion opportunities in late 2026.',
-        utr: '918230491823',
-        amount: 1499,
-      },
-    },
-    {
-      id: 'KY-2026-8939',
-      clientName: 'Laishram Rajen',
-      serviceType: 'Kuthi Yengba',
-      status: 'COMPLETED',
-      date: 'Yesterday, 04:20 PM',
-      payoutFee: 599,
-      clientDetails: {
-        sex: 'Male',
-        mobile: '+91 94360 55120',
-        whatsappNo: '+91 94360 55120',
-        email: 'rajen@example.com',
-        dob: '1992-07-14',
-        tob: '05:10 AM',
-        pob: 'Kakching, Manipur',
-        kuthiAttached: true,
-        kuthiFileName: 'rajen_paper_kuthi.jpg',
-        kuthiFileUrl: '/sample_kuthi.pdf',
-        uploadedFiles: ['rajen_paper_kuthi.jpg', 'rajen_palm_scan.pdf'],
-        question: 'Health concerns and Rahu Mahadasha remedies.',
-        utr: '109283019283',
-        amount: 999,
-      },
-    },
-  ]);
+  const [orders, setOrders] = useState<Order[]>([]);
 
   // Fetch live wallet data from /api/astrologers/payout
   const fetchWallet = () => {
@@ -608,7 +548,7 @@ export default function AstrologerDashboard() {
       .then((res) => res.json())
       .then((data) => {
         if (data.astrologers && Array.isArray(data.astrologers)) {
-          const myAstro = data.astrologers.find((a: any) => a.id === 'astro-1' || a.name.includes('Acharya Tombi'));
+          const myAstro = data.astrologers.find((a: any) => (profileForm.phone && a.phone === profileForm.phone) || (profileForm.name && a.name === profileForm.name));
           if (myAstro && Array.isArray(myAstro.allowedTools) && myAstro.allowedTools.length > 0) {
             setAllowedTools(myAstro.allowedTools);
           } else {
@@ -625,40 +565,38 @@ export default function AstrologerDashboard() {
       .then((res) => res.json())
       .then((data) => {
         if (data.orders && Array.isArray(data.orders)) {
-          const assigned = data.orders.filter((o: any) => o.assignedAstrologerId === 'astro-1' || o.assignedAstrologerName?.includes('Acharya Tombi'));
-          if (assigned.length > 0) {
-            const mapped: Order[] = assigned.map((o: any) => ({
-              id: o.id || o.orderRef,
-              orderRef: o.orderRef || o.id,
-              clientName: o.clientName,
-              serviceType: o.serviceType || 'Kuthi Yengba Consultation',
-              status: o.status || 'ASSIGNED',
-              date: o.submittedAt || 'Today',
-              payoutFee: o.amount ? Math.round(o.amount * 0.6) : 599,
-              clientDetails: {
-                sex: o.sex || 'Client',
-                mobile: o.mobile,
-                whatsappNo: o.whatsappNo || o.mobile,
-                email: o.email || '',
-                dob: o.dob,
-                tob: o.tob,
-                pob: o.pob,
-                kuthiAttached: !!o.kuthiAttached,
-                kuthiFileName: o.kuthiFileName,
-                kuthiFileUrl: o.kuthiFileUrl,
-                uploadedFiles: o.uploadedFiles || (o.kuthiFileName ? [o.kuthiFileName] : []),
-                groomDetails: o.groomDetails,
-                brideDetails: o.brideDetails,
-                question: o.question,
-                faithTradition: o.faithTradition || (o.gotra ? 'Hinduism' : o.yek ? 'Sanamahi Laining' : 'Hinduism'),
-                gotra: o.gotra || '',
-                yek: o.yek || '',
-                utr: o.utr || '429810441920',
-                amount: o.amount || 499,
-              },
-            }));
-            setOrders(mapped);
-          }
+          const assigned = data.orders.filter((o: any) => (profileForm.name && o.assignedAstrologerName?.includes(profileForm.name)) || (profileForm.phone && o.assignedAstrologerId === profileForm.phone));
+          const mapped: Order[] = assigned.map((o: any) => ({
+            id: o.id || o.orderRef,
+            orderRef: o.orderRef || o.id,
+            clientName: o.clientName,
+            serviceType: o.serviceType || 'Kuthi Yengba Consultation',
+            status: o.status || 'ASSIGNED',
+            date: o.submittedAt || 'Today',
+            payoutFee: o.amount ? Math.round(o.amount * 0.6) : 599,
+            clientDetails: {
+              sex: o.sex || 'Client',
+              mobile: o.mobile,
+              whatsappNo: o.whatsappNo || o.mobile,
+              email: o.email || '',
+              dob: o.dob,
+              tob: o.tob,
+              pob: o.pob,
+              kuthiAttached: !!o.kuthiAttached,
+              kuthiFileName: o.kuthiFileName,
+              kuthiFileUrl: o.kuthiFileUrl,
+              uploadedFiles: o.uploadedFiles || (o.kuthiFileName ? [o.kuthiFileName] : []),
+              groomDetails: o.groomDetails,
+              brideDetails: o.brideDetails,
+              question: o.question,
+              faithTradition: o.faithTradition || (o.gotra ? 'Hinduism' : o.yek ? 'Sanamahi Laining' : 'Hinduism'),
+              gotra: o.gotra || '',
+              yek: o.yek || '',
+              utr: o.utr || '429810441920',
+              amount: o.amount || 499,
+            },
+          }));
+          setOrders(mapped);
         }
       })
       .catch((err) => console.error('Error fetching astrologer orders:', err));
@@ -670,19 +608,39 @@ export default function AstrologerDashboard() {
       .then((data) => {
         if (data.products && Array.isArray(data.products)) {
           const mine = data.products.filter(
-            (p: any) => p.sellerId === 'astro-1' || p.sellerName?.includes('Acharya Tombi')
+            (p: any) => (profileForm.name && p.sellerName === profileForm.name) || (profileForm.phone && p.sellerId === profileForm.phone)
           );
           setMyProducts(mine);
         }
         if (data.orders && Array.isArray(data.orders)) {
           const mineOrders = data.orders.filter((o: any) =>
-            o.items.some((it: any) => it.sellerId === 'astro-1' || it.sellerName?.includes('Acharya Tombi'))
+            o.items.some((it: any) => (profileForm.name && it.sellerName === profileForm.name) || (profileForm.phone && it.sellerId === profileForm.phone))
           );
           setMyShopOrders(mineOrders);
         }
         if (data.categories) setShopCategories(data.categories);
       })
       .catch((err) => console.error('Error fetching astrologer shop data:', err));
+  };
+
+  const INITIAL_ASTRO_RETURNS: any[] = [];
+
+  const fetchAstroReturns = () => {
+    setLoadingReturns(true);
+    fetch('/api/shop/returns')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.returns && Array.isArray(data.returns)) {
+          setAstroReturns(data.returns);
+        } else {
+          setAstroReturns([]);
+        }
+      })
+      .catch((err) => {
+        console.error('Error fetching astrologer returns:', err);
+        setAstroReturns([]);
+      })
+      .finally(() => setLoadingReturns(false));
   };
 
   const handleAstroProductImageFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -725,8 +683,8 @@ export default function AstrologerDashboard() {
         description: editingAstroProduct.description || editingAstroProduct.title,
         features: editingAstroProduct.features || ['Consecrated at Guru Altar', 'Purified with Panchamrut Puja'],
         sellerType: 'ASTROLOGER',
-        sellerId: 'astro-1',
-        sellerName: 'Acharya Tombi Sharma',
+        sellerId: profileForm.phone || 'astro-seller',
+        sellerName: profileForm.name || 'Empaneled Astrologer',
         status: 'PENDING_APPROVAL',
       },
     };
@@ -754,6 +712,7 @@ export default function AstrologerDashboard() {
     fetchOrders();
     fetchAllowedTools();
     fetchAstroShopData();
+    fetchAstroReturns();
     fetch('/api/announcements')
       .then((res) => res.json())
       .then((data) => {
@@ -766,7 +725,8 @@ export default function AstrologerDashboard() {
     const pollTimer = setInterval(() => {
       fetchOrders();
       fetchWallet();
-    }, 3000);
+      fetchAstroReturns();
+    }, 4000);
     return () => clearInterval(pollTimer);
   }, []);
 
@@ -811,7 +771,7 @@ export default function AstrologerDashboard() {
           reportFileName: uploadForm.reportFileName || 'consultation_report.pdf',
           reportFileUrl: uploadForm.reportFileUrl || '/sample_kuthi.pdf',
           reportNotes: uploadForm.reportNotes || '',
-          uploadedBy: profileForm.name || 'Acharya Tombi Sharma',
+          uploadedBy: profileForm.name || 'Empaneled Astrologer',
         }),
       });
 
@@ -980,12 +940,6 @@ Question: ${details.question || 'N/A'}`;
               <span>Unlock Astrologer Dashboard</span>
             </button>
           </form>
-
-          <div className="pt-4 border-t border-slate-100 dark:border-[#3a506b]/40 text-center">
-            <p className="text-[11px] text-slate-500 dark:text-gray-400 font-medium">
-              Demo Passcode: <code className="bg-amber-100 text-amber-900 dark:bg-[#0b132b] dark:text-[#fbbf24] px-2 py-0.5 rounded font-mono font-bold">astro123</code>
-            </p>
-          </div>
         </div>
       </div>
     );
@@ -999,6 +953,13 @@ Question: ${details.question || 'N/A'}`;
       {/* ─────────────────────────────────────────────────────────────
          1. LEFT NAVIGATION SIDEBAR (Admin Portal Style)
          ───────────────────────────────────────────────────────────── */}
+      {/* Mobile Drawer Backdrop */}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 bg-black/60 backdrop-blur-xs z-35 md:hidden cursor-pointer"
+        />
+      )}
       <aside className={`fixed md:sticky top-0 left-0 h-screen w-72 border-r flex flex-col justify-between z-40 transition-all duration-300 ${
         theme === 'dark' ? 'bg-[#0f172a] border-[#3a506b]' : 'bg-white border-slate-200 shadow-md'
       } ${
@@ -1015,7 +976,7 @@ Question: ${details.question || 'N/A'}`;
                 <span className={`font-serif text-lg font-bold block leading-tight ${
                   theme === 'dark' ? 'text-white' : 'text-slate-900'
                 }`}>
-                  KangleiAstro
+                  kuthiyengpham
                 </span>
                 <span className="text-[10px] text-[#d97706] font-extrabold uppercase tracking-wider block">
                   Guru Portal
@@ -1158,6 +1119,25 @@ Question: ${details.question || 'N/A'}`;
                     </span>
                   )}
                 </button>
+
+                <button
+                  onClick={() => { setActiveTab('astro_returns'); setSidebarOpen(false); }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeTab === 'astro_returns'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <RefreshCw className="w-4 h-4 text-amber-500" />
+                    <span>Returns & Replacements</span>
+                  </div>
+                  {astroReturns.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-700 dark:text-amber-300 text-[10px] font-extrabold border border-amber-500/30">
+                      {astroReturns.length}
+                    </span>
+                  )}
+                </button>
               </div>
             </div>
 
@@ -1281,88 +1261,155 @@ Question: ${details.question || 'N/A'}`;
       <div className="flex-1 flex flex-col min-w-0">
         
         {/* TOP ADMIN HEADER BAR */}
-        <header className={`border-b px-4 sm:px-6 py-4 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300 shadow-md ${
+        <header className={`border-b px-3.5 sm:px-6 py-3 sm:py-4 sticky top-0 z-30 transition-colors duration-300 shadow-md ${
           theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white/90 backdrop-blur-md border-slate-200'
         }`}>
-          <div className="flex items-center gap-3">
+          {/* MOBILE VIEWPORT HEADER (< md): Minimal Brand & Menu */}
+          <div className="flex md:hidden items-center justify-between w-full">
+            {/* Left: Hamburger menu button */}
             <button
               onClick={() => setSidebarOpen(true)}
-              className={`p-2 rounded-xl border md:hidden ${
-                theme === 'dark' ? 'bg-[#0b132b] text-gray-300 border-[#3a506b]' : 'bg-slate-100 text-slate-700 border-slate-300'
+              className={`p-2 rounded-xl border transition-colors cursor-pointer ${
+                theme === 'dark' ? 'bg-[#0b132b] text-gray-300 border-[#3a506b] hover:text-white' : 'bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200'
               }`}
+              aria-label="Open Navigation Menu"
             >
               <Menu className="w-5 h-5" />
             </button>
-            <div>
-              <h1 className={`font-serif font-bold text-xl flex items-center gap-2 ${
-                theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'
-              }`}>
-                <span>Welcome, {profileForm.name}</span>
-                <ShieldCheck className="w-5 h-5 text-[#fbbf24]" />
-              </h1>
-              <p className="text-xs text-[#5c7a99]">
-                Empaneled Astrologer Management Portal • KangleiAstro
-              </p>
+
+            {/* Center: kuthiyengpham logo & brand */}
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center font-bold shadow-xs">
+                <Moon className="w-4 h-4 fill-[#fbbf24] text-[#fbbf24]" />
+              </div>
+              <div className="flex flex-col items-start leading-tight">
+                <span className={`font-serif text-sm font-bold tracking-wide ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-900'
+                }`}>
+                  kuthiyengpham
+                </span>
+                <span className="text-[9px] text-[#d97706] font-extrabold uppercase tracking-wider">
+                  Guru Portal
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Theme toggle & Profile icon */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                className={`w-9 h-9 rounded-xl border flex items-center justify-center transition-all cursor-pointer shadow-xs ${
+                  theme === 'dark'
+                    ? 'bg-[#0b132b] text-[#fbbf24] border-[#3a506b] hover:border-[#fbbf24]'
+                    : 'bg-white text-slate-800 border-amber-300 hover:border-amber-500'
+                }`}
+                title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+              >
+                {theme === 'dark' ? (
+                  <Sun className="w-4 h-4 text-amber-400 fill-amber-400" />
+                ) : (
+                  <Moon className="w-4 h-4 text-slate-700 fill-slate-700" />
+                )}
+              </button>
+
+              <button
+                onClick={() => setActiveTab('profile')}
+                className={`w-9 h-9 rounded-xl border flex items-center justify-center overflow-hidden transition-all cursor-pointer shadow-xs ${
+                  activeTab === 'profile'
+                    ? 'ring-2 ring-[#d97706] border-[#d97706]'
+                    : theme === 'dark'
+                    ? 'bg-[#0b132b] border-[#3a506b]'
+                    : 'bg-white border-slate-300'
+                }`}
+                title="Guru Profile"
+              >
+                {profileForm.avatar ? (
+                  <img
+                    src={profileForm.avatar}
+                    alt={profileForm.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <User className="w-4 h-4 text-slate-600 dark:text-gray-300" />
+                )}
+              </button>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Live Search Bar */}
-            <div className="relative hidden sm:block">
-              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search orders, clients..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className={`pl-9 pr-4 py-1.5 rounded-xl border text-xs focus:outline-none focus:border-[#d97706] w-48 lg:w-64 transition-colors ${
-                  theme === 'dark'
-                    ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500'
-                    : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 shadow-xs'
-                }`}
-              />
+          {/* DESKTOP VIEWPORT HEADER (>= md) */}
+          <div className="hidden md:flex items-center justify-between w-full">
+            <div className="flex items-center gap-3">
+              <div>
+                <h1 className={`font-serif font-bold text-xl flex items-center gap-2 ${
+                  theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'
+                }`}>
+                  <span>Welcome, {profileForm.name}</span>
+                  <ShieldCheck className="w-5 h-5 text-[#fbbf24]" />
+                </h1>
+                <p className="text-xs text-[#5c7a99]">
+                  Empaneled Astrologer Management Portal • kuthiyengpham
+                </p>
+              </div>
             </div>
 
-            {/* Theme Selector Option (Light / Dark) */}
-            <button
-              onClick={toggleTheme}
-              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
-                theme === 'dark'
-                  ? 'bg-[#0b132b] text-[#fbbf24] border-[#3a506b] hover:border-[#fbbf24]'
-                  : 'bg-white text-slate-800 border-amber-300 hover:border-amber-500 shadow-xs'
-              }`}
-              title="Switch Light / Dark Theme"
-            >
-              {theme === 'dark' ? (
-                <>
-                  <Sun className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="hidden md:inline font-mono">Light Mode</span>
-                </>
-              ) : (
-                <>
-                  <Moon className="w-4 h-4 text-slate-700 fill-slate-700" />
-                  <span className="hidden md:inline font-mono">Dark Mode</span>
-                </>
-              )}
-            </button>
-
-            {/* Quick Availability Switcher */}
-            <div className={`flex items-center p-1 rounded-xl border transition-colors ${
-              theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-100 border-slate-200'
-            }`}>
-              {(['Online', 'Offline', 'On Leave'] as Availability[]).map((st) => (
-                <button
-                  key={st}
-                  onClick={() => setAvailability(st)}
-                  className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
-                    availability === st
-                      ? st === 'Online' ? 'bg-green-600 text-white shadow-xs' : st === 'Offline' ? 'bg-gray-700 text-white' : 'bg-red-600 text-white'
-                      : theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+            <div className="flex items-center gap-3">
+              {/* Live Search Bar */}
+              <div className="relative hidden sm:block">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Search orders, clients..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className={`pl-9 pr-4 py-1.5 rounded-xl border text-xs focus:outline-none focus:border-[#d97706] w-48 lg:w-64 transition-colors ${
+                    theme === 'dark'
+                      ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500'
+                      : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400 shadow-xs'
                   }`}
-                >
-                  {st}
-                </button>
-              ))}
+                />
+              </div>
+
+              {/* Theme Selector Option (Light / Dark) */}
+              <button
+                onClick={toggleTheme}
+                className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  theme === 'dark'
+                    ? 'bg-[#0b132b] text-[#fbbf24] border-[#3a506b] hover:border-[#fbbf24]'
+                    : 'bg-white text-slate-800 border-amber-300 hover:border-amber-500 shadow-xs'
+                }`}
+                title="Switch Light / Dark Theme"
+              >
+                {theme === 'dark' ? (
+                  <>
+                    <Sun className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <span className="hidden md:inline font-mono">Light Mode</span>
+                  </>
+                ) : (
+                  <>
+                    <Moon className="w-4 h-4 text-slate-700 fill-slate-700" />
+                    <span className="hidden md:inline font-mono">Dark Mode</span>
+                  </>
+                )}
+              </button>
+
+              {/* Quick Availability Switcher */}
+              <div className={`flex items-center p-1 rounded-xl border transition-colors ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-100 border-slate-200'
+              }`}>
+                {(['Online', 'Offline', 'On Leave'] as Availability[]).map((st) => (
+                  <button
+                    key={st}
+                    onClick={() => setAvailability(st)}
+                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all ${
+                      availability === st
+                        ? st === 'Online' ? 'bg-green-600 text-white shadow-xs' : st === 'Offline' ? 'bg-gray-700 text-white' : 'bg-red-600 text-white'
+                        : theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    {st}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         </header>
@@ -1473,7 +1520,7 @@ Question: ${details.question || 'N/A'}`;
                     Astrologer In-App Consultation Workspace
                   </h3>
                   <p className="text-xs text-slate-500">
-                    Conduct live 1-on-1 chats and voice consultations directly inside KangleiAstro.
+                    Conduct live 1-on-1 chats and voice consultations directly inside kuthiyengpham.
                   </p>
                 </div>
               </div>
@@ -1897,23 +1944,33 @@ Question: ${details.question || 'N/A'}`;
           {/* TAB 2: ASSIGNED CONSULTATIONS */}
           {activeTab === 'consultations' && (
             <div className="space-y-6">
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] flex flex-wrap justify-between items-center gap-4">
+              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 transition-colors shadow-sm ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Assigned Consultations & Kuthi Orders</h3>
-                  <p className="text-xs text-[#5c7a99]">Access client submitted birth details, inspect paper Kuthi uploads, & deliver astrological reports</p>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
+                    Assigned Consultations & Kuthi Orders
+                  </h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-slate-600'}`}>
+                    Access client submitted birth details, inspect paper Kuthi uploads, & deliver astrological reports
+                  </p>
                 </div>
                 <div className="text-right">
-                  <span className="text-xs text-gray-400 block font-mono">Assigned Orders Count</span>
-                  <strong className="text-xl font-serif font-bold text-[#fbbf24]">{orders.length} Total</strong>
+                  <span className={`text-xs block font-mono ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>Assigned Orders Count</span>
+                  <strong className={`text-xl font-serif font-bold ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#d97706]'}`}>{orders.length} Total</strong>
                 </div>
               </div>
 
               {/* Consultations Table */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-xl overflow-hidden">
+              <div className={`rounded-3xl border shadow-xl overflow-hidden transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase tracking-wider">
+                      <tr className={`border-b font-serif uppercase tracking-wider ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-slate-50 border-slate-200 text-amber-900 font-extrabold'
+                      }`}>
                         <th className="p-4">Order Ref</th>
                         <th className="p-4">Client Info</th>
                         <th className="p-4">Kuthi / Birth Paper</th>
@@ -1922,48 +1979,56 @@ Question: ${details.question || 'N/A'}`;
                         <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50">
+                    <tbody className={`divide-y ${theme === 'dark' ? 'divide-[#3a506b]/50' : 'divide-slate-200'}`}>
                       {filteredOrders.map((order) => (
-                        <tr key={order.id} className="hover:bg-[#0b132b]/40 transition-colors">
-                          <td className="p-4 font-mono font-bold text-[#fbbf24]">{order.id}</td>
+                        <tr key={order.id} className={`transition-colors ${
+                          theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
+                        }`}>
+                          <td className={`p-4 font-mono font-bold ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#d97706]'}`}>{order.id}</td>
                           <td className="p-4">
-                            <strong className="text-white text-sm block">{order.clientName}</strong>
-                            <span className="text-slate-400 text-[10px] italic block">Contact Protected</span>
+                            <strong className={`text-sm block ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{order.clientName}</strong>
+                            <span className={`text-[10px] italic block ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Contact Protected</span>
                           </td>
                           <td className="p-4">
                             {order.clientDetails.kuthiAttached ? (
-                              <span className="text-xs text-amber-300 font-bold flex items-center gap-1">
-                                <Paperclip className="w-3.5 h-3.5 text-amber-400" />
+                              <span className={`text-xs font-bold flex items-center gap-1 ${
+                                theme === 'dark' ? 'text-amber-300' : 'text-amber-700'
+                              }`}>
+                                <Paperclip className="w-3.5 h-3.5 text-amber-500" />
                                 {order.clientDetails.uploadedFiles && order.clientDetails.uploadedFiles.length > 1
                                   ? `${order.clientDetails.uploadedFiles.length} Kuthi Files Uploaded`
                                   : (order.clientDetails.kuthiFileName || 'Paper Kuthi Uploaded')}
                               </span>
                             ) : (
-                              <span className="text-xs text-gray-400 italic">Birth Details Mode</span>
+                              <span className={`text-xs italic ${theme === 'dark' ? 'text-gray-400' : 'text-slate-400'}`}>Birth Details Mode</span>
                             )}
                           </td>
                           <td className="p-4">
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
-                              order.status === 'ASSIGNED' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                              order.status === 'IN_ANALYSIS' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' :
-                              'bg-green-500/20 text-green-300 border-green-500/30'
+                              order.status === 'ASSIGNED' ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30' :
+                              order.status === 'IN_ANALYSIS' ? 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border-purple-500/30' :
+                              'bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30'
                             }`}>
                               {order.status}
                             </span>
                           </td>
-                          <td className="p-4 font-mono font-bold text-green-400">+₹{order.payoutFee}</td>
+                          <td className={`p-4 font-mono font-bold ${theme === 'dark' ? 'text-green-400' : 'text-green-600'}`}>+₹{order.payoutFee}</td>
                           <td className="p-4 text-center">
                             <div className="flex items-center justify-center gap-2">
                               <button
                                 onClick={() => setInspectingClient(order)}
-                                className="px-3 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#1e293b] text-sky-300 border border-[#3a506b] font-bold text-[11px] flex items-center gap-1"
+                                className={`px-3 py-1.5 rounded-xl border font-bold text-[11px] flex items-center gap-1 transition-colors cursor-pointer ${
+                                  theme === 'dark'
+                                    ? 'bg-[#0b132b] hover:bg-[#1e293b] text-sky-300 border-[#3a506b]'
+                                    : 'bg-slate-100 hover:bg-slate-200 text-slate-800 border-slate-300 shadow-xs'
+                                }`}
                               >
-                                <Eye className="w-3.5 h-3.5 text-sky-400" />
+                                <Eye className="w-3.5 h-3.5 text-sky-500" />
                                 <span>Inspect Details</span>
                               </button>
                               <button
                                 onClick={() => setUploadingOrder(order)}
-                                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-[11px] flex items-center gap-1 shadow-xs hover:opacity-95"
+                                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-[11px] flex items-center gap-1 shadow-xs hover:opacity-95 cursor-pointer"
                               >
                                 <Upload className="w-3.5 h-3.5" />
                                 <span>Upload Report</span>
@@ -1982,14 +2047,20 @@ Question: ${details.question || 'N/A'}`;
           {/* TAB 3: WALLET & EARNINGS */}
           {activeTab === 'wallet' && (
             <div className="space-y-6">
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] flex flex-wrap justify-between items-center gap-4">
+              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 transition-colors shadow-sm ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">My Wallet & Payout Ledger</h3>
-                  <p className="text-xs text-[#5c7a99]">Track consultation earnings, requested disbursements, & live Admin settlement UTR records</p>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
+                    My Wallet & Payout Ledger
+                  </h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-slate-600'}`}>
+                    Track consultation earnings, requested disbursements, & live Admin settlement UTR records
+                  </p>
                 </div>
                 <button
                   onClick={() => setShowRequestPayoutModal(true)}
-                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md flex items-center gap-2"
+                  className="px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-extrabold text-xs shadow-md flex items-center gap-2 cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span>Request Payout to Admin</span>
@@ -1998,35 +2069,65 @@ Question: ${details.question || 'N/A'}`;
 
               {/* 3 Wallet Summary Cards */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-2">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Lifetime Earnings</span>
-                  <strong className="text-3xl font-serif font-bold text-purple-300 block">₹{wallet.totalEarnings.toLocaleString()}</strong>
-                  <p className="text-[10px] text-gray-400">Total consultation revenue split accrued</p>
+                <div className={`p-6 rounded-3xl border space-y-2 transition-colors shadow-sm ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+                }`}>
+                  <span className={`text-xs font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                    Total Lifetime Earnings
+                  </span>
+                  <strong className={`text-3xl font-serif font-bold block ${theme === 'dark' ? 'text-purple-300' : 'text-purple-600'}`}>
+                    ₹{wallet.totalEarnings.toLocaleString()}
+                  </strong>
+                  <p className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                    Total consultation revenue split accrued
+                  </p>
                 </div>
-                <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-2">
-                  <span className="text-xs font-bold text-gray-400 uppercase tracking-wider block">Total Paid Out</span>
-                  <strong className="text-3xl font-serif font-bold text-sky-300 block">₹{wallet.totalPaidOut.toLocaleString()}</strong>
-                  <p className="text-[10px] text-gray-400">Disbursed via UPI / Bank Transfer by Admin</p>
+                <div className={`p-6 rounded-3xl border space-y-2 transition-colors shadow-sm ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+                }`}>
+                  <span className={`text-xs font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                    Total Paid Out
+                  </span>
+                  <strong className={`text-3xl font-serif font-bold block ${theme === 'dark' ? 'text-sky-300' : 'text-sky-600'}`}>
+                    ₹{wallet.totalPaidOut.toLocaleString()}
+                  </strong>
+                  <p className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                    Disbursed via UPI / Bank Transfer by Admin
+                  </p>
                 </div>
-                <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-2 relative overflow-hidden">
+                <div className={`p-6 rounded-3xl border space-y-2 relative overflow-hidden transition-colors shadow-sm ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+                }`}>
                   <div className="absolute top-0 right-0 p-4 text-green-500/10">
                     <Wallet className="w-20 h-20" />
                   </div>
-                  <span className="text-xs font-bold text-green-400 uppercase tracking-wider block">Available Wallet Balance</span>
-                  <strong className="text-3xl font-serif font-bold text-green-400 block">₹{wallet.pendingPayout.toLocaleString()}</strong>
-                  <p className="text-[10px] text-gray-400">Ready for instant payout withdrawal</p>
+                  <span className="text-xs font-bold text-green-600 dark:text-green-400 uppercase tracking-wider block">
+                    Available Wallet Balance
+                  </span>
+                  <strong className="text-3xl font-serif font-bold text-green-600 dark:text-green-400 block">
+                    ₹{wallet.pendingPayout.toLocaleString()}
+                  </strong>
+                  <p className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                    Ready for instant payout withdrawal
+                  </p>
                 </div>
               </div>
 
               {/* Transactions Ledger Table */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-xl overflow-hidden">
-                <div className="p-6 border-b border-[#3a506b]">
-                  <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Transaction History Ledger</h4>
+              <div className={`rounded-3xl border shadow-xl overflow-hidden transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
+                <div className={`p-6 border-b ${theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200 bg-slate-50'}`}>
+                  <h4 className={`font-serif font-bold text-lg ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-slate-900'}`}>
+                    Transaction History Ledger
+                  </h4>
                 </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] uppercase tracking-wider">
+                      <tr className={`border-b uppercase tracking-wider ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-slate-100 border-slate-200 text-slate-800 font-extrabold'
+                      }`}>
                         <th className="p-4">Transaction ID</th>
                         <th className="p-4">Type</th>
                         <th className="p-4">Details / Description</th>
@@ -2034,20 +2135,24 @@ Question: ${details.question || 'N/A'}`;
                         <th className="p-4 text-right">Amount (₹)</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50 font-mono">
+                    <tbody className={`divide-y font-mono ${theme === 'dark' ? 'divide-[#3a506b]/50' : 'divide-slate-200 text-slate-900'}`}>
                       {transactions.map((tx) => (
-                        <tr key={tx.id} className="hover:bg-[#0b132b]/40">
-                          <td className="p-4 font-bold text-gray-300">{tx.id}</td>
+                        <tr key={tx.id} className={`transition-colors ${theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'}`}>
+                          <td className={`p-4 font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>{tx.id}</td>
                           <td className="p-4">
                             <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                              tx.type === 'CREDIT' ? 'bg-green-500/20 text-green-300' : 'bg-amber-500/20 text-amber-300'
+                              tx.type === 'CREDIT'
+                                ? 'bg-green-500/20 text-green-700 dark:text-green-300'
+                                : 'bg-amber-500/20 text-amber-700 dark:text-amber-300'
                             }`}>
                               {tx.type}
                             </span>
                           </td>
-                          <td className="p-4 text-gray-200 font-sans">{tx.notes}</td>
-                          <td className="p-4 text-gray-400">{tx.utr || tx.orderRef || 'N/A'}</td>
-                          <td className={`p-4 text-right font-bold ${tx.type === 'CREDIT' ? 'text-green-400' : 'text-amber-400'}`}>
+                          <td className={`p-4 font-sans ${theme === 'dark' ? 'text-gray-200' : 'text-slate-800'}`}>{tx.notes}</td>
+                          <td className={`p-4 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>{tx.utr || tx.orderRef || 'N/A'}</td>
+                          <td className={`p-4 text-right font-bold ${
+                            tx.type === 'CREDIT' ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'
+                          }`}>
                             {tx.type === 'CREDIT' ? '+' : '-'}₹{tx.amount.toLocaleString()}
                           </td>
                         </tr>
@@ -2062,12 +2167,22 @@ Question: ${details.question || 'N/A'}`;
           {/* TAB 4: AVAILABILITY & SHIFTS */}
           {activeTab === 'schedule' && (
             <div className="space-y-6">
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4">
-                <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Availability & Working Shift Controls</h3>
-                <p className="text-xs text-[#5c7a99]">Set your real-time status and maximum daily consultation capacity</p>
+              <div className={`p-6 rounded-3xl border space-y-4 transition-colors shadow-sm ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
+                <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
+                  Availability & Working Shift Controls
+                </h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-slate-600'}`}>
+                  Set your real-time status and maximum daily consultation capacity
+                </p>
                 
-                <div className="p-6 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-4">
-                  <label className="block text-xs font-bold text-[#fbbf24] uppercase tracking-wider">
+                <div className={`p-6 rounded-2xl border space-y-4 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <label className={`block text-xs font-bold uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900 font-extrabold'
+                  }`}>
                     Current Online Availability Status
                   </label>
                   <div className="flex flex-wrap gap-4">
@@ -2079,10 +2194,16 @@ Question: ${details.question || 'N/A'}`;
                           setSaveAlert(`Status changed to ${st}`);
                           setTimeout(() => setSaveAlert(''), 3000);
                         }}
-                        className={`px-6 py-3 rounded-2xl font-bold text-xs border transition-all ${
+                        className={`px-6 py-3 rounded-2xl font-bold text-xs border transition-all cursor-pointer ${
                           availability === st
-                            ? st === 'Online' ? 'bg-green-600 border-green-500 text-white shadow-lg' : st === 'Offline' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-red-600 border-red-500 text-white'
-                            : 'bg-[#1c2541] border-[#3a506b] text-gray-300 hover:border-[#fbbf24]'
+                            ? st === 'Online'
+                              ? 'bg-green-600 border-green-500 text-white shadow-lg'
+                              : st === 'Offline'
+                              ? 'bg-gray-700 border-gray-600 text-white'
+                              : 'bg-red-600 border-red-500 text-white'
+                            : theme === 'dark'
+                            ? 'bg-[#1c2541] border-[#3a506b] text-gray-300 hover:border-[#fbbf24]'
+                            : 'bg-white border-slate-300 text-slate-700 hover:border-amber-500 shadow-xs'
                         }`}
                       >
                         {st === 'Online' ? '🟢 Online & Ready for Orders' : st === 'Offline' ? '⚪ Offline' : '🔴 On Leave'}
@@ -2092,8 +2213,12 @@ Question: ${details.question || 'N/A'}`;
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
-                  <div className="p-6 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-3">
-                    <label className="block text-xs font-bold text-white uppercase tracking-wider">
+                  <div className={`p-6 rounded-2xl border space-y-3 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                    <label className={`block text-xs font-bold uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    }`}>
                       Max Daily Consultation Limit
                     </label>
                     <input
@@ -2102,17 +2227,29 @@ Question: ${details.question || 'N/A'}`;
                       max={20}
                       value={profileForm.maxDailyOrders}
                       onChange={(e) => setProfileForm({ ...profileForm, maxDailyOrders: Number(e.target.value) })}
-                      className="w-full p-3 rounded-xl bg-[#1c2541] border border-[#3a506b] text-amber-300 font-mono font-bold text-sm"
+                      className={`w-full p-3 rounded-xl border font-mono font-bold text-sm ${
+                        theme === 'dark'
+                          ? 'bg-[#1c2541] border-[#3a506b] text-amber-300'
+                          : 'bg-white border-slate-300 text-amber-900'
+                      }`}
                     />
-                    <p className="text-[10px] text-gray-400">Admin will stop assigning new orders once this limit is reached in a 24-hr period.</p>
+                    <p className={`text-[10px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      Admin will stop assigning new orders once this limit is reached in a 24-hr period.
+                    </p>
                   </div>
 
-                  <div className="p-6 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-3">
-                    <label className="block text-xs font-bold text-white uppercase tracking-wider">
+                  <div className={`p-6 rounded-2xl border space-y-3 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                    <label className={`block text-xs font-bold uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    }`}>
                       Shift Hours Configuration
                     </label>
                     <div className="space-y-2 text-xs">
-                      <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
+                      <label className={`flex items-center gap-2 cursor-pointer ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-slate-700 font-medium'
+                      }`}>
                         <input
                           type="checkbox"
                           checked={profileForm.morningSlot}
@@ -2121,7 +2258,9 @@ Question: ${details.question || 'N/A'}`;
                         />
                         <span>Morning Shift (09:00 AM – 01:00 PM IST)</span>
                       </label>
-                      <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
+                      <label className={`flex items-center gap-2 cursor-pointer ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-slate-700 font-medium'
+                      }`}>
                         <input
                           type="checkbox"
                           checked={profileForm.afternoonSlot}
@@ -2130,7 +2269,9 @@ Question: ${details.question || 'N/A'}`;
                         />
                         <span>Afternoon Shift (02:00 PM – 06:00 PM IST)</span>
                       </label>
-                      <label className="flex items-center gap-2 text-gray-300 cursor-pointer">
+                      <label className={`flex items-center gap-2 cursor-pointer ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-slate-700 font-medium'
+                      }`}>
                         <input
                           type="checkbox"
                           checked={profileForm.eveningSlot}
@@ -2149,15 +2290,116 @@ Question: ${details.question || 'N/A'}`;
           {/* TAB 5: GURU PROFILE & BIO */}
           {activeTab === 'profile' && (
             <div className="space-y-6">
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-6">
-                <div className="flex justify-between items-center">
+              {/* MOBILE-ONLY PROFILE VIEW (md:hidden): Quick Summary, Return to Overview, & Sign Out */}
+              <div className="md:hidden space-y-4">
+                {/* Return to Overview & Analytics Button */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('overview')}
+                  className={`w-full py-3 px-4 rounded-2xl font-bold text-xs flex items-center justify-center gap-2 border shadow-sm transition-all cursor-pointer ${
+                    theme === 'dark'
+                      ? 'bg-[#1c2541] hover:bg-[#253256] text-[#fbbf24] border-[#3a506b]'
+                      : 'bg-white hover:bg-amber-50 text-amber-900 border-amber-200'
+                  }`}
+                >
+                  <ArrowLeft className="w-4 h-4" />
+                  <span>← Return to Overview & Analytics</span>
+                </button>
+
+                {/* Mobile Profile Card with Basic Information */}
+                <div className={`p-5 rounded-3xl border shadow-lg space-y-4 transition-colors ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+                }`}>
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <div className={`w-16 h-16 rounded-full overflow-hidden border-2 border-emerald-500 p-0.5 shadow-md shrink-0 ${
+                        theme === 'dark' ? 'bg-[#0b132b]' : 'bg-slate-100'
+                      }`}>
+                        <img
+                          src={profileForm.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
+                          alt={profileForm.name}
+                          className="w-full h-full object-cover rounded-full"
+                        />
+                      </div>
+                      <span className="w-3.5 h-3.5 rounded-full bg-emerald-500 border-2 border-white absolute bottom-0 right-0 shadow-sm" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h4 className={`font-serif font-bold text-base truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {profileForm.name}
+                        </h4>
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                          {availability}
+                        </span>
+                      </div>
+                      <p className="text-xs text-amber-500 font-mono line-clamp-1">{profileForm.specialty}</p>
+                      <div className={`text-[11px] font-bold mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                        ₹{profileForm.pricePerMin} / min · {profileForm.experience} Yrs Exp
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Basic Info Details Grid */}
+                  <div className={`grid grid-cols-1 gap-2.5 p-3 rounded-2xl border text-xs transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span className="font-mono text-[11px]">{profileForm.whatsappNo || 'Not provided'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Mail className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span className="truncate text-[11px]">{profileForm.email || 'Not provided'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Globe className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                      <span className="text-[11px]">{profileForm.languages || 'Manipuri · English · Hindi'}</span>
+                    </div>
+                  </div>
+
+                  {/* Mobile Profile Actions: Change Password & Sign Out */}
+                  <div className="space-y-2 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswordModal(true)}
+                      className={`w-full py-2.5 px-4 rounded-xl border text-xs font-bold flex items-center justify-center gap-2 cursor-pointer transition-colors ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] hover:bg-[#142042] text-amber-300 border-[#3a506b]'
+                          : 'bg-amber-50 hover:bg-amber-100 text-amber-900 border-amber-200'
+                      }`}
+                    >
+                      <KeyRound className="w-3.5 h-3.5" />
+                      <span>Update Portal Password</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleAstroLogout}
+                      className="w-full py-2.5 px-4 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-extrabold flex items-center justify-center gap-2 shadow-md cursor-pointer transition-colors"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out from Astrologer Portal</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Main Profile Form (Both Desktop & Mobile for editing) */}
+              <div className={`p-6 rounded-3xl border space-y-6 transition-colors shadow-sm ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
+                <div className="flex flex-wrap justify-between items-center gap-4">
                   <div>
-                    <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">Empaneled Guru Profile & Bio</h3>
-                    <p className="text-xs text-[#5c7a99]">Upload profile photo, manage credentials, consultation rate, & bio shown to clients</p>
+                    <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
+                      Empaneled Guru Profile & Bio
+                    </h3>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-slate-600'}`}>
+                      Upload profile photo, manage credentials, consultation rate, & bio shown to clients
+                    </p>
                   </div>
                   <button
                     onClick={handleSaveProfileSubmit}
-                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                   >
                     <Save className="w-4 h-4" />
                     <span>Save Profile Live</span>
@@ -2165,9 +2407,13 @@ Question: ${details.question || 'N/A'}`;
                 </div>
 
                 {/* Profile Photo Upload & Preview Card */}
-                <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] flex flex-col sm:flex-row items-center gap-6">
+                <div className={`p-5 rounded-2xl border flex flex-col sm:flex-row items-center gap-6 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                }`}>
                   <div className="relative">
-                    <div className="w-24 h-24 rounded-full overflow-hidden border-4 border-emerald-500 p-0.5 shadow-lg bg-[#1c2541] shrink-0">
+                    <div className={`w-24 h-24 rounded-full overflow-hidden border-4 border-emerald-500 p-0.5 shadow-lg shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541]' : 'bg-white'
+                    }`}>
                       <img
                         src={profileForm.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
                         alt={profileForm.name}
@@ -2179,8 +2425,8 @@ Question: ${details.question || 'N/A'}`;
 
                   <div className="flex-1 space-y-3 text-center sm:text-left">
                     <div>
-                      <h4 className="font-serif font-bold text-lg text-white">{profileForm.name}</h4>
-                      <p className="text-xs text-amber-300 font-mono">{profileForm.specialty}</p>
+                      <h4 className={`font-serif font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{profileForm.name}</h4>
+                      <p className="text-xs text-amber-500 font-mono">{profileForm.specialty}</p>
                     </div>
 
                     <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
@@ -2195,14 +2441,16 @@ Question: ${details.question || 'N/A'}`;
                         />
                       </label>
 
-                      <div className="text-[11px] text-gray-400">or enter image URL below</div>
+                      <div className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>or enter image URL below</div>
                     </div>
                   </div>
                 </div>
 
                 <form onSubmit={handleSaveProfileSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Full Name *
                     </label>
                     <input
@@ -2210,12 +2458,16 @@ Question: ${details.question || 'N/A'}`;
                       required
                       value={profileForm.name}
                       onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Profile Photo Image URL *
                     </label>
                     <input
@@ -2223,12 +2475,16 @@ Question: ${details.question || 'N/A'}`;
                       required
                       value={profileForm.avatar}
                       onChange={(e) => setProfileForm({ ...profileForm, avatar: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-sky-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border font-mono text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-sky-300' : 'bg-white border-slate-300 text-sky-700'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Specialty Tagline *
                     </label>
                     <input
@@ -2236,16 +2492,20 @@ Question: ${details.question || 'N/A'}`;
                       required
                       value={profileForm.specialty}
                       onChange={(e) => setProfileForm({ ...profileForm, specialty: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Consultation Rate (₹ per Minute) *
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3.5 top-3 text-amber-400 font-bold">₹</span>
+                      <span className="absolute left-3.5 top-3 text-amber-500 font-bold">₹</span>
                       <input
                         type="number"
                         required
@@ -2253,13 +2513,17 @@ Question: ${details.question || 'N/A'}`;
                         max={500}
                         value={profileForm.pricePerMin}
                         onChange={(e) => setProfileForm({ ...profileForm, pricePerMin: Number(e.target.value) })}
-                        className="w-full p-3 pl-8 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className={`w-full p-3 pl-8 rounded-xl border font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                          theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-white border-slate-300 text-amber-900'
+                        }`}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Years of Experience (e.g. 15) *
                     </label>
                     <input
@@ -2267,12 +2531,16 @@ Question: ${details.question || 'N/A'}`;
                       required
                       value={profileForm.experience}
                       onChange={(e) => setProfileForm({ ...profileForm, experience: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Languages Spoken *
                     </label>
                     <input
@@ -2281,12 +2549,16 @@ Question: ${details.question || 'N/A'}`;
                       value={profileForm.languages}
                       onChange={(e) => setProfileForm({ ...profileForm, languages: e.target.value })}
                       placeholder="e.g. Manipuri · English · Hindi"
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Specialty Tags (Comma Separated) *
                     </label>
                     <input
@@ -2295,12 +2567,16 @@ Question: ${details.question || 'N/A'}`;
                       value={profileForm.specialtiesStr}
                       onChange={(e) => setProfileForm({ ...profileForm, specialtiesStr: e.target.value })}
                       placeholder="e.g. Kuthi Yengba, Vedic, Matching"
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-white border-slate-300 text-amber-900'
+                      }`}
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       WhatsApp Contact Number *
                     </label>
                     <input
@@ -2308,12 +2584,16 @@ Question: ${details.question || 'N/A'}`;
                       required
                       value={profileForm.whatsappNo}
                       onChange={(e) => setProfileForm({ ...profileForm, whatsappNo: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border font-mono text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-white border-slate-300 text-amber-900'
+                      }`}
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Official Email Address *
                     </label>
                     <input
@@ -2321,12 +2601,16 @@ Question: ${details.question || 'N/A'}`;
                       required
                       value={profileForm.email}
                       onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white text-xs focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   <div className="md:col-span-2">
-                    <label className="block text-xs font-bold text-gray-300 uppercase tracking-wider mb-1">
+                    <label className={`block text-xs font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
                       Astrological Bio & Credentials Summary *
                     </label>
                     <textarea
@@ -2334,14 +2618,16 @@ Question: ${details.question || 'N/A'}`;
                       required
                       value={profileForm.bio}
                       onChange={(e) => setProfileForm({ ...profileForm, bio: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white text-xs leading-relaxed focus:border-[#d97706] focus:outline-none"
+                      className={`w-full p-3 rounded-xl border text-xs leading-relaxed focus:border-[#d97706] focus:outline-none transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   <div className="md:col-span-2 flex justify-end">
                     <button
                       type="submit"
-                      className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
+                      className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                     >
                       <Save className="w-4 h-4" />
                       <span>Save Profile & Sync Live</span>
@@ -2355,17 +2641,57 @@ Question: ${details.question || 'N/A'}`;
           {/* TAB 1B: ASTROLOGER VENDOR PRODUCTS MANAGEMENT */}
           {activeTab === 'astro_products' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4 shadow-xl">
+              {/* Store Section Quick Switcher Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <button
+                  onClick={() => setActiveTab('astro_products')}
+                  className="px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md cursor-pointer"
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>My Products & Stock</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-black/20 text-white font-mono">{myProducts.length}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('astro_orders')}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                    theme === 'dark' ? 'bg-[#1c2541] text-gray-300 border border-[#3a506b] hover:border-[#fbbf24]' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 shadow-xs'
+                  }`}
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>Seller Sales & Orders</span>
+                  {myShopOrders.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-600 font-mono font-bold">{myShopOrders.length}</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('astro_returns')}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                    theme === 'dark' ? 'bg-[#1c2541] text-gray-300 border border-[#3a506b] hover:border-[#fbbf24]' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 shadow-xs'
+                  }`}
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Returns & Replacements</span>
+                  {astroReturns.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-600 font-mono font-bold">{astroReturns.length}</span>
+                  )}
+                </button>
+              </div>
+
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-xl transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-xs font-extrabold uppercase mb-2 border border-[#fbbf24]/30">
+                  <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase mb-2 border ${
+                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  }`}>
                     <ShoppingBag className="w-3.5 h-3.5" />
                     Astrologer Seller Product Catalog
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
                     Sell Your Consecrated Remedies & Yantras
                   </h3>
-                  <p className="text-xs text-gray-400">
-                    Add custom consecrated Shivlingas, energized rosaries, or specialized remedies to sell directly on KangleiAstro Store. (Admin approval required before listing).
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                    Add custom consecrated Shivlingas, energized rosaries, or specialized remedies to sell directly on kuthiyengpham Store. (Admin approval required before listing).
                   </p>
                 </div>
 
@@ -2392,34 +2718,50 @@ Question: ${details.question || 'N/A'}`;
 
               {/* ASTROLOGER SUBMIT PRODUCT MODAL */}
               {editingAstroProduct && (
-                <form onSubmit={handleSaveAstroProduct} className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4 text-xs font-sans text-white shadow-2xl">
-                  <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
-                    <h4 className="font-serif font-bold text-xl text-[#fbbf24]">
+                <form onSubmit={handleSaveAstroProduct} className={`p-6 rounded-3xl border space-y-4 text-xs font-sans shadow-2xl transition-colors ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
+                }`}>
+                  <div className={`flex justify-between items-center pb-3 border-b ${
+                    theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
+                  }`}>
+                    <h4 className={`font-serif font-bold text-xl ${
+                      theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                    }`}>
                       Submit Product to E-Store (Requires Admin Verification)
                     </h4>
-                    <button type="button" onClick={() => setEditingAstroProduct(null)} className="p-1 text-gray-400 hover:text-white">
+                    <button type="button" onClick={() => setEditingAstroProduct(null)} className={`p-1 cursor-pointer transition-colors ${
+                      theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-slate-400 hover:text-slate-700'
+                    }`}>
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                     <div className="sm:col-span-8">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Product Title *</label>
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                      }`}>Product Title *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Consecrated Parad Shivlinga 150g"
                         value={editingAstroProduct.title || ''}
                         onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, title: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                        className={`w-full h-10 px-3.5 rounded-xl border text-xs font-bold transition-colors focus:border-[#d97706] focus:outline-none ${
+                          theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                        }`}
                       />
                     </div>
                     <div className="sm:col-span-4">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Category *</label>
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                      }`}>Category *</label>
                       <select
                         value={editingAstroProduct.category || shopCategories[0] || 'Consecrated Remedies'}
                         onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, category: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                        className={`w-full h-10 px-3.5 rounded-xl border text-xs font-bold transition-colors focus:border-[#d97706] focus:outline-none ${
+                          theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                        }`}
                       >
                         {shopCategories.map((cat) => (
                           <option key={cat} value={cat}>
@@ -2432,54 +2774,72 @@ Question: ${details.question || 'N/A'}`;
 
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Selling Price (₹) *</label>
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                      }`}>Selling Price (₹) *</label>
                       <input
                         type="number"
                         required
                         placeholder="1899"
                         value={editingAstroProduct.price || ''}
                         onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, price: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                        className={`w-full h-10 px-3.5 rounded-xl border font-mono font-bold text-xs transition-colors focus:border-[#d97706] focus:outline-none ${
+                          theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-slate-300 bg-slate-50 text-amber-900'
+                        }`}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Original MRP (₹)</label>
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                      }`}>Original MRP (₹)</label>
                       <input
                         type="number"
                         placeholder="2499"
                         value={editingAstroProduct.originalPrice || ''}
                         onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, originalPrice: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-300 font-mono text-xs"
+                        className={`w-full h-10 px-3.5 rounded-xl border font-mono text-xs transition-colors focus:border-[#d97706] focus:outline-none ${
+                          theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-gray-300' : 'border-slate-300 bg-slate-50 text-slate-700'
+                        }`}
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Stock Quantity *</label>
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                      }`}>Stock Quantity *</label>
                       <input
                         type="number"
                         required
                         placeholder="10"
                         value={editingAstroProduct.stock ?? 10}
                         onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, stock: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-green-400 font-mono font-bold text-xs"
+                        className={`w-full h-10 px-3.5 rounded-xl border font-mono font-bold text-xs transition-colors focus:border-[#d97706] focus:outline-none ${
+                          theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-green-400' : 'border-slate-300 bg-slate-50 text-green-700'
+                        }`}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Product Description Copy *</label>
+                    <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                      theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                    }`}>Product Description Copy *</label>
                     <textarea
                       rows={2}
                       required
                       placeholder="Describe the spiritual & astrological benefits..."
                       value={editingAstroProduct.description || ''}
                       onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, description: e.target.value })}
-                      className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs"
+                      className={`w-full p-3 rounded-xl border text-xs transition-colors focus:border-[#d97706] focus:outline-none ${
+                        theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                      }`}
                     />
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                     <div className="sm:col-span-5">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                      }`}>
                         Authenticity Badge / Tag
                       </label>
                       <input
@@ -2487,12 +2847,16 @@ Question: ${details.question || 'N/A'}`;
                         placeholder="e.g. Consecrated & Energized by Master Pandit"
                         value={editingAstroProduct.badge || 'Consecrated & Energized by Master Pandit'}
                         onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, badge: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                        className={`w-full h-10 px-3.5 rounded-xl border font-bold text-xs transition-colors focus:border-[#d97706] focus:outline-none ${
+                          theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                        }`}
                       />
                     </div>
 
                     <div className="sm:col-span-7">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900 font-extrabold'
+                      }`}>
                         Upload Product Photo (From Phone / Computer or Web URL) *
                       </label>
                       <div className="flex flex-col sm:flex-row gap-3">
@@ -2513,43 +2877,53 @@ Question: ${details.question || 'N/A'}`;
                             placeholder="Or paste web image URL (https://...)"
                             value={editingAstroProduct.image || ''}
                             onChange={(e) => setEditingAstroProduct({ ...editingAstroProduct, image: e.target.value })}
-                            className="w-full h-10 px-3.5 pr-8 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs font-mono"
+                            className={`w-full h-10 px-3.5 pr-8 rounded-xl border text-xs font-mono transition-colors focus:border-[#d97706] focus:outline-none ${
+                              theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                            }`}
                           />
-                          <ImageIcon className="w-4 h-4 text-gray-400 absolute right-3 top-3 pointer-events-none" />
+                          <ImageIcon className={`w-4 h-4 absolute right-3 top-3 pointer-events-none ${theme === 'dark' ? 'text-gray-400' : 'text-slate-400'}`} />
                         </div>
                       </div>
 
                       {/* Live Image Preview Box */}
                       {editingAstroProduct.image && (
-                        <div className="mt-2.5 p-2 rounded-xl bg-[#0b132b] border border-[#3a506b] flex items-center gap-3">
+                        <div className={`mt-2.5 p-2 rounded-xl border flex items-center gap-3 transition-colors ${
+                          theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                        }`}>
                           <img
                             src={editingAstroProduct.image}
                             alt="Product Preview"
-                            className="w-12 h-12 object-cover rounded-lg border border-[#3a506b] shrink-0"
+                            className={`w-12 h-12 object-cover rounded-lg border shrink-0 ${
+                              theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-300'
+                            }`}
                             onError={(e) => {
                               (e.target as HTMLElement).style.display = 'none';
                             }}
                           />
                           <div>
-                            <span className="text-[10px] font-bold text-[#fbbf24] block uppercase">Live Photo Preview</span>
-                            <span className="text-[9px] text-gray-400 block line-clamp-1">Photo ready for submission</span>
+                            <span className={`text-[10px] font-bold block uppercase ${
+                              theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                            }`}>Live Photo Preview</span>
+                            <span className={`text-[9px] block line-clamp-1 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>Photo ready for submission</span>
                           </div>
                         </div>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-3 border-t border-[#3a506b]">
+                  <div className={`flex justify-end gap-3 pt-3 border-t ${theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'}`}>
                     <button
                       type="button"
                       onClick={() => setEditingAstroProduct(null)}
-                      className="px-4 py-2 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs"
+                      className={`px-4 py-2 rounded-xl font-bold text-xs cursor-pointer transition-colors ${
+                        theme === 'dark' ? 'bg-[#0b132b] text-gray-300 hover:bg-[#142042]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                      }`}
                     >
                       Cancel
                     </button>
                     <button
                       type="submit"
-                      className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md"
+                      className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer hover:opacity-95"
                     >
                       Submit for Admin Approval →
                     </button>
@@ -2558,16 +2932,22 @@ Question: ${details.question || 'N/A'}`;
               )}
 
               {/* PRODUCTS CATALOG TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-xl overflow-hidden">
-                <div className="p-6 border-b border-[#3a506b] flex justify-between items-center">
-                  <h4 className="font-serif font-bold text-xl text-[#faf8f4]">My Submitted Products</h4>
-                  <span className="text-xs text-gray-400 font-mono">Total Items: {myProducts.length}</span>
+              <div className={`rounded-3xl border shadow-xl overflow-hidden transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
+                <div className={`p-6 border-b flex justify-between items-center ${
+                  theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200 bg-slate-50'
+                }`}>
+                  <h4 className={`font-serif font-bold text-xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>My Submitted Products</h4>
+                  <span className={`text-xs font-mono ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>Total Items: {myProducts.length}</span>
                 </div>
 
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase tracking-wider">
+                      <tr className={`border-b font-serif uppercase tracking-wider ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-slate-100 border-slate-200 text-slate-800 font-extrabold'
+                      }`}>
                         <th className="p-4">Product Info</th>
                         <th className="p-4">Category</th>
                         <th className="p-4">Selling Price</th>
@@ -2577,10 +2957,10 @@ Question: ${details.question || 'N/A'}`;
                         <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50">
+                    <tbody className={`divide-y ${theme === 'dark' ? 'divide-[#3a506b]/50' : 'divide-slate-200'}`}>
                       {myProducts.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-8 text-center text-gray-400 font-medium">
+                          <td colSpan={7} className={`p-8 text-center font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
                             No products submitted yet. Click "+ Submit New Product" above to list your consecrated items.
                           </td>
                         </tr>
@@ -2589,32 +2969,32 @@ Question: ${details.question || 'N/A'}`;
                           const commPct = p.adminCommissionPct ?? 15;
                           const netPayout = Math.round((p.price * (100 - commPct)) / 100);
                           return (
-                            <tr key={p.id} className="hover:bg-[#0b132b]/40 transition-colors">
+                            <tr key={p.id} className={`transition-colors ${theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'}`}>
                               <td className="p-4">
-                                <div className="font-extrabold text-white text-sm flex items-center gap-2">
+                                <div className={`font-extrabold text-sm flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                                   <span>{p.title}</span>
                                   {p.sku && (
-                                    <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono text-[10px] font-extrabold border border-purple-500/30 shrink-0">
+                                    <span className="px-2 py-0.5 rounded bg-purple-500/20 text-purple-600 dark:text-purple-300 font-mono text-[10px] font-extrabold border border-purple-500/30 shrink-0">
                                       {p.sku}
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-amber-300 text-[10px] font-mono">{p.badge}</div>
+                                <div className="text-amber-600 dark:text-amber-300 text-[10px] font-mono">{p.badge}</div>
                               </td>
-                              <td className="p-4 text-slate-300 font-medium">{p.category}</td>
-                              <td className="p-4 font-mono font-bold text-[#fbbf24]">₹{p.price.toLocaleString()}</td>
+                              <td className={`p-4 font-medium ${theme === 'dark' ? 'text-slate-300' : 'text-slate-700'}`}>{p.category}</td>
+                              <td className={`p-4 font-mono font-bold ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'}`}>₹{p.price.toLocaleString()}</td>
                               <td className="p-4">
-                                <span className="font-mono font-extrabold text-emerald-400">₹{netPayout.toLocaleString()}</span>
-                                <span className="text-gray-400 text-[10px] block font-mono">({commPct}% Admin Fee deducted)</span>
+                                <span className={`font-mono font-extrabold ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'}`}>₹{netPayout.toLocaleString()}</span>
+                                <span className={`text-[10px] block font-mono ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>({commPct}% Admin Fee deducted)</span>
                               </td>
-                              <td className="p-4 font-mono font-bold text-gray-300">{p.stock} units</td>
+                              <td className={`p-4 font-mono font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>{p.stock} units</td>
                               <td className="p-4">
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold border ${
                                   p.status === 'APPROVED'
-                                    ? 'bg-green-500/20 text-green-300 border-green-500/30'
+                                    ? 'bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30'
                                     : p.status === 'REJECTED'
-                                    ? 'bg-red-500/20 text-red-300 border-red-500/30'
-                                    : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                    ? 'bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30'
+                                    : 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30'
                                 }`}>
                                   {p.status === 'APPROVED' ? '✅ Approved & Live' : p.status === 'REJECTED' ? '❌ Rejected' : '⏳ Awaiting Admin Approval'}
                                 </span>
@@ -2622,7 +3002,11 @@ Question: ${details.question || 'N/A'}`;
                               <td className="p-4 text-center">
                                 <button
                                   onClick={() => setEditingAstroProduct(p)}
-                                  className="px-3 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] text-[#fbbf24] border border-[#3a506b] font-bold text-xs flex items-center gap-1 mx-auto transition-colors cursor-pointer"
+                                  className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1 mx-auto transition-colors cursor-pointer ${
+                                    theme === 'dark'
+                                      ? 'bg-[#0b132b] hover:bg-[#334155] text-[#fbbf24] border-[#3a506b]'
+                                      : 'bg-white hover:bg-slate-100 text-amber-900 border-slate-300 shadow-xs'
+                                  }`}
                                 >
                                   <Edit className="w-3.5 h-3.5" />
                                   <span>Edit</span>
@@ -2642,24 +3026,68 @@ Question: ${details.question || 'N/A'}`;
           {/* TAB 1C: ASTROLOGER SELLER SALES & ORDERS */}
           {activeTab === 'astro_orders' && (
             <div className="space-y-6">
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] shadow-xl space-y-2">
-                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-xs font-extrabold uppercase border border-[#fbbf24]/30">
+              {/* Store Section Quick Switcher Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <button
+                  onClick={() => setActiveTab('astro_products')}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                    theme === 'dark' ? 'bg-[#1c2541] text-gray-300 border border-[#3a506b] hover:border-[#fbbf24]' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 shadow-xs'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>My Products & Stock</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-black/20 text-white font-mono">{myProducts.length}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('astro_orders')}
+                  className="px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md cursor-pointer"
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>Seller Sales & Orders</span>
+                  {myShopOrders.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-mono font-bold">{myShopOrders.length}</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('astro_returns')}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                    theme === 'dark' ? 'bg-[#1c2541] text-gray-300 border border-[#3a506b] hover:border-[#fbbf24]' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 shadow-xs'
+                  }`}
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-amber-500" />
+                  <span>Returns & Replacements</span>
+                  {astroReturns.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-amber-500/20 text-amber-600 font-mono font-bold">{astroReturns.length}</span>
+                  )}
+                </button>
+              </div>
+
+              <div className={`p-6 rounded-3xl border shadow-xl space-y-2 transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
+                <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-extrabold uppercase border ${
+                  theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                }`}>
                   <Tag className="w-3.5 h-3.5" />
                   Seller Sales & Client Purchases
                 </div>
-                <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
                   Orders Received for Your Products
                 </h3>
-                <p className="text-xs text-gray-400">
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
                   Track orders placed by buyers for your submitted items. Admin confirms payments and credits net payouts directly to your wallet.
                 </p>
               </div>
 
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-xl overflow-hidden">
+              <div className={`rounded-3xl border shadow-xl overflow-hidden transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase tracking-wider">
+                      <tr className={`border-b font-serif uppercase tracking-wider ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-slate-100 border-slate-200 text-slate-800 font-extrabold'
+                      }`}>
                         <th className="p-4">Order Ref</th>
                         <th className="p-4">Buyer Contact</th>
                         <th className="p-4">Items Sold</th>
@@ -2669,42 +3097,42 @@ Question: ${details.question || 'N/A'}`;
                         <th className="p-4">Admin Status</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#3a506b]/50">
+                    <tbody className={`divide-y ${theme === 'dark' ? 'divide-[#3a506b]/50' : 'divide-slate-200'}`}>
                       {myShopOrders.length === 0 ? (
                         <tr>
-                          <td colSpan={7} className="p-8 text-center text-gray-400 font-medium">
+                          <td colSpan={7} className={`p-8 text-center font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
                             No seller orders placed yet for your items.
                           </td>
                         </tr>
                       ) : (
                         myShopOrders.map((ord) => {
-                          const astroItems = ord.items.filter((it: any) => it.sellerId === 'astro-1' || it.sellerName?.includes('Acharya Tombi'));
+                          const astroItems = ord.items.filter((it: any) => (profileForm.name && it.sellerName === profileForm.name) || (profileForm.phone && it.sellerId === profileForm.phone));
                           const totalClientPrice = astroItems.reduce((s: number, i: any) => s + i.price * i.quantity, 0);
                           const totalComm = astroItems.reduce((s: number, i: any) => s + (i.adminCommissionAmount || 0), 0);
                           const totalNet = totalClientPrice - totalComm;
 
                           return (
-                            <tr key={ord.id} className="hover:bg-[#0b132b]/40 transition-colors">
-                              <td className="p-4 font-mono font-bold text-[#fbbf24]">{ord.orderRef}</td>
+                            <tr key={ord.id} className={`transition-colors ${theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'}`}>
+                              <td className={`p-4 font-mono font-bold ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'}`}>{ord.orderRef}</td>
                               <td className="p-4">
-                                <div className="font-extrabold text-white">{ord.buyerName}</div>
-                                <div className="text-slate-400 text-[10px] italic">Client Contact Protected</div>
+                                <div className={`font-extrabold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{ord.buyerName}</div>
+                                <div className={`text-[10px] italic ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Client Contact Protected</div>
                               </td>
                               <td className="p-4">
                                 {astroItems.map((it: any, idx: number) => (
-                                  <div key={idx} className="text-slate-200 font-medium">
-                                    • {it.title} <span className="text-[#fbbf24]">x{it.quantity}</span>
+                                  <div key={idx} className={`font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate-800'}`}>
+                                    • {it.title} <span className={theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900 font-bold'}>x{it.quantity}</span>
                                   </div>
                                 ))}
                               </td>
-                              <td className="p-4 font-mono font-bold text-white">₹{totalClientPrice.toLocaleString()}</td>
-                              <td className="p-4 font-mono text-amber-300">₹{totalComm.toLocaleString()}</td>
-                              <td className="p-4 font-mono font-extrabold text-emerald-400">₹{totalNet.toLocaleString()}</td>
+                              <td className={`p-4 font-mono font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>₹{totalClientPrice.toLocaleString()}</td>
+                              <td className={`p-4 font-mono ${theme === 'dark' ? 'text-amber-300' : 'text-amber-900 font-bold'}`}>₹{totalComm.toLocaleString()}</td>
+                              <td className={`p-4 font-mono font-extrabold ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600'}`}>₹{totalNet.toLocaleString()}</td>
                               <td className="p-4">
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-extrabold border ${
                                   ord.adminConfirmed
-                                    ? 'bg-green-500/20 text-green-300 border-green-500/30'
-                                    : 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                    ? 'bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30'
+                                    : 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30'
                                 }`}>
                                   {ord.adminConfirmed ? '✅ Confirmed by Admin' : '⏳ Awaiting Admin Confirmation'}
                                 </span>
@@ -2713,6 +3141,324 @@ Question: ${details.question || 'N/A'}`;
                           );
                         })
                       )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 1D: ASTROLOGER RETURNS & REPLACEMENTS TRACKING */}
+          {activeTab === 'astro_returns' && (
+            <div className="space-y-6">
+              {/* Store Section Quick Switcher Tabs */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <button
+                  onClick={() => setActiveTab('astro_products')}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                    theme === 'dark' ? 'bg-[#1c2541] text-gray-300 border border-[#3a506b] hover:border-[#fbbf24]' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 shadow-xs'
+                  }`}
+                >
+                  <ShoppingBag className="w-3.5 h-3.5" />
+                  <span>My Products & Stock</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-black/20 text-white font-mono">{myProducts.length}</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab('astro_orders')}
+                  className={`px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 transition-all cursor-pointer ${
+                    theme === 'dark' ? 'bg-[#1c2541] text-gray-300 border border-[#3a506b] hover:border-[#fbbf24]' : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 shadow-xs'
+                  }`}
+                >
+                  <Tag className="w-3.5 h-3.5" />
+                  <span>Seller Sales & Orders</span>
+                  {myShopOrders.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-500/20 text-emerald-600 font-mono font-bold">{myShopOrders.length}</span>
+                  )}
+                </button>
+                <button
+                  onClick={() => setActiveTab('astro_returns')}
+                  className="px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-2 bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md cursor-pointer"
+                >
+                  <RefreshCw className="w-3.5 h-3.5 text-white" />
+                  <span>Returns & Replacements</span>
+                  {astroReturns.length > 0 && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] bg-white/20 text-white font-mono font-bold">{astroReturns.length}</span>
+                  )}
+                </button>
+              </div>
+
+              {/* Header Card */}
+              <div className={`p-6 rounded-3xl border shadow-xl flex flex-wrap justify-between items-center gap-4 transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-amber-200/80 shadow-sm'
+              }`}>
+                <div>
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fbbf24]/20 text-[#d97706] dark:text-[#fbbf24] text-xs font-extrabold uppercase mb-2 border border-[#fbbf24]/30">
+                    <RefreshCw className="w-3.5 h-3.5" />
+                    Product Replacement & Refund Tracking
+                  </div>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}`}>
+                    Customer Returns & Admin Approval Status
+                  </h3>
+                  <p className={`text-xs mt-1 max-w-2xl ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                    Monitor customer return and replacement requests for your consecrated store products. Check whether Admin has approved replacement, issued refund, or rejected, with transparent action notes.
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={fetchAstroReturns}
+                    disabled={loadingReturns}
+                    className={`px-4 py-2.5 rounded-xl border text-xs font-bold flex items-center gap-2 transition-all cursor-pointer ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] text-[#fbbf24] border-[#3a506b] hover:border-[#fbbf24]'
+                        : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100 shadow-xs'
+                    }`}
+                    title="Refresh Returns Status"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 ${loadingReturns ? 'animate-spin' : ''}`} />
+                    <span>{loadingReturns ? 'Syncing...' : 'Sync Returns'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Status Overview Metric Cards */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className={`p-4 rounded-2xl border transition-colors ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Total Claims</span>
+                  <span className={`text-2xl font-serif font-bold block mt-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    {astroReturns.length}
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 block">Customer ticket submissions</span>
+                </div>
+
+                <div className={`p-4 rounded-2xl border transition-colors ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <span className="text-[11px] font-bold text-amber-500 uppercase tracking-wider block">⏳ Pending Admin</span>
+                  <span className="text-2xl font-serif font-bold text-amber-500 block mt-1">
+                    {astroReturns.filter((r) => r.status === 'PENDING').length}
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 block">Awaiting admin verification</span>
+                </div>
+
+                <div className={`p-4 rounded-2xl border transition-colors ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <span className="text-[11px] font-bold text-blue-500 uppercase tracking-wider block">🔁 Approved Replacement</span>
+                  <span className="text-2xl font-serif font-bold text-blue-500 block mt-1">
+                    {astroReturns.filter((r) => r.status === 'APPROVED_REPLACEMENT').length}
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 block">Ship blessed replacement</span>
+                </div>
+
+                <div className={`p-4 rounded-2xl border transition-colors ${
+                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <span className="text-[11px] font-bold text-emerald-500 uppercase tracking-wider block">💸 Approved Refund</span>
+                  <span className="text-2xl font-serif font-bold text-emerald-500 block mt-1">
+                    {astroReturns.filter((r) => r.status === 'APPROVED_REFUND').length}
+                  </span>
+                  <span className="text-[10px] text-gray-400 mt-1 block">Admin refunded client</span>
+                </div>
+              </div>
+
+              {/* Filter Pills */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                <span className="text-xs font-bold text-gray-400 uppercase tracking-wider mr-1 shrink-0">Filter:</span>
+                {[
+                  { id: 'ALL', label: 'All Status' },
+                  { id: 'PENDING', label: '⏳ Pending Admin' },
+                  { id: 'APPROVED_REPLACEMENT', label: '🔁 Approved Replacement' },
+                  { id: 'APPROVED_REFUND', label: '💸 Approved Refund' },
+                  { id: 'REJECTED', label: '❌ Rejected' },
+                  { id: 'RESOLVED', label: '✅ Resolved' },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setReturnStatusFilter(f.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
+                      returnStatusFilter === f.id
+                        ? 'bg-[#d97706] text-white shadow-xs'
+                        : theme === 'dark'
+                        ? 'bg-[#0b132b] text-gray-300 border border-[#3a506b] hover:border-[#fbbf24]'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:border-amber-400 shadow-xs'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Returns Table */}
+              <div className={`rounded-3xl border shadow-xl overflow-hidden transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
+              }`}>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className={`border-b font-serif uppercase tracking-wider ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-slate-50 border-slate-200 text-amber-900'
+                      }`}>
+                        <th className="p-4">RMA Ref / Date</th>
+                        <th className="p-4">Product & Customer</th>
+                        <th className="p-4">Request Type</th>
+                        <th className="p-4">Reason & Issue Reported</th>
+                        <th className="p-4">Admin Status</th>
+                        <th className="p-4">Admin Resolution / Remarks</th>
+                        <th className="p-4 text-center">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className={`divide-y ${theme === 'dark' ? 'divide-[#3a506b]/50' : 'divide-slate-200'}`}>
+                      {(() => {
+                        const filtered = astroReturns.filter((r) => {
+                          if (returnStatusFilter === 'ALL') return true;
+                          return r.status === returnStatusFilter;
+                        });
+
+                        if (filtered.length === 0) {
+                          return (
+                            <tr>
+                              <td colSpan={7} className="p-8 text-center text-gray-400 font-medium">
+                                No return or replacement requests match the selected status filter.
+                              </td>
+                            </tr>
+                          );
+                        }
+
+                        return filtered.map((item) => {
+                          const isReplacement = item.requestType === 'REPLACEMENT';
+                          return (
+                            <tr key={item.id} className={`transition-colors ${
+                              theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-slate-50'
+                            }`}>
+                              {/* RMA Ref / Date */}
+                              <td className="p-4">
+                                <span className="font-mono font-bold text-[#d97706] dark:text-[#fbbf24] block">
+                                  {item.id}
+                                </span>
+                                <span className={`text-[10px] font-mono block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                                  Order: {item.orderRef}
+                                </span>
+                                <span className={`text-[9px] block mt-0.5 ${theme === 'dark' ? 'text-gray-500' : 'text-slate-400'}`}>
+                                  {new Date(item.createdAt).toLocaleDateString('en-IN', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric',
+                                  })}
+                                </span>
+                              </td>
+
+                              {/* Product & Customer */}
+                              <td className="p-4">
+                                <div className={`font-extrabold text-xs block ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                  {item.productTitle}
+                                </div>
+                                <div className={`text-[11px] mt-0.5 font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                                  Buyer: {item.customerName}
+                                </div>
+                                <div className={`text-[10px] font-mono ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                                  {item.customerPhone}
+                                </div>
+                              </td>
+
+                              {/* Request Type */}
+                              <td className="p-4">
+                                {isReplacement ? (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-blue-500/20 text-blue-700 dark:text-blue-300 border border-blue-500/30">
+                                    <RefreshCw className="w-3 h-3" />
+                                    <span>Replacement</span>
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/30">
+                                    <span>💸 Refund Request</span>
+                                  </span>
+                                )}
+                                {item.refundMethod && (
+                                  <span className={`block text-[9px] font-mono mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                                    via {item.refundMethod}
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Reason & Issue */}
+                              <td className="p-4 max-w-xs">
+                                <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold mb-1 ${
+                                  item.reason === 'DAMAGED_TRANSIT'
+                                    ? 'bg-rose-500/20 text-rose-700 dark:text-rose-300 border border-rose-500/30'
+                                    : item.reason === 'DEFECTIVE_QUALITY'
+                                    ? 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30'
+                                    : 'bg-purple-500/20 text-purple-700 dark:text-purple-300 border border-purple-500/30'
+                                }`}>
+                                  {item.reason === 'DAMAGED_TRANSIT'
+                                    ? '📦 Damaged in Courier'
+                                    : item.reason === 'DEFECTIVE_QUALITY'
+                                    ? '⚠️ Defective Quality'
+                                    : item.reason === 'WRONG_ITEM'
+                                    ? '🔁 Wrong Item'
+                                    : '❓ Other Issue'}
+                                </span>
+                                <p className={`text-[11px] line-clamp-2 leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                                  {item.reasonDetails || 'No customer explanation provided.'}
+                                </p>
+                              </td>
+
+                              {/* Admin Approval Status */}
+                              <td className="p-4">
+                                <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold border ${
+                                  item.status === 'APPROVED_REPLACEMENT'
+                                    ? 'bg-blue-500/20 text-blue-700 dark:text-blue-300 border-blue-500/30'
+                                    : item.status === 'APPROVED_REFUND'
+                                    ? 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border-emerald-500/30'
+                                    : item.status === 'REJECTED'
+                                    ? 'bg-red-500/20 text-red-700 dark:text-red-300 border-red-500/30'
+                                    : item.status === 'RESOLVED'
+                                    ? 'bg-slate-500/20 text-slate-700 dark:text-slate-300 border-slate-500/30'
+                                    : 'bg-amber-500/20 text-amber-700 dark:text-amber-300 border-amber-500/30 animate-pulse'
+                                }`}>
+                                  {item.status === 'APPROVED_REPLACEMENT' && '✅ Replacement Approved'}
+                                  {item.status === 'APPROVED_REFUND' && '💰 Refund Approved'}
+                                  {item.status === 'PENDING' && '⏳ Awaiting Admin'}
+                                  {item.status === 'REJECTED' && '❌ Claim Rejected'}
+                                  {item.status === 'RESOLVED' && '✔ Resolved'}
+                                </span>
+                              </td>
+
+                              {/* Admin Resolution / Remarks */}
+                              <td className="p-4 max-w-xs">
+                                {item.adminNotes ? (
+                                  <div className={`p-2 rounded-xl text-[11px] leading-relaxed border ${
+                                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-gray-200' : 'bg-slate-50 border-slate-200 text-slate-700'
+                                  }`}>
+                                    <span className="text-[9px] font-bold uppercase text-[#d97706] block">Admin Remarks:</span>
+                                    {item.adminNotes}
+                                  </div>
+                                ) : (
+                                  <span className={`text-[10px] italic ${theme === 'dark' ? 'text-gray-500' : 'text-slate-400'}`}>
+                                    No admin notes yet
+                                  </span>
+                                )}
+                              </td>
+
+                              {/* Action: Inspect */}
+                              <td className="p-4 text-center">
+                                <button
+                                  onClick={() => setSelectedReturnDetail(item)}
+                                  className={`px-3 py-1.5 rounded-xl border font-bold text-xs flex items-center gap-1 mx-auto transition-colors cursor-pointer ${
+                                    theme === 'dark'
+                                      ? 'bg-[#0b132b] hover:bg-[#334155] text-[#fbbf24] border-[#3a506b]'
+                                      : 'bg-white hover:bg-slate-100 text-amber-800 border-amber-300 shadow-xs'
+                                  }`}
+                                >
+                                  <Eye className="w-3.5 h-3.5" />
+                                  <span>Details</span>
+                                </button>
+                              </td>
+                            </tr>
+                          );
+                        });
+                      })()}
                     </tbody>
                   </table>
                 </div>
@@ -3831,43 +4577,56 @@ Question: ${details.question || 'N/A'}`;
       )}
 
       {/* ASTROLOGER CHANGE PASSWORD MODAL */}
+      {/* ASTROLOGER CHANGE PASSWORD MODAL */}
       {showPasswordModal && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/85 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] rounded-3xl max-w-md w-full p-6 space-y-4 border border-[#3a506b] shadow-2xl text-left font-sans text-white">
-            <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className={`rounded-3xl max-w-md w-full p-6 space-y-4 border shadow-2xl text-left font-sans transition-colors ${
+            theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            <div className={`flex justify-between items-center pb-3 border-b ${
+              theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
+            }`}>
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <KeyRound className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-lg text-[#fbbf24]">Update Portal Password</h3>
-                  <p className="text-xs text-gray-400">Change your Astrologer Login Passcode</p>
+                  <h3 className={`font-serif font-bold text-lg ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'}`}>
+                    Update Portal Password
+                  </h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                    Change your Astrologer Login Passcode
+                  </p>
                 </div>
               </div>
               <button
                 type="button"
                 onClick={() => setShowPasswordModal(false)}
-                className="text-gray-400 hover:text-white p-1 cursor-pointer"
+                className={`p-1 cursor-pointer transition-colors ${
+                  theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-slate-400 hover:text-slate-700'
+                }`}
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {pwdError && (
-              <div className="p-3 rounded-xl bg-red-900/40 border border-red-500/50 text-red-300 text-xs font-bold">
+              <div className="p-3 rounded-xl bg-red-900/30 border border-red-500/50 text-red-500 dark:text-red-300 text-xs font-bold">
                 ⚠️ {pwdError}
               </div>
             )}
 
             {pwdMsg && (
-              <div className="p-3 rounded-xl bg-emerald-900/40 border border-emerald-500/50 text-emerald-300 text-xs font-bold">
+              <div className="p-3 rounded-xl bg-emerald-900/30 border border-emerald-500/50 text-emerald-600 dark:text-emerald-300 text-xs font-bold">
                 {pwdMsg}
               </div>
             )}
 
             <form onSubmit={handleUpdatePassword} className="space-y-4 text-xs">
               <div>
-                <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">
+                <label className={`block text-[10px] font-bold uppercase mb-1 ${
+                  theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-700'
+                }`}>
                   Current Password / Passcode *
                 </label>
                 <input
@@ -3876,12 +4635,16 @@ Question: ${details.question || 'N/A'}`;
                   placeholder="Enter current password"
                   value={currentPassword}
                   onChange={(e) => setCurrentPassword(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                  className={`w-full h-10 px-3.5 rounded-xl border font-mono text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                    theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">
+                <label className={`block text-[10px] font-bold uppercase mb-1 ${
+                  theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-700'
+                }`}>
                   New Password *
                 </label>
                 <input
@@ -3890,12 +4653,16 @@ Question: ${details.question || 'N/A'}`;
                   placeholder="Minimum 4 characters"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                  className={`w-full h-10 px-3.5 rounded-xl border font-mono text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                    theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] font-bold text-[#e0a96d] uppercase mb-1">
+                <label className={`block text-[10px] font-bold uppercase mb-1 ${
+                  theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-700'
+                }`}>
                   Confirm New Password *
                 </label>
                 <input
@@ -3904,27 +4671,259 @@ Question: ${details.question || 'N/A'}`;
                   placeholder="Re-type new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                  className={`w-full h-10 px-3.5 rounded-xl border font-mono text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                    theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-slate-300 bg-slate-50 text-slate-900'
+                  }`}
                 />
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-[#3a506b]">
+              <div className={`flex justify-end gap-2 pt-2 border-t ${
+                theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
+              }`}>
                 <button
                   type="button"
                   onClick={() => setShowPasswordModal(false)}
-                  className="px-4 py-2 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs cursor-pointer"
+                  className={`px-4 py-2 rounded-xl font-bold text-xs cursor-pointer transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] text-gray-300 hover:bg-[#142042]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={pwdLoading}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer hover:opacity-95"
                 >
                   {pwdLoading ? 'Saving...' : 'Update Password →'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================== INSPECT RETURN & REPLACEMENT MODAL ========================== */}
+      {selectedReturnDetail && (
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-xs transition-colors ${
+          theme === 'dark' ? 'bg-[#0b132b]/80' : 'bg-slate-900/60'
+        }`}>
+          <div className={`w-full max-w-2xl rounded-3xl border shadow-2xl overflow-hidden relative text-left font-sans transition-colors ${
+            theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            {/* Modal Header */}
+            <div className={`p-6 flex items-center justify-between border-b ${
+              theme === 'dark' ? 'bg-[#0f172a] border-[#3a506b] text-white' : 'bg-slate-100 border-slate-200 text-slate-900'
+            }`}>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
+                  <RefreshCw className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className={`font-serif font-bold text-lg ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
+                    Return & Replacement Claim Details
+                  </h3>
+                  <p className={`text-xs font-mono ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                    Ticket: {selectedReturnDetail.id} • Order: {selectedReturnDetail.orderRef}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedReturnDetail(null)}
+                className={`p-2 transition-colors cursor-pointer ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-5 max-h-[75vh] overflow-y-auto text-xs">
+              {/* Status Alert Banner */}
+              <div className={`p-4 rounded-2xl border flex items-start gap-3 ${
+                selectedReturnDetail.status === 'APPROVED_REPLACEMENT'
+                  ? 'bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300'
+                  : selectedReturnDetail.status === 'APPROVED_REFUND'
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                  : selectedReturnDetail.status === 'REJECTED'
+                  ? 'bg-red-500/10 border-red-500/30 text-red-700 dark:text-red-300'
+                  : 'bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-300'
+              }`}>
+                <div className="shrink-0 mt-0.5">
+                  {selectedReturnDetail.status === 'APPROVED_REPLACEMENT' && <CheckCircle2 className="w-5 h-5 text-blue-500" />}
+                  {selectedReturnDetail.status === 'APPROVED_REFUND' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
+                  {selectedReturnDetail.status === 'PENDING' && <Clock className="w-5 h-5 text-amber-500" />}
+                  {selectedReturnDetail.status === 'REJECTED' && <XCircle className="w-5 h-5 text-red-500" />}
+                  {selectedReturnDetail.status === 'RESOLVED' && <CheckCircle2 className="w-5 h-5 text-slate-500" />}
+                </div>
+                <div>
+                  <div className="font-extrabold text-sm">
+                    {selectedReturnDetail.status === 'APPROVED_REPLACEMENT' && 'Replacement Approved by Admin'}
+                    {selectedReturnDetail.status === 'APPROVED_REFUND' && 'Refund Approved by Admin'}
+                    {selectedReturnDetail.status === 'PENDING' && 'Claim Under Admin Verification'}
+                    {selectedReturnDetail.status === 'REJECTED' && 'Claim Rejected by Admin'}
+                    {selectedReturnDetail.status === 'RESOLVED' && 'Issue Resolved & Ticket Closed'}
+                  </div>
+                  <p className="mt-1 text-[11px] leading-relaxed">
+                    {selectedReturnDetail.status === 'APPROVED_REPLACEMENT' &&
+                      'Admin has confirmed that the item qualifies for replacement. Astrologer is requested to prepare and energize a fresh unit for dispatch.'}
+                    {selectedReturnDetail.status === 'APPROVED_REFUND' &&
+                      'Admin finance has processed the monetary refund directly to the customer. Payout deduction has been logged in seller accounts.'}
+                    {selectedReturnDetail.status === 'PENDING' &&
+                      'Customer has submitted proof of damage/defect. Admin team is evaluating the return window and courier liability. No astrologer action required yet.'}
+                    {selectedReturnDetail.status === 'REJECTED' &&
+                      'Admin has rejected the return claim. No replacement or refund is due from the astrologer.'}
+                    {selectedReturnDetail.status === 'RESOLVED' &&
+                      'All replacement or refund actions have been completed.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Product & Customer Details Grid */}
+              <div className={`p-4 rounded-2xl border space-y-3 ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Product Claimed</span>
+                    <span className={`font-bold text-sm block mt-0.5 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                      {selectedReturnDetail.productTitle}
+                    </span>
+                    <span className="text-[10px] font-mono text-[#d97706] block mt-0.5">Order Ref: {selectedReturnDetail.orderRef}</span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer Details</span>
+                    <span className={`font-bold text-sm block mt-0.5 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                      {selectedReturnDetail.customerName}
+                    </span>
+                    <span className={`text-[11px] block ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                      {selectedReturnDetail.customerPhone}
+                    </span>
+                    {selectedReturnDetail.customerEmail && (
+                      <span className={`text-[10px] block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        {selectedReturnDetail.customerEmail}
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-dashed border-gray-500/30 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Request Type</span>
+                    <span className="font-extrabold text-xs text-[#d97706] dark:text-[#fbbf24] block mt-0.5">
+                      {selectedReturnDetail.requestType === 'REPLACEMENT' ? '🔁 Product Replacement' : '💸 Monetary Refund'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer Reason</span>
+                    <span className="font-bold text-xs block mt-0.5 text-rose-500">
+                      {selectedReturnDetail.reason === 'DAMAGED_TRANSIT' && 'Damaged in Transit'}
+                      {selectedReturnDetail.reason === 'DEFECTIVE_QUALITY' && 'Defective Quality / Faulty Bead'}
+                      {selectedReturnDetail.reason === 'WRONG_ITEM' && 'Wrong Item Received'}
+                      {selectedReturnDetail.reason === 'OTHER' && 'Other Reason'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Refund Method & Account Details if Refund */}
+                {selectedReturnDetail.requestType === 'REFUND' && selectedReturnDetail.refundDetails && (
+                  <div className="pt-2 border-t border-dashed border-gray-500/30">
+                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Refund Destination Details</span>
+                    <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono font-bold text-xs mt-1">
+                      {selectedReturnDetail.refundMethod || 'UPI'}: {selectedReturnDetail.refundDetails}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Customer's Explanation */}
+              <div className={`p-4 rounded-2xl border space-y-1.5 ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer's Stated Issue</span>
+                <p className={`text-xs leading-relaxed ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                  "{selectedReturnDetail.reasonDetails || 'No additional note provided by client.'}"
+                </p>
+              </div>
+
+              {/* Photo Evidence Gallery if Attached */}
+              {selectedReturnDetail.photos && selectedReturnDetail.photos.length > 0 && (
+                <div className={`p-4 rounded-2xl border space-y-2 ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                }`}>
+                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                    Photo Proof Attached by Customer ({selectedReturnDetail.photos.length})
+                  </span>
+                  <div className="flex flex-wrap gap-3 pt-1">
+                    {selectedReturnDetail.photos.map((url: string, pIdx: number) => (
+                      <a
+                        key={pIdx}
+                        href={url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group relative w-24 h-24 rounded-xl overflow-hidden border border-[#3a506b] shadow-xs cursor-pointer block"
+                      >
+                        <img src={url} alt="Damage Proof" className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-[10px] font-bold transition-opacity">
+                          View Full
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Admin Notes & Instructions */}
+              <div className={`p-4 rounded-2xl border space-y-1.5 ${
+                selectedReturnDetail.adminNotes
+                  ? 'bg-amber-500/10 border-amber-500/30'
+                  : theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-[#d97706] block">
+                  Official Admin Resolution Notes
+                </span>
+                <p className={`text-xs leading-relaxed ${theme === 'dark' ? 'text-gray-200' : 'text-slate-800'}`}>
+                  {selectedReturnDetail.adminNotes || 'No notes added by Admin yet. Status will update once the verification is finished.'}
+                </p>
+              </div>
+
+              {/* Practical Astrologer Action Guide */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/10 to-amber-600/10 border border-amber-500/20 text-xs">
+                <span className="font-extrabold text-[#d97706] dark:text-[#fbbf24] block uppercase tracking-wider text-[10px] mb-1">
+                  💡 Guru Seller Action Guidance
+                </span>
+                {selectedReturnDetail.status === 'APPROVED_REPLACEMENT' ? (
+                  <p className="text-slate-700 dark:text-gray-300 leading-relaxed">
+                    👉 <strong>Action Required</strong>: Please inspect your consecrated stock for a pristine replacement of <span className="underline">{selectedReturnDetail.productTitle}</span>. Once energized at the altar, package it safely. Admin logistics will send courier pickup.
+                  </p>
+                ) : selectedReturnDetail.status === 'APPROVED_REFUND' ? (
+                  <p className="text-slate-700 dark:text-gray-300 leading-relaxed">
+                    👉 <strong>No Dispatch Required</strong>: The buyer has been refunded by Admin. Please do not ship a replacement. Inventory reconciliation has been made.
+                  </p>
+                ) : selectedReturnDetail.status === 'REJECTED' ? (
+                  <p className="text-slate-700 dark:text-gray-300 leading-relaxed">
+                    👉 <strong>Case Closed</strong>: Admin verified this claim was invalid or outside the policy window. No further action needed.
+                  </p>
+                ) : (
+                  <p className="text-slate-700 dark:text-gray-300 leading-relaxed">
+                    👉 <strong>Stand By</strong>: Admin is reviewing the courier logs. Please wait until status changes to "Replacement Approved" or "Refund Approved".
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className={`p-4 border-t flex justify-end ${
+              theme === 'dark' ? 'bg-[#0f172a] border-[#3a506b]' : 'bg-slate-100 border-slate-200'
+            }`}>
+              <button
+                type="button"
+                onClick={() => setSelectedReturnDetail(null)}
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md cursor-pointer"
+              >
+                Close Details
+              </button>
+            </div>
           </div>
         </div>
       )}

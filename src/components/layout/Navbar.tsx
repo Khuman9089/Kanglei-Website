@@ -113,6 +113,14 @@ const DEFAULT_NAVBAR_CONFIG: NavbarConfig = {
       active: true,
       order: 7,
     },
+    {
+      id: 'nav-8',
+      title: 'Contact',
+      href: '/contact',
+      type: 'link',
+      active: true,
+      order: 8,
+    },
   ],
   cbs: {
     showKuthiYengbaBtn: true,
@@ -651,6 +659,15 @@ export function Navbar() {
                   <Mail className="w-4 h-4 text-[#d97706]" />
                   <span>ccare@kangleiastro.com</span>
                 </a>
+                <div className="pt-1">
+                  <Link
+                    href="/contact"
+                    onClick={() => setIsOpen(false)}
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-[#b45309] hover:underline"
+                  >
+                    <span>Visit Office Address & Inquiry Desk →</span>
+                  </Link>
+                </div>
               </div>
 
               {/* Mobile Account Auth Buttons */}

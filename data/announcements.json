@@ -13,19 +13,6 @@
     "targetAudience": "ALL_ASTROLOGERS"
   },
   {
-    "id": "ann-2",
-    "type": "PROMO_AD",
-    "badge": "SPECIAL PROMO",
-    "title": "🔥 Mahashivratri Special Bonus Payout Promo!",
-    "message": "Empaneled astrologers get an extra 5% bonus credit on all Kuthi consultations completed between 1st & 15th next month. Keep your online availability updated!",
-    "imageUrl": "https://images.unsplash.com/photo-1609357605129-26f69add5d6e?q=80&w=800&auto=format&fit=crop",
-    "isActive": true,
-    "actionUrl": "/dashboard/astrologer?tab=wallet",
-    "createdAt": "2026-09-02",
-    "actionText": "View Earnings",
-    "targetAudience": "ALL_ASTROLOGERS"
-  },
-  {
     "id": "ann-3",
     "type": "URGENT_NOTICE",
     "badge": "IMPORTANT",

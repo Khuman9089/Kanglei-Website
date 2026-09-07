@@ -19,53 +19,7 @@ export interface ClientUser {
   status: 'ACTIVE' | 'VERIFIED' | 'SUSPENDED';
 }
 
-const DEFAULT_CLIENTS: ClientUser[] = [
-  {
-    id: 'client-1',
-    name: 'Nganba Meitei',
-    email: 'nganba@example.com',
-    phone: '+91 98620 12345',
-    whatsappNo: '+91 98620 12345',
-    sex: 'Male',
-    address: 'Uripok, Imphal West, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-08-01',
-    totalOrders: 3,
-    totalSpent: 2850,
-    savedKundlisCount: 2,
-    status: 'VERIFIED',
-  },
-  {
-    id: 'client-2',
-    name: 'Laishram Memcha Devi',
-    email: 'memcha@example.com',
-    phone: '+91 98561 67890',
-    whatsappNo: '+91 98561 67890',
-    sex: 'Female',
-    address: 'Singjamei, Imphal East, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-08-10',
-    totalOrders: 1,
-    totalSpent: 499,
-    savedKundlisCount: 1,
-    status: 'VERIFIED',
-  },
-  {
-    id: 'client-3',
-    name: 'Bungoba Sharma',
-    email: 'bungoba@example.com',
-    phone: '+91 97740 54321',
-    whatsappNo: '+91 97740 54321',
-    sex: 'Male',
-    address: 'Thangmeiband, Imphal West, Manipur',
-    role: 'CLIENT',
-    joinedAt: '2026-08-15',
-    totalOrders: 5,
-    totalSpent: 6490,
-    savedKundlisCount: 4,
-    status: 'VERIFIED',
-  },
-];
+const DEFAULT_CLIENTS: ClientUser[] = [];
 
 export async function GET() {
   const clients = await readPersistentDataAsync<ClientUser[]>('client_base', DEFAULT_CLIENTS);

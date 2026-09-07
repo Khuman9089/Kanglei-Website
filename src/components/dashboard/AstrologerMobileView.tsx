@@ -136,196 +136,30 @@ const SAMPLE_PANCHANG: PanchangItem[] = [
   { id: '7', label: 'Karana', value: 'Balava (বালব)', sub: '২২:৪৫ পর্যন্ত', icon: '⚖️' },
 ];
 
-const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [
-  {
-    id: 'KO-2026-8942',
-    clientName: 'Thoibi Ningthoujam',
-    serviceType: 'Marriage Matching & Kuthi Yengba',
-    status: 'ASSIGNED',
-    date: 'Today, 09:40 AM',
-    payoutFee: 779,
-    clientDetails: {
-      sex: 'Female',
-      mobile: '+91 98561 88210',
-      whatsappNo: '+91 98561 88210',
-      email: 'thoibi@example.com',
-      dob: '12 Apr 1996',
-      tob: '08:30 AM',
-      pob: 'Imphal East, Manipur',
-      gotra: 'Ningthouja',
-      yek: 'Ningthouja (Mangang)',
-      faithTradition: 'Hinduism',
-      kuthiAttached: true,
-      kuthiFileName: 'thoibi_original_kuthi_scan.pdf',
-      kuthiFileUrl: '/sample_kuthi.pdf',
-      uploadedFiles: ['thoibi_original_kuthi_scan.pdf', 'groom_kundli_page1.jpg', 'family_horoscope_notes.pdf'],
-      question: 'Looking for matching with groom born in Kakching. Awaiting Manglik dosh verification and auspicious wedding period in 2026.',
-      lagna: 'Vrishabha (বৃষ)',
-      moonSign: 'Dhanu (ধনু)',
-    },
-    lagnaIndex: 1, // Taurus
-    navLagnaIndex: 5,
-    d1Planets: [
-      { name: 'Sun', abbr: 'রবি', houseNumber: 12, signDegree: 28.5 },
-      { name: 'Moon', abbr: 'চন্দ্র', houseNumber: 8, signDegree: 14.2 },
-      { name: 'Mars', abbr: 'মঙ্গল', houseNumber: 11, signDegree: 22.0 },
-      { name: 'Mercury', abbr: 'বুধ', houseNumber: 12, signDegree: 10.4 },
-      { name: 'Jupiter', abbr: 'বৃহ', houseNumber: 8, signDegree: 21.0 },
-      { name: 'Venus', abbr: 'শুক্র', houseNumber: 1, signDegree: 18.0 },
-      { name: 'Saturn', abbr: 'শনি', houseNumber: 11, signDegree: 6.0 },
-      { name: 'Rahu', abbr: 'রাহু', houseNumber: 5, signDegree: 23.0 },
-      { name: 'Ketu', abbr: 'কেতু', houseNumber: 11, signDegree: 23.0 },
-    ],
-    d9Planets: [
-      { name: 'Sun', abbr: 'রবি', houseNumber: 8, signDegree: 16.0 },
-      { name: 'Moon', abbr: 'চন্দ্র', houseNumber: 2, signDegree: 8.0 },
-      { name: 'Mars', abbr: 'মঙ্গল', houseNumber: 6, signDegree: 14.0 },
-      { name: 'Mercury', abbr: 'বুধ', houseNumber: 10, signDegree: 4.0 },
-      { name: 'Jupiter', abbr: 'বৃহ', houseNumber: 1, signDegree: 19.0 },
-      { name: 'Venus', abbr: 'শুক্র', houseNumber: 7, signDegree: 25.0 },
-      { name: 'Saturn', abbr: 'শনি', houseNumber: 4, signDegree: 12.0 },
-      { name: 'Rahu', abbr: 'রাহু', houseNumber: 3, signDegree: 11.0 },
-      { name: 'Ketu', abbr: 'কেতু', houseNumber: 9, signDegree: 11.0 },
-    ],
-  },
-  {
-    id: 'KO-2026-8941',
-    clientName: 'Sanatombi Devi',
-    serviceType: 'Career & Dasha Janampatri Analysis',
-    status: 'IN_ANALYSIS',
-    date: 'Yesterday, 04:15 PM',
-    payoutFee: 399,
-    clientDetails: {
-      sex: 'Female',
-      mobile: '+91 98620 99881',
-      whatsappNo: '+91 98620 99881',
-      email: 'sanatombi@gmail.com',
-      dob: '24 Oct 1998',
-      tob: '09:45 AM',
-      pob: 'Imphal West, Manipur',
-      gotra: 'Sandilya',
-      yek: 'Khuman',
-      faithTradition: 'Sanamahi Laining',
-      kuthiAttached: true,
-      kuthiFileName: 'sanatombi_birth_kuthi.jpg',
-      kuthiFileUrl: '/sample_kuthi.pdf',
-      uploadedFiles: ['sanatombi_birth_kuthi.jpg', 'sanatombi_janampatri_page2.jpg'],
-      question: 'Government recruitment exam upcoming in November. Requesting planetary remedies for Rahu-Saturn transit and career gemstone guidance.',
-      lagna: 'Vrischika (বৃশ্চিক)',
-      moonSign: 'Vrishabha (বৃষ)',
-    },
-    lagnaIndex: 7, // Scorpio
-    navLagnaIndex: 3,
-    d1Planets: [
-      { name: 'Sun', abbr: 'রবি', houseNumber: 7, signDegree: 7.2 },
-      { name: 'Moon', abbr: 'চন্দ্র', houseNumber: 2, signDegree: 28.6 },
-      { name: 'Mars', abbr: 'মঙ্গল', houseNumber: 6, signDegree: 21.1 },
-      { name: 'Mercury', abbr: 'বুধ', houseNumber: 7, signDegree: 14.5 },
-      { name: 'Jupiter', abbr: 'বৃহ', houseNumber: 12, signDegree: 29.2 },
-      { name: 'Venus', abbr: 'শুক্র', houseNumber: 6, signDegree: 12.4 },
-      { name: 'Saturn', abbr: 'শনি', houseNumber: 1, signDegree: 6.5, isRetrograde: true },
-      { name: 'Rahu', abbr: 'রাহু', houseNumber: 5, signDegree: 14.2 },
-      { name: 'Ketu', abbr: 'কেতু', houseNumber: 11, signDegree: 14.2 },
-    ],
-    d9Planets: [
-      { name: 'Sun', abbr: 'রবি', houseNumber: 9, signDegree: 12.0 },
-      { name: 'Moon', abbr: 'চন্দ্র', houseNumber: 4, signDegree: 22.3 },
-      { name: 'Mars', abbr: 'মঙ্গল', houseNumber: 1, signDegree: 18.5 },
-      { name: 'Mercury', abbr: 'বুধ', houseNumber: 7, signDegree: 9.8 },
-      { name: 'Jupiter', abbr: 'বৃহ', houseNumber: 11, signDegree: 14.0 },
-      { name: 'Venus', abbr: 'শুক্র', houseNumber: 2, signDegree: 26.1 },
-      { name: 'Saturn', abbr: 'শনি', houseNumber: 5, signDegree: 11.2 },
-      { name: 'Rahu', abbr: 'রাহু', houseNumber: 8, signDegree: 4.1 },
-      { name: 'Ketu', abbr: 'কেতু', houseNumber: 2, signDegree: 4.1 },
-    ],
-  },
-  {
-    id: 'KO-2026-8940',
-    clientName: 'Heikrujam Premkumar',
-    serviceType: 'Comprehensive Janampatri Kuthi Iba',
-    status: 'COMPLETED',
-    date: 'Sep 3, 11:05 PM',
-    payoutFee: 999,
-    clientDetails: {
-      sex: 'Male',
-      mobile: '+91 98620 99881',
-      whatsappNo: '+91 98620 99881',
-      email: 'premkumar@outlook.com',
-      dob: '18 Nov 1987',
-      tob: '11:05 PM',
-      pob: 'Moirang, Manipur',
-      gotra: 'Kasyapa',
-      yek: 'Luwang',
-      faithTradition: 'Hinduism',
-      kuthiAttached: true,
-      kuthiFileName: 'premkumar_janampatri_archive.pdf',
-      kuthiFileUrl: '/sample_kuthi.pdf',
-      uploadedFiles: ['premkumar_janampatri_archive.pdf'],
-      question: 'Full 14-page handwritten Kuthi report dispatched with detailed Mahadasha timeline and Navagraha remedies.',
-      lagna: 'Dhanu (ধনু)',
-      moonSign: 'Mithuna (মিথুন)',
-    },
-    lagnaIndex: 8, // Sagittarius
-    navLagnaIndex: 2,
-    d1Planets: [
-      { name: 'Sun', abbr: 'রবি', houseNumber: 8, signDegree: 2.5 },
-      { name: 'Moon', abbr: 'চন্দ্র', houseNumber: 3, signDegree: 18.2 },
-      { name: 'Mars', abbr: 'মঙ্গল', houseNumber: 7, signDegree: 14.1 },
-      { name: 'Mercury', abbr: 'বুধ', houseNumber: 8, signDegree: 22.0 },
-      { name: 'Jupiter', abbr: 'বৃহ', houseNumber: 1, signDegree: 26.5 },
-      { name: 'Venus', abbr: 'শুক্র', houseNumber: 9, signDegree: 9.3 },
-      { name: 'Saturn', abbr: 'শনি', houseNumber: 8, signDegree: 28.0 },
-      { name: 'Rahu', abbr: 'রাহু', houseNumber: 12, signDegree: 6.2 },
-      { name: 'Ketu', abbr: 'কেতু', houseNumber: 6, signDegree: 6.2 },
-    ],
-    d9Planets: [
-      { name: 'Sun', abbr: 'রবি', houseNumber: 5, signDegree: 12.0 },
-      { name: 'Moon', abbr: 'চন্দ্র', houseNumber: 11, signDegree: 8.0 },
-      { name: 'Mars', abbr: 'মঙ্গল', houseNumber: 3, signDegree: 21.0 },
-      { name: 'Mercury', abbr: 'বুধ', houseNumber: 9, signDegree: 15.0 },
-      { name: 'Jupiter', abbr: 'বৃহ', houseNumber: 7, signDegree: 2.0 },
-      { name: 'Venus', abbr: 'শুক্র', houseNumber: 1, signDegree: 14.0 },
-      { name: 'Saturn', abbr: 'শনি', houseNumber: 6, signDegree: 29.0 },
-      { name: 'Rahu', abbr: 'রাহু', houseNumber: 4, signDegree: 11.0 },
-      { name: 'Ketu', abbr: 'কেতু', houseNumber: 10, signDegree: 11.0 },
-    ],
-  }
-];
+const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [];
 
-const INITIAL_LIVE_CALLS: LiveCallAppointment[] = [
-  {
-    id: 'call-live-1',
-    clientName: 'Nongthombam Rajesh',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&q=80',
-    phone: '+91 97740 33411',
-    mode: 'VIDEO',
-    durationMinutes: 30,
-    scheduledTime: 'Live Now · Waiting',
-    fee: 525,
-    status: 'WAITING',
-    topic: 'Business Timing & Yellow Sapphire Guidance',
-  },
-  {
-    id: 'call-live-2',
-    clientName: 'Laishram Memcha',
-    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80',
-    phone: '+91 98561 77122',
-    mode: 'VOICE',
-    durationMinutes: 15,
-    scheduledTime: 'Today, 04:30 PM',
-    fee: 350,
-    status: 'WAITING',
-    topic: 'Birth Time Rectification & Health Query',
-  },
-];
+const INITIAL_LIVE_CALLS: LiveCallAppointment[] = [];
 
 export default function AstrologerMobileDashboard() {
   // Theme state matching desktop version (defaults to 'light', synced with localStorage)
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [astroUser, setAstroUser] = useState<any>({
+    name: 'Empaneled Astrologer',
+    avatar: '',
+    phone: '',
+    specialty: 'Master Vedic Astrologer & Kuthi Specialist',
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem('astro_theme') as 'dark' | 'light';
     if (saved) setTheme(saved);
+    const savedUser = localStorage.getItem('kanglei_user');
+    if (savedUser) {
+      try {
+        const u = JSON.parse(savedUser);
+        if (u && u.name) setAstroUser(u);
+      } catch (e) {}
+    }
   }, []);
 
   const toggleTheme = () => {
@@ -529,7 +363,7 @@ export default function AstrologerMobileDashboard() {
           clientName: clientName,
           clientPhone: '+91 98620 11223',
           astrologerId: 'astro-1',
-          astrologerName: 'Acharya Tombi Sharma',
+          astrologerName: astroUser.name || 'Empaneled Astrologer',
           status: 'LIVE',
           durationMinutes: 15,
           ratePerMin: 35,
@@ -567,7 +401,7 @@ export default function AstrologerMobileDashboard() {
           clientTob: '08:45 AM',
           clientPob: 'Imphal West',
           astrologerId: 'astro-1',
-          astrologerName: 'Acharya Tombi Sharma',
+          astrologerName: astroUser.name || 'Empaneled Astrologer',
           status: 'WAITING',
           durationMinutes: 15,
           ratePerMin: 35,
@@ -658,8 +492,8 @@ export default function AstrologerMobileDashboard() {
             >
               <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#d97706] via-[#fbbf24] to-[#f59e0b] shadow-xs">
                 <img
-                  src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80"
-                  alt="Acharya Tombi"
+                  src={astroUser.avatar || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80"}
+                  alt={astroUser.name || "Astrologer"}
                   className="w-full h-full object-cover rounded-full"
                 />
               </div>
@@ -676,7 +510,7 @@ export default function AstrologerMobileDashboard() {
 
             <div>
               <div className="flex items-center gap-1">
-                <h1 className="text-xs font-serif font-bold tracking-wide text-slate-900 dark:text-white">Acharya Tombi</h1>
+                <h1 className="text-xs font-serif font-bold tracking-wide text-slate-900 dark:text-white">{astroUser.name || 'Empaneled Astrologer'}</h1>
                 <ShieldCheck className="w-3.5 h-3.5 text-[#d97706] dark:text-[#fbbf24]" />
               </div>
               <div 
@@ -695,7 +529,7 @@ export default function AstrologerMobileDashboard() {
           <div className="flex flex-col items-center">
             <span className="text-[11px] font-serif font-bold text-slate-900 dark:text-amber-100 flex items-center gap-1">
               <Moon className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
-              <span>KangleiAstro</span>
+              <span>kuthiyengpham</span>
             </span>
             <span className="text-[9px] text-[#d97706] dark:text-[#fbbf24] font-extrabold uppercase tracking-wider">Guru Portal</span>
           </div>
@@ -1489,7 +1323,7 @@ export default function AstrologerMobileDashboard() {
                     <span>Astrologer In-App Consultation Workspace</span>
                   </h3>
                   <p className={`text-[10.5px] sm:text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
-                    Conduct live 1-on-1 chats and voice/video consultations directly inside KangleiAstro.
+                    Conduct live 1-on-1 chats and voice/video consultations directly inside kuthiyengpham.
                   </p>
                 </div>
                 <span className="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30 text-[9px] font-extrabold shrink-0">
@@ -1920,17 +1754,17 @@ export default function AstrologerMobileDashboard() {
               }`}>
                 <div className="w-16 h-16 rounded-full mx-auto p-1 bg-gradient-to-tr from-[#d97706] via-[#fbbf24] to-[#f59e0b] shadow-md">
                   <img
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80"
-                    alt="Acharya Tombi"
+                    src={astroUser.avatar || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80"}
+                    alt={astroUser.name || "Astrologer"}
                     className="w-full h-full object-cover rounded-full"
                   />
                 </div>
                 <div>
                   <h2 className="text-sm font-serif font-bold flex items-center justify-center gap-1.5">
-                    <span>Acharya Tombi Sharma</span>
+                    <span>{astroUser.name || 'Empaneled Astrologer'}</span>
                     <ShieldCheck className="w-4 h-4 text-[#d97706] dark:text-[#fbbf24]" />
                   </h2>
-                  <p className="text-[11px] font-semibold text-[#b45309] dark:text-[#fbbf24]">Master Vedic Astrologer & Kuthi Specialist</p>
+                  <p className="text-[11px] font-semibold text-[#b45309] dark:text-[#fbbf24]">{astroUser.specialty || 'Master Vedic Astrologer & Kuthi Specialist'}</p>
                   <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">15+ Years Experience · 50k+ Kuthi Consultations</p>
                 </div>
 

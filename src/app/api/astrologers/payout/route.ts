@@ -34,50 +34,7 @@ export interface AstrologerWallet {
   payoutRequestedAmount?: number;
 }
 
-const DEFAULT_TRANSACTIONS: WalletTransaction[] = [
-  {
-    id: 'tx-101',
-    astroId: 'astro-1',
-    astroName: 'Acharya Tombi Sharma',
-    type: 'CREDIT',
-    amount: 599,
-    description: 'Consultation Fee — Kuthi Yengba (#KY-2026-8939)',
-    timestamp: 'Today, 04:20 PM',
-    status: 'COMPLETED',
-  },
-  {
-    id: 'tx-100',
-    astroId: 'astro-1',
-    astroName: 'Acharya Tombi Sharma',
-    type: 'DEBIT',
-    amount: 1500,
-    description: 'Admin Payout via UPI Direct Transfer',
-    utr: 'UPI42981099238',
-    paymentMethod: 'GPay / PhonePe UPI',
-    timestamp: 'Yesterday, 02:15 PM',
-    status: 'COMPLETED',
-  },
-  {
-    id: 'tx-099',
-    astroId: 'astro-1',
-    astroName: 'Acharya Tombi Sharma',
-    type: 'CREDIT',
-    amount: 899,
-    description: 'Consultation Fee — Career & Financial Outlook (#KY-2026-8855)',
-    timestamp: 'Aug 23, 2026',
-    status: 'COMPLETED',
-  },
-  {
-    id: 'tx-098',
-    astroId: 'astro-2',
-    astroName: 'Saanvi Sharma',
-    type: 'CREDIT',
-    amount: 779,
-    description: 'Consultation Fee — Marriage Compatibility (#KY-2026-8912)',
-    timestamp: 'Aug 23, 2026',
-    status: 'COMPLETED',
-  },
-];
+const DEFAULT_TRANSACTIONS: WalletTransaction[] = [];
 
 export async function GET(request: Request) {
   try {

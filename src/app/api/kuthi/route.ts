@@ -62,51 +62,7 @@ export interface KuthiOrder {
   couponDiscount?: number;
 }
 
-const DEFAULT_KUTHI_ORDERS: KuthiOrder[] = [
-  {
-    id: 'k-1',
-    orderRef: 'KY-2026-8941',
-    clientName: 'Nganba Meitei',
-    sex: 'Male',
-    mobile: '+91 98620 12345',
-    whatsappNo: '+91 98620 12345',
-    email: 'nganba@example.com',
-    kuthiAttached: true,
-    kuthiFileName: 'nganba_kuthi_paper.pdf',
-    kuthiFileUrl: '/sample_kuthi.pdf',
-    uploadedFiles: ['nganba_kuthi_paper.pdf', 'nganba_palm_kundli.pdf'],
-    dob: '1995-05-15',
-    tob: '10:30 AM',
-    pob: 'Imphal West',
-    question: 'Please check career prospects in 2026 and marriage compatibility.',
-    utr: '429810394812',
-    submittedAt: 'Today, 10:15 AM',
-    amount: 499,
-    serviceType: 'Kuthi Yengba Consultation',
-    status: 'PENDING',
-  },
-  {
-    id: 'k-2',
-    orderRef: 'KY-2026-8942',
-    clientName: 'Thoibi Ningthoujam',
-    sex: 'Female',
-    mobile: '+91 98561 88210',
-    whatsappNo: '+91 98561 88210',
-    email: 'thoibi@example.com',
-    kuthiAttached: false,
-    dob: '1996-04-12',
-    tob: '08:30 AM',
-    pob: 'Imphal East',
-    question: 'Asking about health remedies for Rahu Dasha.',
-    utr: '429810441920',
-    submittedAt: 'Today, 09:40 AM',
-    amount: 499,
-    serviceType: 'Kuthi Yengba Consultation',
-    status: 'ASSIGNED',
-    assignedAstrologerId: 'astro-1',
-    assignedAstrologerName: 'Acharya Tombi Sharma',
-  },
-];
+const DEFAULT_KUTHI_ORDERS: KuthiOrder[] = [];
 
 export async function GET() {
   const localOrders = await readPersistentDataAsync<KuthiOrder[]>('kuthi_orders', DEFAULT_KUTHI_ORDERS);
@@ -144,8 +100,8 @@ export async function GET() {
           motherName: d.mother_name,
           deliveryAddress: d.delivery_address,
           category: d.category,
-          assignedAstrologerId: localMatch?.assignedAstrologerId || d.assigned_astrologer_id || 'astro-1',
-          assignedAstrologerName: localMatch?.assignedAstrologerName || d.assigned_astrologer_name || 'Acharya Tombi Sharma',
+          assignedAstrologerId: localMatch?.assignedAstrologerId || d.assigned_astrologer_id || '',
+          assignedAstrologerName: localMatch?.assignedAstrologerName || d.assigned_astrologer_name || '',
           clientRequirement: d.client_requirement,
           reportReceivedFromAstro: d.report_received_from_astro || d.status === 'COMPLETED',
           reportFileName: d.report_file_name || d.kuthi_file_name,
@@ -411,7 +367,7 @@ export async function POST(req: Request) {
           reportFileName: reportFileName || 'consultation_report.pdf',
           reportFileUrl: reportFileUrl || '/sample_kuthi.pdf',
           reportNotes: reportNotes || '',
-          reportUploadedBy: uploadedBy || 'Acharya Tombi Sharma',
+          reportUploadedBy: uploadedBy || 'Assigned Astrologer',
           reportUploadedAt: new Date().toISOString(),
           status: 'COMPLETED',
         };
@@ -459,7 +415,7 @@ export async function POST(req: Request) {
           reportFileName: reportFileName || 'consultation_report.pdf',
           reportFileUrl: reportFileUrl || '/sample_kuthi.pdf',
           reportNotes: reportNotes || '',
-          reportUploadedBy: uploadedBy || 'Acharya Tombi Sharma',
+          reportUploadedBy: uploadedBy || 'Assigned Astrologer',
           reportUploadedAt: new Date().toISOString(),
         };
         orders.unshift(completedOrder);

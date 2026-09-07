@@ -179,8 +179,8 @@ export async function POST(req: Request) {
             deliveryAddress: pendingData?.orderPayload?.deliveryAddress || pendingData?.orderPayload?.rewriteDetails?.deliveryAddress || '',
             category: pendingData?.orderPayload?.category || 'kuthi_yengba',
             faithTradition: pendingData?.orderPayload?.faithTradition || 'Hinduism',
-            assignedAstrologerId: 'astro-1',
-            assignedAstrologerName: 'Acharya Tombi Sharma',
+            assignedAstrologerId: pendingData?.orderPayload?.assignedAstrologerId || '',
+            assignedAstrologerName: pendingData?.orderPayload?.assignedAstrologerName || '',
             payuDetails: {
               txnid,
               mihpayid,
@@ -207,8 +207,8 @@ export async function POST(req: Request) {
               status: 'ASSIGNED',
               utr: newKuthiOrder.utr,
               payment_status: 'PAYMENT_RECEIVED',
-              assigned_astrologer_id: 'astro-1',
-              assigned_astrologer_name: 'Acharya Tombi Sharma',
+              assigned_astrologer_id: newKuthiOrder.assignedAstrologerId || '',
+              assigned_astrologer_name: newKuthiOrder.assignedAstrologerName || '',
             }]);
           } catch (dbErr) {
             console.warn('Supabase backup insert note:', dbErr);
