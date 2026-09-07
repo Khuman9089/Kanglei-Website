@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   X, MessageCircle, Phone, Lock, CheckCircle2, XCircle, ShieldCheck, 
   Sparkles, ArrowRight, RefreshCw, QrCode, User,
-  Calendar, Sun, Moon, AlertCircle, Clock, ExternalLink, Mail, LogIn, UserPlus
+  Calendar, Sun, Moon, AlertCircle, Clock, ExternalLink, Mail, LogIn, UserPlus, CreditCard
 } from 'lucide-react';
 
 export interface AstrologerModalItem {
@@ -81,12 +81,41 @@ export default function ConsultationBookingModal({
   const [selectedDuration, setSelectedDuration] = useState<15 | 30 | 45>(15);
 
   // Payment State
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'manual_upi'>('payu');
+  const [payuEnabled, setPayuEnabled] = useState(true);
+  const [manualUpiEnabled, setManualUpiEnabled] = useState(true);
   const [utrNumber, setUtrNumber] = useState('');
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
   const [createdOrderRef, setCreatedOrderRef] = useState<string>('');
   const [createdSessionId, setCreatedSessionId] = useState<string | null>(null);
   const [orderPaymentStatus, setOrderPaymentStatus] = useState<'PENDING_VERIFICATION' | 'VERIFIED' | 'REJECTED'>('PENDING_VERIFICATION');
   const [meetingLink, setMeetingLink] = useState<string | null>(null);
+
+  // Check gateway settings upon opening
+  useEffect(() => {
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          const isPayuOn = data.payuSettings?.enabled !== false;
+          const isUpiOn = data.upiSettings?.enabled !== false;
+          setPayuEnabled(isPayuOn);
+          setManualUpiEnabled(isUpiOn);
+
+          if (isPayuOn && !isUpiOn) {
+            setPaymentMethod('payu');
+          } else if (!isPayuOn && isUpiOn) {
+            setPaymentMethod('manual_upi');
+          } else if (isPayuOn) {
+            setPaymentMethod('payu');
+          } else {
+            setPaymentMethod('manual_upi');
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   // Check login state upon opening
   useEffect(() => {
@@ -278,52 +307,121 @@ export default function ConsultationBookingModal({
   const handleCompleteBookingAndPayment = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessingPayment(true);
+    setPaymentError('');
 
     const orderRef = `CONS-${Math.floor(100000 + Math.random() * 900000)}`;
     const clientPhone = currentUser?.phone || currentUser?.whatsappNo || `${signupIsd} ${signupPhone.replace(/\D/g, '')}` || '+91 98620 12345';
+    const clientEmail = currentUser?.email || signupEmail || 'client@kangleiastro.com';
+    const clientName = currentUser?.name || signupName || 'Verified Client';
 
-    try {
-      const res = await fetch('/api/consultations', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'CREATE_BOOKING',
-          orderRef: orderRef,
-          mode: mode,
+    if (paymentMethod === 'manual_upi') {
+      try {
+        const res = await fetch('/api/consultations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'CREATE_BOOKING',
+            orderRef: orderRef,
+            mode: mode,
+            callType: mode === 'CALL' ? 'VIDEO' : 'AUDIO',
+            clientName: clientName,
+            clientPhone: clientPhone,
+            astrologerId: astrologer.id,
+            astrologerName: astrologer.name,
+            astrologerAvatar: astrologer.avatar,
+            astrologerPhone: astrologer.whatsappPhone,
+            durationMinutes: selectedDuration,
+            ratePerMin: ratePerMin,
+            totalFee: totalAmount,
+            scheduledDate: scheduledDate,
+            shift: shift, // 'Morning' | 'Evening' without timings
+            paymentUtr: utrNumber.trim() || `UPI-${Math.floor(1000000000 + Math.random() * 900000000)}`,
+            paymentStatus: 'PENDING_VERIFICATION',
+            status: 'PENDING_VERIFICATION',
+          }),
+        });
+
+        const data = await res.json();
+        if (data.session) {
+          setCreatedSessionId(data.session.id);
+          setCreatedOrderRef(data.session.orderRef || orderRef);
+          setMeetingLink(data.session.meetingLink || `/consultation?sessionId=${data.session.id}&role=client`);
+        } else {
+          setCreatedOrderRef(orderRef);
+        }
+
+        setStep(4);
+      } catch (err) {
+        console.error('Order creation error:', err);
+        setCreatedOrderRef(orderRef);
+        setStep(4);
+      } finally {
+        setIsProcessingPayment(false);
+      }
+    } else {
+      // PayU Instant Online Gateway Flow
+      try {
+        const sessionId = 'SESS-' + Date.now();
+        const meetingRoomUrl = `/consultation?sessionId=${sessionId}&role=client`;
+
+        const orderPayload = {
+          sessionId,
+          orderRef,
+          mode,
           callType: mode === 'CALL' ? 'VIDEO' : 'AUDIO',
-          clientName: currentUser?.name || signupName || 'Verified Client',
-          clientPhone: clientPhone,
+          clientName,
+          clientPhone,
           astrologerId: astrologer.id,
           astrologerName: astrologer.name,
           astrologerAvatar: astrologer.avatar,
           astrologerPhone: astrologer.whatsappPhone,
           durationMinutes: selectedDuration,
-          ratePerMin: ratePerMin,
+          ratePerMin,
           totalFee: totalAmount,
-          scheduledDate: scheduledDate,
-          shift: shift, // 'Morning' | 'Evening' without timings
-          paymentUtr: utrNumber.trim() || `UPI-${Math.floor(1000000000 + Math.random() * 900000000)}`,
-          paymentStatus: 'PENDING_VERIFICATION',
-          status: 'PENDING_VERIFICATION',
-        }),
-      });
+          scheduledDate,
+          shift,
+          meetingLink: meetingRoomUrl,
+        };
 
-      const data = await res.json();
-      if (data.session) {
-        setCreatedSessionId(data.session.id);
-        setCreatedOrderRef(data.session.orderRef || orderRef);
-        setMeetingLink(data.session.meetingLink || `/consultation?sessionId=${data.session.id}&role=client`);
-      } else {
-        setCreatedOrderRef(orderRef);
+        const res = await fetch('/api/payment/payu/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: totalAmount,
+            productInfo: `${mode === 'CHAT' ? 'Chat' : 'Call'} with ${astrologer.name}`,
+            firstname: clientName,
+            email: clientEmail,
+            phone: clientPhone.replace(/\D/g, '').slice(-10),
+            orderType: 'consultation',
+            orderPayload,
+          }),
+        });
+
+        const initData = await res.json();
+        if (!initData.success) {
+          setIsProcessingPayment(false);
+          setPaymentError(initData.error || 'Failed to connect to PayU Gateway.');
+          return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = initData.actionUrl;
+
+        Object.entries(initData.params).forEach(([key, val]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(val ?? '');
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      } catch (err: any) {
+        setIsProcessingPayment(false);
+        setPaymentError(err.message || 'Error redirecting to PayU gateway.');
       }
-
-      setStep(4);
-    } catch (err) {
-      console.error('Order creation error:', err);
-      setCreatedOrderRef(orderRef);
-      setStep(4);
-    } finally {
-      setIsProcessingPayment(false);
     }
   };
 
@@ -760,10 +858,10 @@ export default function ConsultationBookingModal({
             <div className="space-y-4">
               <div className="text-center space-y-1">
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#b45309] block">
-                  ✦ Step 3: UPI Payment
+                  ✦ Step 3: Payment Checkout
                 </span>
                 <h4 className="font-serif font-bold text-xl text-[#0f172a]">
-                  Scan & Pay ₹{totalAmount}
+                  Choose Payment Method
                 </h4>
                 <p className="text-xs text-gray-500">
                   {mode === 'CHAT' ? 'Chat Consultation' : 'Call Consultation'} · {scheduledDate} ({shift} Shift)
@@ -771,21 +869,113 @@ export default function ConsultationBookingModal({
               </div>
 
               {/* Payment Summary */}
-              <div className="bg-[#faf8f5] p-4 rounded-2xl border border-[#f3e8d2] space-y-3">
-                <div className="flex justify-between items-center text-xs pb-2 border-b border-[#f3e8d2]">
+              <div className="bg-[#faf8f5] p-4 rounded-2xl border border-[#f3e8d2] space-y-2 text-xs">
+                <div className="flex justify-between items-center pb-2 border-b border-[#f3e8d2]">
                   <span className="text-gray-600 font-medium">Astrologer:</span>
                   <span className="font-extrabold text-[#0f172a]">{astrologer.name}</span>
                 </div>
-                <div className="flex justify-between items-center text-xs pb-2 border-b border-[#f3e8d2]">
+                <div className="flex justify-between items-center pb-2 border-b border-[#f3e8d2]">
                   <span className="text-gray-600 font-medium">Scheduled Shift:</span>
                   <span className="font-extrabold text-[#b45309]">{shift} Shift ({scheduledDate})</span>
                 </div>
-                <div className="flex justify-between items-center text-sm font-extrabold">
-                  <span className="text-[#0f172a]">Total Payable:</span>
+                <div className="flex justify-between items-center text-sm font-extrabold pt-1">
+                  <span className="text-[#0f172a]">Total Fee:</span>
                   <span className="text-[#b45309] font-mono text-xl">₹{totalAmount}</span>
                 </div>
+              </div>
 
-                {/* QR Code */}
+              {paymentError && (
+                <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+                  {paymentError}
+                </div>
+              )}
+
+              {/* Payment Method Selector Tabs */}
+              <div className="grid grid-cols-2 gap-2 text-left">
+                {payuEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('payu')}
+                    className={`p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-2.5 relative ${
+                      paymentMethod === 'payu'
+                        ? 'border-[#d97706] bg-amber-50/60 shadow-xs'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                      paymentMethod === 'payu' ? 'border-[#d97706] bg-[#d97706]' : 'border-gray-400'
+                    }`}>
+                      {paymentMethod === 'payu' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-xs text-[#0f172a]">PayU Gateway</span>
+                        <span className="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[9px] font-extrabold">Instant</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-0.5">Cards, UPI, NetBanking</p>
+                    </div>
+                  </button>
+                )}
+
+                {manualUpiEnabled && (
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('manual_upi')}
+                    className={`p-3 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-2.5 relative ${
+                      paymentMethod === 'manual_upi'
+                        ? 'border-[#d97706] bg-amber-50/60 shadow-xs'
+                        : 'border-gray-200 hover:border-gray-300 bg-white'
+                    }`}
+                  >
+                    <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                      paymentMethod === 'manual_upi' ? 'border-[#d97706] bg-[#d97706]' : 'border-gray-400'
+                    }`}>
+                      {paymentMethod === 'manual_upi' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-bold text-xs text-[#0f172a]">Direct UPI QR</span>
+                        <span className="px-1.5 py-0.2 rounded bg-gray-100 text-gray-700 text-[9px] font-extrabold">UTR</span>
+                      </div>
+                      <p className="text-[10px] text-gray-500 mt-0.5">Scan & enter UTR</p>
+                    </div>
+                  </button>
+                )}
+              </div>
+
+              {paymentMethod === 'payu' ? (
+                /* PAYU INSTANT GATEWAY */
+                <form onSubmit={handleCompleteBookingAndPayment} className="space-y-3 pt-1">
+                  <div className="p-3.5 rounded-2xl bg-white border border-gray-200 space-y-2 text-xs">
+                    <div className="flex items-center gap-2 text-emerald-800 font-bold">
+                      <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <span>Instant Verification & Meeting Room Access</span>
+                    </div>
+                    <p className="text-[11px] text-gray-600 leading-relaxed">
+                      Pay securely with GPay, PhonePe, Paytm, BHIM, Credit/Debit Card or Netbanking via PayU. Your consultation session will be confirmed immediately without waiting for manual admin approval.
+                    </p>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={isProcessingPayment}
+                    className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 hover:opacity-95 text-white font-extrabold text-xs shadow-md cursor-pointer transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isProcessingPayment ? (
+                      <>
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                        <span>Connecting to PayU...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Lock className="w-4 h-4" />
+                        <span>Pay ₹{totalAmount} with PayU Gateway →</span>
+                      </>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                /* MANUAL UPI QR BOX */
                 <div className="pt-2 space-y-2">
                   <div className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-200">
                     <div className="w-14 h-14 rounded-lg bg-amber-500/10 text-amber-600 border border-amber-500/20 flex items-center justify-center shrink-0">
@@ -805,7 +995,7 @@ export default function ConsultationBookingModal({
                       </label>
                       <input
                         type="text"
-                        required
+                        required={paymentMethod === 'manual_upi'}
                         placeholder="e.g. 429810441920"
                         value={utrNumber}
                         onChange={(e) => setUtrNumber(e.target.value)}
@@ -832,7 +1022,7 @@ export default function ConsultationBookingModal({
                     </button>
                   </form>
                 </div>
-              </div>
+              )}
             </div>
           )}
 

@@ -8,7 +8,8 @@ import {
   TrendingUp, BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
   DollarSign, Filter, Share2, UserCheck, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon,
-  Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift, ArrowLeft, ArrowRight
+  Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift, ArrowLeft, ArrowRight,
+  CreditCard
 } from 'lucide-react';
 import Link from 'next/link';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
@@ -693,7 +694,7 @@ export default function AdminDashboardPage() {
   const [editingSlider, setEditingSlider] = useState<Partial<ShopSliderItem> | null>(null);
   const [showSliderModal, setShowSliderModal] = useState(false);
 
-  // Site Settings & Payment UPI QR State
+  // Site Settings & Payment UPI QR & PayU State
   const [siteSettings, setSiteSettings] = useState({
     headerSettings: {
       supportTiming: 'Live Support (9:30 AM – 6:00 PM IST)',
@@ -701,10 +702,24 @@ export default function AdminDashboardPage() {
       supportPhone: '+91 98765 43210',
     },
     upiSettings: {
+      enabled: true,
       upiId: 'kangleiastro@upi',
       payeeName: 'KangleiAstro Services',
       qrImageUrl: 'https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=kangleiastro@upi&pn=KangleiAstro%20Services',
       qrNotes: 'Scan with GPay, PhonePe, Paytm, BHIM or any UPI app',
+    },
+    payuSettings: {
+      enabled: true,
+      mode: 'test' as 'test' | 'prod',
+      merchantKey: 'gtKFFx',
+      merchantSalt: 'eCwWELxi',
+      paymentUrl: 'https://test.payu.in/_payment',
+      testMerchantKey: 'gtKFFx',
+      testMerchantSalt: 'eCwWELxi',
+      testPaymentUrl: 'https://test.payu.in/_payment',
+      prodMerchantKey: '',
+      prodMerchantSalt: '',
+      prodPaymentUrl: 'https://secure.payu.in/_payment',
     },
   });
   const [savingSettings, setSavingSettings] = useState(false);
@@ -713,10 +728,11 @@ export default function AdminDashboardPage() {
     fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
-        if (data.headerSettings || data.upiSettings) {
+        if (data.headerSettings || data.upiSettings || data.payuSettings) {
           setSiteSettings((prev) => ({
             headerSettings: { ...prev.headerSettings, ...(data.headerSettings || {}) },
             upiSettings: { ...prev.upiSettings, ...(data.upiSettings || {}) },
+            payuSettings: { ...prev.payuSettings, ...(data.payuSettings || {}) },
           }));
         }
       })
@@ -9429,14 +9445,44 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* CARD 2: MERCHANT PAYMENT UPI VPA ID & QR CODE UPLOADER CMS */}
               <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
-                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
-                  <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
-                    <QrCode className="w-5 h-5 text-emerald-600" />
-                    <span>Merchant UPI Payment ID & QR Code Image Uploader</span>
-                  </h4>
-                  <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-extrabold text-[10px] uppercase border border-emerald-300">
-                    UPI Merchant Active
-                  </span>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold shadow-md">
+                      <QrCode className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif font-bold text-xl text-[#b45309]">
+                          Direct Manual UPI QR Code Transfer
+                        </h4>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                          siteSettings.upiSettings?.enabled !== false ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
+                        }`}>
+                          {siteSettings.upiSettings?.enabled !== false ? '● Active' : '○ Disabled'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">Scan QR code & manual 12-digit UTR verification</p>
+                    </div>
+                  </div>
+
+                  {/* UPI Gateway Switch */}
+                  <div className="flex items-center gap-3 bg-[#fefcf6] px-4 py-2 rounded-2xl border border-amber-200">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={siteSettings.upiSettings?.enabled !== false}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          upiSettings: { ...siteSettings.upiSettings, enabled: e.target.checked }
+                        })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                    <span className="font-bold text-xs text-gray-800">
+                      {siteSettings.upiSettings?.enabled !== false ? 'Manual UPI Enabled' : 'Manual UPI Disabled'}
+                    </span>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
@@ -9580,6 +9626,223 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   >
                     <Save className="w-4 h-4" />
                     <span>{savingSettings ? 'Saving Live Settings...' : 'Save Header & UPI QR Settings Live →'}</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* CARD 3: PAYU (PAYUMONEY) PAYMENT GATEWAY CMS */}
+              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#fde68a] space-y-6 text-xs text-[#0f172a] shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold shadow-md">
+                      <CreditCard className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif font-bold text-lg sm:text-xl text-[#b45309]">PayU (PayuMoney) Payment Gateway Integration</h4>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                          siteSettings.payuSettings?.enabled ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-rose-100 text-rose-800 border border-rose-300'
+                        }`}>
+                          {siteSettings.payuSettings?.enabled ? '● Active' : '○ Disabled'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">Configure Merchant Key, Salt, and Gateway Endpoints for Cards, Netbanking & UPI</p>
+                    </div>
+                  </div>
+
+                  {/* Mode Selector Badge */}
+                  <div className="flex items-center gap-2 bg-[#fefcf6] p-1.5 rounded-2xl border border-amber-200">
+                    <button
+                      type="button"
+                      onClick={() => setSiteSettings({
+                        ...siteSettings,
+                        payuSettings: {
+                          ...siteSettings.payuSettings,
+                          mode: 'test',
+                          merchantKey: siteSettings.payuSettings.testMerchantKey || 'gtKFFx',
+                          merchantSalt: siteSettings.payuSettings.testMerchantSalt || 'eCwWELxi',
+                          paymentUrl: siteSettings.payuSettings.testPaymentUrl || 'https://test.payu.in/_payment',
+                        }
+                      })}
+                      className={`px-3 py-1.5 rounded-xl font-extrabold text-[11px] transition-all cursor-pointer ${
+                        siteSettings.payuSettings.mode === 'test'
+                          ? 'bg-amber-600 text-white shadow-sm'
+                          : 'text-gray-600 hover:text-black'
+                      }`}
+                    >
+                      🧪 Test / Sandbox
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setSiteSettings({
+                        ...siteSettings,
+                        payuSettings: {
+                          ...siteSettings.payuSettings,
+                          mode: 'prod',
+                          merchantKey: siteSettings.payuSettings.prodMerchantKey || siteSettings.payuSettings.merchantKey,
+                          merchantSalt: siteSettings.payuSettings.prodMerchantSalt || siteSettings.payuSettings.merchantSalt,
+                          paymentUrl: siteSettings.payuSettings.prodPaymentUrl || 'https://secure.payu.in/_payment',
+                        }
+                      })}
+                      className={`px-3 py-1.5 rounded-xl font-extrabold text-[11px] transition-all cursor-pointer ${
+                        siteSettings.payuSettings.mode === 'prod'
+                          ? 'bg-emerald-600 text-white shadow-sm'
+                          : 'text-gray-600 hover:text-black'
+                      }`}
+                    >
+                      🚀 Production / Live
+                    </button>
+                  </div>
+                </div>
+
+                {/* Gateway Switch & Quick Presets */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#fefcf6] p-4 rounded-2xl border border-amber-100 items-center">
+                  <div className="flex items-center gap-3">
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={siteSettings.payuSettings.enabled}
+                        onChange={(e) => setSiteSettings({
+                          ...siteSettings,
+                          payuSettings: { ...siteSettings.payuSettings, enabled: e.target.checked }
+                        })}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                    <span className="font-bold text-xs text-gray-800">
+                      {siteSettings.payuSettings.enabled ? 'PayU Gateway Enabled at Checkout' : 'PayU Gateway Disabled'}
+                    </span>
+                  </div>
+
+                  <div className="text-[11px] text-gray-500">
+                    Current Mode: <strong className="uppercase text-[#b45309]">{siteSettings.payuSettings.mode}</strong>
+                  </div>
+
+                  <div className="flex justify-start md:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => setSiteSettings({
+                        ...siteSettings,
+                        payuSettings: {
+                          ...siteSettings.payuSettings,
+                          mode: 'test',
+                          merchantKey: 'gtKFFx',
+                          merchantSalt: 'eCwWELxi',
+                          paymentUrl: 'https://test.payu.in/_payment',
+                          testMerchantKey: 'gtKFFx',
+                          testMerchantSalt: 'eCwWELxi',
+                          testPaymentUrl: 'https://test.payu.in/_payment',
+                        }
+                      })}
+                      className="px-3.5 py-1.5 bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold rounded-xl border border-amber-300 text-[11px] transition-colors cursor-pointer"
+                    >
+                      Reset to Default Test Credentials
+                    </button>
+                  </div>
+                </div>
+
+                {/* FORM FIELDS */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Active Merchant Key <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. gtKFFx"
+                        value={siteSettings.payuSettings.merchantKey}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSiteSettings({
+                            ...siteSettings,
+                            payuSettings: {
+                              ...siteSettings.payuSettings,
+                              merchantKey: val,
+                              ...(siteSettings.payuSettings.mode === 'test' ? { testMerchantKey: val } : { prodMerchantKey: val })
+                            }
+                          });
+                        }}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                      <span className="text-[10px] text-gray-400 mt-1 block">Default Test Key: <code className="font-mono text-gray-600">gtKFFx</code></span>
+                    </div>
+
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                        Active Merchant Salt <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. eCwWELxi"
+                        value={siteSettings.payuSettings.merchantSalt}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setSiteSettings({
+                            ...siteSettings,
+                            payuSettings: {
+                              ...siteSettings.payuSettings,
+                              merchantSalt: val,
+                              ...(siteSettings.payuSettings.mode === 'test' ? { testMerchantSalt: val } : { prodMerchantSalt: val })
+                            }
+                          });
+                        }}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                      <span className="text-[10px] text-gray-400 mt-1 block">Default Test Salt: <code className="font-mono text-gray-600">eCwWELxi</code></span>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-600 mb-1">
+                      Payment Endpoint URL <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="https://test.payu.in/_payment"
+                      value={siteSettings.payuSettings.paymentUrl}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSiteSettings({
+                          ...siteSettings,
+                          payuSettings: {
+                            ...siteSettings.payuSettings,
+                            paymentUrl: val,
+                            ...(siteSettings.payuSettings.mode === 'test' ? { testPaymentUrl: val } : { prodPaymentUrl: val })
+                          }
+                        });
+                      }}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                    />
+                    <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-500">
+                      <span>Test URL: <button type="button" onClick={() => setSiteSettings({...siteSettings, payuSettings: {...siteSettings.payuSettings, paymentUrl: 'https://test.payu.in/_payment'}})} className="font-mono text-[#b45309] underline">https://test.payu.in/_payment</button></span>
+                      <span>·</span>
+                      <span>Prod URL: <button type="button" onClick={() => setSiteSettings({...siteSettings, payuSettings: {...siteSettings.payuSettings, paymentUrl: 'https://secure.payu.in/_payment'}})} className="font-mono text-[#b45309] underline">https://secure.payu.in/_payment</button></span>
+                    </div>
+                  </div>
+
+                  {/* INFO CALLOUT */}
+                  <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-xs text-blue-900 space-y-1">
+                    <span className="font-bold flex items-center gap-1.5">
+                      <ShieldCheck className="w-4 h-4 text-blue-600" />
+                      Secure Cryptographic SHA-512 Verification Enabled
+                    </span>
+                    <p className="text-[11px] text-blue-800 leading-relaxed">
+                      All transaction requests and responses are signed using SHA-512 algorithms matching PayU specifications. Whenever you update keys or switch between Sandbox and Production in this panel, the system updates immediately in real-time.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                  <button
+                    type="button"
+                    onClick={handleSaveSiteSettings}
+                    disabled={savingSettings}
+                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{savingSettings ? 'Saving PayU Settings...' : 'Save PayU Gateway Settings Live →'}</span>
                   </button>
                 </div>
               </div>

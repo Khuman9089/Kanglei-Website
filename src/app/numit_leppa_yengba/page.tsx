@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   User, Phone, Calendar, Clock, MapPin, FileText, CheckCircle2, 
-  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, Sun, ChevronDown, MessageSquare, Truck 
+  ArrowRight, ArrowLeft, Sparkles, QrCode, Upload, FileUp, Plus, Trash2, Eye, Sun, ChevronDown, MessageSquare, Truck, CreditCard, Lock, ShieldCheck
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -73,6 +73,9 @@ function NumitLeppaYengbaContent() {
   const [selectedPhysicalPackage, setSelectedPhysicalPackage] = useState<NumitLeppaSubServiceOption>(physicalPackages[0]);
 
   // Payment State
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'manual_upi'>('payu');
+  const [payuEnabled, setPayuEnabled] = useState(true);
+  const [manualUpiEnabled, setManualUpiEnabled] = useState(true);
   const [utrNumber, setUtrNumber] = useState('');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -81,6 +84,29 @@ function NumitLeppaYengbaContent() {
   useEffect(() => {
     const ref = 'NL-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
+
+    // Check payment gateway status (PayU & Manual UPI)
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          const isPayuOn = data.payuSettings?.enabled !== false;
+          const isUpiOn = data.upiSettings?.enabled !== false;
+          setPayuEnabled(isPayuOn);
+          setManualUpiEnabled(isUpiOn);
+
+          if (isPayuOn && !isUpiOn) {
+            setPaymentMethod('payu');
+          } else if (!isPayuOn && isUpiOn) {
+            setPaymentMethod('manual_upi');
+          } else if (isPayuOn) {
+            setPaymentMethod('payu');
+          } else {
+            setPaymentMethod('manual_upi');
+          }
+        }
+      })
+      .catch(() => {});
 
     // Fetch live Numit Leppa sub-categories & physical packages from Admin services API
     fetch('/api/services')
@@ -250,69 +276,147 @@ function NumitLeppaYengbaContent() {
     setStep(2);
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!utrNumber.trim() && !screenshotFile) {
-      setErrorMsg('Please enter the 12-digit UPI Transaction UTR Number or upload a Payment Screenshot.');
-      return;
-    }
-
-    setLoading(true);
-
     const effectiveReason = customReason.trim() ? `${selectedReason.title} (${customReason.trim()})` : selectedReason.title;
 
-    const orderPayload = {
-      action: 'CREATE_ORDER',
-      order: {
-        category: 'numit_leppa_yengba',
-        serviceTitle: `Numit Yengba — ${effectiveReason}`,
-        clientName,
-        whatsappNo,
-        gender,
-        reasonTitle: effectiveReason,
-        customReason: customReason.trim(),
-        pricePerUnit: selectedReason.price,
-        personCount: slots.length,
-        noKuthiPaper,
-        dob,
-        tob,
-        pob,
-        notes,
-        faithTradition,
-        wantPhysicalDelivery,
-        deliveryDetails: wantPhysicalDelivery ? {
-          fatherName,
-          motherName,
-          yekSalai,
-          gotra,
-          deliveryAddress,
-          packageName: selectedPhysicalPackage.title,
-          packagePrice: selectedPhysicalPackage.price,
-        } : null,
-        filesCount: uploadedFilesCount,
-        fileNames: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
-        baseServiceAmount,
-        deliveryAmount,
-        totalAmount,
-        utr: utrNumber,
-      },
-    };
+    if (paymentMethod === 'manual_upi') {
+      if (!utrNumber.trim() && !screenshotFile) {
+        setErrorMsg('Please enter the 12-digit UPI Transaction UTR Number or upload a Payment Screenshot.');
+        return;
+      }
 
-    fetch('/api/kuthi', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload),
-    })
-      .then(() => {
+      setLoading(true);
+
+      const orderPayload = {
+        action: 'CREATE_ORDER',
+        order: {
+          category: 'numit_leppa_yengba',
+          serviceTitle: `Numit Yengba — ${effectiveReason}`,
+          clientName,
+          whatsappNo,
+          gender,
+          reasonTitle: effectiveReason,
+          customReason: customReason.trim(),
+          pricePerUnit: selectedReason.price,
+          personCount: slots.length,
+          noKuthiPaper,
+          dob,
+          tob,
+          pob,
+          notes,
+          faithTradition,
+          wantPhysicalDelivery,
+          deliveryDetails: wantPhysicalDelivery ? {
+            fatherName,
+            motherName,
+            yekSalai,
+            gotra,
+            deliveryAddress,
+            packageName: selectedPhysicalPackage.title,
+            packagePrice: selectedPhysicalPackage.price,
+          } : null,
+          filesCount: uploadedFilesCount,
+          fileNames: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
+          baseServiceAmount,
+          deliveryAmount,
+          totalAmount,
+          utr: utrNumber,
+        },
+      };
+
+      try {
+        await fetch('/api/kuthi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderPayload),
+        });
         setLoading(false);
         setStep(3);
-      })
-      .catch(() => {
+      } catch (err) {
         setLoading(false);
         setStep(3);
-      });
+      }
+    } else {
+      // PayU Gateway Instant Flow
+      setLoading(true);
+      try {
+        const orderPayload = {
+          category: 'numit_leppa_yengba',
+          serviceTitle: `Numit Yengba — ${effectiveReason}`,
+          clientName,
+          whatsappNo,
+          gender,
+          reasonTitle: effectiveReason,
+          customReason: customReason.trim(),
+          pricePerUnit: selectedReason.price,
+          personCount: slots.length,
+          noKuthiPaper,
+          dob,
+          tob,
+          pob,
+          notes,
+          faithTradition,
+          wantPhysicalDelivery,
+          deliveryDetails: wantPhysicalDelivery ? {
+            fatherName,
+            motherName,
+            yekSalai,
+            gotra,
+            deliveryAddress,
+            packageName: selectedPhysicalPackage.title,
+            packagePrice: selectedPhysicalPackage.price,
+          } : null,
+          filesCount: uploadedFilesCount,
+          fileNames: slots.filter((s) => s.file !== null).map((s) => s.file?.name),
+          baseServiceAmount,
+          deliveryAmount,
+          totalAmount,
+          paymentMethod: 'PAYU',
+        };
+
+        const res = await fetch('/api/payment/payu/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: totalAmount,
+            productInfo: `Numit Yengba: ${effectiveReason}`,
+            firstname: clientName.trim() || 'Client',
+            email: 'client@kangleiastro.com',
+            phone: whatsappNo.replace(/\D/g, '').slice(-10),
+            orderType: 'kuthi',
+            orderPayload,
+          }),
+        });
+
+        const initData = await res.json();
+        if (!initData.success) {
+          setLoading(false);
+          setErrorMsg(initData.error || 'Failed to initiate PayU payment.');
+          return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = initData.actionUrl;
+
+        Object.entries(initData.params).forEach(([key, val]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(val ?? '');
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      } catch (err: any) {
+        setLoading(false);
+        setErrorMsg(err.message || 'Error redirecting to PayU gateway.');
+      }
+    }
   };
 
   return (
@@ -944,61 +1048,150 @@ function NumitLeppaYengbaContent() {
                 </div>
               </div>
 
-              {/* UPI Payment Card */}
-              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl text-center space-y-4">
-                <div className="flex items-center justify-center gap-2 text-[#b45309]">
-                  <QrCode className="w-6 h-6" />
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Scan & Pay ₹{totalAmount} via UPI</h3>
+              {/* Payment Method Selector & Gateway / UPI Card */}
+              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#f3e8d2] shadow-xl text-center space-y-5">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-4">
+                  <div className="flex items-center gap-2 text-[#b45309]">
+                    <CreditCard className="w-5 h-5" />
+                    <h3 className="font-serif font-bold text-xl sm:text-2xl text-[#0f172a]">Select Payment Method</h3>
+                  </div>
+                  <span className="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 text-[11px] font-extrabold border border-emerald-200">
+                    Total Payable: ₹{totalAmount}
+                  </span>
                 </div>
 
-                <div className="bg-[#fef3c7] p-6 rounded-2xl border border-[#fde68a] max-w-sm mx-auto">
-                  <div className="w-44 h-44 bg-white mx-auto rounded-xl p-3 border border-[#fde68a] flex items-center justify-center shadow-inner mb-3">
-                    <div className="text-center font-mono text-xs text-gray-500">
-                      <QrCode className="w-24 h-24 mx-auto text-[#0f172a] mb-1" />
-                      <span>[UPI QR Code]</span>
+                {/* Tabs */}
+                <div className={`grid gap-3 text-left ${payuEnabled && manualUpiEnabled ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                  {payuEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('payu')}
+                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 relative ${
+                        paymentMethod === 'payu'
+                          ? 'border-[#d97706] bg-amber-50/60 shadow-sm'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'payu' ? 'border-[#d97706] bg-[#d97706]' : 'border-gray-400'
+                      }`}>
+                        {paymentMethod === 'payu' && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-[#0f172a]">PayU Online Gateway</span>
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold">Instant</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-1">Cards, NetBanking, GPay, PhonePe, Paytm, BHIM</p>
+                      </div>
+                    </button>
+                  )}
+
+                  {manualUpiEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('manual_upi')}
+                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 relative ${
+                        paymentMethod === 'manual_upi'
+                          ? 'border-[#d97706] bg-amber-50/60 shadow-sm'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'manual_upi' ? 'border-[#d97706] bg-[#d97706]' : 'border-gray-400'
+                      }`}>
+                        {paymentMethod === 'manual_upi' && <div className="w-2 h-2 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-sm text-[#0f172a]">Direct Manual UPI QR</span>
+                          <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-[10px] font-bold">Scan & UTR</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-1">Scan QR code and enter 12-digit UTR reference</p>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {paymentMethod === 'payu' ? (
+                  /* PAYU INSTANT CHECKOUT PANEL */
+                  <form onSubmit={handlePaymentSubmit} className="max-w-md mx-auto space-y-4 text-xs font-sans text-left">
+                    <div className="p-5 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-3">
+                      <div className="flex justify-between items-center">
+                        <span className="font-bold text-gray-600">Online Gateway Total:</span>
+                        <span className="font-mono font-black text-xl text-[#b45309]">₹{totalAmount}</span>
+                      </div>
+                      <p className="text-[11.5px] text-gray-600 leading-relaxed">
+                        Pay securely with Credit/Debit Card, NetBanking, or any UPI app via the official PayU gateway. Your order is registered immediately without manual UTR submission.
+                      </p>
+                      <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span>Protected by 256-bit SSL encryption & cryptographic SHA-512 verification.</span>
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-xs font-sans">
-                    <span className="text-gray-500 block text-[10px] font-bold uppercase">UPI ID</span>
-                    <strong className="font-mono text-base text-[#b45309]">kangleiastro@upi</strong>
-                  </div>
-                </div>
 
-                <form onSubmit={handlePaymentSubmit} className="max-w-md mx-auto space-y-4 text-xs font-sans text-left">
-                  <div>
-                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Enter 12-Digit UTR / Transaction No.<span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 429810394812"
-                      value={utrNumber}
-                      onChange={(e) => setUtrNumber(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-mono font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
-                    />
-                  </div>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      <Lock className="w-4 h-4" />
+                      <span>{loading ? 'Connecting to PayU...' : `Pay ₹${totalAmount} with PayU Gateway →`}</span>
+                    </button>
+                  </form>
+                ) : (
+                  /* MANUAL UPI QR BOX */
+                  <div className="space-y-4">
+                    <div className="bg-[#fef3c7] p-6 rounded-2xl border border-[#fde68a] max-w-sm mx-auto">
+                      <div className="w-44 h-44 bg-white mx-auto rounded-xl p-3 border border-[#fde68a] flex items-center justify-center shadow-inner mb-3">
+                        <div className="text-center font-mono text-xs text-gray-500">
+                          <QrCode className="w-24 h-24 mx-auto text-[#0f172a] mb-1" />
+                          <span>[UPI QR Code]</span>
+                        </div>
+                      </div>
+                      <div className="text-xs font-sans">
+                        <span className="text-gray-500 block text-[10px] font-bold uppercase">UPI ID</span>
+                        <strong className="font-mono text-base text-[#b45309]">kangleiastro@upi</strong>
+                      </div>
+                    </div>
 
-                  <div>
-                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      Upload Payment Screenshot (Optional)
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => e.target.files && setScreenshotFile(e.target.files[0])}
-                      className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#0f172a] file:text-white cursor-pointer"
-                    />
-                  </div>
+                    <form onSubmit={handlePaymentSubmit} className="max-w-md mx-auto space-y-4 text-xs font-sans text-left">
+                      <div>
+                        <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                          Enter 12-Digit UTR / Transaction No.<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required={paymentMethod === 'manual_upi'}
+                          placeholder="e.g. 429810394812"
+                          value={utrNumber}
+                          onChange={(e) => setUtrNumber(e.target.value)}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-mono font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
 
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    {loading ? 'Submitting Order...' : `Confirm Order (₹${totalAmount}) →`}
-                  </button>
-                </form>
+                      <div>
+                        <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                          Upload Payment Screenshot (Optional)
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => e.target.files && setScreenshotFile(e.target.files[0])}
+                          className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#0f172a] file:text-white cursor-pointer"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-3.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                      >
+                        {loading ? 'Submitting Order...' : `Confirm Order (₹${totalAmount}) →`}
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
 
             </motion.div>

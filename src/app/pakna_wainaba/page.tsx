@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Heart, Upload, FileText, CheckCircle2, AlertCircle, Sparkles, MessageSquare, ArrowRight, RefreshCw, User, Calendar, Clock, MapPin, Compass, QrCode, ShieldCheck, Check, Trash2 
+  Heart, Upload, FileText, CheckCircle2, AlertCircle, Sparkles, MessageSquare, ArrowRight, RefreshCw, User, Calendar, Clock, MapPin, Compass, QrCode, ShieldCheck, Check, Trash2, CreditCard, Lock
 } from 'lucide-react';
 
 export default function PaknaWainabaPage() {
@@ -31,6 +31,9 @@ export default function PaknaWainabaPage() {
   const [bridePob, setBridePob] = useState('Imphal, Manipur');
 
   // Payment State
+  const [paymentMethod, setPaymentMethod] = useState<'payu' | 'manual_upi'>('payu');
+  const [payuEnabled, setPayuEnabled] = useState(true);
+  const [manualUpiEnabled, setManualUpiEnabled] = useState(true);
   const [utrNumber, setUtrNumber] = useState('');
   const [screenshotFile, setScreenshotFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,6 +42,29 @@ export default function PaknaWainabaPage() {
   React.useEffect(() => {
     const ref = 'PW-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
+
+    // Check payment gateway status (PayU & Manual UPI)
+    fetch('/api/settings')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data) {
+          const isPayuOn = data.payuSettings?.enabled !== false;
+          const isUpiOn = data.upiSettings?.enabled !== false;
+          setPayuEnabled(isPayuOn);
+          setManualUpiEnabled(isUpiOn);
+
+          if (isPayuOn && !isUpiOn) {
+            setPaymentMethod('payu');
+          } else if (!isPayuOn && isUpiOn) {
+            setPaymentMethod('manual_upi');
+          } else if (isPayuOn) {
+            setPaymentMethod('payu');
+          } else {
+            setPaymentMethod('manual_upi');
+          }
+        }
+      })
+      .catch(() => {});
   }, []);
 
   const handleStep1Submit = (e: React.FormEvent) => {
@@ -73,59 +99,129 @@ export default function PaknaWainabaPage() {
     setStep(2);
   };
 
-  const handlePaymentSubmit = (e: React.FormEvent) => {
+  const handlePaymentSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
 
-    if (!utrNumber.trim() && !screenshotFile) {
-      setErrorMsg('Please enter the 12-digit UPI Transaction UTR Number or upload a Payment Screenshot.');
-      return;
+    if (paymentMethod === 'manual_upi') {
+      if (!utrNumber.trim() && !screenshotFile) {
+        setErrorMsg('Please enter the 12-digit UPI Transaction UTR Number or upload a Payment Screenshot.');
+        return;
+      }
+
+      setLoading(true);
+
+      const orderPayload = {
+        action: 'CREATE_ORDER',
+        order: {
+          category: 'pakna_wainaba',
+          serviceTitle: 'Pakna-Wainaba (পক্ন-ৱাইনবা · Master Astrologer Compatibility)',
+          clientName: `${groomName} & ${brideName}`,
+          whatsappNo: whatsappNo,
+          gender: 'Couple',
+          groomDetails: {
+            name: groomName,
+            fileAttached: !!groomKuthiFile,
+            fileName: groomKuthiFile ? groomKuthiFile.name : '',
+            dob: groomDob || 'Kuthi Paper Uploaded',
+            tob: groomTob || 'Kuthi Paper Uploaded',
+            pob: groomPob || 'Kuthi Paper Uploaded',
+          },
+          brideDetails: {
+            name: brideName,
+            fileAttached: !!brideKuthiFile,
+            fileName: brideKuthiFile ? brideKuthiFile.name : '',
+            dob: brideDob || 'Kuthi Paper Uploaded',
+            tob: brideTob || 'Kuthi Paper Uploaded',
+            pob: bridePob || 'Kuthi Paper Uploaded',
+          },
+          utr: utrNumber,
+          totalAmount: 1299,
+        },
+      };
+
+      try {
+        await fetch('/api/kuthi', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(orderPayload),
+        });
+        setLoading(false);
+        setStep(3);
+      } catch (err) {
+        setLoading(false);
+        setStep(3);
+      }
+    } else {
+      // PayU Gateway Instant Flow
+      setLoading(true);
+      try {
+        const orderPayload = {
+          category: 'pakna_wainaba',
+          serviceTitle: 'Pakna-Wainaba · Master Astrologer Compatibility',
+          clientName: `${groomName} & ${brideName}`,
+          whatsappNo,
+          gender: 'Couple',
+          groomDetails: {
+            name: groomName,
+            fileAttached: !!groomKuthiFile,
+            fileName: groomKuthiFile ? groomKuthiFile.name : '',
+            dob: groomDob || 'Kuthi Paper Uploaded',
+            tob: groomTob || 'Kuthi Paper Uploaded',
+            pob: groomPob || 'Kuthi Paper Uploaded',
+          },
+          brideDetails: {
+            name: brideName,
+            fileAttached: !!brideKuthiFile,
+            fileName: brideKuthiFile ? brideKuthiFile.name : '',
+            dob: brideDob || 'Kuthi Paper Uploaded',
+            tob: brideTob || 'Kuthi Paper Uploaded',
+            pob: bridePob || 'Kuthi Paper Uploaded',
+          },
+          totalAmount: 1299,
+          paymentMethod: 'PAYU',
+        };
+
+        const res = await fetch('/api/payment/payu/initiate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            amount: 1299,
+            productInfo: 'Pakna-Wainaba Astrologer Compatibility',
+            firstname: `${groomName} & ${brideName}`.slice(0, 45),
+            email: 'client@kangleiastro.com',
+            phone: whatsappNo.replace(/\D/g, '').slice(-10),
+            orderType: 'kuthi',
+            orderPayload,
+          }),
+        });
+
+        const initData = await res.json();
+        if (!initData.success) {
+          setLoading(false);
+          setErrorMsg(initData.error || 'Failed to initiate PayU payment.');
+          return;
+        }
+
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = initData.actionUrl;
+
+        Object.entries(initData.params).forEach(([key, val]) => {
+          const input = document.createElement('input');
+          input.type = 'hidden';
+          input.name = key;
+          input.value = String(val ?? '');
+          form.appendChild(input);
+        });
+
+        document.body.appendChild(form);
+        form.submit();
+      } catch (err: any) {
+        setLoading(false);
+        setErrorMsg(err.message || 'Error redirecting to PayU gateway.');
+      }
     }
-
-    setLoading(true);
-
-    const orderPayload = {
-      action: 'CREATE_ORDER',
-      order: {
-        category: 'pakna_wainaba',
-        serviceTitle: 'Pakna-Wainaba (পক্ন-ৱাইনবা <ctrl42> Master Astrologer Compatibility)',
-        clientName: `${groomName} & ${brideName}`,
-        whatsappNo: whatsappNo,
-        gender: 'Couple',
-        groomDetails: {
-          name: groomName,
-          fileAttached: !!groomKuthiFile,
-          fileName: groomKuthiFile ? groomKuthiFile.name : '',
-          dob: groomDob || 'Kuthi Paper Uploaded',
-          tob: groomTob || 'Kuthi Paper Uploaded',
-          pob: groomPob || 'Kuthi Paper Uploaded',
-        },
-        brideDetails: {
-          name: brideName,
-          fileAttached: !!brideKuthiFile,
-          fileName: brideKuthiFile ? brideKuthiFile.name : '',
-          dob: brideDob || 'Kuthi Paper Uploaded',
-          tob: brideTob || 'Kuthi Paper Uploaded',
-          pob: bridePob || 'Kuthi Paper Uploaded',
-        },
-        utr: utrNumber,
-        totalAmount: 1299,
-      },
-    };
-
-    fetch('/api/kuthi', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(orderPayload),
-    })
-      .then(() => {
-        setLoading(false);
-        setStep(3);
-      })
-      .catch(() => {
-        setLoading(false);
-        setStep(3);
-      });
   };
 
   return (
@@ -478,56 +574,144 @@ export default function PaknaWainabaPage() {
                 </div>
               </div>
 
-              {/* UPI QR & UTR Entry */}
-              <div className="p-6 rounded-2xl bg-[#fefcf6] border border-[#fde68a] text-center space-y-4">
-                <span className="text-xs font-extrabold text-[#b45309] uppercase tracking-wider block">
-                  Scan & Pay ₹1,299 via Any UPI App
-                </span>
-                
-                <div className="w-36 h-36 mx-auto bg-white p-2.5 rounded-2xl border-2 border-[#fde68a] shadow-md flex items-center justify-center">
-                  <div className="w-full h-full bg-[#0f172a] text-[#fbbf24] flex items-center justify-center font-bold text-xs font-mono text-center">
-                    UPI QR Code
+              {/* Payment Method Selector & Gateway / UPI Card */}
+              <div className="p-6 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-4">
+                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+                  <div className="flex items-center gap-2 text-[#b45309]">
+                    <CreditCard className="w-5 h-5" />
+                    <span className="font-serif font-bold text-base text-[#0f172a]">Select Payment Method</span>
                   </div>
+                  <span className="font-mono font-black text-lg text-[#b45309]">₹1,299</span>
                 </div>
 
-                <span className="text-xs text-gray-600 font-mono block">UPI ID: <strong>kangleiastro@upi</strong></span>
+                {/* Method Tabs */}
+                <div className={`grid gap-3 text-left ${payuEnabled && manualUpiEnabled ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
+                  {payuEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('payu')}
+                      className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 relative ${
+                        paymentMethod === 'payu'
+                          ? 'border-[#d97706] bg-amber-50 shadow-xs'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'payu' ? 'border-[#d97706] bg-[#d97706]' : 'border-gray-400'
+                      }`}>
+                        {paymentMethod === 'payu' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-[#0f172a]">PayU Online Gateway</span>
+                          <span className="px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800 text-[10px] font-bold">Instant</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-1">Cards, NetBanking, GPay, PhonePe, Paytm</p>
+                      </div>
+                    </button>
+                  )}
 
-                <form onSubmit={handlePaymentSubmit} className="pt-3 border-t border-[#fde68a] max-w-md mx-auto text-left space-y-4">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Enter 12-Digit UPI Transaction Ref (UTR)<span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      placeholder="e.g. 429810998120"
-                      value={utrNumber}
-                      onChange={(e) => setUtrNumber(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
-                    />
+                  {manualUpiEnabled && (
+                    <button
+                      type="button"
+                      onClick={() => setPaymentMethod('manual_upi')}
+                      className={`p-3.5 rounded-2xl border-2 transition-all cursor-pointer flex items-start gap-3 relative ${
+                        paymentMethod === 'manual_upi'
+                          ? 'border-[#d97706] bg-amber-50 shadow-xs'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
+                      }`}
+                    >
+                      <div className={`w-4 h-4 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${
+                        paymentMethod === 'manual_upi' ? 'border-[#d97706] bg-[#d97706]' : 'border-gray-400'
+                      }`}>
+                        {paymentMethod === 'manual_upi' && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-xs text-[#0f172a]">Direct Manual UPI QR</span>
+                          <span className="px-2 py-0.5 rounded-md bg-gray-100 text-gray-700 text-[10px] font-bold">Scan & UTR</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500 mt-1">Scan QR code and enter 12-digit UTR reference</p>
+                      </div>
+                    </button>
+                  )}
+                </div>
+
+                {paymentMethod === 'payu' ? (
+                  /* PAYU INSTANT GATEWAY */
+                  <form onSubmit={handlePaymentSubmit} className="pt-2 max-w-md mx-auto text-left space-y-4">
+                    <div className="p-4 rounded-2xl bg-white border border-gray-200 space-y-2 text-xs">
+                      <div className="flex items-center gap-2 text-emerald-800 font-bold">
+                        <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                        <span>Instant Astrologer Notification & Verification</span>
+                      </div>
+                      <p className="text-[11.5px] text-gray-600 leading-relaxed">
+                        Pay securely with your Credit/Debit Card, Netbanking, or any UPI App via PayU. The Master Astrologer is immediately notified of your verified order.
+                      </p>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-extrabold text-sm shadow-xl hover:opacity-95 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+                    >
+                      <Lock className="w-4 h-4 text-white" />
+                      <span>{loading ? 'Connecting to PayU...' : 'Pay ₹1,299 with PayU Gateway →'}</span>
+                    </button>
+                  </form>
+                ) : (
+                  /* MANUAL UPI QR */
+                  <div className="space-y-4">
+                    <span className="text-xs font-extrabold text-[#b45309] uppercase tracking-wider block pt-2">
+                      Scan & Pay ₹1,299 via Any UPI App
+                    </span>
+                    
+                    <div className="w-36 h-36 mx-auto bg-white p-2.5 rounded-2xl border-2 border-[#fde68a] shadow-md flex items-center justify-center">
+                      <div className="w-full h-full bg-[#0f172a] text-[#fbbf24] flex items-center justify-center font-bold text-xs font-mono text-center">
+                        UPI QR Code
+                      </div>
+                    </div>
+
+                    <span className="text-xs text-gray-600 font-mono block">UPI ID: <strong>kangleiastro@upi</strong></span>
+
+                    <form onSubmit={handlePaymentSubmit} className="pt-3 border-t border-[#fde68a] max-w-md mx-auto text-left space-y-4">
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                          Enter 12-Digit UPI Transaction Ref (UTR)<span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required={paymentMethod === 'manual_upi'}
+                          placeholder="e.g. 429810998120"
+                          value={utrNumber}
+                          onChange={(e) => setUtrNumber(e.target.value)}
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
+                          Upload Payment Screenshot (Optional)
+                        </label>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={(e) => e.target.files && setScreenshotFile(e.target.files[0])}
+                          className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#0f172a] file:text-white cursor-pointer"
+                        />
+                      </div>
+
+                      <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-sm shadow-xl hover:opacity-95 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
+                      >
+                        <ShieldCheck className="w-5 h-5 text-white" />
+                        <span>{loading ? 'Verifying Payment...' : 'Confirm Payment (₹1,299) & Send Kuthi to Astrologer →'}</span>
+                      </button>
+                    </form>
                   </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-700 mb-1">
-                      Upload Payment Screenshot (Optional)
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => e.target.files && setScreenshotFile(e.target.files[0])}
-                      className="block w-full text-xs text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#0f172a] file:text-white cursor-pointer"
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-sm shadow-xl hover:opacity-95 transition-opacity flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <ShieldCheck className="w-5 h-5 text-white" />
-                    <span>{loading ? 'Verifying Payment...' : 'Confirm Payment (₹1,299) & Send Kuthi to Astrologer →'}</span>
-                  </button>
-                </form>
+                )}
               </div>
 
             </motion.div>
