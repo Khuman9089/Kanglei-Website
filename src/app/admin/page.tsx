@@ -260,7 +260,11 @@ interface KuthiOrder {
   yek?: string;
   gotra?: string;
   deliveryAddress?: string;
-  category?: 'new_born_baby' | 'kuthi_rewrite';
+  category?: 'new_born_baby' | 'kuthi_rewrite' | 'generated_kuthi' | string;
+  paymentMethod?: string;
+  astrologerId?: string;
+  astrologerName?: string;
+  chartData?: any;
   assignedAstrologerId?: string;
   assignedAstrologerName?: string;
   reportReceivedFromAstro?: boolean;
@@ -999,6 +1003,8 @@ export default function AdminDashboardPage() {
       'kaal-sarp-dosh',
       'astrology-yoga',
       'match-making',
+      'yumsharol',
+      'nga-eeshing',
       'kuthi-iba',
       'numit-leppa',
     ],
@@ -4373,7 +4379,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <tr key={o.id} className="hover:bg-[#fefcf6] transition-colors">
                           <td className="px-4 py-4 space-y-1.5">
                             <div className="font-mono font-bold text-[#b45309] text-sm">{o.orderRef}</div>
-                            <div className="text-[10px] text-gray-500 font-mono">UTR: {o.utr}</div>
+                            {o.category === 'generated_kuthi' && (
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                                📜 Generated Kuthi Sheet
+                              </span>
+                            )}
+                            <div className="text-[10px] text-gray-500 font-mono">
+                              UTR: {o.utr || 'N/A'} {o.paymentMethod ? `(${o.paymentMethod})` : ''}
+                            </div>
                             <div className="pt-1">
                               <select
                                 value={o.paymentStatus || (o.status === 'COMPLETED' ? 'PAYMENT_RECEIVED' : 'VERIFICATION_PENDING')}
@@ -4391,6 +4404,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 <option value="VERIFICATION_PENDING">🟡 Verification Pending</option>
                               </select>
                             </div>
+                            {o.paymentStatus === 'VERIFICATION_PENDING' && (
+                              <button
+                                onClick={() => handleUpdateKuthiOrderPaymentStatus(o.id, 'PAYMENT_RECEIVED')}
+                                className="w-full mt-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] shadow-sm flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
+                              >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                <span>Approve Payment (UPI)</span>
+                              </button>
+                            )}
                           </td>
                           <td className="px-4 py-4 font-bold text-[#0f172a]">{o.clientName} ({o.sex})</td>
                           <td className="px-4 py-4">
@@ -7891,6 +7913,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         { id: 'kaal-sarp-dosh', label: 'Kaal Sarp Dosh Analysis' },
                         { id: 'astrology-yoga', label: 'Planetary Yogas Evaluator' },
                         { id: 'match-making', label: 'Match Making (36-Gun Milan)' },
+                        { id: 'yumsharol', label: 'Yumsharol (Traditional Vastu & House Science)' },
+                        { id: 'nga-eeshing', label: 'ঙা-ঈশিং (Nga-Eeshing Matrimonial Match)' },
                         { id: 'kuthi-iba', label: 'Kuthi Iba (Handwritten Scroll)' },
                         { id: 'numit-leppa', label: 'Numit Leppa (Auspicious Muhurat)' },
                         { id: 'estore-vendor', label: 'E-Store Vendor Catalog Access' },
@@ -10316,6 +10340,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </button>
                 </div>
               </div>
+
+
 
               {/* CARD 4: OFFICIAL CONTACT DETAILS & BRANCH OFFICES CMS */}
               <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">

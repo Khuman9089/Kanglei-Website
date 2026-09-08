@@ -93,7 +93,19 @@ const DEFAULT_SETTINGS: SiteSettings = {
 };
 
 export async function GET() {
-  const settings = await readPersistentDataAsync<SiteSettings>('site_settings', DEFAULT_SETTINGS);
+  const loaded = await readPersistentDataAsync<SiteSettings>('site_settings', DEFAULT_SETTINGS);
+  const settings: SiteSettings = {
+    ...DEFAULT_SETTINGS,
+    ...loaded,
+    upiSettings: {
+      ...DEFAULT_SETTINGS.upiSettings,
+      ...(loaded?.upiSettings || {}),
+    },
+    headerSettings: {
+      ...DEFAULT_SETTINGS.headerSettings,
+      ...(loaded?.headerSettings || {}),
+    },
+  };
   return NextResponse.json(settings);
 }
 

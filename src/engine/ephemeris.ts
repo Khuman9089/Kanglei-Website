@@ -53,7 +53,7 @@ const MEAN_ELEMENTS: Record<string, { L0: number; n: number }> = {
  */
 export function calculatePlanetaryPositions(
   birthData: BirthData
-): { planets: PlanetPosition[]; ascendant: number } {
+): { planets: PlanetPosition[]; ascendant: number; ayanamsa: number } {
   let year: number, month: number, day: number;
   let h: number, m: number;
 
@@ -147,7 +147,7 @@ export function calculatePlanetaryPositions(
   let ascendant = ((ascRad * 180) / Math.PI + 360) % 360;
   ascendant = (ascendant - ayanamsa + 360) % 360;
 
-  return { planets, ascendant };
+  return { planets, ascendant, ayanamsa };
 }
 
 function createDefaultPlanet(p: { id: string; name: string }, longitude: number): PlanetPosition {

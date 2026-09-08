@@ -59,6 +59,21 @@ body {
   font-family: 'Dancing Script', cursive, serif !important;
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Custom Manipuri Font: Blipi15
+   ───────────────────────────────────────────────────────────── */
+@font-face {
+  font-family: 'Blipi15';
+  src: url('/fonts/Blipi15.TTF') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Custom font utility classes */
+.font-blipi { font-family: 'Blipi15', sans-serif !important; }
+.font-meetei { font-family: 'Blipi15', sans-serif !important; }
+
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Cormorant Garamond', Georgia, serif;
   font-weight: 700;

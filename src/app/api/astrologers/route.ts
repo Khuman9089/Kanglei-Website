@@ -93,6 +93,10 @@ export async function GET() {
       pricePerMin: a.pricePerMin || defaultItem?.pricePerMin || 35,
       fixedRate: a.fixedRate || defaultItem?.fixedRate || mergedSettings.defaultFixedRate || 499,
       actionButtonType: a.actionButtonType || mergedSettings.actionButtonType || 'both',
+      specialties: (a.specialties && a.specialties.length > 0) ? a.specialties : (a.categoryTags && a.categoryTags.length > 0) ? a.categoryTags : a.specialty ? [a.specialty] : ['Vedic Astrology'],
+      languages: Array.isArray(a.languages) ? a.languages.join(' · ') : (a.languages || 'Manipuri · English'),
+      rating: typeof a.rating === 'number' ? a.rating : 5.0,
+      consultationsCount: a.consultationsCount || '100+ orders',
     };
   });
 

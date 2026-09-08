@@ -9,17 +9,19 @@ import ConsultationBookingModal from '@/components/consultation/ConsultationBook
 interface TopAstrologer {
   id: string;
   name: string;
-  badge: string;
-  avatar: string;
-  specialties: string[];
-  languages: string;
-  experienceYears: number;
-  rating: number;
-  consultationsCount: string;
-  pricePerMin: number;
+  badge?: string;
+  avatar?: string;
+  specialty?: string;
+  specialties?: string[];
+  categoryTags?: string[];
+  languages?: string | string[];
+  experienceYears?: number;
+  rating?: number;
+  consultationsCount?: string;
+  pricePerMin?: number;
   fixedRate?: number;
   actionButtonType?: 'both' | 'chat_only' | 'call_only';
-  whatsappPhone: string;
+  whatsappPhone?: string;
   active?: boolean;
   showOnHome?: boolean;
 }
@@ -157,7 +159,14 @@ export default function TopAstrologersSection() {
 
                 {/* Specialty Tags */}
                 <div className="flex flex-wrap gap-1.5 mb-4">
-                  {astro.specialties.map((spec, sIdx) => (
+                  {((astro.specialties && Array.isArray(astro.specialties) && astro.specialties.length > 0)
+                    ? astro.specialties
+                    : (astro.categoryTags && Array.isArray(astro.categoryTags) && astro.categoryTags.length > 0)
+                    ? astro.categoryTags
+                    : astro.specialty
+                    ? [astro.specialty]
+                    : ['Vedic Astrology']
+                  ).map((spec: string, sIdx: number) => (
                     <span key={sIdx} className="px-2.5 py-0.5 rounded-lg bg-gray-50 border border-gray-200/60 text-[11px] font-semibold text-gray-700">
                       {spec}
                     </span>
@@ -166,16 +175,18 @@ export default function TopAstrologersSection() {
 
                 {/* Languages & Experience */}
                 <div className="text-xs text-gray-600 space-y-1 mb-4">
-                  <div className="font-medium truncate">{astro.languages}</div>
-                  <div className="font-bold text-gray-800">{astro.experienceYears} yrs exp</div>
+                  <div className="font-medium truncate">
+                    {Array.isArray(astro.languages) ? astro.languages.join(' · ') : (astro.languages || 'Manipuri · English')}
+                  </div>
+                  <div className="font-bold text-gray-800">{astro.experienceYears || 5} yrs exp</div>
                 </div>
 
                 {/* Rating & Price Row */}
                 <div className="flex items-center justify-between border-t border-gray-100 pt-3 mb-5">
                   <div className="flex items-center gap-1 text-xs">
                     <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
-                    <span className="font-extrabold text-[#0f172a]">{astro.rating.toFixed(1)}</span>
-                    <span className="text-gray-400 text-[11px]">· {astro.consultationsCount}</span>
+                    <span className="font-extrabold text-[#0f172a]">{(typeof astro.rating === 'number' ? astro.rating : 5.0).toFixed(1)}</span>
+                    <span className="text-gray-400 text-[11px]">· {astro.consultationsCount || '100+ orders'}</span>
                   </div>
 
                   {settings.showRateOnHome !== false && settings.rateMode !== 'none' && (

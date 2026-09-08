@@ -1,1 +1,53 @@
-[]
+[
+  {
+    "id": "astro-1788842483843",
+    "name": "Oinam Robert Singh",
+    "email": "robert@kuthiyengpham.in",
+    "phone": "8837487801",
+    "state": "Manipur",
+    "upiId": "8837487801",
+    "avatar": "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80",
+    "status": "ACTIVE",
+    "address": "Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur - 795005",
+    "pincode": "795005",
+    "bankName": "State Bank of India (SBI)",
+    "ifscCode": "SBIN0001234",
+    "password": "admin123",
+    "planTier": "ADVANCE",
+    "username": "robert",
+    "accountNo": "",
+    "fixedRate": 500,
+    "languages": [
+      "Manipuri (Meiteilon)",
+      "English"
+    ],
+    "specialty": "Kuthi Yengba & Vedic Astrology",
+    "showOnHome": true,
+    "streetLane": "Khurai Chingangbam Leikai, Tinsid Road",
+    "whatsappNo": "8837487801",
+    "pricePerMin": 35,
+    "allowedTools": [
+      "dasha-yengpham",
+      "shani-sade-sati",
+      "astrology-yoga",
+      "match-making",
+      "kuthi-iba",
+      "numit-leppa",
+      "nga-eeshing"
+    ],
+    "categoryTags": [
+      "Wealth",
+      "Education",
+      "Marriage",
+      "Career"
+    ],
+    "cityDistrict": "Imphal East",
+    "payoutMethod": "UPI",
+    "accountHolder": "Oinam Robert Singh",
+    "pendingPayout": 0,
+    "completedCount": 0,
+    "sameAsWhatsapp": true,
+    "experienceYears": 5,
+    "actionButtonType": "both"
+  }
+]

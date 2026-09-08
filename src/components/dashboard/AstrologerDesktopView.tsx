@@ -10,7 +10,8 @@ import {
   DollarSign, Filter, Share2, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
   Wallet, RefreshCw, Send, UploadCloud, Upload, User, Phone, Mail, MapPin, Paperclip,
   CheckCircle, AlertCircle, Edit, Star, Heart, Baby, FileCheck, KeyRound,
-  Hash, Sun, Flame, Disc, Compass, Car, Grid, Globe, ShoppingBag, Plus, Image as ImageIcon
+  Hash, Sun, Flame, Disc, Compass, Car, Grid, Globe, ShoppingBag, Plus, Image as ImageIcon,
+  ScrollText, Printer
 } from 'lucide-react';
 import NorthIndianChart from '@/components/charts/NorthIndianChart';
 import SouthIndianChart from '@/components/charts/SouthIndianChart';
@@ -21,6 +22,13 @@ import { calculateEqualHouses } from '@/engine/houses';
 import { getNakshatraInfo } from '@/engine/nakshatras';
 import { calculatePanchangaDetails } from '@/engine/panchanga';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
+import { calculateYumsharol, NAKSHATRAS_LIST, YUMSHAROL_REMAINDER_PREDICTIONS } from '@/lib/astrology/yumsharol';
+import { calculateNgaEeshing, RASHI_LIST_NGA_EESHING } from '@/lib/astrology/ngaEeshing';
+import { calculateSadeSati } from '@/lib/astrology/sadeSati';
+import { calculateManglikDosh } from '@/lib/astrology/manglik';
+import { calculateKaalSarpDosh } from '@/lib/astrology/kaalSarp';
+import { calculateCoupleMatch } from '@/lib/astrology/matchMaking';
+import { calculatePlanetaryYogas } from '@/lib/astrology/yogas';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 
 // Bengali Formatting Helpers
@@ -424,10 +432,20 @@ export default function AstrologerDashboard() {
     pob: 'Imphal, Manipur',
     lat: 24.8170,
     lng: 93.9368,
+    partnerDob: '1997-08-20',
+    partnerTob: '10:30',
+    partnerPob: 'Imphal, Manipur',
+    partnerLat: 24.8170,
+    partnerLng: 93.9368,
     timezone: 5.5,
     ayanamsa: 'Lahiri (Chitrapaksha)',
     vehicleNo: 'MN01AB1234',
+    nakshatra: 1,
+    constantValue: 15,
+    groomRashi: 0,
+    brideRashi: 0,
   });
+  const [yumsharolValidationErr, setYumsharolValidationErr] = useState('');
   const [calcResult, setCalcResult] = useState<any>(null);
   const [isCalculating, setIsCalculating] = useState(false);
 
@@ -892,7 +910,7 @@ Question: ${details.question || 'N/A'}`;
               Astrologer Access Portal
             </h2>
             <p className="text-xs text-slate-600 dark:text-gray-400">
-              Please enter your registered astrologer passcode to access assigned Kuthi consultations & 19 calculators.
+              Please enter your registered astrologer passcode to access assigned Kuthi consultations & professional tools.
             </p>
           </div>
 
@@ -947,7 +965,7 @@ Question: ${details.question || 'N/A'}`;
 
   return (
     <div className={`min-h-screen font-sans flex flex-col md:flex-row transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-[#0b132b] text-[#faf8f4]' : 'bg-[#faf8f5] text-[#0f172a]'
+      theme === 'dark' ? 'dark bg-[#0b132b] text-[#faf8f4]' : 'bg-[#faf8f5] text-[#0f172a]'
     }`}>
       
       {/* ─────────────────────────────────────────────────────────────
@@ -1178,7 +1196,7 @@ Question: ${details.question || 'N/A'}`;
                 >
                   <div className="flex items-center gap-3">
                     <Sparkles className="w-4 h-4 text-[#d97706]" />
-                    <span>Astrological Calculators</span>
+                    <span>Tools</span>
                   </div>
                   <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
@@ -1186,6 +1204,7 @@ Question: ${details.question || 'N/A'}`;
                     {allowedTools.length}
                   </span>
                 </button>
+
 
                 <button
                   onClick={() => { setActiveTab('profile'); setSidebarOpen(false); }}
@@ -1701,34 +1720,46 @@ Question: ${details.question || 'N/A'}`;
 
           {/* INCOMING CONSULTATION CALL POPUP ALERT */}
           {incomingSession && (
-            <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4">
-              <div className="bg-slate-900 border-2 border-amber-500 rounded-3xl max-w-md w-full p-6 text-slate-100 shadow-2xl text-center space-y-5 relative overflow-hidden">
+            <div className={`fixed inset-0 z-50 backdrop-blur-md flex items-center justify-center p-4 ${
+              theme === 'dark' ? 'bg-black/80' : 'bg-slate-900/60'
+            }`}>
+              <div className={`border-2 border-amber-500 rounded-3xl max-w-md w-full p-6 shadow-2xl text-center space-y-5 relative overflow-hidden transition-colors ${
+                theme === 'dark' ? 'bg-slate-900 text-slate-100' : 'bg-white text-slate-900'
+              }`}>
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-amber-500 via-emerald-500 to-amber-500 animate-pulse"></div>
 
-                <div className="w-20 h-20 bg-amber-500/20 text-amber-400 border-2 border-amber-500 rounded-full flex items-center justify-center mx-auto ring-8 ring-amber-500/10 animate-bounce">
+                <div className="w-20 h-20 bg-amber-500/20 text-amber-500 border-2 border-amber-500 rounded-full flex items-center justify-center mx-auto ring-8 ring-amber-500/10 animate-bounce">
                   {incomingSession.mode === 'CALL' ? <Phone className="w-10 h-10" /> : <MessageSquare className="w-10 h-10" />}
                 </div>
 
                 <div className="space-y-1">
-                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-amber-400 block">
+                  <span className={`text-[10px] font-extrabold uppercase tracking-widest block ${
+                    theme === 'dark' ? 'text-amber-400' : 'text-amber-800'
+                  }`}>
                     🔔 INCOMING CONSULTATION REQUEST
                   </span>
-                  <h3 className="font-serif font-bold text-2xl text-slate-100">
+                  <h3 className={`font-serif font-bold text-2xl ${
+                    theme === 'dark' ? 'text-slate-100' : 'text-slate-900'
+                  }`}>
                     {incomingSession.clientName}
                   </h3>
-                  <p className="text-xs text-slate-400">
+                  <p className={`text-xs ${
+                    theme === 'dark' ? 'text-slate-400' : 'text-slate-600 font-medium'
+                  }`}>
                     Requested {incomingSession.durationMinutes} Mins {incomingSession.mode === 'CALL' ? 'Voice Call' : 'Live Chat'} (₹{incomingSession.totalFee} Fee)
                   </p>
                 </div>
 
-                <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 text-xs text-left space-y-1">
+                <div className={`p-3 rounded-2xl border text-xs text-left space-y-1 ${
+                  theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-amber-50/70 border-amber-200'
+                }`}>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Client Mobile:</span>
-                    <span className="font-mono text-amber-300">{incomingSession.clientPhone}</span>
+                    <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600 font-bold'}>Client Mobile:</span>
+                    <span className={`font-mono font-bold ${theme === 'dark' ? 'text-amber-300' : 'text-amber-900'}`}>{incomingSession.clientPhone}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Gender / DOB:</span>
-                    <span className="text-slate-200">{incomingSession.clientGender || 'N/A'} · {incomingSession.clientDob || 'N/A'}</span>
+                    <span className={theme === 'dark' ? 'text-slate-400' : 'text-slate-600 font-bold'}>Gender / DOB:</span>
+                    <span className={theme === 'dark' ? 'text-slate-200' : 'text-slate-800 font-medium'}>{incomingSession.clientGender || 'N/A'} · {incomingSession.clientDob || 'N/A'}</span>
                   </div>
                 </div>
 
@@ -3466,52 +3497,71 @@ Question: ${details.question || 'N/A'}`;
             </div>
           )}
 
-          {/* TAB 4: ASTROLOGICAL CALCULATORS */}
+          {/* TAB 4: TOOLS */}
           {activeTab === 'tools' && (
             <div className="space-y-6">
               
               {/* Workspace Header Banner */}
-              <div className="bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-sm flex flex-wrap justify-between items-center gap-4">
+              <div className={`p-6 rounded-3xl border shadow-sm flex flex-wrap justify-between items-center gap-4 transition-colors ${
+                theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#f3e8d2] text-slate-900'
+              }`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-extrabold uppercase tracking-wider mb-2 bg-[#fef3c7] text-[#b45309] border border-[#fde68a]">
                     <Sparkles className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
                     Empaneled Astrologer Workspace Suite
                   </div>
-                  <h3 className="font-serif font-bold text-2xl sm:text-3xl text-[#0f172a]">
-                    Astrological Calculators & Dosha Engine
+                  <h3 className={`font-serif font-bold text-2xl sm:text-3xl ${
+                    theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#0f172a]'
+                  }`}>
+                    Tools & Astrological Engines
                   </h3>
-                  <p className="text-xs text-gray-600 font-medium mt-1 max-w-2xl">
-                    Access your Admin-permitted calculation tools to analyze Client Birth Charts, Vimshottari Dashas, Shani Sade Sati, Kaal Sarp Dosh, Yogas, and Marriage Match Making.
+                  <p className={`text-xs font-medium mt-1 max-w-2xl ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                  }`}>
+                    Access your Admin-permitted tools to analyze Client Birth Charts, Traditional Yumsharol Vastu, Vimshottari Dashas, Shani Sade Sati, Kaal Sarp Dosh, Yogas, and Marriage Match Making.
                   </p>
                 </div>
 
-                <div className="px-4 py-2 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2] text-xs font-bold font-mono text-[#b45309]">
-                  ⚡ {ACTIVE_TOOLS_REGISTRY.length} Active Calculators
+                <div className={`px-4 py-2 rounded-2xl border text-xs font-bold font-mono ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-[#fbbf24]' : 'bg-[#faf8f5] border-[#f3e8d2] text-[#b45309]'
+                }`}>
+                  ⚡ {ACTIVE_TOOLS_REGISTRY.length} Active Tools
                 </div>
               </div>
 
-              {/* 6 TOOL CARDS GRID MATCHING 2.PNG */}
+              {/* TOOL CARDS GRID */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {ACTIVE_TOOLS_REGISTRY.map((t) => (
                   <div
                     key={t.id}
-                    className="bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-sm hover:shadow-xl hover:border-[#d97706] transition-all flex flex-col justify-between space-y-5 group"
+                    className={`p-6 rounded-3xl border shadow-sm hover:shadow-xl hover:border-[#d97706] transition-all flex flex-col justify-between space-y-5 group ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#f3e8d2] text-slate-900'
+                    }`}
                   >
                     <div className="space-y-3.5">
                       {/* Icon Box matching 2.png */}
-                      <div className="w-14 h-14 rounded-2xl bg-[#fef3c7]/80 text-[#d97706] border border-[#fde68a] flex items-center justify-center text-2xl font-bold shadow-xs group-hover:scale-110 transition-transform">
-                        {t.id === 'dasha-yengpham' ? '📜' :
+                      <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-xs group-hover:scale-110 transition-transform ${
+                        theme === 'dark' ? 'bg-[#0b132b] text-[#fbbf24] border border-[#3a506b]' : 'bg-[#fef3c7]/80 text-[#d97706] border border-[#fde68a]'
+                      }`}>
+                        {t.id === 'yumsharol' ? '🏡' :
+                         t.id === 'nga-eeshing' ? '🐟' :
+                         t.id === 'dasha-yengpham' ? '📜' :
                          t.id === 'shani-sade-sati' ? '🪐' :
+                         t.id === 'mangalik-dosh' ? '🔥' :
                          t.id === 'kaal-sarp-dosh' ? '🐍' :
                          t.id === 'astrology-yoga' ? '✨' :
                          t.id === 'match-making' ? '💍' : '📊'}
                       </div>
 
                       <div>
-                        <h4 className="font-serif font-bold text-xl text-[#0f172a] group-hover:text-[#c69214] transition-colors">
+                        <h4 className={`font-serif font-bold text-xl transition-colors ${
+                          theme === 'dark' ? 'text-white group-hover:text-[#fbbf24]' : 'text-[#0f172a] group-hover:text-[#c69214]'
+                        }`}>
                           {t.title}
                         </h4>
-                        <p className="text-xs text-gray-600 font-sans leading-relaxed mt-1.5 font-medium">
+                        <p className={`text-xs font-sans leading-relaxed mt-1.5 font-medium ${
+                          theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+                        }`}>
                           {t.subtitle}
                         </p>
                       </div>
@@ -3534,6 +3584,7 @@ Question: ${details.question || 'N/A'}`;
 
             </div>
           )}
+
 
         </main>
       </div>
@@ -3720,7 +3771,7 @@ Question: ${details.question || 'N/A'}`;
                       <div className={`p-3 rounded-xl border ${
                         theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
                       }`}>
-                        <span className="text-pink-600 text-xs font-bold block mb-1">👰 Bride Birth Details</span>
+                        <span className={`text-xs font-bold block mb-1 ${theme === 'dark' ? 'text-pink-400' : 'text-pink-800'}`}>👰 Bride Birth Details</span>
                         <div className={`grid grid-cols-2 gap-2 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
                           <div>Name: <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>{inspectingClient.clientDetails.brideDetails.name}</strong></div>
                           <div>DOB: <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>{inspectingClient.clientDetails.brideDetails.dob}</strong></div>
@@ -3744,18 +3795,30 @@ Question: ${details.question || 'N/A'}`;
                       <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Place of Birth</span>
                       <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>{inspectingClient.clientDetails.pob || 'See Kuthi Document'}</strong>
                     </div>
-                    <div className="col-span-2 p-2.5 rounded-xl border flex items-center justify-between mt-1 bg-amber-50/70 dark:bg-amber-950/30 border-amber-300 dark:border-amber-500/40">
+                    <div className={`col-span-2 p-2.5 rounded-xl border flex items-center justify-between mt-1 ${
+                      theme === 'dark'
+                        ? 'bg-amber-950/30 border-amber-500/40'
+                        : 'bg-amber-50/70 border-amber-300'
+                    }`}>
                       <div>
-                        <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 block">Faith Tradition & Identity</span>
-                        <strong className="text-xs text-amber-900 dark:text-amber-200">
+                        <span className={`text-[10px] uppercase font-bold block ${
+                          theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                        }`}>Faith Tradition & Identity</span>
+                        <strong className={`text-xs ${
+                          theme === 'dark' ? 'text-amber-200' : 'text-amber-900'
+                        }`}>
                           {inspectingClient.clientDetails.faithTradition === 'Sanamahi Laining' ? '☀️ Sanamahi Laining (Indigenous Meetei)' : '🕉️ Hinduism (Vedic Manipuri)'}
                         </strong>
                       </div>
                       <div className="text-right">
-                        <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 block">
+                        <span className={`text-[10px] uppercase font-bold block ${
+                          theme === 'dark' ? 'text-slate-400' : 'text-slate-600'
+                        }`}>
                           {inspectingClient.clientDetails.faithTradition === 'Sanamahi Laining' ? 'Yek Salai' : 'Gotra (সালয়)'}
                         </span>
-                        <strong className="text-xs text-[#b45309] dark:text-[#fbbf24]">
+                        <strong className={`text-xs ${
+                          theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#b45309]'
+                        }`}>
                           {inspectingClient.clientDetails.faithTradition === 'Sanamahi Laining'
                             ? (inspectingClient.clientDetails.yek || inspectingClient.clientDetails.gotra || 'Khuman')
                             : (inspectingClient.clientDetails.gotra || 'Sandilya')}
@@ -3890,24 +3953,41 @@ Question: ${details.question || 'N/A'}`;
       {/* ========================== UPLOAD REPORT MODAL ========================== */}
       {uploadingOrder && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/70 backdrop-blur-xs" onClick={() => setUploadingOrder(null)} />
-          <div className="relative w-full max-w-lg bg-[#1c2541] rounded-2xl border border-[#3a506b] shadow-2xl p-6 space-y-4 z-10 text-xs">
-            <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
+          <div className={`absolute inset-0 backdrop-blur-xs ${
+            theme === 'dark' ? 'bg-black/70' : 'bg-slate-900/50'
+          }`} onClick={() => setUploadingOrder(null)} />
+          <div className={`relative w-full max-w-lg rounded-2xl border shadow-2xl p-6 space-y-4 z-10 text-xs transition-colors ${
+            theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
+          }`}>
+            <div className={`flex justify-between items-center pb-3 border-b ${
+              theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
+            }`}>
               <div>
-                <h4 className="font-serif font-bold text-lg text-[#fbbf24] flex items-center gap-2">
+                <h4 className={`font-serif font-bold text-lg flex items-center gap-2 ${
+                  theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                }`}>
                   <FileText className="w-5 h-5 text-[#d97706]" />
                   Upload Completed Consultation Report
                 </h4>
-                <p className="text-gray-400 text-[11px]">Client: <strong className="text-[#faf8f4]">{uploadingOrder.clientName}</strong> ({uploadingOrder.orderRef || uploadingOrder.id})</p>
+                <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                  Client: <strong className={theme === 'dark' ? 'text-[#faf8f4]' : 'text-slate-900'}>{uploadingOrder.clientName}</strong> ({uploadingOrder.orderRef || uploadingOrder.id})
+                </p>
               </div>
-              <button onClick={() => setUploadingOrder(null)} className="text-gray-400 hover:text-white p-1">
+              <button
+                onClick={() => setUploadingOrder(null)}
+                className={`p-1 transition-colors cursor-pointer ${
+                  theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-slate-400 hover:text-slate-900'
+                }`}
+              >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {uploadMsg && (
               <div className={`p-3 rounded-xl border text-xs font-bold text-center ${
-                uploadMsg.startsWith('✅') ? 'bg-green-500/10 border-green-500/30 text-green-300' : 'bg-red-500/10 border-red-500/30 text-red-300'
+                uploadMsg.startsWith('✅')
+                  ? (theme === 'dark' ? 'bg-green-500/10 border-green-500/30 text-green-300' : 'bg-green-50 border-green-300 text-green-800')
+                  : (theme === 'dark' ? 'bg-red-500/10 border-red-500/30 text-red-300' : 'bg-red-50 border-red-300 text-red-800')
               }`}>
                 {uploadMsg}
               </div>
@@ -3916,8 +3996,10 @@ Question: ${details.question || 'N/A'}`;
             <form onSubmit={handleUploadReportSubmit} className="space-y-4 font-sans">
               {/* Native File Input for Computer & Mobile Phone */}
               <div>
-                <label className="block text-gray-300 font-bold mb-1 uppercase tracking-wider text-[10px]">
-                  Choose Report File From Device (Phone / Computer)<span className="text-red-400">*</span>
+                <label className={`block font-bold mb-1 uppercase tracking-wider text-[10px] ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                }`}>
+                  Choose Report File From Device (Phone / Computer)<span className="text-red-500">*</span>
                 </label>
                 
                 <input
@@ -3929,22 +4011,30 @@ Question: ${details.question || 'N/A'}`;
                 />
 
                 {selectedFile ? (
-                  <div className="bg-[#0b132b] p-4 rounded-xl border border-green-500/50 flex items-center justify-between gap-3">
+                  <div className={`p-4 rounded-xl border flex items-center justify-between gap-3 ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-green-500/50' : 'bg-emerald-50/70 border-emerald-300'
+                  }`}>
                     <div className="flex items-center gap-3 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-green-500/20 text-green-400 border border-green-500/30 flex items-center justify-center shrink-0 font-bold">
+                      <div className="w-10 h-10 rounded-lg bg-green-500/20 text-green-600 dark:text-green-400 border border-green-500/30 flex items-center justify-center shrink-0 font-bold">
                         <FileText className="w-5 h-5" />
                       </div>
                       <div className="min-w-0">
-                        <div className="font-bold text-white text-xs truncate">{selectedFile.name}</div>
-                        <div className="text-[10px] text-green-400 mt-0.5 font-mono flex items-center gap-1">
-                          <CheckCircle2 className="w-3 h-3 text-green-400" />
+                        <div className={`font-bold text-xs truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {selectedFile.name}
+                        </div>
+                        <div className="text-[10px] text-green-600 dark:text-green-400 mt-0.5 font-mono flex items-center gap-1">
+                          <CheckCircle2 className="w-3 h-3 text-green-600 dark:text-green-400" />
                           <span>{(selectedFile.size / (1024 * 1024)).toFixed(2)} MB • Ready to upload</span>
                         </div>
                       </div>
                     </div>
                     <label
                       htmlFor="astrologer-report-file"
-                      className="px-3 py-1.5 rounded-lg bg-[#1c2541] hover:bg-[#253356] border border-[#3a506b] text-amber-400 text-[11px] font-bold cursor-pointer shrink-0 transition-colors"
+                      className={`px-3 py-1.5 rounded-lg border text-[11px] font-bold cursor-pointer shrink-0 transition-colors ${
+                        theme === 'dark'
+                          ? 'bg-[#1c2541] hover:bg-[#253356] border-[#3a506b] text-amber-400'
+                          : 'bg-white hover:bg-slate-50 border-slate-300 text-amber-800 shadow-2xs'
+                      }`}
                     >
                       Change File
                     </label>
@@ -3952,20 +4042,30 @@ Question: ${details.question || 'N/A'}`;
                 ) : (
                   <label
                     htmlFor="astrologer-report-file"
-                    className="flex flex-col items-center justify-center p-6 border-2 border-dashed border-[#3a506b] hover:border-amber-400 bg-[#0b132b]/60 hover:bg-[#0b132b] rounded-2xl cursor-pointer transition-all text-center group"
+                    className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-2xl cursor-pointer transition-all text-center group ${
+                      theme === 'dark'
+                        ? 'border-[#3a506b] hover:border-amber-400 bg-[#0b132b]/60 hover:bg-[#0b132b]'
+                        : 'border-slate-300 hover:border-amber-500 bg-slate-50/70 hover:bg-amber-50/40'
+                    }`}
                   >
-                    <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
                       <UploadCloud className="w-6 h-6" />
                     </div>
-                    <span className="font-bold text-white text-xs">Tap here to choose PDF report file from phone or computer</span>
-                    <span className="text-[10px] text-gray-400 mt-1">Supports PDF documents (.pdf), Word (.docx), or JPG/PNG images</span>
+                    <span className={`font-bold text-xs ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                      Tap here to choose PDF report file from phone or computer
+                    </span>
+                    <span className={`text-[10px] mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      Supports PDF documents (.pdf), Word (.docx), or JPG/PNG images
+                    </span>
                   </label>
                 )}
               </div>
 
               <div>
-                <label className="block text-gray-300 font-bold mb-1 uppercase tracking-wider text-[10px]">
-                  Report File Title / Document Name<span className="text-red-400">*</span>
+                <label className={`block font-bold mb-1 uppercase tracking-wider text-[10px] ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                }`}>
+                  Report File Title / Document Name<span className="text-red-500">*</span>
                 </label>
                 <input
                   type="text"
@@ -3973,12 +4073,18 @@ Question: ${details.question || 'N/A'}`;
                   placeholder="e.g. Acharya_Sharma_Marriage_Report.pdf"
                   value={uploadForm.reportFileName}
                   onChange={(e) => setUploadForm({ ...uploadForm, reportFileName: e.target.value })}
-                  className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
+                  className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                    theme === 'dark'
+                      ? 'bg-[#0b132b] border border-[#3a506b] text-white'
+                      : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                  }`}
                 />
               </div>
 
               <div>
-                <label className="block text-gray-300 font-bold mb-1 uppercase tracking-wider text-[10px]">
+                <label className={`block font-bold mb-1 uppercase tracking-wider text-[10px] ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                }`}>
                   Astrologer Summary & Prescribed Remedies Notes
                 </label>
                 <textarea
@@ -3986,27 +4092,37 @@ Question: ${details.question || 'N/A'}`;
                   placeholder="Summary of planetary chart findings, Vimshottari Dasha analysis, gemstone advice, or special Vedic mantras..."
                   value={uploadForm.reportNotes}
                   onChange={(e) => setUploadForm({ ...uploadForm, reportNotes: e.target.value })}
-                  className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white text-xs focus:border-[#d97706] focus:outline-none"
+                  className={`w-full p-3 rounded-xl text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                    theme === 'dark'
+                      ? 'bg-[#0b132b] border border-[#3a506b] text-white'
+                      : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                  }`}
                 />
               </div>
 
-              <div className="bg-[#0b132b] p-3 rounded-xl border border-[#3a506b] flex justify-between items-center text-xs">
-                <span className="text-gray-400">Commission Payout Credit:</span>
-                <span className="font-mono font-bold text-green-400">+₹{uploadingOrder.payoutFee} to Wallet</span>
+              <div className={`p-3 rounded-xl border flex justify-between items-center text-xs ${
+                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+              }`}>
+                <span className={theme === 'dark' ? 'text-gray-400' : 'text-slate-600 font-medium'}>Commission Payout Credit:</span>
+                <span className="font-mono font-bold text-green-600 dark:text-green-400">+₹{uploadingOrder.payoutFee} to Wallet</span>
               </div>
 
-              <div className="flex justify-end gap-2 pt-2 border-t border-[#3a506b]">
+              <div className={`flex justify-end gap-2 pt-2 border-t ${
+                theme === 'dark' ? 'border-[#3a506b]' : 'border-slate-200'
+              }`}>
                 <button
                   type="button"
                   onClick={() => setUploadingOrder(null)}
-                  className="px-4 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs"
+                  className={`px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] text-gray-300 hover:bg-[#334155]' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  }`}
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={loadingUpload}
-                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 hover:opacity-95"
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md flex items-center gap-1.5 hover:opacity-95 cursor-pointer"
                 >
                   {loadingUpload ? <RefreshCw className="w-4 h-4 animate-spin" /> : <FileCheck className="w-4 h-4" />}
                   <span>Publish & Deliver Report to Client</span>
@@ -4019,23 +4135,43 @@ Question: ${details.question || 'N/A'}`;
 
       {/* ========================== INTERACTIVE ASTROLOGER TOOL MODAL ========================== */}
       {activeToolModal && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/85 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] w-full max-w-2xl rounded-3xl border border-[#3a506b] shadow-2xl overflow-hidden relative text-left font-sans text-white p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 backdrop-blur-xs ${
+          theme === 'dark' ? 'bg-[#0b132b]/85' : 'bg-slate-900/60'
+        }`}>
+          <div className={`w-full max-w-5xl xl:max-w-6xl rounded-3xl border shadow-2xl overflow-hidden relative text-left font-sans p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto transition-colors ${
+            theme === 'dark'
+              ? 'bg-[#1c2541] border-[#3a506b] text-white'
+              : 'bg-[#fffdfa] border-[#f3e8d2] text-slate-900'
+          }`}>
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#3a506b] pb-4">
+            <div className={`flex items-center justify-between border-b pb-4 ${
+              theme === 'dark' ? 'border-[#3a506b]' : 'border-[#f3e8d2]'
+            }`}>
               <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#0b132b] border border-[#3a506b] flex items-center justify-center">
-                  <Sparkles className="w-6 h-6 text-[#fbbf24]" />
+                <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${
+                  theme === 'dark'
+                    ? 'bg-[#0b132b] border-[#3a506b]'
+                    : 'bg-amber-100 border-amber-300'
+                }`}>
+                  <Sparkles className={`w-6 h-6 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#b45309]'}`} />
                 </div>
                 <div>
-                  <h3 className="font-serif font-bold text-xl text-[#fbbf24]">{activeToolModal.title}</h3>
-                  <p className="text-xs text-gray-400">Astrologer Calculator • Run calculations for client</p>
+                  <h3 className={`font-serif font-bold text-xl ${
+                    theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                  }`}>
+                    {activeToolModal.title}
+                  </h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                    Astrologer Tool • Run calculations for client
+                  </p>
                 </div>
               </div>
               <button
                 type="button"
-                onClick={() => { setActiveToolModal(null); setCalcResult(null); }}
-                className="text-gray-400 hover:text-white p-1 cursor-pointer"
+                onClick={() => { setActiveToolModal(null); setCalcResult(null); setYumsharolValidationErr(''); }}
+                className={`p-1.5 rounded-lg cursor-pointer transition-colors ${
+                  theme === 'dark' ? 'text-gray-400 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-800 hover:bg-amber-100/50'
+                }`}
               >
                 <X className="w-5 h-5" />
               </button>
@@ -4050,6 +4186,28 @@ Question: ${details.question || 'N/A'}`;
                   setTimeout(() => {
                     setIsCalculating(false);
                     const mType = activeToolModal.id || activeToolModal.type;
+
+                    if (mType === 'yumsharol' || activeToolModal.id === 'yumsharol') {
+                      try {
+                        setYumsharolValidationErr('');
+                        const res = calculateYumsharol({
+                          dob: calcForm.dob,
+                          tob: calcForm.tob || '12:00',
+                          nakshatra: Number(calcForm.nakshatra) || 1,
+                          constantValue: Number(calcForm.constantValue) || 15,
+                        });
+
+                        setCalcResult({
+                          isYumsharol: true,
+                          type: 'Yumsharol (Traditional Vastu & House Science)',
+                          name: calcForm.name,
+                          ...res,
+                        });
+                      } catch (err: any) {
+                        setYumsharolValidationErr(err.message || 'Error calculating Yumsharol.');
+                      }
+                      return;
+                    }
 
                     if (mType === 'kuthi-generator' || activeToolModal.id === 'kuthi-generator') {
                       const chartData = calculatePlanetaryPositions({
@@ -4122,6 +4280,44 @@ Question: ${details.question || 'N/A'}`;
                         moonObj.signIndex * 30 + moonObj.signDegree
                       );
 
+                      // Calculate Moon Rashi & Excel =Basic!C36 representation (SignIndex|Deg°|Min'|Sec")
+                      const moonSignIndex = moonObj.signIndex;
+                      const moonSignDegree = moonObj.signDegree;
+                      const moonDeg = Math.floor(moonSignDegree);
+                      const moonMin = Math.floor((moonSignDegree % 1) * 60);
+                      const moonSec = Math.round((((moonSignDegree % 1) * 60) % 1) * 60);
+
+                      // Basic!C36 formula: K17-1&"|"&B17&"°"&"|"&D17&"'"&"|"&O17&""""
+                      const basicC36Value = `${moonSignIndex}|${moonDeg}°|${moonMin}'|${moonSec}"`;
+                      const basicC36Bengali = `${toBengaliDigits(moonSignIndex)}|${toBengaliDigits(moonDeg)}°|${toBengaliDigits(moonMin)}'|${toBengaliDigits(moonSec)}"`;
+
+                      const moonItem = {
+                        id: 'mo',
+                        name: 'Moon / Chandra (চন্দ্র)',
+                        bengaliName: 'চন্দ্র',
+                        signIndex: moonSignIndex,
+                        signName: BENGALI_RASHI_NAMES[moonSignIndex],
+                        signDegree: moonSignDegree,
+                        nakshatraIndex: moonObj.nakshatraIndex,
+                        nakshatraName: moonObj.nakshatraName,
+                        nakshatraPada: moonObj.nakshatraPada,
+                        basicC36Value,
+                        basicC36Bengali,
+                        formattedString: formatBengaliPositionString('mo', moonObj.nakshatraIndex, moonSignIndex, moonSignDegree),
+                      };
+
+                      // Calculate Ayanamsha matching Excel =Value!J23: 24° 13' 34.08''
+                      const ayanamsaVal = chartData.ayanamsa ?? 24.2261;
+                      const ayanamsaDeg = Math.floor(ayanamsaVal);
+                      const ayanamsaMin = Math.floor((ayanamsaVal % 1) * 60);
+                      const ayanamsaSecRaw = (((ayanamsaVal % 1) * 60) % 1) * 60;
+                      const ayanamsaSecFormatted = (ayanamsaSecRaw < 10 ? '0' : '') + ayanamsaSecRaw.toFixed(2);
+
+                      // Standard DMS matching Excel =Value!J23: 24° 13' 34.08''
+                      const ayanamsaValueJ23 = `${ayanamsaDeg}° ${ayanamsaMin}' ${ayanamsaSecFormatted}''`;
+                      // Bengali representation (Kuthi!AB43): ২৪° ১৩' ৩৪.০৮''
+                      const ayanamsaBengali = `${toBengaliDigits(ayanamsaDeg)}° ${toBengaliDigits(ayanamsaMin)}' ${toBengaliDigits(ayanamsaSecFormatted)}''`;
+
                       setCalcResult({
                         isKuthiChart: true,
                         type: 'Kuthi Generator (Natal Birth Chart)',
@@ -4131,6 +4327,9 @@ Question: ${details.question || 'N/A'}`;
                         tob: calcForm.tob,
                         pob: calcForm.pob,
                         ascendantItem,
+                        moonItem,
+                        ayanamsaValueJ23,
+                        ayanamsaBengali,
                         ascSignIndex,
                         navAscSignIndex: navAsc.signIndex,
                         ascSign1to12: ascSignIndex + 1,
@@ -4142,15 +4341,660 @@ Question: ${details.question || 'N/A'}`;
                       });
                       return;
                     }
+
+                    if (mType === 'shani-sade-sati' || activeToolModal.id === 'shani-sade-sati') {
+                      const res = calculateSadeSati({
+                        name: calcForm.name,
+                        gender: calcForm.sex,
+                        dob: calcForm.dob,
+                        tob: calcForm.tob || '12:00',
+                        lat: Number(calcForm.lat) || 24.8170,
+                        lng: Number(calcForm.lng) || 93.9368,
+                        timezone: Number(calcForm.timezone) || 5.5,
+                      });
+                      setCalcResult({
+                        isSadeSati: true,
+                        type: 'Shani Sade Sati Analysis & Remedial Guidance',
+                        ...res,
+                      });
+                      return;
+                    }
+
+                    if (mType === 'mangalik-dosh' || activeToolModal.id === 'mangalik-dosh') {
+                      const res = calculateManglikDosh({
+                        name: calcForm.name,
+                        gender: calcForm.sex,
+                        dob: calcForm.dob,
+                        tob: calcForm.tob || '12:00',
+                        lat: Number(calcForm.lat) || 24.8170,
+                        lng: Number(calcForm.lng) || 93.9368,
+                        timezone: Number(calcForm.timezone) || 5.5,
+                      });
+                      setCalcResult({
+                        isManglikReport: true,
+                        type: 'Manglik Dosh & Kuja Bhanga Analysis',
+                        ...res,
+                      });
+                      return;
+                    }
+
+                    if (mType === 'kaal-sarp-dosh' || activeToolModal.id === 'kaal-sarp-dosh') {
+                      const res = calculateKaalSarpDosh({
+                        name: calcForm.name,
+                        gender: calcForm.sex,
+                        dob: calcForm.dob,
+                        tob: calcForm.tob || '12:00',
+                        lat: Number(calcForm.lat) || 24.8170,
+                        lng: Number(calcForm.lng) || 93.9368,
+                        timezone: Number(calcForm.timezone) || 5.5,
+                      });
+                      setCalcResult({
+                        isKaalSarp: true,
+                        type: 'Kaal Sarp Dosh Analysis & Shanti Remedies',
+                        ...res,
+                      });
+                      return;
+                    }
+
+                    if (mType === 'match-making' || activeToolModal.id === 'match-making') {
+                      const res = calculateCoupleMatch({
+                        groom: {
+                          name: calcForm.name || 'Groom',
+                          dob: calcForm.dob,
+                          tob: calcForm.tob || '12:00',
+                          pob: calcForm.pob,
+                          lat: Number(calcForm.lat) || 24.8170,
+                          lng: Number(calcForm.lng) || 93.9368,
+                        },
+                        bride: {
+                          name: calcForm.partnerName || 'Bride',
+                          dob: calcForm.partnerDob || '1997-08-20',
+                          tob: calcForm.partnerTob || '10:30',
+                          pob: calcForm.partnerPob || 'Imphal, Manipur',
+                          lat: Number(calcForm.partnerLat) || 24.8170,
+                          lng: Number(calcForm.partnerLng) || 93.9368,
+                        },
+                      });
+                      setCalcResult({
+                        isMatchMaking: true,
+                        type: 'Match Making (Ashtakoot Gun Milan & Manglik)',
+                        ...res,
+                      });
+                      return;
+                    }
+
+                    if (mType === 'astrology-yoga' || activeToolModal.id === 'astrology-yoga') {
+                      const res = calculatePlanetaryYogas({
+                        name: calcForm.name,
+                        gender: calcForm.sex,
+                        dob: calcForm.dob,
+                        tob: calcForm.tob || '12:00',
+                        lat: Number(calcForm.lat) || 24.8170,
+                        lng: Number(calcForm.lng) || 93.9368,
+                        timezone: Number(calcForm.timezone) || 5.5,
+                      });
+                      setCalcResult({
+                        isPlanetaryYogas: true,
+                        type: 'Planetary Yogas & Classical Vedic Combinations',
+                        ...res,
+                      });
+                      return;
+                    }
+
+                    if (mType === 'nga-eeshing' || activeToolModal.id === 'nga-eeshing') {
+                      const res = calculateNgaEeshing({
+                        groomRashi: Number(calcForm.groomRashi) || 0,
+                        brideRashi: Number(calcForm.brideRashi) || 0,
+                        groomName: calcForm.name || 'Groom',
+                        brideName: calcForm.partnerName || 'Bride',
+                      });
+                      setCalcResult({
+                        isNgaEeshingReport: true,
+                        type: 'ঙা-ঈশিং (Nga-Eeshing)',
+                        ...res,
+                      });
+                      return;
+                    }
                   }, 500);
                 }}
                 className="space-y-4 font-sans text-xs"
               >
-                {activeToolModal.id === 'kuthi-generator' ? (
-                  <>
+                {activeToolModal.id === 'yumsharol' ? (
+                  <div className="space-y-4">
+                    {/* Informative Header / Tradition Note */}
+                    <div className={`p-3.5 rounded-2xl border flex items-start gap-3 ${
+                      theme === 'dark' ? 'bg-[#0b132b] border-emerald-500/30' : 'bg-emerald-50 border-emerald-300'
+                    }`}>
+                      <div className="w-9 h-9 rounded-xl bg-emerald-500/20 text-emerald-500 border border-emerald-500/30 flex items-center justify-center shrink-0 text-lg">
+                        🏡
+                      </div>
+                      <div>
+                        <span className={`font-extrabold text-xs block ${theme === 'dark' ? 'text-emerald-400' : 'text-emerald-800'}`}>
+                          Traditional Meetei Yumsharol Engine (House Numerology & Vastu)
+                        </span>
+                        <p className={`text-[11px] mt-0.5 leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                          Calculates time-aware running age down to the birth minute, nakshatra index, sacred constant (15), and traditional Modulo 8 direction house (Dhwaja, Simha, Vrisha, Gaja, etc.).
+                        </p>
+                      </div>
+                    </div>
+
+                    {yumsharolValidationErr && (
+                      <div className="p-3 rounded-xl bg-red-950/60 border border-red-500/60 text-red-300 text-xs font-bold">
+                        ⚠️ {yumsharolValidationErr}
+                      </div>
+                    )}
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
+                          Client / Native Full Name
+                        </label>
+                        <input
+                          type="text"
+                          value={calcForm.name}
+                          onChange={(e) => setCalcForm({ ...calcForm, name: e.target.value })}
+                          className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                            theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
+                          placeholder="e.g. Sanatomba Meitei"
+                        />
+                      </div>
+
+                      <div>
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
+                          Date Of Birth (DOB) *
+                        </label>
+                        <input
+                          type="date"
+                          required
+                          max={new Date().toISOString().split('T')[0]}
+                          value={calcForm.dob}
+                          onChange={(e) => {
+                            setCalcForm({ ...calcForm, dob: e.target.value });
+                            setYumsharolValidationErr('');
+                          }}
+                          className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                            theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
+                          Time Of Birth (TOB) (24-Hour Format)
+                        </label>
+                        <input
+                          type="time"
+                          value={calcForm.tob}
+                          onChange={(e) => {
+                            setCalcForm({ ...calcForm, tob: e.target.value });
+                            setYumsharolValidationErr('');
+                          }}
+                          className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                            theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
+                        />
+                        <span className={`text-[10px] mt-1 block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                          Defaults to 12:00 PM if left blank
+                        </span>
+                      </div>
+
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Birth Nakshatra (1–27) *
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              try {
+                                const chartData = calculatePlanetaryPositions({
+                                  name: calcForm.name || 'Native',
+                                  gender: calcForm.sex || 'Male',
+                                  dateOfBirth: calcForm.dob,
+                                  timeOfBirth: calcForm.tob || '12:00',
+                                  latitude: Number(calcForm.lat) || 24.8170,
+                                  longitude: Number(calcForm.lng) || 93.9368,
+                                  timezone: 'Asia/Kolkata',
+                                  utcOffset: Number(calcForm.timezone) || 5.5,
+                                  ayanamsa: 'Lahiri',
+                                });
+                                const moon = chartData.planets.find((p: any) => p.id === 'mo');
+                                if (moon) {
+                                  const moonLong = (moon.signIndex * 30) + moon.signDegree;
+                                  const nakInfo = getNakshatraInfo(moonLong);
+                                  setCalcForm(prev => ({ ...prev, nakshatra: nakInfo.index + 1 }));
+                                }
+                              } catch (err) {
+                                console.warn('Auto-detect nakshatra failed:', err);
+                              }
+                            }}
+                            className="text-[10px] text-[#d97706] hover:underline flex items-center gap-1 font-bold cursor-pointer"
+                          >
+                            <Sparkles className="w-3 h-3 text-[#d97706]" />
+                            <span>Auto-detect from Chart</span>
+                          </button>
+                        </div>
+
+                        <select
+                          value={calcForm.nakshatra}
+                          onChange={(e) => setCalcForm({ ...calcForm, nakshatra: Number(e.target.value) })}
+                          className={`w-full p-3 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300'
+                              : 'bg-white border border-slate-300 text-amber-900 shadow-xs'
+                          }`}
+                        >
+                          {NAKSHATRAS_LIST.map((nak) => (
+                            <option key={nak.index} value={nak.index}>
+                              {nak.index}. {nak.name} (Lord: {nak.ruler})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Constant Value Setting */}
+                    <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                      theme === 'dark' ? 'bg-[#0b132b]/70 border-[#3a506b]/60' : 'bg-amber-50/70 border-amber-200 shadow-2xs'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
+                          Traditional Constant Value (Default: 15)
+                        </label>
+                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">Standard Constant = 15</span>
+                      </div>
+                      <input
+                        type="number"
+                        value={calcForm.constantValue}
+                        onChange={(e) => setCalcForm({ ...calcForm, constantValue: Number(e.target.value) })}
+                        className={`w-full p-2.5 rounded-xl font-mono font-bold text-xs focus:outline-none focus:border-[#d97706] transition-colors ${
+                          theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900'
+                        }`}
+                      />
+                      <p className={`text-[10px] leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                        In Manipuri Yumsharol tradition, the constant 15 represents the sacred 15 Lunar Tithis added to running age and birth star before calculating the 8-direction modulus.
+                      </p>
+                    </div>
+                  </div>
+                ) : activeToolModal.id === 'match-making' ? (
+                  <div className="space-y-4">
+                    {/* Informative Header */}
+                    <div className={`p-3.5 rounded-2xl border flex items-start gap-3 ${
+                      theme === 'dark' ? 'bg-[#0b132b] border-pink-500/30' : 'bg-pink-50 border-pink-200'
+                    }`}>
+                      <div className="w-9 h-9 rounded-xl bg-pink-500/20 text-pink-500 border border-pink-500/30 flex items-center justify-center shrink-0 text-lg">
+                        💍
+                      </div>
+                      <div>
+                        <span className={`font-extrabold text-xs block ${theme === 'dark' ? 'text-pink-400' : 'text-pink-800'}`}>
+                          Ashtakoot 36-Gun Milan & Manglik Compatibility Matching
+                        </span>
+                        <p className={`text-[11px] mt-0.5 leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                          Evaluates Varna, Vashya, Tara, Yoni, Graha Maitri, Gana, Bhakoot, and Nadi scores, along with mutual Kuja Samya cancellation.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Groom Column */}
+                      <div className={`p-4 rounded-2xl border space-y-3 ${
+                        theme === 'dark' ? 'bg-[#0b132b]/80 border-cyan-500/30' : 'bg-sky-50/80 border-sky-200'
+                      }`}>
+                        <div className="flex items-center gap-2 pb-1 border-b border-cyan-500/20">
+                          <span className="text-base">🤵</span>
+                          <h4 className={`font-bold text-xs uppercase tracking-wider ${
+                            theme === 'dark' ? 'text-cyan-400' : 'text-sky-900'
+                          }`}>Groom Profile (বর)</h4>
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Groom Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={calcForm.name}
+                            onChange={(e) => setCalcForm({ ...calcForm, name: e.target.value })}
+                            className={`w-full p-2.5 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                            }`}
+                            placeholder="e.g. Sanatomba Meitei"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                              theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                            }`}>
+                              Date of Birth *
+                            </label>
+                            <input
+                              type="date"
+                              required
+                              value={calcForm.dob}
+                              onChange={(e) => setCalcForm({ ...calcForm, dob: e.target.value })}
+                              className={`w-full p-2 rounded-xl font-semibold text-xs focus:outline-none ${
+                                theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                              }`}
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                              theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                            }`}>
+                              Time of Birth *
+                            </label>
+                            <input
+                              type="time"
+                              required
+                              value={calcForm.tob}
+                              onChange={(e) => setCalcForm({ ...calcForm, tob: e.target.value })}
+                              className={`w-full p-2 rounded-xl font-semibold text-xs focus:outline-none ${
+                                theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                              }`}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Place of Birth (City / Town)
+                          </label>
+                          <input
+                            type="text"
+                            value={calcForm.pob}
+                            onChange={(e) => setCalcForm({ ...calcForm, pob: e.target.value })}
+                            className={`w-full p-2.5 rounded-xl font-semibold text-xs focus:outline-none ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                            }`}
+                            placeholder="Imphal, Manipur"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Bride Column */}
+                      <div className={`p-4 rounded-2xl border space-y-3 ${
+                        theme === 'dark' ? 'bg-[#0b132b]/80 border-pink-500/30' : 'bg-pink-50/80 border-pink-200'
+                      }`}>
+                        <div className="flex items-center gap-2 pb-1 border-b border-pink-500/20">
+                          <span className="text-base">👰</span>
+                          <h4 className={`font-bold text-xs uppercase tracking-wider ${
+                            theme === 'dark' ? 'text-pink-400' : 'text-pink-900'
+                          }`}>Bride Profile (কন্যা)</h4>
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Bride Full Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={calcForm.partnerName}
+                            onChange={(e) => setCalcForm({ ...calcForm, partnerName: e.target.value })}
+                            className={`w-full p-2.5 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                            }`}
+                            placeholder="e.g. Thoibi Ningthoujam"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                              theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                            }`}>
+                              Date of Birth *
+                            </label>
+                            <input
+                              type="date"
+                              required
+                              value={calcForm.partnerDob}
+                              onChange={(e) => setCalcForm({ ...calcForm, partnerDob: e.target.value })}
+                              className={`w-full p-2 rounded-xl font-semibold text-xs focus:outline-none ${
+                                theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                              }`}
+                            />
+                          </div>
+                          <div>
+                            <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                              theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                            }`}>
+                              Time of Birth *
+                            </label>
+                            <input
+                              type="time"
+                              required
+                              value={calcForm.partnerTob}
+                              onChange={(e) => setCalcForm({ ...calcForm, partnerTob: e.target.value })}
+                              className={`w-full p-2 rounded-xl font-semibold text-xs focus:outline-none ${
+                                theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                              }`}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Place of Birth (City / Town)
+                          </label>
+                          <input
+                            type="text"
+                            value={calcForm.partnerPob}
+                            onChange={(e) => setCalcForm({ ...calcForm, partnerPob: e.target.value })}
+                            className={`w-full p-2.5 rounded-xl font-semibold text-xs focus:outline-none ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                            }`}
+                            placeholder="Imphal, Manipur"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-1">
+                      <div>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>Latitude (°N)</label>
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={calcForm.lat}
+                          onChange={(e) => setCalcForm({ ...calcForm, lat: Number(e.target.value) })}
+                          className={`w-full p-2 rounded-xl font-mono text-xs focus:outline-none ${
+                            theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>Longitude (°E)</label>
+                        <input
+                          type="number"
+                          step="0.0001"
+                          value={calcForm.lng}
+                          onChange={(e) => setCalcForm({ ...calcForm, lng: Number(e.target.value) })}
+                          className={`w-full p-2 rounded-xl font-mono text-xs focus:outline-none ${
+                            theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>UTC Offset</label>
+                        <input
+                          type="number"
+                          step="0.5"
+                          value={calcForm.timezone}
+                          onChange={(e) => setCalcForm({ ...calcForm, timezone: Number(e.target.value) })}
+                          className={`w-full p-2 rounded-xl font-mono text-xs focus:outline-none ${
+                            theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                          }`}
+                        />
+                      </div>
+                      <div>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>Ayanamsa</label>
+                        <input
+                          type="text"
+                          readOnly
+                          value={calcForm.ayanamsa}
+                          className={`w-full p-2 rounded-xl font-semibold text-[11px] ${
+                            theme === 'dark' ? 'bg-[#0b132b] border border-[#3a506b] text-gray-400' : 'bg-slate-50 border border-slate-300 text-slate-700 font-bold'
+                          }`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ) : activeToolModal.id === 'nga-eeshing' ? (
+                  <div className="space-y-4">
+                    {/* Informative Header */}
+                    <div className={`p-3.5 rounded-2xl border flex items-start gap-3 ${
+                      theme === 'dark' ? 'bg-[#0b132b] border-cyan-500/30' : 'bg-cyan-50 border-cyan-200'
+                    }`}>
+                      <div className="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-500 border border-cyan-500/30 flex items-center justify-center shrink-0 text-lg">
+                        🐟
+                      </div>
+                      <div>
+                        <span className={`font-extrabold text-xs block ${theme === 'dark' ? 'text-cyan-400' : 'text-cyan-800'}`}>
+                          ঙা-ঈশিং (Nga-Eeshing) Matrimonial Compatibility & Ritual Check
+                        </span>
+                        <p className={`text-[11px] mt-0.5 leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                          Traditional Manipuri matrimonial calculation. Select Bride & Groom Janma Rashi (০ - মেষ to ১১ - মীন) to check if ঙা-ঈশিং falls, determine element distribution (ঙা / ঈশিং), and view required remedial rites.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {/* Groom Column */}
+                      <div className={`p-4 rounded-2xl border space-y-3 ${
+                        theme === 'dark' ? 'bg-[#0b132b]/80 border-cyan-500/30' : 'bg-sky-50/80 border-sky-200'
+                      }`}>
+                        <div className="flex items-center justify-between pb-2 border-b border-cyan-500/20">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">🤵</span>
+                            <h4 className={`font-bold text-xs uppercase tracking-wider ${
+                              theme === 'dark' ? 'text-cyan-400' : 'text-sky-900'
+                            }`}>Groom Profile (নুপা / বর)</h4>
+                          </div>
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Groom Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={calcForm.name}
+                            onChange={(e) => setCalcForm({ ...calcForm, name: e.target.value })}
+                            className={`w-full p-2.5 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                            }`}
+                            placeholder="Groom Name (নুপাগী মমিং)"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Groom Janma Rashi (০ - ১১) *
+                          </label>
+                          <select
+                            value={calcForm.groomRashi ?? 0}
+                            onChange={(e) => setCalcForm({ ...calcForm, groomRashi: Number(e.target.value) })}
+                            className={`w-full p-2.5 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer transition-colors ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-cyan-300' : 'bg-white border border-slate-300 text-cyan-900 shadow-2xs'
+                            }`}
+                          >
+                            {RASHI_LIST_NGA_EESHING.map((r) => (
+                              <option key={r.index} value={r.index}>
+                                {r.nameBengali} ({r.nameEnglish})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+
+                      {/* Bride Column */}
+                      <div className={`p-4 rounded-2xl border space-y-3 ${
+                        theme === 'dark' ? 'bg-[#0b132b]/80 border-pink-500/30' : 'bg-pink-50/80 border-pink-200'
+                      }`}>
+                        <div className="flex items-center justify-between pb-2 border-b border-pink-500/20">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">👰</span>
+                            <h4 className={`font-bold text-xs uppercase tracking-wider ${
+                              theme === 'dark' ? 'text-pink-400' : 'text-pink-900'
+                            }`}>Bride Profile (নুপী / কন্যা)</h4>
+                          </div>
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Bride Full Name
+                          </label>
+                          <input
+                            type="text"
+                            value={calcForm.partnerName}
+                            onChange={(e) => setCalcForm({ ...calcForm, partnerName: e.target.value })}
+                            className={`w-full p-2.5 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-white' : 'bg-white border border-slate-300 text-slate-900 shadow-2xs'
+                            }`}
+                            placeholder="Bride Name (নুপীগী মমিং)"
+                          />
+                        </div>
+                        <div>
+                          <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                            theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                          }`}>
+                            Bride Janma Rashi (০ - ১১) *
+                          </label>
+                          <select
+                            value={calcForm.brideRashi ?? 0}
+                            onChange={(e) => setCalcForm({ ...calcForm, brideRashi: Number(e.target.value) })}
+                            className={`w-full p-2.5 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer transition-colors ${
+                              theme === 'dark' ? 'bg-[#1c2541] border border-[#3a506b] text-pink-300' : 'bg-white border border-slate-300 text-pink-900 shadow-2xs'
+                            }`}
+                          >
+                            {RASHI_LIST_NGA_EESHING.map((r) => (
+                              <option key={r.index} value={r.index}>
+                                {r.nameBengali} ({r.nameEnglish})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Standard Full Natal Birth Form for Shani Sade Sati, Manglik Dosh, Kaal Sarp Dosh, Planetary Yogas, and Kuthi Generator */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
                           Full Name *
                         </label>
                         <input
@@ -4158,18 +5002,28 @@ Question: ${details.question || 'N/A'}`;
                           required
                           value={calcForm.name}
                           onChange={(e) => setCalcForm({ ...calcForm, name: e.target.value })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold focus:border-[#d97706] focus:outline-none"
+                          className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-white'
+                              : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
                           Sex / Gender *
                         </label>
                         <select
                           value={calcForm.sex}
                           onChange={(e) => setCalcForm({ ...calcForm, sex: e.target.value })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 font-bold focus:border-[#d97706] focus:outline-none"
+                          className={`w-full p-3 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300'
+                              : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
                         >
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
@@ -4180,7 +5034,9 @@ Question: ${details.question || 'N/A'}`;
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
                           Date Of Birth *
                         </label>
                         <input
@@ -4188,11 +5044,17 @@ Question: ${details.question || 'N/A'}`;
                           required
                           value={calcForm.dob}
                           onChange={(e) => setCalcForm({ ...calcForm, dob: e.target.value })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold focus:border-[#d97706] focus:outline-none"
+                          className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-white'
+                              : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>
                           Time Of Birth *
                         </label>
                         <input
@@ -4200,13 +5062,19 @@ Question: ${details.question || 'N/A'}`;
                           required
                           value={calcForm.tob}
                           onChange={(e) => setCalcForm({ ...calcForm, tob: e.target.value })}
-                          className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold focus:border-[#d97706] focus:outline-none"
+                          className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-white'
+                              : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                      <label className={`block text-[10px] font-bold uppercase tracking-wider mb-1 ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                      }`}>
                         Place Of Birth (City / Town) *
                       </label>
                       <input
@@ -4214,66 +5082,81 @@ Question: ${details.question || 'N/A'}`;
                         required
                         value={calcForm.pob}
                         onChange={(e) => setCalcForm({ ...calcForm, pob: e.target.value })}
-                        className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold focus:border-[#d97706] focus:outline-none"
+                        className={`w-full p-3 rounded-xl font-semibold text-xs focus:border-[#d97706] focus:outline-none transition-colors ${
+                          theme === 'dark'
+                            ? 'bg-[#0b132b] border border-[#3a506b] text-white'
+                            : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                        }`}
                         placeholder="e.g. Imphal, Manipur"
                       />
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
                       <div>
-                        <label className="block text-[9px] font-bold uppercase text-[#e0a96d] mb-1">Latitude (°N)</label>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>Latitude (°N)</label>
                         <input
                           type="number"
                           step="0.0001"
                           value={calcForm.lat}
                           onChange={(e) => setCalcForm({ ...calcForm, lat: Number(e.target.value) })}
-                          className="w-full p-2.5 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 font-mono text-xs focus:outline-none"
+                          className={`w-full p-2.5 rounded-xl font-mono text-xs focus:outline-none transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300'
+                              : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-[9px] font-bold uppercase text-[#e0a96d] mb-1">Longitude (°E)</label>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>Longitude (°E)</label>
                         <input
                           type="number"
                           step="0.0001"
                           value={calcForm.lng}
                           onChange={(e) => setCalcForm({ ...calcForm, lng: Number(e.target.value) })}
-                          className="w-full p-2.5 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 font-mono text-xs focus:outline-none"
+                          className={`w-full p-2.5 rounded-xl font-mono text-xs focus:outline-none transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300'
+                              : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-[9px] font-bold uppercase text-[#e0a96d] mb-1">UTC Offset</label>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>UTC Offset</label>
                         <input
                           type="number"
                           step="0.5"
                           value={calcForm.timezone}
                           onChange={(e) => setCalcForm({ ...calcForm, timezone: Number(e.target.value) })}
-                          className="w-full p-2.5 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 font-mono text-xs focus:outline-none"
+                          className={`w-full p-2.5 rounded-xl font-mono text-xs focus:outline-none transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-amber-300'
+                              : 'bg-white border border-slate-300 text-slate-900 shadow-xs'
+                          }`}
                         />
                       </div>
                       <div>
-                        <label className="block text-[9px] font-bold uppercase text-[#e0a96d] mb-1">Ayanamsa</label>
+                        <label className={`block text-[9px] font-bold uppercase mb-1 ${
+                          theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-800'
+                        }`}>Ayanamsa</label>
                         <input
                           type="text"
                           readOnly
                           value={calcForm.ayanamsa}
-                          className="w-full p-2.5 rounded-xl bg-[#0b132b] border border-[#3a506b] text-gray-400 font-semibold text-[11px]"
+                          className={`w-full p-2.5 rounded-xl font-semibold text-[11px] ${
+                            theme === 'dark'
+                              ? 'bg-[#0b132b] border border-[#3a506b] text-gray-400'
+                              : 'bg-slate-50 border border-slate-300 text-slate-700 font-bold'
+                          }`}
                         />
                       </div>
                     </div>
                   </>
-                ) : (
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      required
-                      value={calcForm.name}
-                      onChange={(e) => setCalcForm({ ...calcForm, name: e.target.value })}
-                      className="w-full p-3 rounded-xl bg-[#0b132b] border border-[#3a506b] text-white font-semibold focus:border-[#d97706] focus:outline-none"
-                    />
-                  </div>
                 )}
 
                 <button
@@ -4291,61 +5174,193 @@ Question: ${details.question || 'N/A'}`;
             {calcResult && calcResult.isKuthiChart && (
               <div className="space-y-6 font-sans text-xs">
                 {/* Header Banner */}
-                <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] flex flex-col sm:flex-row justify-between items-center gap-3">
-                  <div>
-                    <span className="px-3 py-0.5 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-extrabold uppercase border border-[#fbbf24]/30">
+                <div className={`p-5 rounded-2xl border flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-[#faf8f4] border-[#f3e8d2] shadow-xs'
+                }`}>
+                  {/* Left: Native & Birth Details */}
+                  <div className="space-y-1">
+                    <span className={`px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase border inline-block mb-1.5 ${
+                      theme === 'dark'
+                        ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30'
+                        : 'bg-amber-100 text-amber-900 border-amber-300'
+                    }`}>
                       NATAL KUTHI REPORT GENERATED
                     </span>
-                    <h4 className="text-xl font-serif font-bold text-white pt-1">
+                    <h4 className={`text-xl font-serif font-bold ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    }`}>
                       {calcResult.name} ({calcResult.sex})
                     </h4>
-                    <p className="text-xs text-gray-400">
+                    <p className={`text-xs ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-slate-600'
+                    }`}>
                       DOB: {calcResult.dob} | TOB: {calcResult.tob} | POB: {calcResult.pob}
                     </p>
                   </div>
-                  <div className="text-right bg-[#1c2541] px-4 py-2 rounded-xl border border-[#3a506b] space-y-1">
-                    <span className="block text-[10px] text-gray-400 uppercase font-bold">Lagna Position Format</span>
-                    <span className="font-serif font-bold text-amber-300 text-sm block">
+
+                  {/* Middle: Rashi Name & Basic!C36 Position Value */}
+                  {calcResult.moonItem && (
+                    <div className={`text-center px-4 py-2.5 rounded-xl border space-y-1 shadow-xs ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-amber-50/80 border-amber-300'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-bold tracking-wider ${
+                        theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'
+                      }`}>
+                        চন্দ্র রাশি (Janma Rashi)
+                      </span>
+                      <div className="space-y-0.5">
+                        <span className={`font-serif font-extrabold text-sm block tracking-wide ${
+                          theme === 'dark' ? 'text-amber-300' : 'text-amber-950'
+                        }`}>
+                          {calcResult.moonItem.basicC36Bengali}
+                        </span>
+                        <span className={`text-[10px] font-mono block ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          [=Basic!C36: {calcResult.moonItem.basicC36Value}]
+                        </span>
+                      </div>
+                      <span className={`text-[11px] block font-bold ${
+                        theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                      }`}>
+                        Rashi: {calcResult.moonItem.signName}
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Right: Lagna Position */}
+                  <div className={`text-left md:text-right px-4 py-2.5 rounded-xl border space-y-1 ${
+                    theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-amber-50 border-amber-300'
+                  }`}>
+                    <span className={`block text-[10px] uppercase font-bold ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                    }`}>
+                      Lagna Position Format
+                    </span>
+                    <span className={`font-serif font-bold text-sm block ${
+                      theme === 'dark' ? 'text-amber-300' : 'text-amber-900'
+                    }`}>
                       {calcResult.ascendantItem.formattedString}
                     </span>
-                    <span className="text-[11px] text-gray-300 block font-medium">
-                      Rashi: {calcResult.ascendantItem.signName}
+                    <span className={`text-[11px] block font-medium ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Lagna Rashi: {calcResult.ascendantItem.signName}
                     </span>
                   </div>
                 </div>
 
+                {/* AYANAMSHA CARD (In between Header Banner and Charts) */}
+                {calcResult.ayanamsaBengali && (
+                  <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-center justify-between gap-3 transition-colors ${
+                    theme === 'dark'
+                      ? 'bg-[#0e172a] border-[#3a506b]/80 shadow-md'
+                      : 'bg-gradient-to-r from-amber-50/80 via-[#fffdf9] to-amber-50/80 border-amber-200/80 shadow-xs'
+                  }`}>
+                    <div className="flex items-center gap-3 text-left">
+                      <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-lg text-amber-500 shrink-0">
+                        📐
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                            theme === 'dark'
+                              ? 'bg-amber-500/20 text-amber-300'
+                              : 'bg-amber-100 text-amber-900 border border-amber-300'
+                          }`}>
+                            অয়নাংশীয় (Ayanamsha)
+                          </span>
+                          <span className={`text-[11px] font-medium ${
+                            theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                          }`}>
+                            লাহিড়ী (Chitrapaksha Lahiri)
+                          </span>
+                        </div>
+                        <p className={`text-xs mt-0.5 font-medium ${
+                          theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                        }`}>
+                          সৌরসিদ্ধান্ত ও চিত্রাপক্ষীয় অয়নচলন বিবরণ
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`px-5 py-2 rounded-xl border text-center sm:text-right space-y-0.5 ${
+                      theme === 'dark'
+                        ? 'bg-[#1c2541] border-[#3a506b]'
+                        : 'bg-white border-amber-300 shadow-xs'
+                    }`}>
+                      <span className={`font-serif font-black text-base sm:text-lg tracking-wider block ${
+                        theme === 'dark' ? 'text-amber-300' : 'text-amber-900'
+                      }`}>
+                        {calcResult.ayanamsaBengali}
+                      </span>
+                      <span className={`text-[11px] font-mono font-medium block ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                      }`}>
+                        =Value!J23: {calcResult.ayanamsaValueJ23}
+                      </span>
+                    </div>
+                  </div>
+                )}
+
                 {/* SIDE-BY-SIDE D1 & D9 CHARTS (Bengali / Eastern Grid Style) */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* D1 RASHI CHART */}
-                  <div className="bg-[#0b132b] p-4 rounded-2xl border border-[#3a506b] space-y-3 text-center">
-                    <div className="flex items-center justify-between border-b border-[#3a506b]/60 pb-2">
-                      <h5 className="font-serif font-bold text-base text-[#fbbf24]">D1 Rashi Chart (Lagna)</h5>
-                      <span className="text-[10px] font-extrabold text-amber-400/80 bg-amber-950/40 px-2 py-0.5 rounded-full">
+                  <div className={`p-4 sm:p-5 rounded-2xl border space-y-3 text-center transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-[#f3e8d2] shadow-sm'
+                  }`}>
+                    <div className={`flex items-center justify-between border-b pb-2 ${
+                      theme === 'dark' ? 'border-[#3a506b]/60' : 'border-[#f3e8d2]'
+                    }`}>
+                      <h5 className={`font-serif font-bold text-base ${
+                        theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                      }`}>
+                        D1 Rashi Chart (Lagna)
+                      </h5>
+                      <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                        theme === 'dark'
+                          ? 'text-amber-400 bg-amber-950/50 border border-amber-500/30'
+                          : 'text-amber-800 bg-amber-100 border border-amber-300'
+                      }`}>
                         Bengali Grid Style
                       </span>
                     </div>
-                    <div className="flex justify-center pt-1">
+                    <div className="flex justify-center pt-2 overflow-x-auto">
                       <BengaliChart
                         planets={calcResult.d1MappedPlanets}
                         ascendantSign={calcResult.ascSignIndex}
                         title="D1 Rashi Chart (Lagna)"
+                        theme={theme}
                       />
                     </div>
                   </div>
 
                   {/* D9 NAVAMSHA CHART */}
-                  <div className="bg-[#0b132b] p-4 rounded-2xl border border-[#3a506b] space-y-3 text-center">
-                    <div className="flex items-center justify-between border-b border-[#3a506b]/60 pb-2">
-                      <h5 className="font-serif font-bold text-base text-[#fbbf24]">D9 Navamsha Chart</h5>
-                      <span className="text-[10px] font-extrabold text-purple-400/80 bg-purple-950/40 px-2 py-0.5 rounded-full">
+                  <div className={`p-4 sm:p-5 rounded-2xl border space-y-3 text-center transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-[#f3e8d2] shadow-sm'
+                  }`}>
+                    <div className={`flex items-center justify-between border-b pb-2 ${
+                      theme === 'dark' ? 'border-[#3a506b]/60' : 'border-[#f3e8d2]'
+                    }`}>
+                      <h5 className={`font-serif font-bold text-base ${
+                        theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                      }`}>
+                        D9 Navamsha Chart
+                      </h5>
+                      <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
+                        theme === 'dark'
+                          ? 'text-purple-300 bg-purple-950/50 border border-purple-500/30'
+                          : 'text-purple-800 bg-purple-100 border border-purple-300'
+                      }`}>
                         Bengali Grid Style
                       </span>
                     </div>
-                    <div className="flex justify-center pt-1">
+                    <div className="flex justify-center pt-2 overflow-x-auto">
                       <BengaliChart
                         planets={calcResult.d9MappedPlanets}
                         ascendantSign={calcResult.navAscSignIndex}
                         title="D9 Navamsha Chart"
+                        theme={theme}
                       />
                     </div>
                   </div>
@@ -4353,55 +5368,155 @@ Question: ${details.question || 'N/A'}`;
 
                 {/* TRADITIONAL BENGALI PANCHANGA & SAKABTA DETAILS CARD */}
                 {calcResult.panchangaDetails && (
-                  <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] space-y-4">
-                    <div className="flex items-center justify-between border-b border-[#3a506b]/60 pb-2">
-                      <h5 className="font-serif font-bold text-sm text-[#e0a96d] uppercase tracking-wider">
+                  <div className={`p-5 rounded-2xl border space-y-4 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-[#f3e8d2] shadow-sm'
+                  }`}>
+                    <div className={`flex items-center justify-between border-b pb-2 ${
+                      theme === 'dark' ? 'border-[#3a506b]/60' : 'border-[#f3e8d2]'
+                    }`}>
+                      <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                        theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900'
+                      }`}>
                         শকাব্দ ও বাংলা তারিখ এবং জন্ম পঞ্চাঙ্গ বিবরণ (Birth Panchanga & Era Details)
                       </h5>
-                      <span className="px-2.5 py-0.5 rounded-full bg-[#d97706]/20 text-[#fbbf24] text-[10px] font-bold">
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                        theme === 'dark'
+                          ? 'bg-[#d97706]/20 text-[#fbbf24] border border-[#d97706]/40'
+                          : 'bg-amber-100 text-amber-900 border border-amber-300'
+                      }`}>
                         {calcResult.panchangaDetails.sakabta}
                       </span>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
-                      <div className="bg-[#1c2541] p-3 rounded-xl border border-[#3a506b]/60">
-                        <span className="block text-[10px] text-gray-400 font-bold uppercase">শকাব্দ (Sakabta Era)</span>
-                        <span className="text-white font-bold text-sm pt-0.5 block">{calcResult.panchangaDetails.sakabta}</span>
+                      <div className={`p-3 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/60' : 'bg-[#faf8f4] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[10px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          শকাব্দ (Sakabta Era)
+                        </span>
+                        <span className={`font-bold text-sm pt-0.5 block ${
+                          theme === 'dark' ? 'text-white' : 'text-slate-900'
+                        }`}>
+                          {calcResult.panchangaDetails.sakabta}
+                        </span>
                       </div>
-                      <div className="bg-[#1c2541] p-3 rounded-xl border border-[#3a506b]/60">
-                        <span className="block text-[10px] text-gray-400 font-bold uppercase">বাংলা তারিখ (Bengali Date)</span>
-                        <span className="text-amber-300 font-bold text-xs pt-0.5 block">{calcResult.panchangaDetails.bengaliDateStr}</span>
+                      <div className={`p-3 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/60' : 'bg-[#faf8f4] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[10px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          বাংলা তারিখ (Bengali Date)
+                        </span>
+                        <span className={`font-bold text-xs pt-0.5 block ${
+                          theme === 'dark' ? 'text-amber-300' : 'text-amber-700'
+                        }`}>
+                          {calcResult.panchangaDetails.bengaliDateStr}
+                        </span>
                       </div>
-                      <div className="bg-[#1c2541] p-3 rounded-xl border border-[#3a506b]/60">
-                        <span className="block text-[10px] text-gray-400 font-bold uppercase">জন্ম তিথি (Tithi)</span>
-                        <span className="text-white font-bold text-xs pt-0.5 block">{calcResult.panchangaDetails.tithiName}</span>
+                      <div className={`p-3 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/60' : 'bg-[#faf8f4] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[10px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          জন্ম তিথি (Tithi)
+                        </span>
+                        <span className={`font-bold text-xs pt-0.5 block ${
+                          theme === 'dark' ? 'text-white' : 'text-slate-900'
+                        }`}>
+                          {calcResult.panchangaDetails.tithiName}
+                        </span>
                       </div>
-                      <div className="bg-[#1c2541] p-3 rounded-xl border border-[#3a506b]/60">
-                        <span className="block text-[10px] text-gray-400 font-bold uppercase">জন্ম যোগ (Yoga)</span>
-                        <span className="text-white font-bold text-xs pt-0.5 block">{calcResult.panchangaDetails.yogaName}</span>
+                      <div className={`p-3 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/60' : 'bg-[#faf8f4] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[10px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          জন্ম যোগ (Yoga)
+                        </span>
+                        <span className={`font-bold text-xs pt-0.5 block ${
+                          theme === 'dark' ? 'text-white' : 'text-slate-900'
+                        }`}>
+                          {calcResult.panchangaDetails.yogaName}
+                        </span>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs pt-1">
-                      <div className="bg-[#1c2541]/70 p-2.5 rounded-xl border border-[#3a506b]/40">
-                        <span className="block text-[9px] text-gray-400 font-bold uppercase">করণ (Karana)</span>
-                        <span className="text-gray-200 font-semibold">{calcResult.panchangaDetails.karanaName}</span>
+                      <div className={`p-2.5 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541]/70 border-[#3a506b]/40' : 'bg-[#fffdfa] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[9px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          করণ (Karana)
+                        </span>
+                        <span className={`font-semibold ${
+                          theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                        }`}>
+                          {calcResult.panchangaDetails.karanaName}
+                        </span>
                       </div>
-                      <div className="bg-[#1c2541]/70 p-2.5 rounded-xl border border-[#3a506b]/40">
-                        <span className="block text-[9px] text-gray-400 font-bold uppercase">গণ (Gana)</span>
-                        <span className="text-gray-200 font-semibold">{calcResult.panchangaDetails.gana}</span>
+                      <div className={`p-2.5 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541]/70 border-[#3a506b]/40' : 'bg-[#fffdfa] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[9px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          গণ (Gana)
+                        </span>
+                        <span className={`font-semibold ${
+                          theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                        }`}>
+                          {calcResult.panchangaDetails.gana}
+                        </span>
                       </div>
-                      <div className="bg-[#1c2541]/70 p-2.5 rounded-xl border border-[#3a506b]/40">
-                        <span className="block text-[9px] text-gray-400 font-bold uppercase">যোনি (Yoni)</span>
-                        <span className="text-gray-200 font-semibold">{calcResult.panchangaDetails.yoni}</span>
+                      <div className={`p-2.5 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541]/70 border-[#3a506b]/40' : 'bg-[#fffdfa] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[9px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          যোনি (Yoni)
+                        </span>
+                        <span className={`font-semibold ${
+                          theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                        }`}>
+                          {calcResult.panchangaDetails.yoni}
+                        </span>
                       </div>
-                      <div className="bg-[#1c2541]/70 p-2.5 rounded-xl border border-[#3a506b]/40">
-                        <span className="block text-[9px] text-gray-400 font-bold uppercase">নাড়ি (Nadi)</span>
-                        <span className="text-gray-200 font-semibold">{calcResult.panchangaDetails.nadi}</span>
+                      <div className={`p-2.5 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541]/70 border-[#3a506b]/40' : 'bg-[#fffdfa] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[9px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          নাড়ি (Nadi)
+                        </span>
+                        <span className={`font-semibold ${
+                          theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                        }`}>
+                          {calcResult.panchangaDetails.nadi}
+                        </span>
                       </div>
-                      <div className="bg-[#1c2541]/70 p-2.5 rounded-xl border border-[#3a506b]/40">
-                        <span className="block text-[9px] text-gray-400 font-bold uppercase">বর্ণ ও বশ্য</span>
-                        <span className="text-gray-200 font-semibold">{calcResult.panchangaDetails.varna} / {calcResult.panchangaDetails.vashya}</span>
+                      <div className={`p-2.5 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541]/70 border-[#3a506b]/40' : 'bg-[#fffdfa] border-[#f3e8d2]'
+                      }`}>
+                        <span className={`block text-[9px] font-bold uppercase ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                        }`}>
+                          বর্ণ ও বশ্য
+                        </span>
+                        <span className={`font-semibold ${
+                          theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                        }`}>
+                          {calcResult.panchangaDetails.varna} / {calcResult.panchangaDetails.vashya}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -4409,53 +5524,81 @@ Question: ${details.question || 'N/A'}`;
 
                 {/* DASHA BALANCES AT BIRTH CARD (VIMSHOTTARI, ASHTOTTARI, YOGINI) */}
                 {calcResult.panchangaDetails && (
-                  <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] space-y-3">
-                    <span className="text-xs font-serif font-bold uppercase tracking-wider text-[#fbbf24] block">
+                  <div className={`p-5 rounded-2xl border space-y-3 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-[#f3e8d2] shadow-sm'
+                  }`}>
+                    <span className={`text-xs font-serif font-bold uppercase tracking-wider block ${
+                      theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                    }`}>
                       Balance Of Dasha
                     </span>
 
                     <div className="space-y-2.5 text-xs">
                       {/* Vimshottari Dasha Balance */}
-                      <div className="p-3.5 rounded-xl bg-[#1c2541] border border-amber-500/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-amber-500/30' : 'bg-amber-50/80 border-amber-300'
+                      }`}>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 text-[10px] font-black uppercase">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                            theme === 'dark' ? 'bg-amber-500/20 text-amber-300' : 'bg-amber-200 text-amber-900'
+                          }`}>
                             বিংশোত্তরী দশা
                           </span>
-                          <span className="font-bold text-white text-xs">
+                          <span className={`font-bold text-xs ${
+                            theme === 'dark' ? 'text-white' : 'text-slate-900'
+                          }`}>
                             {calcResult.panchangaDetails.vimshottariDasha.lordBengali} ({calcResult.panchangaDetails.vimshottariDasha.lordName})
                           </span>
                         </div>
-                        <span className="font-mono font-bold text-amber-300 text-sm tracking-wide">
+                        <span className={`font-mono font-bold text-sm tracking-wide ${
+                          theme === 'dark' ? 'text-amber-300' : 'text-amber-800'
+                        }`}>
                           {calcResult.panchangaDetails.vimshottariDasha.formattedString}
                         </span>
                       </div>
 
                       {/* Ashtottari Dasha Balance */}
-                      <div className="p-3.5 rounded-xl bg-[#1c2541] border border-purple-500/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-purple-500/30' : 'bg-purple-50/80 border-purple-200'
+                      }`}>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-purple-500/20 text-purple-300 text-[10px] font-black uppercase">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                            theme === 'dark' ? 'bg-purple-500/20 text-purple-300' : 'bg-purple-200 text-purple-900'
+                          }`}>
                             অষ্টোত্তরী দশা
                           </span>
-                          <span className="font-bold text-white text-xs">
+                          <span className={`font-bold text-xs ${
+                            theme === 'dark' ? 'text-white' : 'text-slate-900'
+                          }`}>
                             {calcResult.panchangaDetails.ashtottariDasha.lordBengali} ({calcResult.panchangaDetails.ashtottariDasha.lordName})
                           </span>
                         </div>
-                        <span className="font-mono font-bold text-purple-300 text-sm tracking-wide">
+                        <span className={`font-mono font-bold text-sm tracking-wide ${
+                          theme === 'dark' ? 'text-purple-300' : 'text-purple-900'
+                        }`}>
                           {calcResult.panchangaDetails.ashtottariDasha.formattedString}
                         </span>
                       </div>
 
                       {/* Yogini Dasha Balance */}
-                      <div className="p-3.5 rounded-xl bg-[#1c2541] border border-teal-500/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                      <div className={`p-3.5 rounded-xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-teal-500/30' : 'bg-teal-50/80 border-teal-200'
+                      }`}>
                         <div className="flex items-center gap-2">
-                          <span className="px-2 py-0.5 rounded-md bg-teal-500/20 text-teal-300 text-[10px] font-black uppercase">
+                          <span className={`px-2 py-0.5 rounded-md text-[10px] font-black uppercase ${
+                            theme === 'dark' ? 'bg-teal-500/20 text-teal-300' : 'bg-teal-200 text-teal-900'
+                          }`}>
                             যোগিনী দশা
                           </span>
-                          <span className="font-bold text-white text-xs">
+                          <span className={`font-bold text-xs ${
+                            theme === 'dark' ? 'text-white' : 'text-slate-900'
+                          }`}>
                             {calcResult.panchangaDetails.yoginiDasha.nameBengali} ({calcResult.panchangaDetails.yoginiDasha.name})
                           </span>
                         </div>
-                        <span className="font-mono font-bold text-teal-300 text-sm tracking-wide">
+                        <span className={`font-mono font-bold text-sm tracking-wide ${
+                          theme === 'dark' ? 'text-teal-300' : 'text-teal-900'
+                        }`}>
                           {calcResult.panchangaDetails.yoginiDasha.formattedString}
                         </span>
                       </div>
@@ -4466,39 +5609,63 @@ Question: ${details.question || 'N/A'}`;
                 {/* PLANETARY LONGITUDES & POSITIONS TABLE (Format: রবি (১২) ০।১২।২৩।১২) */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold uppercase text-[#e0a96d]">
+                    <span className={`text-[10px] font-bold uppercase ${
+                      theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900'
+                    }`}>
                       Planetary Longitudes & Positions (Format: গ্রহ (নক্ষত্র) রাশি।ডিগ্রী।মিনিট।সেকেন্ড)
                     </span>
                   </div>
-                  <div className="border border-[#3a506b] rounded-2xl overflow-hidden text-xs">
+                  <div className={`border rounded-2xl overflow-hidden text-xs ${
+                    theme === 'dark' ? 'border-[#3a506b]' : 'border-[#f3e8d2]'
+                  }`}>
                     <table className="w-full text-left">
-                      <thead className="bg-[#0b132b] text-[#e0a96d] uppercase font-bold text-[10px]">
+                      <thead className={`uppercase font-bold text-[10px] ${
+                        theme === 'dark' ? 'bg-[#0b132b] text-[#e0a96d]' : 'bg-amber-100 text-amber-900'
+                      }`}>
                         <tr>
-                          <th className="p-2.5">Planet</th>
-                          <th className="p-2.5">Position Format (গ্রহ (নক্ষত্র) রাশি।ডিগ্রী।মিনিট।সেকেন্ড)</th>
-                          <th className="p-2.5">Rashi Sign (0-11)</th>
-                          <th className="p-2.5">Nakshatra & Pada</th>
-                          <th className="p-2.5">House</th>
-                          <th className="p-2.5">Status</th>
+                          <th className="p-3">Planet</th>
+                          <th className="p-3">Position Format (গ্রহ (নক্ষত্র) রাশি।ডিগ্রী।মিনিট।সেকেন্ড)</th>
+                          <th className="p-3">Rashi Sign (0-11)</th>
+                          <th className="p-3">Nakshatra & Pada</th>
+                          <th className="p-3">House</th>
+                          <th className="p-3">Status</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#3a506b]/40">
+                      <tbody className={`divide-y ${
+                        theme === 'dark' ? 'divide-[#3a506b]/40' : 'divide-[#f3e8d2]'
+                      }`}>
                         {/* ASCENDANT (LAGNA) ROW */}
-                        <tr className="bg-amber-950/30 font-bold border-b border-[#3a506b]">
-                          <td className="p-2.5 text-amber-300 flex items-center gap-1.5">
+                        <tr className={`font-bold border-b ${
+                          theme === 'dark' ? 'bg-amber-950/30 border-[#3a506b]' : 'bg-amber-50 border-[#f3e8d2]'
+                        }`}>
+                          <td className={`p-3 flex items-center gap-1.5 ${
+                            theme === 'dark' ? 'text-amber-300' : 'text-amber-900'
+                          }`}>
                             <span className="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
                             <span>{calcResult.ascendantItem.name}</span>
                           </td>
-                          <td className="p-2.5 text-amber-300 font-mono font-bold">
+                          <td className={`p-3 font-mono font-bold ${
+                            theme === 'dark' ? 'text-amber-300' : 'text-amber-900'
+                          }`}>
                             {calcResult.ascendantItem.formattedString}
                           </td>
-                          <td className="p-2.5 text-gray-200">{calcResult.ascendantItem.signName}</td>
-                          <td className="p-2.5 text-gray-300">
+                          <td className={`p-3 ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                            {calcResult.ascendantItem.signName}
+                          </td>
+                          <td className={`p-3 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
                             {calcResult.ascendantItem.nakshatraName} (Pada {calcResult.ascendantItem.nakshatraPada})
                           </td>
-                          <td className="p-2.5 text-amber-300 font-extrabold">House 1 (Lagna)</td>
-                          <td className="p-2.5">
-                            <span className="px-2 py-0.5 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-extrabold border border-amber-500/30">
+                          <td className={`p-3 font-extrabold ${
+                            theme === 'dark' ? 'text-amber-300' : 'text-amber-900'
+                          }`}>
+                            House 1 (Lagna)
+                          </td>
+                          <td className="p-3">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                              theme === 'dark'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                : 'bg-amber-100 text-amber-900 border-amber-300'
+                            }`}>
                               Lagna Point
                             </span>
                           </td>
@@ -4506,26 +5673,46 @@ Question: ${details.question || 'N/A'}`;
 
                         {/* 9 PLANETS ROWS */}
                         {calcResult.planets.map((p: any) => (
-                          <tr key={p.id} className="hover:bg-[#0b132b]/40">
-                            <td className="p-2.5 font-bold text-white flex items-center gap-1.5">
+                          <tr key={p.id} className={`transition-colors ${
+                            theme === 'dark' ? 'hover:bg-[#0b132b]/40' : 'hover:bg-amber-50/50 bg-white'
+                          }`}>
+                            <td className={`p-3 font-bold flex items-center gap-1.5 ${
+                              theme === 'dark' ? 'text-white' : 'text-slate-900'
+                            }`}>
                               <span className="w-2 h-2 rounded-full bg-amber-400"></span>
                               <span>{p.bengaliName} ({p.name})</span>
                             </td>
-                            <td className="p-2.5 text-amber-300 font-mono font-bold">
+                            <td className={`p-3 font-mono font-bold ${
+                              theme === 'dark' ? 'text-amber-300' : 'text-amber-800'
+                            }`}>
                               {p.formattedString}
                             </td>
-                            <td className="p-2.5 text-gray-200">{p.bengaliRashiName}</td>
-                            <td className="p-2.5 text-gray-300">
+                            <td className={`p-3 ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                              {p.bengaliRashiName}
+                            </td>
+                            <td className={`p-3 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
                               {p.nakshatraName} (Pada {p.nakshatraPada})
                             </td>
-                            <td className="p-2.5 font-bold text-gray-200">House {p.houseNumber}</td>
-                            <td className="p-2.5">
+                            <td className={`p-3 font-bold ${
+                              theme === 'dark' ? 'text-gray-200' : 'text-slate-800'
+                            }`}>
+                              House {p.houseNumber}
+                            </td>
+                            <td className="p-3">
                               {p.isRetrograde ? (
-                                <span className="px-2 py-0.5 rounded-full bg-red-950/60 text-red-400 text-[10px] font-extrabold border border-red-500/30">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                                  theme === 'dark'
+                                    ? 'bg-red-950/60 text-red-400 border-red-500/30'
+                                    : 'bg-red-100 text-red-700 border-red-200'
+                                }`}>
                                   Retrograde (ব / R)
                                 </span>
                               ) : (
-                                <span className="px-2 py-0.5 rounded-full bg-green-950/60 text-green-400 text-[10px] font-extrabold border border-green-500/30">
+                                <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                                  theme === 'dark'
+                                    ? 'bg-green-950/60 text-green-400 border-green-500/30'
+                                    : 'bg-green-100 text-green-800 border-green-200'
+                                }`}>
                                   Direct (D)
                                 </span>
                               )}
@@ -4537,17 +5724,21 @@ Question: ${details.question || 'N/A'}`;
                   </div>
                 </div>
 
-                <div className="flex gap-3">
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
                   <button
                     onClick={() => window.print()}
-                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    className="py-3.5 px-5 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Download className="w-4 h-4" />
-                    <span>Print / Save Kuthi Chart PDF</span>
+                    <span>Print Page</span>
                   </button>
                   <button
                     onClick={() => setCalcResult(null)}
-                    className="py-3 px-5 rounded-xl bg-[#0b132b] hover:bg-[#334155] text-gray-300 font-bold text-xs border border-[#3a506b] cursor-pointer"
+                    className={`py-3.5 px-6 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
                   >
                     Calculate Another Kuthi
                   </button>
@@ -4555,18 +5746,1621 @@ Question: ${details.question || 'N/A'}`;
               </div>
             )}
 
+            {/* Results Output for Yumsharol Traditional Vastu */}
+            {calcResult && calcResult.isYumsharol && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* Top Banner with Traditional House & Direction */}
+                <div className={`p-6 rounded-3xl border text-left space-y-4 relative overflow-hidden transition-colors ${
+                  calcResult.directionInfo.quality === 'Auspicious'
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-emerald-950/70 via-[#0b132b] to-[#0b132b] border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/50 border-emerald-300 text-slate-900 shadow-sm')
+                    : calcResult.directionInfo.quality === 'Inauspicious'
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-rose-950/70 via-[#0b132b] to-[#0b132b] border-rose-500/40' : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/50 border-rose-300 text-slate-900 shadow-sm')
+                    : (theme === 'dark' ? 'bg-gradient-to-br from-amber-950/70 via-[#0b132b] to-[#0b132b] border-amber-500/40' : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/50 border-amber-300 text-slate-900 shadow-sm')
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-lg shrink-0 ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        {calcResult.directionInfo.symbol}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                            theme === 'dark'
+                              ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                              : 'bg-amber-100 text-amber-900 border-amber-300'
+                          }`}>
+                            YUMSHAROL HOUSE INDEX #{calcResult.traditionalIndex} OF 8
+                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            calcResult.directionInfo.quality === 'Auspicious'
+                              ? (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                              : (theme === 'dark' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-rose-100 text-rose-800 border border-rose-300')
+                          }`}>
+                            {calcResult.directionInfo.quality === 'Auspicious' ? '✓ Auspicious Griha' : '⚠ Caution / Remedial Rituals Advised'}
+                          </span>
+                        </div>
+                        <h4 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {calcResult.directionInfo.name}
+                        </h4>
+                        <p className={`text-xs font-semibold mt-0.5 ${theme === 'dark' ? 'text-amber-300' : 'text-amber-800'}`}>
+                          {calcResult.directionInfo.manipuriName} • Direction: {calcResult.directionInfo.direction} ({calcResult.directionInfo.directionManipuri})
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`p-3.5 rounded-2xl border text-right shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541]/90 border-white/10' : 'bg-white/95 border-slate-200 shadow-xs'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        Traditional Direction
+                      </span>
+                      <strong className="text-lg text-emerald-600 dark:text-emerald-400 font-mono block">
+                        {calcResult.directionInfo.direction}
+                      </strong>
+                      <span className={`text-[11px] block ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                        {calcResult.directionInfo.directionManipuri}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4 KEY METRICS TILES */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+                  <div className={`p-3.5 rounded-2xl border transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`block text-[10px] font-bold uppercase ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      1. Running Age
+                    </span>
+                    <span className="text-xl font-bold font-mono text-[#d97706] dark:text-[#fbbf24] block mt-1">
+                      {calcResult.runningAge}th Year
+                    </span>
+                    <span className={`text-[10px] block mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      Anniversary precise
+                    </span>
+                  </div>
+
+                  <div className={`p-3.5 rounded-2xl border transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`block text-[10px] font-bold uppercase ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      2. Birth Nakshatra
+                    </span>
+                    <span className={`text-sm font-bold block mt-1 truncate ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                      #{calcResult.nakshatra} {calcResult.nakshatraName}
+                    </span>
+                    <span className="text-[10px] text-amber-700 dark:text-amber-400 font-medium block mt-0.5">
+                      Ruler: {calcResult.nakshatraRuler}
+                    </span>
+                  </div>
+
+                  <div className={`p-3.5 rounded-2xl border transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`block text-[10px] font-bold uppercase ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      3. Constant Value
+                    </span>
+                    <span className="text-xl font-bold font-mono text-emerald-600 dark:text-emerald-400 block mt-1">
+                      {calcResult.constantValue}
+                    </span>
+                    <span className={`text-[10px] block mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      Sacred 15 Tithis
+                    </span>
+                  </div>
+
+                  <div className={`p-3.5 rounded-2xl border transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`block text-[10px] font-bold uppercase ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      4. Modulo 8 Result
+                    </span>
+                    <span className="text-xl font-bold font-mono text-sky-700 dark:text-cyan-400 block mt-1">
+                      Index {calcResult.traditionalIndex}
+                    </span>
+                    <span className={`text-[10px] block mt-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                      standardMod = {calcResult.standardMod}
+                    </span>
+                  </div>
+                </div>
+
+                {/* RESULT SECTION WITH CENTERED BIG REMAINDER AND TRADITIONAL MEETEI VERSE */}
+                <div className={`p-6 rounded-3xl border space-y-4 text-center transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-50/70 border-amber-300 shadow-sm'
+                }`}>
+                  <div className={`flex items-center justify-between pb-3 border-b ${
+                    theme === 'dark' ? 'border-[#3a506b]/60' : 'border-amber-200'
+                  }`}>
+                    <span className={`text-xs font-serif font-bold uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                    }`}>
+                      Result
+                    </span>
+                    <span className={`px-3 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                      theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                    }`}>
+                      Yumsharol Remainder
+                    </span>
+                  </div>
+
+                  {/* Remainder Centered with Big Number */}
+                  <div className="py-2 space-y-1">
+                    <span className={`text-xs uppercase font-extrabold tracking-widest block ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-amber-900/70'
+                    }`}>
+                      Remainder
+                    </span>
+                    <div className={`text-6xl sm:text-7xl font-black font-mono tracking-tight ${
+                      theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'
+                    }`}>
+                      {calcResult.standardMod}
+                    </div>
+                  </div>
+
+                  {/* Traditional Manipuri Verse for this Remainder */}
+                  <div className={`p-5 rounded-2xl border max-w-xl mx-auto text-center shadow-inner ${
+                    theme === 'dark' ? 'bg-[#1c2541] border-amber-500/30' : 'bg-white border-amber-300'
+                  }`}>
+                    <p className={`font-blipi text-lg sm:text-xl font-normal leading-relaxed tracking-wide ${
+                      theme === 'dark' ? 'text-amber-200' : 'text-amber-950'
+                    }`}>
+                      {calcResult.remainderPrediction || (
+                        <>
+                          {calcResult.standardMod === 0 && '0 El§a lzjaen| Kuidzmo_+a feo_| Amz-yah~eTaz k=mem| iSba nz@|'}
+                          {calcResult.standardMod === 1 && '1 El§a ifralda E~ley, ln-Tum caR~K\\il|'}
+                          {calcResult.standardMod === 2 && '2 El§a E~mKuin, feo_, E~meh; lazepak nzgiL| Ec(I yum oh~rbsu h~muz Zmxmk mih laz@| f\\et|'}
+                          {calcResult.standardMod === 3 && '3 El§a EnazSain, mah~ pakpa caR~K\\pa, yumTuna Saba Zm@, E~fey|'}
+                          {calcResult.standardMod === 4 && '4 El§a lmHh~in, El;iSz taNduna Etak@, waeTak laneTak@, maz tak@|'}
+                          {calcResult.standardMod === 5 && '5 El§id ih-yah~ Apan-Arz Zmxmk fze~j@, ln tuzh~, yamxa E~f@|'}
+                          {calcResult.standardMod === 6 && '6 El§id Elalaen| Ana-Aeyk Etah~na nz@| Ku\\#-Ku\\lah~na ESakpa pnba, yumSaba, R~#ba mIga, yu§uga K\\ne~cnba nz@|'}
+                          {calcResult.standardMod === 7 && '7 El§id Samuen| mana minl nah~dna yum Saba Zme~j@| ln-Tum caR~K\\il|'}
+                        </>
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* TRADITIONAL MANIPURI SIGNIFICANCE & VASTU ADVICE */}
+                <div className={`p-5 rounded-2xl border space-y-3 text-xs transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <span className={`text-xs font-serif font-bold uppercase tracking-wider block ${
+                    theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-900'
+                  }`}>
+                    Traditional Yumsharol Significance & Vastu Guidance
+                  </span>
+                  <div className={`p-4 rounded-xl border space-y-2 ${
+                    theme === 'dark' ? 'bg-[#1c2541] border-amber-500/30' : 'bg-amber-50/70 border-amber-200'
+                  }`}>
+                    <p className={`leading-relaxed ${theme === 'dark' ? 'text-gray-200' : 'text-slate-800'}`}>
+                      <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>Significance:</strong> {calcResult.directionInfo.significance}
+                    </p>
+                    <p className={`leading-relaxed pt-1.5 border-t ${
+                      theme === 'dark' ? 'text-amber-200 border-[#3a506b]/40' : 'text-amber-950 border-amber-200'
+                    }`}>
+                      <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>Recommendation:</strong> {calcResult.directionInfo.recommendation}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Print / Save Yumsharol Report PDF</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3 px-5 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    Calculate Another Profile
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results Output for Shani Sade Sati */}
+            {calcResult && calcResult.isSadeSati && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* Header Card */}
+                <div className={`p-6 rounded-3xl border text-left space-y-4 relative overflow-hidden transition-colors ${
+                  calcResult.severity === 'None'
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-emerald-950/70 via-[#0b132b] to-[#0b132b] border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/50 border-emerald-300 text-slate-900 shadow-sm')
+                    : calcResult.severity === 'High'
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-rose-950/70 via-[#0b132b] to-[#0b132b] border-rose-500/40' : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/50 border-rose-300 text-slate-900 shadow-sm')
+                    : (theme === 'dark' ? 'bg-gradient-to-br from-sky-950/70 via-[#0b132b] to-[#0b132b] border-sky-500/40' : 'bg-gradient-to-br from-sky-50 via-white to-sky-100/50 border-sky-300 text-slate-900 shadow-sm')
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-lg shrink-0 ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        🪐
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                            theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
+                          }`}>
+                            SHANI SADE SATI & DHAIYA REPORT
+                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            calcResult.severity === 'High' ? (theme === 'dark' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-rose-100 text-rose-800 border border-rose-300') :
+                            calcResult.severity === 'Moderate' ? (theme === 'dark' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-amber-100 text-amber-800 border border-amber-300') :
+                            calcResult.severity === 'Mild' ? (theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border border-sky-500/30' : 'bg-sky-100 text-sky-800 border border-sky-300') :
+                            (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                          }`}>
+                            Severity: {calcResult.severity}
+                          </span>
+                        </div>
+                        <h4 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {calcResult.nativeName}
+                        </h4>
+                        <p className={`text-xs font-semibold mt-0.5 ${theme === 'dark' ? 'text-sky-200' : 'text-slate-700'}`}>
+                          Natal Moon Sign: <span className="text-amber-700 dark:text-amber-300 font-bold">{calcResult.moonSign}</span> ({calcResult.moonDegree.toFixed(2)}°) • Current Transit Saturn: <span className="text-amber-700 dark:text-amber-300 font-bold">{calcResult.currentSaturnSign}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl border text-right shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541]/90 border-white/10' : 'bg-white/95 border-sky-200 shadow-xs'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        Transit Status
+                      </span>
+                      <strong className={`text-base font-bold block mt-0.5 ${
+                        calcResult.isSadeSatiActive
+                          ? (theme === 'dark' ? 'text-rose-400' : 'text-rose-600')
+                          : (theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600')
+                      }`}>
+                        {calcResult.phase}
+                      </strong>
+                      <span className={`text-[11px] block ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                        {calcResult.phaseManipuri}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+                    theme === 'dark' ? 'bg-[#0b132b]/80 border-white/10 text-gray-200' : 'bg-white/90 border-sky-200 text-slate-800 shadow-2xs'
+                  }`}>
+                    <p>{calcResult.statusDescription}</p>
+                  </div>
+                </div>
+
+                {/* 4 Impact Life Areas Matrix */}
+                <div className="space-y-2">
+                  <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-900'
+                  }`}>
+                    Domain Impacts & Astrological Focus
+                  </h5>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {calcResult.impactAreas.map((ia: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className={`p-4 rounded-2xl border space-y-2 transition-colors ${
+                          theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`font-bold text-xs ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {ia.area}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                            ia.status === 'Challenging' ? (theme === 'dark' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-rose-100 text-rose-700 border border-rose-300') :
+                            ia.status === 'Caution' ? (theme === 'dark' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-amber-100 text-amber-700 border border-amber-300') :
+                            (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-700 border border-emerald-300')
+                          }`}>
+                            {ia.status}
+                          </span>
+                        </div>
+                        <p className={`text-[11px] leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                          {ia.detail}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Lifetime Cycle History Table */}
+                <div className="space-y-2">
+                  <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-900'
+                  }`}>
+                    Sade Sati Lifetime Transit Phases
+                  </h5>
+                  <div className={`overflow-x-auto rounded-2xl border ${
+                    theme === 'dark' ? 'border-[#3a506b]/60' : 'border-slate-200 shadow-xs'
+                  }`}>
+                    <table className="w-full text-left border-collapse">
+                      <thead className={`text-[10px] uppercase tracking-wider font-bold ${
+                        theme === 'dark' ? 'bg-[#0b132b] text-gray-400' : 'bg-slate-100 text-slate-800'
+                      }`}>
+                        <tr>
+                          <th className="p-3">Phase / Cycle</th>
+                          <th className="p-3">Transit Influence</th>
+                          <th className="p-3">Estimated Span</th>
+                          <th className="p-3 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`text-xs ${
+                        theme === 'dark' ? 'divide-y divide-[#3a506b]/40' : 'divide-y divide-slate-200'
+                      }`}>
+                        {calcResult.cycleHistory.map((c: any, idx: number) => (
+                          <tr
+                            key={idx}
+                            className={`${
+                              c.isCurrent
+                                ? (theme === 'dark' ? 'bg-amber-500/10 font-bold' : 'bg-amber-50 font-bold')
+                                : (theme === 'dark' ? 'hover:bg-[#1c2541]/50' : 'hover:bg-slate-50 bg-white')
+                            }`}
+                          >
+                            <td className={`p-3 font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                              {c.phaseName}
+                            </td>
+                            <td className={`p-3 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                              {c.description}
+                            </td>
+                            <td className={`p-3 font-mono font-bold ${theme === 'dark' ? 'text-amber-400' : 'text-amber-800'}`}>
+                              {c.estimatedYears}
+                            </td>
+                            <td className="p-3 text-center">
+                              {c.isCurrent ? (
+                                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                                  theme === 'dark' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-rose-100 text-rose-800 border-rose-300'
+                                }`}>
+                                  Current Active
+                                </span>
+                              ) : (
+                                <span className={theme === 'dark' ? 'text-gray-500 text-[11px]' : 'text-slate-400 text-[11px]'}>—</span>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Authentic Vedic Remedies Card */}
+                <div className={`p-5 rounded-2xl border space-y-3.5 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-sky-500/30' : 'bg-sky-50/80 border-sky-200 shadow-xs'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🪔</span>
+                    <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-sky-400' : 'text-sky-900'
+                    }`}>
+                      Prescribed Vedic Shanti & Remedial Measures
+                    </h5>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-sky-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-sky-300' : 'text-sky-800'}`}>
+                        Shani Beej Mantra
+                      </span>
+                      <p className={`font-mono text-[11px] select-all font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                        {calcResult.vedicRemedies.mantra}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-sky-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-sky-300' : 'text-sky-800'}`}>
+                        Deity Worship
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                        {calcResult.vedicRemedies.deity}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-sky-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-sky-300' : 'text-sky-800'}`}>
+                        Charity & Dana
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                        {calcResult.vedicRemedies.charity}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-sky-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-sky-300' : 'text-sky-800'}`}>
+                        Gemstone Guidance
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                        {calcResult.vedicRemedies.gemstoneGuidance}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`p-3 rounded-xl border text-[11px] ${
+                    theme === 'dark' ? 'bg-[#1c2541] border-white/5 text-amber-200' : 'bg-white border-amber-200 text-amber-950 shadow-2xs'
+                  }`}>
+                    <strong>Daily Practice:</strong> {calcResult.vedicRemedies.dailyPractice}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Print Shani Sade Sati Report</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3 px-5 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    Calculate Another Native
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results Output for Manglik Dosh */}
+            {calcResult && (calcResult.isManglikReport || calcResult.type?.includes('Manglik')) && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* Header Card */}
+                <div className={`p-6 rounded-3xl border text-left space-y-4 relative overflow-hidden transition-colors ${
+                  calcResult.status?.includes('Clean') || calcResult.status?.includes('Cancelled')
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-emerald-950/70 via-[#0b132b] to-[#0b132b] border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/50 border-emerald-300 text-slate-900 shadow-sm')
+                    : (theme === 'dark' ? 'bg-gradient-to-br from-rose-950/70 via-[#0b132b] to-[#0b132b] border-rose-500/40' : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/50 border-rose-300 text-slate-900 shadow-sm')
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-lg shrink-0 ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        🔥
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                            theme === 'dark' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' : 'bg-rose-100 text-rose-900 border-rose-300'
+                          }`}>
+                            KUJA DOSHA (MANGLIK) EVALUATION
+                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            calcResult.score > 50
+                              ? (theme === 'dark' ? 'bg-rose-500/30 text-rose-300 border border-rose-500/40' : 'bg-rose-100 text-rose-800 border border-rose-300')
+                              : calcResult.score > 0
+                              ? (theme === 'dark' ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40' : 'bg-amber-100 text-amber-800 border border-amber-300')
+                              : (theme === 'dark' ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                          }`}>
+                            Dosha Score: {calcResult.score}%
+                          </span>
+                        </div>
+                        <h4 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {calcResult.nativeName} ({calcResult.gender})
+                        </h4>
+                        <p className={`text-xs font-semibold mt-0.5 ${theme === 'dark' ? 'text-rose-200' : 'text-slate-700'}`}>
+                          Classical Manglik Assessment from Lagna, Chandra, and Shukra
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl border text-right shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541]/90 border-white/10' : 'bg-white/95 border-rose-200 shadow-xs'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        Overall Verdict
+                      </span>
+                      <strong className={`text-base font-bold block mt-0.5 ${
+                        calcResult.score > 50
+                          ? (theme === 'dark' ? 'text-rose-400' : 'text-rose-600')
+                          : calcResult.score > 0
+                          ? (theme === 'dark' ? 'text-amber-400' : 'text-amber-700')
+                          : (theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600')
+                      }`}>
+                        {calcResult.status}
+                      </strong>
+                      <span className={`text-[11px] block ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                        {calcResult.statusManipuri}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+                    theme === 'dark' ? 'bg-[#0b132b]/80 border-white/10 text-gray-200' : 'bg-white/90 border-rose-200 text-slate-800 shadow-2xs'
+                  }`}>
+                    <p>{calcResult.effectsSummary}</p>
+                  </div>
+                </div>
+
+                {/* 3 Reference Placements (Lagna, Moon, Venus) */}
+                <div className="space-y-2">
+                  <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-900'
+                  }`}>
+                    Mars (Mangal) Placements from 3 Classical Vedic Lagnas
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    {calcResult.placements.map((p: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className={`p-4 rounded-2xl border space-y-2 transition-colors ${
+                          theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className={`font-bold text-xs ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {p.fromReference}
+                          </span>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                            p.isDoshaPresent
+                              ? (theme === 'dark' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-rose-100 text-rose-700 border border-rose-300')
+                              : (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-700 border border-emerald-300')
+                          }`}>
+                            {p.isDoshaPresent ? `House ${p.marsHouse} (Active)` : `House ${p.marsHouse} (Safe)`}
+                          </span>
+                        </div>
+                        <p className={`text-[11px] leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                          {p.description}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Classical Cancellations (Kuja Bhanga) */}
+                <div className={`p-5 rounded-2xl border space-y-3 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200 shadow-xs'
+                }`}>
+                  <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-900'
+                  }`}>
+                    Classical Kuja Dosha Bhanga (Cancellation Rules Evaluated)
+                  </h5>
+                  <div className="space-y-2">
+                    {calcResult.cancellations.map((c: any, idx: number) => (
+                      <div
+                        key={idx}
+                        className={`p-3 rounded-xl border flex items-start justify-between gap-3 ${
+                          c.isApplied
+                            ? (theme === 'dark' ? 'bg-emerald-950/30 border-emerald-500/30 text-emerald-300' : 'bg-emerald-50 border-emerald-300 text-emerald-900')
+                            : (theme === 'dark' ? 'bg-[#1c2541]/50 border-white/5 text-gray-400' : 'bg-white border-slate-200 text-slate-600')
+                        }`}
+                      >
+                        <div>
+                          <strong className={`text-xs block ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {c.rule}
+                          </strong>
+                          <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                            {c.description}
+                          </span>
+                        </div>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                          c.isApplied
+                            ? (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                            : (theme === 'dark' ? 'bg-gray-800 text-gray-400' : 'bg-slate-200 text-slate-600')
+                        }`}>
+                          {c.isApplied ? '✓ Bhanga Applied' : 'Not Applicable'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Marriage Guidance & Vedic Remedies */}
+                <div className={`p-5 rounded-2xl border space-y-3.5 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-rose-500/30' : 'bg-rose-50/80 border-rose-200 shadow-xs'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🪔</span>
+                    <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-rose-400' : 'text-rose-900'
+                    }`}>
+                      Marriage Guidance & Vedic Shanti Remedies
+                    </h5>
+                  </div>
+                  <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+                    theme === 'dark' ? 'bg-[#1c2541] border-white/5 text-gray-200' : 'bg-white border-rose-200 text-slate-800 shadow-2xs'
+                  }`}>
+                    <strong className={`block mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                      Marital Advice:
+                    </strong>
+                    {calcResult.marriageGuidance}
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-rose-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-rose-300' : 'text-rose-800'}`}>
+                        Ritual / Shanti
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                        {calcResult.vedicRemedies.ritual}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-rose-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-rose-300' : 'text-rose-800'}`}>
+                        Vedic Mantra
+                      </span>
+                      <p className={`font-mono text-[11px] select-all font-bold ${theme === 'dark' ? 'text-amber-200' : 'text-amber-900'}`}>
+                        {calcResult.vedicRemedies.mantra}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-rose-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-rose-300' : 'text-rose-800'}`}>
+                        Gemstone Recommendation
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                        {calcResult.vedicRemedies.gemstone}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-rose-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-rose-300' : 'text-rose-800'}`}>
+                        Charity & Donation
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                        {calcResult.vedicRemedies.donation}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`p-3 rounded-xl border text-[11px] ${
+                    theme === 'dark' ? 'bg-[#1c2541] border-white/5 text-amber-200' : 'bg-white border-amber-200 text-amber-950 shadow-2xs'
+                  }`}>
+                    <strong>Lifestyle:</strong> {calcResult.vedicRemedies.lifestyle}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Print Manglik Dosh Report</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3 px-5 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    Calculate Another Native
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results Output for Kaal Sarp Dosh */}
+            {calcResult && calcResult.isKaalSarp && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* Header Card */}
+                <div className={`p-6 rounded-3xl border text-left space-y-4 relative overflow-hidden transition-colors ${
+                  !calcResult.hasKaalSarp
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-emerald-950/70 via-[#0b132b] to-[#0b132b] border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/50 border-emerald-300 text-slate-900 shadow-sm')
+                    : (theme === 'dark' ? 'bg-gradient-to-br from-purple-950/70 via-[#0b132b] to-[#0b132b] border-purple-500/40' : 'bg-gradient-to-br from-purple-50 via-white to-purple-100/50 border-purple-300 text-slate-900 shadow-sm')
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-lg shrink-0 ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        🐍
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                            theme === 'dark' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-purple-100 text-purple-900 border-purple-300'
+                          }`}>
+                            KAAL SARP YOGA ANALYSIS
+                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            calcResult.intensity === 'Purna (Full)'
+                              ? (theme === 'dark' ? 'bg-rose-500/30 text-rose-300 border border-rose-500/40' : 'bg-rose-100 text-rose-800 border border-rose-300')
+                              : calcResult.intensity === 'Anshik (Partial)'
+                              ? (theme === 'dark' ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40' : 'bg-amber-100 text-amber-800 border border-amber-300')
+                              : (theme === 'dark' ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                          }`}>
+                            Intensity: {calcResult.intensity}
+                          </span>
+                        </div>
+                        <h4 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {calcResult.nativeName}
+                        </h4>
+                        <p className={`text-xs font-semibold mt-0.5 ${theme === 'dark' ? 'text-purple-200' : 'text-slate-700'}`}>
+                          Direction: <span className="text-amber-700 dark:text-amber-300 font-bold">{calcResult.direction}</span> • Rahu House {calcResult.rahuHouse} ({calcResult.rahuSign}) / Ketu House {calcResult.ketuHouse} ({calcResult.ketuSign})
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl border text-right shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541]/90 border-white/10' : 'bg-white/95 border-purple-200 shadow-xs'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        Identified Type
+                      </span>
+                      <strong className={`text-base font-bold block mt-0.5 ${
+                        calcResult.hasKaalSarp
+                          ? (theme === 'dark' ? 'text-purple-300' : 'text-purple-700')
+                          : (theme === 'dark' ? 'text-emerald-400' : 'text-emerald-600')
+                      }`}>
+                        {calcResult.doshType}
+                      </strong>
+                      <span className={`text-[11px] block ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                        {calcResult.doshTypeManipuri}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+                    theme === 'dark' ? 'bg-[#0b132b]/80 border-white/10 text-gray-200' : 'bg-white/90 border-purple-200 text-slate-800 shadow-2xs'
+                  }`}>
+                    <p>{calcResult.classicalDescription}</p>
+                  </div>
+                </div>
+
+                {/* Axis Details & Planetary Containment */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className={`p-4 rounded-2xl border space-y-2 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`font-serif font-bold text-xs uppercase tracking-wider block ${
+                      theme === 'dark' ? 'text-purple-400' : 'text-purple-900'
+                    }`}>
+                      Planets Trapped in Rahu-Ketu Axis
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {calcResult.planetsEnclosed.map((p: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className={`px-2.5 py-1 rounded-xl font-bold text-xs border ${
+                            theme === 'dark'
+                              ? 'bg-purple-500/20 text-purple-200 border-purple-500/30'
+                              : 'bg-purple-100 text-purple-900 border-purple-300'
+                          }`}
+                        >
+                          {p}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className={`p-4 rounded-2xl border space-y-2 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`font-serif font-bold text-xs uppercase tracking-wider block ${
+                      theme === 'dark' ? 'text-emerald-400' : 'text-emerald-900'
+                    }`}>
+                      Planets Outside / Free from Axis
+                    </span>
+                    {calcResult.planetsFree.length > 0 ? (
+                      <div className="flex flex-wrap gap-1.5">
+                        {calcResult.planetsFree.map((p: string, idx: number) => (
+                          <span
+                            key={idx}
+                            className={`px-2.5 py-1 rounded-xl font-bold text-xs border ${
+                              theme === 'dark'
+                                ? 'bg-emerald-500/20 text-emerald-200 border-emerald-500/30'
+                                : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                            }`}
+                          >
+                            {p}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className={`text-xs italic ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        All core 7 planets are trapped inside the nodal hemisphere.
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Life Domain Impacts */}
+                {calcResult.effects && calcResult.effects.length > 0 && (
+                  <div className="space-y-2">
+                    <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-900'
+                    }`}>
+                      Specific Life Domain Influences
+                    </h5>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                      {calcResult.effects.map((ef: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className={`p-4 rounded-2xl border space-y-1.5 transition-colors ${
+                            theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                          }`}
+                        >
+                          <span className={`font-bold text-xs block ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                            {ef.lifeDomain}
+                          </span>
+                          <p className={`text-[11px] leading-relaxed ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                            {ef.impact}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Vedic Shanti Remedies */}
+                <div className={`p-5 rounded-2xl border space-y-3.5 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-purple-500/30' : 'bg-purple-50/80 border-purple-200 shadow-xs'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">🪔</span>
+                    <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-purple-400' : 'text-purple-900'
+                    }`}>
+                      Prescribed Kaal Sarp Shanti Remedies
+                    </h5>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-purple-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-purple-300' : 'text-purple-800'}`}>
+                        Shanti Puja
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-white' : 'text-slate-800'}`}>
+                        {calcResult.vedicRemedies.shantiPuja}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-purple-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-purple-300' : 'text-purple-800'}`}>
+                        Vedic Mantras
+                      </span>
+                      <p className={`font-mono text-[11px] select-all font-bold ${theme === 'dark' ? 'text-amber-200' : 'text-amber-900'}`}>
+                        {calcResult.vedicRemedies.mantra}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-purple-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-purple-300' : 'text-purple-800'}`}>
+                        Sacred Rudraksha
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                        {calcResult.vedicRemedies.rudraksha}
+                      </p>
+                    </div>
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-purple-200 shadow-2xs'
+                    }`}>
+                      <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-purple-300' : 'text-purple-800'}`}>
+                        Charity & Dana
+                      </span>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                        {calcResult.vedicRemedies.charity}
+                      </p>
+                    </div>
+                  </div>
+                  <div className={`p-3 rounded-xl border text-[11px] ${
+                    theme === 'dark' ? 'bg-[#1c2541] border-white/5 text-amber-200' : 'bg-white border-amber-200 text-amber-950 shadow-2xs'
+                  }`}>
+                    <strong>Special Dates:</strong> {calcResult.vedicRemedies.specialDates}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Print Kaal Sarp Report</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3 px-5 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    Calculate Another Native
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results Output for Match Making (Ashtakoot 36-Gun Milan) */}
+            {calcResult && calcResult.isMatchMaking && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* Header Score Card */}
+                <div className={`p-6 rounded-3xl border text-left space-y-4 relative overflow-hidden transition-colors ${
+                  calcResult.totalScore >= 24
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-emerald-950/70 via-[#0b132b] to-[#0b132b] border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/50 border-emerald-300 text-slate-900 shadow-sm')
+                    : calcResult.totalScore >= 18
+                    ? (theme === 'dark' ? 'bg-gradient-to-br from-amber-950/70 via-[#0b132b] to-[#0b132b] border-amber-500/40' : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/50 border-amber-300 text-slate-900 shadow-sm')
+                    : (theme === 'dark' ? 'bg-gradient-to-br from-rose-950/70 via-[#0b132b] to-[#0b132b] border-rose-500/40' : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/50 border-rose-300 text-slate-900 shadow-sm')
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-lg shrink-0 ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        💍
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                            theme === 'dark' ? 'bg-pink-500/20 text-pink-300 border-pink-500/30' : 'bg-pink-100 text-pink-900 border-pink-300'
+                          }`}>
+                            ASHTAKOOT 36-GUN MILAN REPORT
+                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase ${
+                            calcResult.totalScore >= 24
+                              ? (theme === 'dark' ? 'bg-emerald-500/30 text-emerald-300 border border-emerald-500/40' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                              : calcResult.totalScore >= 18
+                              ? (theme === 'dark' ? 'bg-amber-500/30 text-amber-300 border border-amber-500/40' : 'bg-amber-100 text-amber-800 border border-amber-300')
+                              : (theme === 'dark' ? 'bg-rose-500/30 text-rose-300 border border-rose-500/40' : 'bg-rose-100 text-rose-800 border border-rose-300')
+                          }`}>
+                            {calcResult.verdict}
+                          </span>
+                        </div>
+                        <h4 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {calcResult.groomName} & {calcResult.brideName}
+                        </h4>
+                        <p className={`text-xs font-semibold mt-0.5 ${theme === 'dark' ? 'text-pink-200' : 'text-slate-700'}`}>
+                          Groom: {calcResult.groomMoonSign} ({calcResult.groomNakshatra}) • Bride: {calcResult.brideMoonSign} ({calcResult.brideNakshatra})
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl border text-center shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541]/90 border-white/10' : 'bg-white/95 border-pink-200 shadow-xs'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        Total Gun Score
+                      </span>
+                      <div className={`text-4xl font-black font-mono mt-0.5 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
+                        {calcResult.totalScore} <span className={`text-sm font-normal ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>/ 36</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 block mt-0.5">
+                        {calcResult.percentage}% Match
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+                    theme === 'dark' ? 'bg-[#0b132b]/80 border-white/10 text-gray-200' : 'bg-white/90 border-pink-200 text-slate-800 shadow-2xs'
+                  }`}>
+                    <p>{calcResult.verdictDescription}</p>
+                  </div>
+                </div>
+
+                {/* Manglik Compatibility & Critical Dosh Alerts */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  <div className={`p-4 rounded-2xl border space-y-2 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`font-serif font-bold text-xs uppercase tracking-wider block ${
+                      theme === 'dark' ? 'text-amber-400' : 'text-amber-900'
+                    }`}>
+                      Manglik Compatibility (Kuja Samya)
+                    </span>
+                    <div className={`space-y-1.5 text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                      <div className="flex justify-between">
+                        <span>Groom:</span>
+                        <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>{calcResult.groomManglik.status}</strong>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Bride:</span>
+                        <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>{calcResult.brideManglik.status}</strong>
+                      </div>
+                      <div className={`p-2.5 rounded-xl border text-[11px] mt-1 ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-white/5 text-amber-200' : 'bg-amber-50 border-amber-200 text-amber-950'
+                      }`}>
+                        {calcResult.manglikCompatibilityVerdict}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className={`p-4 rounded-2xl border space-y-2 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                  }`}>
+                    <span className={`font-serif font-bold text-xs uppercase tracking-wider block ${
+                      theme === 'dark' ? 'text-rose-400' : 'text-rose-900'
+                    }`}>
+                      Critical Dosh Evaluations
+                    </span>
+                    <div className="space-y-2 text-xs">
+                      <div className={`p-2 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <div className="flex justify-between items-center mb-0.5">
+                          <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>Nadi Dosh:</strong>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                            calcResult.nadiDoshAlert
+                              ? (theme === 'dark' ? 'bg-rose-500/20 text-rose-300' : 'bg-rose-100 text-rose-800')
+                              : (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-800')
+                          }`}>
+                            {calcResult.nadiDoshAlert ? 'Alert' : 'Clear / Cancelled'}
+                          </span>
+                        </div>
+                        <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                          {calcResult.nadiDoshDetails}
+                        </p>
+                      </div>
+
+                      <div className={`p-2 rounded-xl border ${
+                        theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-slate-50 border-slate-200'
+                      }`}>
+                        <div className="flex justify-between items-center mb-0.5">
+                          <strong className={theme === 'dark' ? 'text-white' : 'text-slate-900'}>Bhakoot Dosh:</strong>
+                          <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
+                            calcResult.bhakootDoshAlert
+                              ? (theme === 'dark' ? 'bg-rose-500/20 text-rose-300' : 'bg-rose-100 text-rose-800')
+                              : (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-800')
+                          }`}>
+                            {calcResult.bhakootDoshAlert ? 'Alert' : 'Clear / Friendly'}
+                          </span>
+                        </div>
+                        <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                          {calcResult.bhakootDoshDetails}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Ashtakoot 8-Fold Gun Breakdown Table */}
+                <div className="space-y-2">
+                  <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-900'
+                  }`}>
+                    Ashtakoot 8-Fold Point Breakdown (36 Gunas)
+                  </h5>
+                  <div className={`overflow-x-auto rounded-2xl border ${
+                    theme === 'dark' ? 'border-[#3a506b]/60' : 'border-slate-200 shadow-xs'
+                  }`}>
+                    <table className="w-full text-left border-collapse">
+                      <thead className={`text-[10px] uppercase tracking-wider font-bold ${
+                        theme === 'dark' ? 'bg-[#0b132b] text-gray-400' : 'bg-slate-100 text-slate-800'
+                      }`}>
+                        <tr>
+                          <th className="p-3">Koot (Test)</th>
+                          <th className="p-3">Obtained / Max</th>
+                          <th className="p-3">Significance & Compatibility Impact</th>
+                          <th className="p-3 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className={`text-xs ${
+                        theme === 'dark' ? 'divide-y divide-[#3a506b]/40' : 'divide-y divide-slate-200'
+                      }`}>
+                        {calcResult.kootBreakdown.map((k: any, idx: number) => (
+                          <tr
+                            key={idx}
+                            className={theme === 'dark' ? 'hover:bg-[#1c2541]/50' : 'hover:bg-slate-50 bg-white'}
+                          >
+                            <td className={`p-3 font-semibold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                              {k.kootName}
+                            </td>
+                            <td className={`p-3 font-mono font-bold ${theme === 'dark' ? 'text-amber-400' : 'text-amber-800'}`}>
+                              {k.obtainedPoints} / {k.maxPoints}
+                            </td>
+                            <td className={`p-3 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                              <span className={`block font-medium ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                                {k.significance}
+                              </span>
+                              <span className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                                {k.description}
+                              </span>
+                            </td>
+                            <td className="p-3 text-center">
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                k.status === 'Pass'
+                                  ? (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                                  : k.status === 'Partial'
+                                  ? (theme === 'dark' ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-amber-100 text-amber-800 border border-amber-300')
+                                  : (theme === 'dark' ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30' : 'bg-rose-100 text-rose-800 border border-rose-300')
+                              }`}>
+                                {k.status}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Vedic Marriage Remedies */}
+                {calcResult.remedies && calcResult.remedies.length > 0 && (
+                  <div className={`p-5 rounded-2xl border space-y-3 transition-colors ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-pink-500/30' : 'bg-pink-50/80 border-pink-200 shadow-xs'
+                  }`}>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xl">🪔</span>
+                      <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                        theme === 'dark' ? 'text-pink-400' : 'text-pink-900'
+                      }`}>
+                        Vedic Remedies & Compatibility Enhancements
+                      </h5>
+                    </div>
+                    <ul className={`space-y-1.5 text-xs ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                      {calcResult.remedies.map((rem: string, idx: number) => (
+                        <li key={idx} className="flex items-start gap-2">
+                          <span className="text-pink-600 dark:text-pink-400 font-bold">•</span>
+                          <span>{rem}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Print Match Making Report</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3 px-5 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    Calculate Another Couple
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results Output for Planetary Yogas */}
+            {calcResult && calcResult.isPlanetaryYogas && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* Header Card */}
+                <div className={`p-6 rounded-3xl border text-left space-y-4 relative overflow-hidden transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-gradient-to-br from-amber-950/70 via-[#0b132b] to-[#0b132b] border-amber-500/40'
+                    : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/50 border-amber-300 text-slate-900 shadow-sm'
+                }`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-lg shrink-0 ${
+                        theme === 'dark' ? 'bg-[#0b132b] border-white/10' : 'bg-white border-slate-200'
+                      }`}>
+                        ✨
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                            theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                          }`}>
+                            VEDIC PLANETARY YOGAS REPORT
+                          </span>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase border ${
+                            theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                          }`}>
+                            {calcResult.auspiciousCount} Auspicious Combinations
+                          </span>
+                        </div>
+                        <h4 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                          {calcResult.nativeName}
+                        </h4>
+                        <p className={`text-xs font-semibold mt-0.5 ${theme === 'dark' ? 'text-amber-200' : 'text-slate-700'}`}>
+                          Lagna: <span className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{calcResult.ascendantSign}</span> • Moon Sign: <span className={`font-bold ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{calcResult.moonSign}</span>
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className={`p-4 rounded-2xl border text-center shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541]/90 border-white/10' : 'bg-white/95 border-amber-200 shadow-xs'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        Total Yogas
+                      </span>
+                      <div className={`text-4xl font-black font-mono mt-0.5 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
+                        {calcResult.totalYogasDetected}
+                      </div>
+                      <span className={`text-[10px] block ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                        Classical Combinations
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className={`p-3.5 rounded-xl border text-xs leading-relaxed ${
+                    theme === 'dark' ? 'bg-[#0b132b]/80 border-white/10 text-gray-200' : 'bg-white/90 border-amber-200 text-slate-800 shadow-2xs'
+                  }`}>
+                    <p>{calcResult.overallSummary}</p>
+                  </div>
+                </div>
+
+                {/* Yogas Cards Grid */}
+                <div className="space-y-2">
+                  <h5 className={`font-serif font-bold text-sm uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-[#e0a96d]' : 'text-slate-900'
+                  }`}>
+                    Detected Classical Vedic Yogas ({calcResult.yogas.length})
+                  </h5>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {calcResult.yogas.map((yoga: any) => (
+                      <div
+                        key={yoga.id}
+                        className={`p-5 rounded-3xl border space-y-3 transition-all ${
+                          yoga.nature === 'Challenging'
+                            ? (theme === 'dark' ? 'bg-[#0b132b] border-rose-500/30' : 'bg-white border-rose-200 shadow-xs')
+                            : (theme === 'dark' ? 'bg-[#0b132b] border-amber-500/30' : 'bg-white border-amber-200 shadow-xs')
+                        }`}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <span className={`text-[10px] font-extrabold uppercase block tracking-wider ${
+                              theme === 'dark' ? 'text-amber-400' : 'text-amber-800'
+                            }`}>
+                              {yoga.category}
+                            </span>
+                            <h4 className={`font-serif font-bold text-base ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                              {yoga.name}
+                            </h4>
+                            <span className={`text-[11px] block font-blipi ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                              {yoga.nameBengali}
+                            </span>
+                          </div>
+                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase shrink-0 ${
+                            yoga.nature === 'Highly Auspicious'
+                              ? (theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-emerald-100 text-emerald-800 border border-emerald-300')
+                              : yoga.nature === 'Auspicious'
+                              ? (theme === 'dark' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-emerald-100 text-emerald-700 border border-emerald-200')
+                              : yoga.nature === 'Mixed'
+                              ? (theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-amber-100 text-amber-800 border border-amber-300')
+                              : (theme === 'dark' ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30' : 'bg-rose-100 text-rose-800 border border-rose-300')
+                          }`}>
+                            {yoga.nature} • {yoga.strength}
+                          </span>
+                        </div>
+
+                        <div className={`p-3 rounded-2xl border space-y-1 text-xs ${
+                          theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-slate-50 border-slate-200'
+                        }`}>
+                          <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                            Classical Rule
+                          </span>
+                          <p className={`text-[11px] leading-relaxed ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                            {yoga.classicalRule}
+                          </p>
+                          <div className={`pt-1 flex items-center gap-2 text-[10px] font-mono ${
+                            theme === 'dark' ? 'text-amber-300' : 'text-amber-800 font-bold'
+                          }`}>
+                            <span>Planets: {yoga.planetsInvolved.join(', ')}</span>
+                            <span>•</span>
+                            <span>Houses: {yoga.houseInvolved}</span>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 text-xs">
+                          <span className={`text-[10px] uppercase font-bold block ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
+                            Astrological Prediction
+                          </span>
+                          <p className={`text-[11px] leading-relaxed ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
+                            {yoga.prediction}
+                          </p>
+                        </div>
+
+                        {yoga.remedy && (
+                          <div className={`p-2.5 rounded-xl border text-[11px] ${
+                            theme === 'dark' ? 'bg-rose-950/40 border-rose-500/30 text-rose-200' : 'bg-rose-50 border-rose-200 text-rose-800'
+                          }`}>
+                            <strong>Remedial Note:</strong> {yoga.remedy}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Print Planetary Yogas Report</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3 px-5 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    Calculate Another Native
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Results Output for ঙা-ঈশিং (Nga-Eeshing) */}
+            {calcResult && calcResult.isNgaEeshingReport && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* Header Verdict Card */}
+                <div
+                  className={`p-6 rounded-3xl border text-left space-y-4 relative overflow-hidden transition-colors ${
+                    calcResult.isNgaEeshing
+                      ? theme === 'dark'
+                        ? 'bg-gradient-to-br from-rose-950/70 via-[#0b132b] to-[#0b132b] border-rose-500/40'
+                        : 'bg-gradient-to-br from-rose-50 via-white to-amber-50 border-rose-300 text-slate-900 shadow-sm'
+                      : theme === 'dark'
+                      ? 'bg-gradient-to-br from-emerald-950/70 via-[#0b132b] to-[#0b132b] border-emerald-500/40'
+                      : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/50 border-emerald-300 text-slate-900 shadow-sm'
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <div
+                        className={`w-16 h-16 rounded-2xl border flex items-center justify-center text-3xl shadow-lg shrink-0 ${
+                          theme === 'dark' ? 'bg-[#0b132b] border-white/10' : 'bg-white border-slate-200'
+                        }`}
+                      >
+                        {calcResult.isNgaEeshing ? '🐟' : '✨'}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
+                              theme === 'dark'
+                                ? 'bg-amber-500/20 text-amber-300 border-amber-500/30'
+                                : 'bg-amber-100 text-amber-900 border-amber-300'
+                            }`}
+                          >
+                            KANGLEI ASTROLOGY • ঙা-ঈশিং
+                          </span>
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-black uppercase border ${
+                              calcResult.isNgaEeshing
+                                ? theme === 'dark'
+                                  ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
+                                  : 'bg-rose-100 text-rose-800 border-rose-300'
+                                : theme === 'dark'
+                                ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30'
+                                : 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                            }`}
+                          >
+                            {calcResult.verdictText}
+                          </span>
+                        </div>
+                        <h4
+                          className={`font-serif font-bold text-2xl ${
+                            calcResult.isNgaEeshing
+                              ? 'text-rose-600 dark:text-rose-400'
+                              : 'text-emerald-700 dark:text-emerald-400'
+                          }`}
+                        >
+                          {calcResult.verdictText}
+                        </h4>
+                        <p className={`text-xs font-semibold mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                          {calcResult.groomName} ({calcResult.groomRashi.nameBengali}) & {calcResult.brideName} ({calcResult.brideRashi.nameBengali})
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`p-4 rounded-2xl border text-center shrink-0 ${
+                        theme === 'dark' ? 'bg-[#1c2541]/90 border-white/10' : 'bg-white/95 border-amber-200 shadow-xs'
+                      }`}
+                    >
+                      <span className={`block text-[10px] uppercase font-bold ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        মওং / প্রকৃতি
+                      </span>
+                      <div className={`text-sm font-black mt-1 ${theme === 'dark' ? 'text-amber-300' : 'text-amber-800'}`}>
+                        {calcResult.natureStatement}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Profile Overview (No internal math formulas shown) */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Groom Details */}
+                  <div
+                    className={`p-5 rounded-2xl border space-y-3 ${
+                      theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase text-amber-600 dark:text-amber-400">
+                        নুপা (Groom)
+                      </span>
+                    </div>
+                    <div className="text-base font-bold">
+                      {calcResult.groomName}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      রাশি: <strong className="text-slate-800 dark:text-white">{calcResult.groomRashi.nameBengali} ({calcResult.groomRashi.nameEnglish})</strong>
+                    </div>
+                    {calcResult.isNgaEeshing && (
+                      <div
+                        className={`p-2.5 rounded-xl text-sm font-black text-center border ${
+                          calcResult.groomNature === 'ঙা'
+                            ? (theme === 'dark' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200')
+                            : (theme === 'dark' ? 'bg-teal-500/20 text-teal-300 border-teal-500/30' : 'bg-teal-50 text-teal-700 border-teal-200')
+                        }`}
+                      >
+                        {calcResult.groomNature}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Bride Details */}
+                  <div
+                    className={`p-5 rounded-2xl border space-y-3 ${
+                      theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase text-rose-500 dark:text-rose-400">
+                        নুপী (Bride)
+                      </span>
+                    </div>
+                    <div className="text-base font-bold">
+                      {calcResult.brideName}
+                    </div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">
+                      রাশি: <strong className="text-slate-800 dark:text-white">{calcResult.brideRashi.nameBengali} ({calcResult.brideRashi.nameEnglish})</strong>
+                    </div>
+                    {calcResult.isNgaEeshing && (
+                      <div
+                        className={`p-2.5 rounded-xl text-sm font-black text-center border ${
+                          calcResult.brideNature === 'ঙা'
+                            ? (theme === 'dark' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-blue-50 text-blue-700 border-blue-200')
+                            : (theme === 'dark' ? 'bg-teal-500/20 text-teal-300 border-teal-500/30' : 'bg-teal-50 text-teal-700 border-teal-200')
+                        }`}
+                      >
+                        {calcResult.brideNature}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Remedial Guidance & Ceremony if YES */}
+                {calcResult.isNgaEeshing && (
+                  <div className="space-y-4">
+                    {/* Guidance Notice */}
+                    <div
+                      className={`p-5 rounded-2xl border text-xs leading-relaxed space-y-2 ${
+                        theme === 'dark'
+                          ? 'bg-amber-950/30 border-amber-500/30 text-amber-200'
+                          : 'bg-amber-50/90 border-amber-200 text-amber-900'
+                      }`}
+                    >
+                      <div className="font-extrabold text-sm flex items-center gap-2">
+                        <span>📜</span>
+                        <span>প্রতিকারগী পাউতাক (Guidance Notice)</span>
+                      </div>
+                      <p className="whitespace-pre-line font-medium text-xs">
+                        {calcResult.remedyGuidance}
+                      </p>
+                    </div>
+
+                    {/* Koklaba Thouram (Remedial Rite) */}
+                    <div
+                      className={`p-6 rounded-2xl border space-y-4 text-xs ${
+                        theme === 'dark'
+                          ? 'bg-[#1c2541]/70 border-white/10 text-gray-200'
+                          : 'bg-white border-slate-200 text-slate-800 shadow-xs'
+                      }`}
+                    >
+                      <div className="border-b pb-3 border-gray-500/20">
+                        <h5 className="font-serif font-bold text-base text-amber-600 dark:text-[#fbbf24]">
+                          {calcResult.remedyTitle}
+                        </h5>
+                      </div>
+
+                      {/* Potchang Mawong */}
+                      <div className="space-y-2">
+                        <span className="font-black text-[11px] uppercase tracking-wide text-rose-500 dark:text-rose-400 block">
+                          পোৎচং মওং -
+                        </span>
+                        <p className="leading-relaxed text-xs">
+                          {calcResult.potchangText}
+                        </p>
+                      </div>
+
+                      {/* Lairon */}
+                      <div
+                        className={`p-4 rounded-xl border space-y-2 ${
+                          theme === 'dark'
+                            ? 'bg-[#0b132b] border-white/5 text-gray-300'
+                            : 'bg-slate-50 border-slate-200 text-slate-700'
+                        }`}
+                      >
+                        <span className="font-black text-[11px] uppercase tracking-wide text-amber-600 dark:text-amber-400 block">
+                          লাইরোন -
+                        </span>
+                        <p className="leading-relaxed text-xs italic">
+                          "{calcResult.laironText}"
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span>Print ঙা-ঈশিং Report</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3 px-5 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    Calculate Another Couple
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Default Generic Results Output */}
-            {calcResult && !calcResult.isKuthiChart && (
+            {calcResult &&
+              !calcResult.isKuthiChart &&
+              !calcResult.isYumsharol &&
+              !calcResult.isSadeSati &&
+              !calcResult.isManglikReport &&
+              !calcResult.isKaalSarp &&
+              !calcResult.isMatchMaking &&
+              !calcResult.isPlanetaryYogas &&
+              !calcResult.isNgaEeshingReport && (
               <div className="space-y-5 font-sans text-xs">
-                <div className="bg-[#0b132b] p-5 rounded-2xl border border-[#3a506b] text-center space-y-1">
-                  <span className="px-3 py-0.5 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-extrabold border border-[#fbbf24]/30">
+                <div className={`p-5 rounded-2xl border text-center space-y-1 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'
+                }`}>
+                  <span className={`px-3 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  }`}>
                     REPORT: {calcResult.type}
                   </span>
-                  <h4 className="text-xl font-serif font-bold text-white pt-1">{calcResult.type}</h4>
+                  <h4 className={`text-xl font-serif font-bold pt-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                    {calcResult.type}
+                  </h4>
                 </div>
                 <button
                   onClick={() => setCalcResult(null)}
-                  className="w-full py-3 rounded-xl bg-[#0b132b] hover:bg-[#334155] text-gray-300 font-bold text-xs border border-[#3a506b] cursor-pointer"
+                  className={`w-full py-3 rounded-xl font-bold text-xs border cursor-pointer transition-colors ${
+                    theme === 'dark'
+                      ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                      : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                  }`}
                 >
                   Calculate Another Profile
                 </button>
@@ -4783,7 +7577,7 @@ Question: ${details.question || 'N/A'}`;
               }`}>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Product Claimed</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Product Claimed</span>
                     <span className={`font-bold text-sm block mt-0.5 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                       {selectedReturnDetail.productTitle}
                     </span>
@@ -4791,7 +7585,7 @@ Question: ${details.question || 'N/A'}`;
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer Details</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Customer Details</span>
                     <span className={`font-bold text-sm block mt-0.5 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                       {selectedReturnDetail.customerName}
                     </span>
@@ -4808,14 +7602,14 @@ Question: ${details.question || 'N/A'}`;
 
                 <div className="pt-2 border-t border-dashed border-gray-500/30 grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Request Type</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Request Type</span>
                     <span className="font-extrabold text-xs text-[#d97706] dark:text-[#fbbf24] block mt-0.5">
                       {selectedReturnDetail.requestType === 'REPLACEMENT' ? '🔁 Product Replacement' : '💸 Monetary Refund'}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer Reason</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Customer Reason</span>
                     <span className="font-bold text-xs block mt-0.5 text-rose-500">
                       {selectedReturnDetail.reason === 'DAMAGED_TRANSIT' && 'Damaged in Transit'}
                       {selectedReturnDetail.reason === 'DEFECTIVE_QUALITY' && 'Defective Quality / Faulty Bead'}
@@ -4828,7 +7622,7 @@ Question: ${details.question || 'N/A'}`;
                 {/* Refund Method & Account Details if Refund */}
                 {selectedReturnDetail.requestType === 'REFUND' && selectedReturnDetail.refundDetails && (
                   <div className="pt-2 border-t border-dashed border-gray-500/30">
-                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Refund Destination Details</span>
+                    <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Refund Destination Details</span>
                     <div className="p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-700 dark:text-emerald-300 font-mono font-bold text-xs mt-1">
                       {selectedReturnDetail.refundMethod || 'UPI'}: {selectedReturnDetail.refundDetails}
                     </div>
@@ -4840,7 +7634,7 @@ Question: ${details.question || 'N/A'}`;
               <div className={`p-4 rounded-2xl border space-y-1.5 ${
                 theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
               }`}>
-                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Customer's Stated Issue</span>
+                <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>Customer's Stated Issue</span>
                 <p className={`text-xs leading-relaxed ${theme === 'dark' ? 'text-gray-200' : 'text-slate-700'}`}>
                   "{selectedReturnDetail.reasonDetails || 'No additional note provided by client.'}"
                 </p>
@@ -4851,7 +7645,7 @@ Question: ${details.question || 'N/A'}`;
                 <div className={`p-4 rounded-2xl border space-y-2 ${
                   theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
                 }`}>
-                  <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider block ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
                     Photo Proof Attached by Customer ({selectedReturnDetail.photos.length})
                   </span>
                   <div className="flex flex-wrap gap-3 pt-1">
@@ -4927,7 +7721,6 @@ Question: ${details.question || 'N/A'}`;
           </div>
         </div>
       )}
-
     </div>
   );
 }

@@ -60,6 +60,10 @@ export interface KuthiOrder {
   faithTradition?: string;
   couponCode?: string;
   couponDiscount?: number;
+  paymentMethod?: 'WALLET' | 'PAYU' | 'UPI' | 'FREE';
+  isGeneratedKuthi?: boolean;
+  chartData?: any;
+  generatedAt?: string;
 }
 
 const DEFAULT_KUTHI_ORDERS: KuthiOrder[] = [];
@@ -212,6 +216,25 @@ export async function POST(req: Request) {
       orders = [newOrder, ...orders];
       await writePersistentDataAsync('kuthi_orders', orders);
       return NextResponse.json({ success: true, order: newOrder, orders });
+    }
+
+
+
+    if (action === 'UPDATE_PAYMENT_STATUS' && orderId) {
+      const pStatus = body.paymentStatus;
+      const isReceived = pStatus === 'PAYMENT_RECEIVED';
+      orders = orders.map((o) => {
+        if (o.id === orderId || o.orderRef === orderId) {
+          return {
+            ...o,
+            paymentStatus: pStatus,
+            status: isReceived ? 'COMPLETED' : (o.status === 'COMPLETED' ? 'PENDING' : o.status),
+          };
+        }
+        return o;
+      });
+      await writePersistentDataAsync('kuthi_orders', orders);
+      return NextResponse.json({ success: true, message: `Payment status updated to ${pStatus}`, orders });
     }
 
     if (action === 'ASSIGN_ASTROLOGER' && orderId && astroId) {
