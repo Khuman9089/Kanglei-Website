@@ -34,6 +34,12 @@ if [ -f "public/.htaccess" ]; then
     chmod 644 .htaccess
 fi
 
+# 6b. Remove leftover physical "blog" directory in root if present (prevents Apache directory redirect loops)
+if [ -d "blog" ]; then
+    echo "🧹 Removing conflicting physical 'blog' directory in root..."
+    rm -rf blog
+fi
+
 # 7. Restart application process using PM2 or Node
 echo "🔄 Restarting application with PM2..."
 if command -v pm2 &> /dev/null; then

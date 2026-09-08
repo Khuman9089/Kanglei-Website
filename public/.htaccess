@@ -2,6 +2,10 @@
 # Hostinger LiteSpeed / Apache Reverse Proxy Configuration for Next.js
 # ─────────────────────────────────────────────────────────────
 
+<IfModule mod_dir.c>
+  DirectorySlash Off
+</IfModule>
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
@@ -10,12 +14,15 @@
   RewriteCond %{HTTPS} off
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-  # 2. Serve static files directly if existing
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
+  # 2. Prioritize Next.js App Router dynamic routes
+  RewriteRule ^blog(/.*)?$ http://127.0.0.1:3000/blog$1 [P,L]
+  RewriteRule ^api(/.*)?$ http://127.0.0.1:3000/api$1 [P,L]
+
+  # 3. Serve physical static files directly if existing
+  RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
-  # 3. Proxy all dynamic routes to Node.js PM2 / Next.js server on port 3000
+  # 4. Proxy all dynamic routes to Node.js PM2 / Next.js server on port 3000
   RewriteRule ^(.*)$ http://127.0.0.1:3000/$1 [P,L]
 </IfModule>
 
