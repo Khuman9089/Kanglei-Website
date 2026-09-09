@@ -31,6 +31,7 @@ import { calculateCoupleMatch } from '@/lib/astrology/matchMaking';
 import { calculatePlanetaryYogas } from '@/lib/astrology/yogas';
 import VedicWorkstation, { calculateExactAge } from '@/components/dashboard/VedicWorkstation';
 import BNNWorkstation from '@/components/dashboard/BNNWorkstation';
+import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
 import { calculateDetailedVimshottari, calculateRemainingDashaTime } from '@/engine/vedicWorkstationEngine';
 
@@ -2342,7 +2343,7 @@ Question: ${details.question || 'N/A'}`;
                                 onClick={() => {
                                   setCalcForm((prev) => ({
                                     ...prev,
-                                    name: order.clientDetails?.name || 'Client',
+                                    name: order.clientName || 'Client',
                                     dob: order.clientDetails?.dob || '2004-06-28',
                                     tob: order.clientDetails?.tob || '12:00',
                                     pob: order.clientDetails?.pob || 'Imphal, Manipur',
@@ -2502,7 +2503,7 @@ Question: ${details.question || 'N/A'}`;
                                 onClick={() => {
                                   setCalcForm((prev) => ({
                                     ...prev,
-                                    name: order.clientDetails?.name || 'Client',
+                                    name: order.clientName || 'Client',
                                     dob: order.clientDetails?.dob || '2004-06-28',
                                     tob: order.clientDetails?.tob || '12:00',
                                     pob: order.clientDetails?.pob || 'Imphal, Manipur',

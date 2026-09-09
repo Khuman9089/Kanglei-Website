@@ -190,11 +190,11 @@ export function calculateUpagrahas(sunLongitude: number) {
   const upaketu = (indrachapa + 16.6666667) % 360.0;
 
   return {
-    dhooma: { name: 'Dhooma', longitude: dhooma, ...getNakshatraInfo(dhooma), ...getSignForDegree(dhooma) },
-    vyatipata: { name: 'Vyatipata', longitude: vyatipata, ...getNakshatraInfo(vyatipata), ...getSignForDegree(vyatipata) },
-    parivesha: { name: 'Parivesha', longitude: parivesha, ...getNakshatraInfo(parivesha), ...getSignForDegree(parivesha) },
-    indrachapa: { name: 'Indrachapa', longitude: indrachapa, ...getNakshatraInfo(indrachapa), ...getSignForDegree(indrachapa) },
-    upaketu: { name: 'Upaketu', longitude: upaketu, ...getNakshatraInfo(upaketu), ...getSignForDegree(upaketu) },
+    dhooma: { planetName: 'Dhooma', longitude: dhooma, ...getNakshatraInfo(dhooma), ...getSignForDegree(dhooma) },
+    vyatipata: { planetName: 'Vyatipata', longitude: vyatipata, ...getNakshatraInfo(vyatipata), ...getSignForDegree(vyatipata) },
+    parivesha: { planetName: 'Parivesha', longitude: parivesha, ...getNakshatraInfo(parivesha), ...getSignForDegree(parivesha) },
+    indrachapa: { planetName: 'Indrachapa', longitude: indrachapa, ...getNakshatraInfo(indrachapa), ...getSignForDegree(indrachapa) },
+    upaketu: { planetName: 'Upaketu', longitude: upaketu, ...getNakshatraInfo(upaketu), ...getSignForDegree(upaketu) },
   };
 }
 
