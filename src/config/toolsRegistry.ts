@@ -14,6 +14,15 @@ export interface ToolDefinition {
  */
 export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
   {
+    id: 'vedic-workstation',
+    title: 'Vedic Workstation (D1, D9, D10 & Gochara)',
+    subtitle: 'Classic Parashara workstation with Tri-Charts (D1, D9, D10), Planetary Details, Shadbala Bar Chart, Vimshottari & Live Gochara Transits.',
+    category: 'astrology',
+    iconName: 'Compass',
+    color: 'text-amber-500',
+    description: 'Renders full Jagannatha Hora style Parashari Light workstation with D1, D9 Navamsha, D10 Dashamsha, exact degrees, Shadbala strength bars, multi-level Vimshottari Dasha, Lordships, and Gochara transit analysis.',
+  },
+  {
     id: 'kuthi-generator',
     title: 'Kuthi Generator',
     subtitle: 'Generate accurate D1 Rashi & D9 Navamsha birth charts with planetary positions & house analysis.',

@@ -30,6 +30,7 @@ import { calculateKaalSarpDosh } from '@/lib/astrology/kaalSarp';
 import { calculateCoupleMatch } from '@/lib/astrology/matchMaking';
 import { calculatePlanetaryYogas } from '@/lib/astrology/yogas';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
+import VedicWorkstation from '@/components/dashboard/VedicWorkstation';
 
 // Bengali Formatting Helpers
 function toBengaliDigits(num: number | string): string {
@@ -1947,6 +1948,31 @@ Question: ${details.question || 'N/A'}`;
                                 <Eye className="w-3.5 h-3.5 text-sky-500" />
                                 <span>Details</span>
                               </button>
+                              <button
+                                onClick={() => {
+                                  setCalcForm((prev) => ({
+                                    ...prev,
+                                    name: order.clientName || 'Client',
+                                    dob: order.clientDetails?.dob || '2026-08-28',
+                                    tob: order.clientDetails?.tob || '06:00',
+                                    pob: order.clientDetails?.pob || 'Imphal, Manipur',
+                                    sex: order.clientDetails?.sex || 'Male',
+                                    lat: 24.8170,
+                                    lng: 93.9368,
+                                    timezone: 5.5,
+                                    ayanamsa: 'Lahiri',
+                                  }));
+                                  setActiveToolModal({
+                                    id: 'vedic-workstation',
+                                    title: 'Vedic Workstation (D1, D9, D10 & Gochara)',
+                                  });
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer"
+                                title="Open Client Chart in Vedic Workstation"
+                              >
+                                <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                <span>Workstation</span>
+                              </button>
                               {order.status !== 'COMPLETED' ? (
                                 <button
                                   onClick={() => setUploadingOrder(order)}
@@ -2056,6 +2082,31 @@ Question: ${details.question || 'N/A'}`;
                               >
                                 <Eye className="w-3.5 h-3.5 text-sky-500" />
                                 <span>Inspect Details</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setCalcForm((prev) => ({
+                                    ...prev,
+                                    name: order.clientName || 'Client',
+                                    dob: order.clientDetails?.dob || '2026-08-28',
+                                    tob: order.clientDetails?.tob || '06:00',
+                                    pob: order.clientDetails?.pob || 'Imphal, Manipur',
+                                    sex: order.clientDetails?.sex || 'Male',
+                                    lat: 24.8170,
+                                    lng: 93.9368,
+                                    timezone: 5.5,
+                                    ayanamsa: 'Lahiri',
+                                  }));
+                                  setActiveToolModal({
+                                    id: 'vedic-workstation',
+                                    title: 'Vedic Workstation (D1, D9, D10 & Gochara)',
+                                  });
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border border-emerald-500/30 transition-colors cursor-pointer"
+                                title="Open Client Chart in Vedic Workstation"
+                              >
+                                <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                                <span>Workstation</span>
                               </button>
                               <button
                                 onClick={() => setUploadingOrder(order)}
@@ -3543,7 +3594,8 @@ Question: ${details.question || 'N/A'}`;
                       <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-xs group-hover:scale-110 transition-transform ${
                         theme === 'dark' ? 'bg-[#0b132b] text-[#fbbf24] border border-[#3a506b]' : 'bg-[#fef3c7]/80 text-[#d97706] border border-[#fde68a]'
                       }`}>
-                        {t.id === 'yumsharol' ? '🏡' :
+                        {t.id === 'vedic-workstation' ? '🪐' :
+                         t.id === 'yumsharol' ? '🏡' :
                          t.id === 'nga-eeshing' ? '🐟' :
                          t.id === 'dasha-yengpham' ? '📜' :
                          t.id === 'shani-sade-sati' ? '🪐' :
@@ -3837,16 +3889,45 @@ Question: ${details.question || 'N/A'}`;
               </div>
 
               {/* Action Buttons */}
-              <div className="flex justify-between items-center pt-2">
-                <button
-                  onClick={() => handleCopyClientDetails(inspectingClient)}
-                  className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 border transition-colors ${
-                    theme === 'dark' ? 'bg-[#1e293b] hover:bg-[#334155] text-white border-[#3a506b]' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
-                  }`}
-                >
-                  <Copy className="w-4 h-4 text-[#d97706]" />
-                  <span>{copiedText ? '✓ Details Copied!' : 'Copy Summary Text'}</span>
-                </button>
+              <div className="flex flex-wrap justify-between items-center gap-2 pt-2">
+                <div className="flex flex-wrap items-center gap-2">
+                  <button
+                    onClick={() => handleCopyClientDetails(inspectingClient)}
+                    className={`px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 border transition-colors ${
+                      theme === 'dark' ? 'bg-[#1e293b] hover:bg-[#334155] text-white border-[#3a506b]' : 'bg-slate-100 hover:bg-slate-200 text-slate-900 border-slate-300'
+                    }`}
+                  >
+                    <Copy className="w-4 h-4 text-[#d97706]" />
+                    <span>{copiedText ? '✓ Details Copied!' : 'Copy Summary Text'}</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      const client = inspectingClient;
+                      setCalcForm((prev) => ({
+                        ...prev,
+                        name: client.clientName || 'Client',
+                        dob: client.clientDetails?.dob || '2026-08-28',
+                        tob: client.clientDetails?.tob || '06:00',
+                        pob: client.clientDetails?.pob || 'Imphal, Manipur',
+                        sex: client.clientDetails?.sex || 'Male',
+                        lat: 24.8170,
+                        lng: 93.9368,
+                        timezone: 5.5,
+                        ayanamsa: 'Lahiri',
+                      }));
+                      setInspectingClient(null);
+                      setActiveToolModal({
+                        id: 'vedic-workstation',
+                        title: 'Vedic Workstation (D1, D9, D10 & Gochara)',
+                      });
+                    }}
+                    className="px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-xs transition-all cursor-pointer"
+                  >
+                    <Compass className="w-4 h-4 text-emerald-200" />
+                    <span>Open in Vedic Workstation 🪐</span>
+                  </button>
+                </div>
 
                 <button
                   onClick={() => setInspectingClient(null)}
@@ -4135,50 +4216,70 @@ Question: ${details.question || 'N/A'}`;
 
       {/* ========================== INTERACTIVE ASTROLOGER TOOL MODAL ========================== */}
       {activeToolModal && (
-        <div className={`fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 backdrop-blur-xs ${
+        <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs ${
           theme === 'dark' ? 'bg-[#0b132b]/85' : 'bg-slate-900/60'
         }`}>
-          <div className={`w-full max-w-5xl xl:max-w-6xl rounded-3xl border shadow-2xl overflow-hidden relative text-left font-sans p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto transition-colors ${
-            theme === 'dark'
-              ? 'bg-[#1c2541] border-[#3a506b] text-white'
-              : 'bg-[#fffdfa] border-[#f3e8d2] text-slate-900'
-          }`}>
-            {/* Header */}
-            <div className={`flex items-center justify-between border-b pb-4 ${
-              theme === 'dark' ? 'border-[#3a506b]' : 'border-[#f3e8d2]'
-            }`}>
-              <div className="flex items-center gap-3">
-                <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${
-                  theme === 'dark'
-                    ? 'bg-[#0b132b] border-[#3a506b]'
-                    : 'bg-amber-100 border-amber-300'
-                }`}>
-                  <Sparkles className={`w-6 h-6 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#b45309]'}`} />
-                </div>
-                <div>
-                  <h3 className={`font-serif font-bold text-xl ${
-                    theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
-                  }`}>
-                    {activeToolModal.title}
-                  </h3>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
-                    Astrologer Tool • Run calculations for client
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => { setActiveToolModal(null); setCalcResult(null); setYumsharolValidationErr(''); }}
-                className={`p-1.5 rounded-lg cursor-pointer transition-colors ${
-                  theme === 'dark' ? 'text-gray-400 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-800 hover:bg-amber-100/50'
-                }`}
-              >
-                <X className="w-5 h-5" />
-              </button>
+          {activeToolModal.id === 'vedic-workstation' ? (
+            <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+              <VedicWorkstation
+                initialBirthData={{
+                  name: calcForm.name || 'Sanatomba Meitei',
+                  dob: calcForm.dob || '2026-08-28',
+                  tob: calcForm.tob || '06:00',
+                  pob: calcForm.pob || 'Imphal, Manipur',
+                  lat: Number(calcForm.lat) || 24.8170,
+                  lng: Number(calcForm.lng) || 93.9368,
+                  timezone: Number(calcForm.timezone) || 5.5,
+                  sex: calcForm.sex || 'Male',
+                }}
+                onClose={() => {
+                  setActiveToolModal(null);
+                  setCalcResult(null);
+                }}
+              />
             </div>
+          ) : (
+            <div className={`w-full max-w-5xl xl:max-w-6xl rounded-3xl border shadow-2xl overflow-hidden relative text-left font-sans p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto transition-colors ${
+              theme === 'dark'
+                ? 'bg-[#1c2541] border-[#3a506b] text-white'
+                : 'bg-[#fffdfa] border-[#f3e8d2] text-slate-900'
+            }`}>
+              {/* Header */}
+              <div className={`flex items-center justify-between border-b pb-4 ${
+                theme === 'dark' ? 'border-[#3a506b]' : 'border-[#f3e8d2]'
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${
+                    theme === 'dark'
+                      ? 'bg-[#0b132b] border-[#3a506b]'
+                      : 'bg-amber-100 border-amber-300'
+                  }`}>
+                    <Sparkles className={`w-6 h-6 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#b45309]'}`} />
+                  </div>
+                  <div>
+                    <h3 className={`font-serif font-bold text-xl ${
+                      theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                    }`}>
+                      {activeToolModal.title}
+                    </h3>
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                      Astrologer Tool • Run calculations for client
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setActiveToolModal(null); setCalcResult(null); setYumsharolValidationErr(''); }}
+                  className={`p-1.5 rounded-lg cursor-pointer transition-colors ${
+                    theme === 'dark' ? 'text-gray-400 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-800 hover:bg-amber-100/50'
+                  }`}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
 
-            {/* Inputs Form */}
-            {!calcResult && (
+              {/* Inputs Form */}
+              {!calcResult && (
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
@@ -7367,6 +7468,7 @@ Question: ${details.question || 'N/A'}`;
               </div>
             )}
           </div>
+        )}
         </div>
       )}
 
