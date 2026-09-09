@@ -6,6 +6,18 @@ echo "🚀 Starting KangleiAstro Hostinger Deployment..."
 # Ensure runtime data directory exists and is preserved
 mkdir -p data
 
+# Ensure .env exists so Supabase persistence & admin settings work after deploy
+if [ ! -f ".env" ] && [ -f ".env.local" ]; then
+    echo "📄 Creating .env from existing .env.local (kept outside git)..."
+    cp .env.local .env
+fi
+if [ ! -f ".env" ]; then
+    echo "⚠️  No .env found. Creating from .env.example — YOU MUST FILL IN REAL KEYS!"
+    cp .env.example .env
+    echo "   After first deploy: edit .env on the server and fill in:"
+    echo "   NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY (and optionally SUPABASE_SERVICE_ROLE_KEY)"
+fi
+
 # 1. Pull latest changes from Git main branch
 echo "📥 Pulling latest updates from GitHub..."
 git pull origin main
