@@ -133,9 +133,9 @@ export async function GET() {
   });
 }
 
-export async function POST(request: Request) {
+export async function POST(req: Request) {
   try {
-    const body = await request.json();
+    const body = await req.json();
     if (body && Array.isArray(body.items)) {
       await writePersistentDataAsync<NavbarConfig>('navbar_config', body);
       return NextResponse.json(

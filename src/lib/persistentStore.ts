@@ -139,10 +139,10 @@ export async function writePersistentDataAsync<T>(key: string, data: T): Promise
       .upsert({ key, value: data, updated_at: new Date().toISOString() }, { onConflict: 'key' });
 
     if (error) {
-      console.warn(`Supabase kv_store upsert notice for key "${key}":`, error.message);
+      throw new Error(`Supabase kv_store upsert failed for key "${key}": ${error.message}`);
     }
   } catch (cloudErr) {
-    console.warn(`Cloud save fallback for key "${key}":`, cloudErr);
+    throw new Error(`Cloud save failed for key "${key}": ${cloudErr}`);
   }
 
   return true;

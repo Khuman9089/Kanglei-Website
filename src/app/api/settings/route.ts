@@ -142,7 +142,7 @@ export async function POST(request: Request) {
       };
     }
 
-    await writePersistentDataAsync('site_settings', currentSettings);
+    await writePersistentDataAsync('site_settings', currentSettings); // throws on DB failure
 
     return NextResponse.json({
       success: true,
