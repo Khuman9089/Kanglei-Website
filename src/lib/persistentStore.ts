@@ -34,14 +34,16 @@ export async function readPersistentDataAsync<T>(key: string, defaultValue: T): 
       .eq('key', key)
       .maybeSingle();
 
-    if (!error && data && data.value !== undefined && data.value !== null) {
+    if (error) {
+      console.warn(`[persistentStore] Supabase kv_store fetch note for key "${key}":`, error.message);
+    } else if (data && data.value !== undefined && data.value !== null) {
       memoryCache.set(key, data.value);
       // Sync back to local file system cache
       writePersistentDataLocal(key, data.value);
       return data.value as T;
     }
-  } catch (cloudErr) {
-    // Silent fallback
+  } catch (cloudErr: any) {
+    console.warn(`[persistentStore] Cloud fetch notice for "${key}":`, cloudErr?.message || cloudErr);
   }
 
   // 2. Check in-memory runtime cache
@@ -58,12 +60,29 @@ export async function readPersistentDataAsync<T>(key: string, defaultValue: T): 
       if (content.trim()) {
         const parsed = JSON.parse(content) as T;
         memoryCache.set(key, parsed);
+        // Automatically sync to Supabase kv_store so it persists across fresh deployments
+        (async () => {
+          try {
+            const { error } = await supabase
+              .from('kv_store')
+              .upsert({ key, value: parsed, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+            if (error) console.warn(`[persistentStore] Auto-sync to cloud note for "${key}":`, error.message);
+          } catch (e) {}
+        })();
         return parsed;
       }
     }
     // Only write default if file didn't exist at all
     fs.writeFileSync(filePath, JSON.stringify(defaultValue, null, 2), 'utf8');
     memoryCache.set(key, defaultValue);
+    // Also save default to cloud
+    (async () => {
+      try {
+        await supabase
+          .from('kv_store')
+          .upsert({ key, value: defaultValue, updated_at: new Date().toISOString() }, { onConflict: 'key' });
+      } catch (e) {}
+    })();
     return defaultValue;
   } catch (err) {
     console.error(`Error reading persistent key "${key}":`, err);

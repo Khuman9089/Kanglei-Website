@@ -4,7 +4,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://iiukspgbyhb
 const supabaseAnonKey =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   process.env.SUPABASE_SERVICE_ROLE_KEY ||
-  'dummy_anon_key';
+  '';
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
 

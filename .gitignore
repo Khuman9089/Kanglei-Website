@@ -41,8 +41,10 @@ yarn-error.log*
 next-env.d.ts
 urlMObile.txt
 
-# local data cache
-/data/
+# local runtime data & cache
+data/
+data/*
+data/*.json
 
 
 scratch/

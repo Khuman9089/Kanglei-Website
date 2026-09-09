@@ -3,6 +3,9 @@
 
 echo "🚀 Starting KangleiAstro Hostinger Deployment..."
 
+# Ensure runtime data directory exists and is preserved
+mkdir -p data
+
 # 1. Pull latest changes from Git main branch
 echo "📥 Pulling latest updates from GitHub..."
 git pull origin main
@@ -13,6 +16,8 @@ chmod 755 .
 find . -type d -exec chmod 755 {} +
 find . -type f -exec chmod 644 {} +
 chmod +x deploy_hostinger.sh
+chmod 755 data
+chmod 666 data/*.json 2>/dev/null || true
 
 # 3. Install dependencies if updated
 echo "📦 Installing npm dependencies..."
