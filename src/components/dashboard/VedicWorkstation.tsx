@@ -4,7 +4,8 @@ import React, { useState, useMemo } from 'react';
 import { 
   X, Printer, RotateCcw, Calendar, Clock, Globe, 
   Sparkles, Compass, Eye, ChevronLeft, ChevronRight, 
-  Plus, Minus, ArrowRight, ShieldCheck, Share2, Download
+  Plus, Minus, ArrowRight, ShieldCheck, Share2, Download,
+  User, Moon as MoonIcon, Sun as SunIcon, MapPin
 } from 'lucide-react';
 import NorthIndianChart from '@/components/charts/NorthIndianChart';
 import BengaliChart from '@/components/charts/BengaliChart';
@@ -13,6 +14,8 @@ import { calculatePlanetaryPositions } from '@/engine/ephemeris';
 import { calculateAllNavamsha, calculateNavamsha, calculateAllDashamsha, calculateDashamsha } from '@/engine/divisional';
 import { getNakshatraInfo } from '@/engine/nakshatras';
 import { ZODIAC_SIGNS } from '@/engine/constants';
+import { calculatePanchangaDetails } from '@/engine/panchanga';
+import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
 import { 
   VEDIC_PLANET_CONFIG, 
   SIGN_ABBRS, 
@@ -29,12 +32,136 @@ import {
   calculateLordships,
   calculateDetailedVimshottari,
   calculateGocharaPositions,
+  calculateRemainingDashaTime,
   VedicPlanetRow,
   ShadbalaBarData,
   DashaRow,
   LordshipRow,
   GocharaTransitRow
 } from '@/engine/vedicWorkstationEngine';
+
+const BENGALI_PLANET_NAMES: Record<string, string> = {
+  Sun: 'রবি',
+  Moon: 'চন্দ্র',
+  Mars: 'মঙ্গল',
+  Mercury: 'বুধ',
+  Jupiter: 'বৃহস্পতি',
+  Venus: 'শুক্র',
+  Saturn: 'শনি',
+  Rahu: 'রাহু',
+  Ketu: 'কেতু',
+};
+
+const BENGALI_RASHI_NAMES = [
+  { en: 'Aries', bn: 'মেষ' },
+  { en: 'Taurus', bn: 'বৃষ' },
+  { en: 'Gemini', bn: 'মিথুন' },
+  { en: 'Cancer', bn: 'কর্কট' },
+  { en: 'Leo', bn: 'সিংহ' },
+  { en: 'Virgo', bn: 'কন্যা' },
+  { en: 'Libra', bn: 'তুলা' },
+  { en: 'Scorpio', bn: 'বৃশ্চিক' },
+  { en: 'Sagittarius', bn: 'ধনু' },
+  { en: 'Capricorn', bn: 'মকর' },
+  { en: 'Aquarius', bn: 'কুম্ভ' },
+  { en: 'Pisces', bn: 'মীন' },
+];
+
+function formatDateNice(d: Date | string | null | undefined): string {
+  if (!d) return '-';
+  const dateObj = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(dateObj.getTime())) return String(d);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dd = String(dateObj.getDate()).padStart(2, '0');
+  const mm = months[dateObj.getMonth()];
+  const yyyy = dateObj.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+function formatTimeStandard(tob: string): string {
+  if (!tob) return '-';
+  const [hStr, mStr] = tob.split(':');
+  const h = parseInt(hStr, 10);
+  const m = parseInt(mStr, 10);
+  if (isNaN(h)) return tob;
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${String(h12).padStart(2, '0')}:${String(m || 0).padStart(2, '0')} ${ampm}`;
+}
+
+function toBengaliDigits(num: number | string): string {
+  const bengaliNumerals = ['০', '১', '২', '৩', '৪', '৫', '৬', '৭', '৮', '৯'];
+  return String(num).replace(/[0-9]/g, (digit) => bengaliNumerals[parseInt(digit)]);
+}
+
+export interface ExactAgeBreakdown {
+  years: number;
+  months: number;
+  days: number;
+  runningYear: number;
+  text: string;
+}
+
+export function calculateExactAge(
+  dobStr: string,
+  tobStr?: string,
+  targetDate: Date = new Date()
+): ExactAgeBreakdown | null {
+  if (!dobStr) return null;
+  const parts = dobStr.split('-').map(Number);
+  if (parts.length !== 3 || parts.some(isNaN)) return null;
+  const bYear = parts[0];
+  const bMonth = parts[1] - 1;
+  const bDay = parts[2];
+
+  let [hStr, minStr] = (tobStr || '12:00').split(':');
+  const bHour = parseInt(hStr || '12', 10);
+  const bMin = parseInt(minStr || '0', 10);
+
+  const bDate = new Date(bYear, bMonth, bDay, isNaN(bHour) ? 12 : bHour, isNaN(bMin) ? 0 : bMin);
+  if (isNaN(bDate.getTime())) return null;
+
+  let tYear = targetDate.getFullYear();
+  let tMonth = targetDate.getMonth();
+  let tDay = targetDate.getDate();
+
+  if (targetDate.getTime() < bDate.getTime()) {
+    return {
+      years: 0,
+      months: 0,
+      days: 0,
+      runningYear: 1,
+      text: '0 y 0 month 0 days Running 1 year',
+    };
+  }
+
+  let years = tYear - bYear;
+  let months = tMonth - bMonth;
+  let days = tDay - bDay;
+
+  if (days < 0) {
+    months -= 1;
+    const prevMonthDays = new Date(tYear, tMonth, 0).getDate();
+    days += prevMonthDays;
+  }
+
+  if (months < 0) {
+    years -= 1;
+    months += 12;
+  }
+
+  const runningYear = years + 1;
+
+  return {
+    years,
+    months,
+    days,
+    runningYear,
+    text: `${years} y ${months} month ${days} days Running ${runningYear} year`,
+  };
+}
+
+
 
 interface VedicWorkstationProps {
   initialBirthData?: {
@@ -54,7 +181,7 @@ interface VedicWorkstationProps {
 const DEFAULT_PRESET = {
   name: 'Sanatomba Meitei (Sample)',
   sex: 'Male',
-  dob: '2026-08-28',
+  dob: '2004-06-28',
   tob: '06:00',
   pob: 'Imphal, Manipur',
   lat: 24.8170,
@@ -75,8 +202,12 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
     timezone: initialBirthData?.timezone ?? DEFAULT_PRESET.timezone,
   });
 
-  // Chart Style
-  const [chartStyle, setChartStyle] = useState<'north' | 'bengali' | 'south'>('north');
+  // Chart Style - Default to Bengali / Manipuri as requested
+  const [chartStyle, setChartStyle] = useState<'north' | 'bengali' | 'south'>('bengali');
+
+  // Edit Birth Details panel toggle
+  const [showEditForm, setShowEditForm] = useState<boolean>(false);
+  const [editDraft, setEditDraft] = useState({ ...formData });
 
   // Gochara Transit Date & Time
   const [transitDateStr, setTransitDateStr] = useState<string>(
@@ -239,9 +370,28 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
       const birthDateObj = new Date(`${formData.dob}T${formData.tob}:00`);
       const dashas = calculateDetailedVimshottari(moon.longitude, birthDateObj);
 
+      // 6. PANCHANGA & BIRTH DETAIL INFO
+      const panchanga = calculatePanchangaDetails(formData.dob, sun.longitude, moon.longitude);
+      const fullVimshottari = calculateVimshottariDasha(moon.longitude, birthDateObj);
+      const moonNak = getNakshatraInfo(moon.longitude);
+
+      const now = new Date();
+      const targetDate = now.getTime() < birthDateObj.getTime() ? birthDateObj : now;
+      const currentDashaState = getCurrentDasha(fullVimshottari, targetDate);
+
+      const birthDashaPeriod = fullVimshottari[0] || null;
+      const activeMaha = currentDashaState.maha || fullVimshottari[0] || null;
+      const activeAntar = currentDashaState.antar || (activeMaha?.subPeriods ? activeMaha.subPeriods[0] : null);
+      const activePratyantar = currentDashaState.pratyantar || (activeAntar?.subPeriods ? activeAntar.subPeriods[0] : null);
+
       return {
         ascendant,
         ascSignIndex,
+        ascSignDegree,
+        ascNak,
+        moon,
+        moonNak,
+        sun,
         planets,
         tableRows: [ascRow, ...planetRows],
         d9Planets,
@@ -251,6 +401,12 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
         shadbalaBars,
         lordships,
         dashas,
+        panchanga,
+        birthDashaPeriod,
+        activeMaha,
+        activeAntar,
+        activePratyantar,
+        birthDateObj,
         ayanamsa,
       };
     } catch (e) {
@@ -332,6 +488,30 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
       isRetrograde: !!p.isRetrograde,
     }));
 
+  // Exact Age & Running Year
+  const exactAge = useMemo(() => {
+    return calculateExactAge(formData.dob, formData.tob);
+  }, [formData.dob, formData.tob]);
+
+  // Remaining Dasha Durations
+  const mahaRemaining = useMemo(() => {
+    if (!calculationResults?.activeMaha?.endDate) return null;
+    return calculateRemainingDashaTime(new Date(), calculationResults.activeMaha.endDate);
+  }, [calculationResults?.activeMaha?.endDate]);
+
+  const antarRemaining = useMemo(() => {
+    if (!calculationResults?.activeAntar?.endDate) return null;
+    return calculateRemainingDashaTime(new Date(), calculationResults.activeAntar.endDate);
+  }, [calculationResults?.activeAntar?.endDate]);
+
+  const pratyantarRemaining = useMemo(() => {
+    if (!calculationResults?.activePratyantar?.endDate) return null;
+    return calculateRemainingDashaTime(new Date(), calculationResults.activePratyantar.endDate);
+  }, [calculationResults?.activePratyantar?.endDate]);
+
+
+
+
   return (
     <div className="w-full bg-[#f4f7f4] text-slate-900 font-sans p-3 sm:p-5 rounded-3xl border border-slate-300/80 shadow-2xl space-y-4 max-w-7xl mx-auto">
       
@@ -351,7 +531,10 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
               </span>
             </div>
             <p className="text-xs text-slate-600 font-medium mt-0.5">
-              Client: <span className="font-bold text-amber-900">{formData.name}</span> • DOB: <span className="font-bold">{formData.dob}</span> at <span className="font-bold">{formData.tob}</span> • Lagna: <span className="font-bold text-amber-700">{SIGN_ABBRS[calculationResults.ascSignIndex]} ({formatDms(calculationResults.ascendant % 30)})</span>
+              Client: <span className="font-bold text-amber-900">{formData.name}</span>
+              {exactAge && (
+                <> • Age: <span className="font-bold text-emerald-800 font-mono">{exactAge.years}y {exactAge.months}m {exactAge.days}d (Running {exactAge.runningYear}th Year / চৎলিবা {exactAge.runningYear}শুবা চহি)</span></>
+              )} • DOB: <span className="font-bold">{formData.dob}</span> at <span className="font-bold">{formData.tob}</span> • Lagna: <span className="font-bold text-amber-700">{SIGN_ABBRS[calculationResults.ascSignIndex]} ({formatDms(calculationResults.ascendant % 30)})</span>
             </p>
           </div>
         </div>
@@ -361,25 +544,25 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
           {/* Chart Style Switcher */}
           <div className="flex items-center rounded-xl bg-slate-100 p-1 border border-slate-200 text-xs font-bold">
             <button
-              onClick={() => setChartStyle('north')}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                chartStyle === 'north' ? 'bg-white text-amber-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              North Indian (Diamond)
-            </button>
-            <button
               onClick={() => setChartStyle('bengali')}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                chartStyle === 'bengali' ? 'bg-white text-amber-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                chartStyle === 'bengali' ? 'bg-white text-amber-800 shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               Bengali / Manipuri (Rashi)
             </button>
             <button
+              onClick={() => setChartStyle('north')}
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                chartStyle === 'north' ? 'bg-white text-amber-800 shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              North Indian (Diamond)
+            </button>
+            <button
               onClick={() => setChartStyle('south')}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                chartStyle === 'south' ? 'bg-white text-amber-800 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+              className={`px-3 py-1 rounded-lg transition-all cursor-pointer ${
+                chartStyle === 'south' ? 'bg-white text-amber-800 shadow-xs font-black' : 'text-slate-600 hover:text-slate-900'
               }`}
             >
               South Indian
@@ -395,6 +578,20 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
             <span>Print</span>
           </button>
 
+          {/* Edit Birth Details toggle */}
+          <button
+            onClick={() => { setEditDraft({ ...formData }); setShowEditForm((v) => !v); }}
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+              showEditForm
+                ? 'bg-amber-600 text-white border-amber-700 shadow-md'
+                : 'bg-amber-50 hover:bg-amber-100 text-amber-800 border-amber-300'
+            }`}
+            title="Edit Birth Details"
+          >
+            <User className="w-3.5 h-3.5" />
+            <span>{showEditForm ? 'Cancel Edit' : '✏️ Edit Details'}</span>
+          </button>
+
           {onClose && (
             <button
               onClick={onClose}
@@ -406,6 +603,119 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
           )}
         </div>
       </div>
+
+      {/* EDIT BIRTH DETAILS PANEL */}
+      {showEditForm && (
+        <div className="bg-white rounded-2xl border border-amber-200 p-5 shadow-md space-y-4">
+          <div className="flex items-center gap-2 border-b border-amber-100 pb-3">
+            <User className="w-4 h-4 text-amber-600" />
+            <h3 className="font-serif font-black text-base text-slate-900">
+              Edit Birth Particulars (পোকপগী অকুপ্পা ৱারোল)
+            </h3>
+            <span className="text-[10px] text-slate-500 ml-auto">Changes apply immediately on Recalculate</span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 text-xs">
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Full Name (মমিং) *</label>
+              <input
+                type="text"
+                value={editDraft.name}
+                onChange={(e) => setEditDraft({ ...editDraft, name: e.target.value })}
+                className="w-full rounded-xl border border-slate-300 p-2.5 text-slate-900 bg-[#fffdfa] focus:border-amber-400 focus:outline-none"
+                placeholder="e.g. Sanatomba Meitei"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Gender (নুপা / নুপী)</label>
+              <select
+                value={editDraft.sex}
+                onChange={(e) => setEditDraft({ ...editDraft, sex: e.target.value })}
+                className="w-full rounded-xl border border-slate-300 p-2.5 text-slate-900 bg-[#fffdfa] focus:border-amber-400 focus:outline-none"
+              >
+                <option value="Male">Male (নুপা)</option>
+                <option value="Female">Female (নুপী)</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Date of Birth (পোকপা নুমিৎ) *</label>
+              <input
+                type="date"
+                value={editDraft.dob}
+                max={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setEditDraft({ ...editDraft, dob: e.target.value })}
+                className="w-full rounded-xl border border-slate-300 p-2.5 text-slate-900 bg-[#fffdfa] focus:border-amber-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Time of Birth (পোকপা পুংফম) *</label>
+              <input
+                type="time"
+                value={editDraft.tob}
+                onChange={(e) => setEditDraft({ ...editDraft, tob: e.target.value })}
+                className="w-full rounded-xl border border-slate-300 p-2.5 text-slate-900 bg-[#fffdfa] focus:border-amber-400 focus:outline-none"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Place of Birth (পোকপা মফম)</label>
+              <input
+                type="text"
+                value={editDraft.pob}
+                onChange={(e) => setEditDraft({ ...editDraft, pob: e.target.value })}
+                className="w-full rounded-xl border border-slate-300 p-2.5 text-slate-900 bg-[#fffdfa] focus:border-amber-400 focus:outline-none"
+                placeholder="Imphal, Manipur"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Latitude (°N)</label>
+                <input
+                  type="number"
+                  step="0.0001"
+                  value={editDraft.lat}
+                  onChange={(e) => setEditDraft({ ...editDraft, lat: Number(e.target.value) })}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-mono text-xs text-amber-900 bg-[#fffdfa] focus:border-amber-400 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block font-bold text-slate-700 mb-1">Longitude (°E)</label>
+                <input
+                  type="number"
+                  step="0.0001"
+                  value={editDraft.lng}
+                  onChange={(e) => setEditDraft({ ...editDraft, lng: Number(e.target.value) })}
+                  className="w-full rounded-xl border border-slate-300 p-2.5 font-mono text-xs text-amber-900 bg-[#fffdfa] focus:border-amber-400 focus:outline-none"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 pt-2 border-t border-amber-100">
+            <button
+              onClick={() => {
+                setFormData({ ...editDraft });
+                setShowEditForm(false);
+                setDashaPage(0);
+              }}
+              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-extrabold text-xs hover:from-amber-700 hover:to-amber-600 shadow-md transition-all flex items-center gap-2 cursor-pointer"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Recalculate Chart (অমুক্কা হন্না য়েংবা)
+            </button>
+            <button
+              onClick={() => setShowEditForm(false)}
+              className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 text-xs font-bold transition-all cursor-pointer"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* 2. ROW 1: TRI-CHART DISPLAY (D1, D9, D10) EXACT MATCH TO REFERENCE IMAGE */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -640,72 +950,281 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
           </div>
         </div>
 
-        {/* RIGHT 4 COLS: SHAD BALA BAR CHART EXACT MATCH TO REFERENCE IMAGE */}
+        {/* RIGHT 4 COLS: BIRTH DETAIL INFO & DASHA PANEL (REPLACES SHAD BALA) */}
         <div className="lg:col-span-4 bg-white rounded-2xl border border-[#c3d9c3] shadow-xs overflow-hidden flex flex-col">
-          <div className="bg-[#ebf3ea] px-3 py-1.5 border-b border-[#c3d9c3] flex items-center justify-between">
-            <span className="font-serif font-bold text-xs sm:text-sm text-slate-900">
-              Shad Bala
-            </span>
-            <span className="text-[10px] font-bold text-slate-500">
-              Benchmark: 1.00
+          <div className="bg-[#ebf3ea] px-3 py-2 border-b border-[#c3d9c3] flex items-center justify-between">
+            <div className="flex items-center gap-1.5">
+              <Sparkles className="w-4 h-4 text-amber-600" />
+              <span className="font-serif font-bold text-xs sm:text-sm text-slate-900">
+                Birth Detail Info
+              </span>
+              <span className="text-[10px] text-slate-500 font-medium font-serif">
+                (পোকপগী অকুপ্পা ৱারোল অমসুং দশা)
+              </span>
+            </div>
+            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded-full border border-emerald-300">
+              Lagna: {SIGN_ABBRS[calculationResults.ascSignIndex]} • Rashi: {SIGN_ABBRS[calculationResults.moon.signIndex]}
             </span>
           </div>
 
-          <div className="p-3 flex-1 flex flex-col justify-between bg-[#fbfdfb]">
-            {/* SVG Visual Bar Graph */}
-            <div className="w-full h-48 sm:h-56 relative border border-slate-300 rounded-xl overflow-hidden bg-white">
-              
-              {/* Background Zones: Red Below 1.0, Green Above 1.0 */}
-              <div className="absolute inset-0 flex flex-col">
-                {/* Upper Green Zone (> 1.0) */}
-                <div className="flex-1 bg-[#d8f5d8] border-b-2 border-black" />
-                {/* Lower Red Zone (< 1.0) */}
-                <div className="h-[40%] bg-[#ff8080]" />
+          <div className="p-3 flex-1 flex flex-col gap-3 bg-[#fbfdfb] overflow-y-auto max-h-[520px]">
+            {/* 1. CORE BIRTH DETAILS GRID */}
+            <div className="bg-white rounded-xl border border-slate-200 p-2.5 shadow-xs space-y-2">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-1">
+                <span className="text-[11px] font-black uppercase tracking-wider text-slate-700 flex items-center gap-1">
+                  <User className="w-3.5 h-3.5 text-amber-600" />
+                  Kundali Particulars (পোকপগী কুণ্ডলী)
+                </span>
+                <span className="text-[10px] font-mono text-slate-500">
+                  {formData.sex}
+                </span>
               </div>
 
-              {/* Planet Strength Bars */}
-              <div className="absolute inset-0 flex items-end justify-around px-2 pb-7">
-                {calculationResults.shadbalaBars.map((bar) => {
-                  // Normalize height: 1.0 corresponds to 40% from bottom (60% from top)
-                  // Max ratio ~ 2.0 = 95% height
-                  const normalizedHeightPercent = Math.min(96, Math.max(10, (bar.ratio / 2.0) * 85));
+              <div className="grid grid-cols-2 gap-x-3 gap-y-1.5 text-[11px]">
+                {/* DOB */}
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-medium">DOB (পোকপা নুমিৎ):</span>
+                  <span className="font-bold text-slate-900 font-mono">
+                    {formatDateNice(formData.dob)}
+                  </span>
+                </div>
 
-                  return (
-                    <div key={bar.planet} className="flex flex-col items-center z-10 w-8">
-                      {/* Vertical Bar */}
-                      <div
-                        style={{ height: `${normalizedHeightPercent}%` }}
-                        className="w-full bg-[#fffff8] border-2 border-black rounded-t-sm shadow-xs transition-all flex items-start justify-center pt-1"
-                      >
-                      </div>
+                {/* TOB */}
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-medium">TOB (পোকপা পুংফম):</span>
+                  <span className="font-bold text-slate-900 font-mono">
+                    {formatTimeStandard(formData.tob)}
+                  </span>
+                </div>
 
-                      {/* Planet Symbol & Ratio Label Below */}
-                      <div className="absolute bottom-0.5 text-center leading-none">
-                        <span
-                          style={{ color: bar.color }}
-                          className="font-black text-xs sm:text-sm block"
-                        >
-                          {bar.symbol}
-                        </span>
-                        <span className="font-mono text-[10px] font-bold text-slate-900 block mt-0.5">
-                          {bar.ratio.toFixed(2)}
-                        </span>
-                      </div>
+                {/* Exact Age & Running Year */}
+                {exactAge && (
+                  <div className="col-span-2 bg-gradient-to-r from-amber-50 to-orange-50/80 border border-amber-300 rounded-lg p-2 flex items-center justify-between shadow-2xs">
+                    <div>
+                      <span className="text-amber-900 block text-[10px] font-black uppercase tracking-wider">
+                        Age (হৌজিক চৎলিবা চহি):
+                      </span>
+                      <span className="font-bold text-slate-950 font-mono text-xs">
+                        {exactAge.years} y {exactAge.months} month {exactAge.days} days
+                      </span>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="text-right">
+                      <span className="inline-block px-2 py-0.5 rounded bg-amber-200 text-amber-950 font-black text-[10px] border border-amber-400 shadow-2xs">
+                        Running {exactAge.runningYear} Year
+                      </span>
+                      <span className="block text-[9px] text-amber-800 font-serif font-medium">
+                        (চৎলিবা {toBengaliDigits(exactAge.runningYear)}শুবা চহি)
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-              {/* 1.0 Benchmark Label */}
-              <div className="absolute right-1 bottom-[41%] text-[9px] font-mono font-bold text-black bg-white/80 px-1 rounded">
-                1.00 Req.
+                {/* POB */}
+                <div className="col-span-2">
+                  <span className="text-slate-400 block text-[10px] font-medium">POB (পোকপা মফম):</span>
+                  <span className="font-bold text-slate-900 truncate block">
+                    {formData.pob} <span className="text-[10px] text-slate-500 font-normal">({Number(formData.lat).toFixed(2)}°N, {Number(formData.lng).toFixed(2)}°E)</span>
+                  </span>
+                </div>
+
+                {/* Lagna (Ascendant) */}
+                <div className="bg-amber-50/70 rounded-lg p-1.5 border border-amber-200/70">
+                  <span className="text-amber-800 font-black block text-[10px]">Lagna (লগ্ন):</span>
+                  <span className="font-bold text-slate-900 block leading-tight">
+                    {ZODIAC_SIGNS[calculationResults.ascSignIndex]?.name}
+                    <span className="text-[10px] text-amber-900 font-normal ml-1">
+                      ({BENGALI_RASHI_NAMES[calculationResults.ascSignIndex]?.bn || ''})
+                    </span>
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-600 block">
+                    {formatDms(calculationResults.ascSignDegree)}
+                  </span>
+                </div>
+
+                {/* Rashi (Moon Sign) */}
+                <div className="bg-blue-50/70 rounded-lg p-1.5 border border-blue-200/70">
+                  <span className="text-blue-800 font-black block text-[10px]">Rashi (চন্দ্র রাশি):</span>
+                  <span className="font-bold text-slate-900 block leading-tight">
+                    {calculationResults.moon.signName}
+                    <span className="text-[10px] text-blue-900 font-normal ml-1">
+                      ({BENGALI_RASHI_NAMES[calculationResults.moon.signIndex]?.bn || ''})
+                    </span>
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-600 block">
+                    {formatDms(calculationResults.moon.signDegree)}
+                  </span>
+                </div>
+
+                {/* Nakshatra & Pada */}
+                <div className="col-span-2 bg-slate-50 rounded-lg p-1.5 border border-slate-200 flex items-center justify-between">
+                  <div>
+                    <span className="text-slate-500 block text-[10px] font-medium">Nakshatra (নক্ষত্র ও পদ):</span>
+                    <span className="font-bold text-slate-900">
+                      {calculationResults.moonNak.name} ({calculationResults.panchanga.moonNakshatraName})
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="inline-block px-2 py-0.5 rounded bg-amber-100 text-amber-900 font-black text-[10px] border border-amber-300">
+                      Pada {calculationResults.moon.nakshatraPada} (পদ {toBengaliDigits(calculationResults.moon.nakshatraPada)})
+                    </span>
+                  </div>
+                </div>
+
+                {/* Tithi & Paksha */}
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-medium">Tithi (তিথি):</span>
+                  <span className="font-bold text-slate-900 leading-tight block">
+                    {calculationResults.panchanga.tithiName}
+                  </span>
+                  <span className="text-[10px] text-slate-500 font-medium block">
+                    {calculationResults.panchanga.paksha}
+                  </span>
+                </div>
+
+                {/* Yoga & Karana */}
+                <div>
+                  <span className="text-slate-400 block text-[10px] font-medium">Yoga & Karana (যোগ ও করণ):</span>
+                  <span className="font-bold text-slate-900 leading-tight block">
+                    {calculationResults.panchanga.yogaName}
+                  </span>
+                  <span className="text-[10px] text-slate-600 font-mono block">
+                    করণ: {calculationResults.panchanga.karanaName}
+                  </span>
+                </div>
               </div>
             </div>
 
-            {/* Brief Explanation */}
-            <p className="text-[10px] text-slate-500 font-medium text-center mt-2 leading-tight">
-              Planets above black line (&gt;1.00 in green) possess full functional potency in Vimshottari results.
-            </p>
+            {/* 2. BALANCE OF DASHA AT BIRTH */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-300/80 p-2.5 shadow-xs">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] font-black uppercase tracking-wider text-amber-900 flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5 text-amber-700" />
+                  Balance of Dasha at Birth (পোকপদা লৈরম্বা দশা ভোগ)
+                </span>
+                <span className="px-1.5 py-0.5 rounded bg-amber-200 text-amber-900 text-[10px] font-black">
+                  {calculationResults.panchanga.vimshottariDasha.lordName} ({calculationResults.panchanga.vimshottariDasha.lordBengali})
+                </span>
+              </div>
+
+              <div className="bg-white/90 rounded-lg p-2 border border-amber-200 text-xs space-y-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium text-[11px]">Duration (মতম):</span>
+                  <span className="font-bold text-amber-900 font-mono text-[11px]">
+                    {calculationResults.panchanga.vimshottariDasha.years}Y {calculationResults.panchanga.vimshottariDasha.months}M {calculationResults.panchanga.vimshottariDasha.days}D {calculationResults.panchanga.vimshottariDasha.hours}H
+                  </span>
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-500 font-medium text-[11px]">Panchanga ভোগ:</span>
+                  <span className="font-bold text-slate-800 font-serif text-[11px]">
+                    {calculationResults.panchanga.vimshottariDasha.formattedString}
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between pt-1 border-t border-amber-100 text-[10px] font-mono">
+                  <span className="text-slate-500">
+                    Start: <strong className="text-slate-900">{formatDateNice(formData.dob)}</strong>
+                  </span>
+                  <span className="text-slate-500">
+                    Ending: <strong className="text-emerald-700">{calculationResults.birthDashaPeriod ? formatDateNice(calculationResults.birthDashaPeriod.endDate) : '-'}</strong>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 3. PRESENT RUNNING DASHA STATUS */}
+            <div className="bg-white rounded-xl border border-emerald-200 p-2.5 shadow-xs space-y-2">
+              <div className="flex items-center justify-between border-b border-emerald-100 pb-1">
+                <span className="text-[10px] font-black uppercase tracking-wider text-emerald-900 flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Present Running Dasha (হৌজিক চৎলিবা দশা)
+                </span>
+                <span className="text-[10px] font-mono text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                  Active as on Today
+                </span>
+              </div>
+
+              {/* Mahadasha */}
+              <div className="bg-emerald-50/50 rounded-lg p-2 border border-emerald-100">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium text-[11px]">Mahadasha (মহাদশা):</span>
+                  <span className="font-black text-emerald-800 text-xs">
+                    {calculationResults.activeMaha?.lord || '-'}
+                    <span className="font-serif font-semibold ml-1 text-emerald-900">
+                      ({BENGALI_PLANET_NAMES[calculationResults.activeMaha?.lord || ''] || ''})
+                    </span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] font-mono mt-1 text-slate-600">
+                  <span>From: <strong className="text-slate-900">{calculationResults.activeMaha ? formatDateNice(calculationResults.activeMaha.startDate) : '-'}</strong></span>
+                  <span>To: <strong className="text-emerald-700">{calculationResults.activeMaha ? formatDateNice(calculationResults.activeMaha.endDate) : '-'}</strong></span>
+                </div>
+                {mahaRemaining && (
+                  <div className="flex items-center justify-between text-[11px] pt-1.5 mt-1.5 border-t border-emerald-200/70">
+                    <span className="text-emerald-950 font-bold text-[10px] flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-emerald-700" />
+                      Remaining (লেমহৌরিবা মতম):
+                    </span>
+                    <span className="font-black text-emerald-900 font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-emerald-300 shadow-2xs">
+                      {mahaRemaining.text}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Antardasha */}
+              <div className="bg-teal-50/50 rounded-lg p-2 border border-teal-100">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-slate-500 font-medium text-[11px]">Antardasha (অন্তর্দশা):</span>
+                  <span className="font-black text-teal-800 text-xs">
+                    {calculationResults.activeAntar?.lord || '-'}
+                    <span className="font-serif font-semibold ml-1 text-teal-900">
+                      ({BENGALI_PLANET_NAMES[calculationResults.activeAntar?.lord || ''] || ''})
+                    </span>
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-[10px] font-mono mt-1 text-slate-600">
+                  <span>From: <strong className="text-slate-900">{calculationResults.activeAntar ? formatDateNice(calculationResults.activeAntar.startDate) : '-'}</strong></span>
+                  <span>To: <strong className="text-teal-700">{calculationResults.activeAntar ? formatDateNice(calculationResults.activeAntar.endDate) : '-'}</strong></span>
+                </div>
+                {antarRemaining && (
+                  <div className="flex items-center justify-between text-[11px] pt-1.5 mt-1.5 border-t border-teal-200/70">
+                    <span className="text-teal-950 font-bold text-[10px] flex items-center gap-1">
+                      <Clock className="w-3 h-3 text-teal-700" />
+                      Remaining (লেমহৌরিবা মতম):
+                    </span>
+                    <span className="font-black text-teal-900 font-mono text-[11px] bg-white px-2 py-0.5 rounded border border-teal-300 shadow-2xs">
+                      {antarRemaining.text}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Pratyantardasha (Sub-period) */}
+              {calculationResults.activePratyantar && (
+                <div className="bg-slate-50 rounded-lg p-1.5 border border-slate-200">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-slate-500 font-medium">Pratyantardasha (প্রত্যন্তর দশা):</span>
+                    <span className="font-bold text-slate-900">
+                      {calculationResults.activePratyantar.lord} ({BENGALI_PLANET_NAMES[calculationResults.activePratyantar.lord] || ''})
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-[9px] font-mono mt-0.5 text-slate-500">
+                    <span>{formatDateNice(calculationResults.activePratyantar.startDate)}</span>
+                    <span>→</span>
+                    <span className="font-bold text-slate-800">{formatDateNice(calculationResults.activePratyantar.endDate)}</span>
+                  </div>
+                  {pratyantarRemaining && (
+                    <div className="flex items-center justify-between text-[10px] pt-1 mt-1 border-t border-slate-200">
+                      <span className="text-slate-600 font-medium text-[9px]">Remaining (লেমহৌরিবা):</span>
+                      <span className="font-bold text-slate-900 font-mono text-[10px]">
+                        {pratyantarRemaining.text}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -905,21 +1424,35 @@ export default function VedicWorkstation({ initialBirthData, onClose }: VedicWor
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-            <div className="flex justify-center p-2 bg-[#fbfdfb] border border-slate-200 rounded-2xl">
-              <NorthIndianChart
-                planets={createChartPlanetMapping(
-                  gocharaResults.transits.map(gt => ({
-                    id: gt.id,
+            <div className="flex justify-center p-2 bg-[#fbfdfb] border border-slate-200 rounded-2xl w-full">
+              {chartStyle === 'north' ? (
+                <NorthIndianChart
+                  planets={createChartPlanetMapping(
+                    gocharaResults.transits.map(gt => ({
+                      id: gt.id,
+                      name: gt.name,
+                      signIndex: SIGN_ABBRS.indexOf(gt.signAbbr),
+                      isRetrograde: gt.isRetrograde,
+                    })),
+                    Math.floor(gocharaResults.transitAscendant / 30)
+                  )}
+                  signs={Array.from({ length: 12 }, (_, i) => ((Math.floor(gocharaResults.transitAscendant / 30) + i) % 12) + 1)}
+                  ascendantSign={Math.floor(gocharaResults.transitAscendant / 30)}
+                  className="w-full max-w-[360px] aspect-square border border-[#c3d9c3] rounded-xl bg-[#fffef9]"
+                />
+              ) : (
+                <BengaliChart
+                  title="Gochara Transit Chart"
+                  planets={gocharaResults.transits.map(gt => ({
                     name: gt.name,
-                    signIndex: SIGN_ABBRS.indexOf(gt.signAbbr),
-                    isRetrograde: gt.isRetrograde,
-                  })),
-                  Math.floor(gocharaResults.transitAscendant / 30)
-                )}
-                signs={Array.from({ length: 12 }, (_, i) => ((Math.floor(gocharaResults.transitAscendant / 30) + i) % 12) + 1)}
-                ascendantSign={Math.floor(gocharaResults.transitAscendant / 30)}
-                className="w-full max-w-[360px] aspect-square border border-[#c3d9c3] rounded-xl bg-[#fffef9]"
-              />
+                    abbr: VEDIC_PLANET_CONFIG[gt.id]?.abbr || gt.name.substring(0, 2),
+                    houseNumber: SIGN_ABBRS.indexOf(gt.signAbbr) + 1,
+                    isRetrograde: !!gt.isRetrograde,
+                  }))}
+                  ascendantSign={Math.floor(gocharaResults.transitAscendant / 30)}
+                  theme="light"
+                />
+              )}
             </div>
 
             {/* Transit Impact Summary */}

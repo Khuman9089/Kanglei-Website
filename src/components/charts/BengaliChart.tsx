@@ -92,7 +92,6 @@ export function BengaliChart({
   const strokeColor = isLight ? '#b45309' : '#c69214';
   const centerBoxBg = isLight ? '#fef3c7' : '#1c2541';
   const titleColor = isLight ? '#b45309' : '#fbbf24';
-  const subtitleColor = isLight ? '#92400e' : '#e0a96d';
   const rashiTagColor = isLight ? '#64748b' : '#94a3b8';
 
   return (
@@ -124,7 +123,7 @@ export function BengaliChart({
         <rect x="202" y="128.67" width="196" height="122.66" fill={centerBoxBg} stroke={strokeColor} strokeWidth="1.5" />
         <text
           x="300"
-          y="180"
+          y="200"
           fill={titleColor}
           fontSize="18"
           fontWeight="bold"
@@ -133,17 +132,6 @@ export function BengaliChart({
           className="font-serif"
         >
           {title}
-        </text>
-        <text
-          x="300"
-          y="206"
-          fill={subtitleColor}
-          fontSize="11"
-          fontWeight="bold"
-          textAnchor="middle"
-          dominantBaseline="middle"
-        >
-          Traditional Bengali Rashi Chakra
         </text>
 
         {/* Render Planets & Lagna in each of the 12 Compartments */}

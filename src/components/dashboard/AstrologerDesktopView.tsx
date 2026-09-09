@@ -29,8 +29,10 @@ import { calculateManglikDosh } from '@/lib/astrology/manglik';
 import { calculateKaalSarpDosh } from '@/lib/astrology/kaalSarp';
 import { calculateCoupleMatch } from '@/lib/astrology/matchMaking';
 import { calculatePlanetaryYogas } from '@/lib/astrology/yogas';
-import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
-import VedicWorkstation from '@/components/dashboard/VedicWorkstation';
+import VedicWorkstation, { calculateExactAge } from '@/components/dashboard/VedicWorkstation';
+import BNNWorkstation from '@/components/dashboard/BNNWorkstation';
+import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
+import { calculateDetailedVimshottari, calculateRemainingDashaTime } from '@/engine/vedicWorkstationEngine';
 
 // Bengali Formatting Helpers
 function toBengaliDigits(num: number | string): string {
@@ -65,6 +67,41 @@ const BENGALI_RASHI_NAMES = [
   '১০ - কুম্ভ (Aquarius)',
   '১১ - মীন (Pisces)',
 ];
+
+function formatDateNice(d: Date | string | null | undefined): string {
+  if (!d) return '-';
+  const dateObj = typeof d === 'string' ? new Date(d) : d;
+  if (isNaN(dateObj.getTime())) return String(d);
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const dd = String(dateObj.getDate()).padStart(2, '0');
+  const mm = months[dateObj.getMonth()];
+  const yyyy = dateObj.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+const BENGALI_PLANET_NAMES_MAP: Record<string, string> = {
+  Sun: 'রবি (Sun)',
+  Moon: 'চন্দ্র (Moon)',
+  Mars: 'মঙ্গল (Mars)',
+  Mercury: 'বুধ (Mercury)',
+  Jupiter: 'বৃহস্পতি (Jupiter)',
+  Venus: 'শুক্র (Venus)',
+  Saturn: 'শনি (Saturn)',
+  Rahu: 'রাহু (Rahu)',
+  Ketu: 'কেতু (Ketu)',
+};
+
+const DASHA_PLANET_COLORS: Record<string, string> = {
+  Sun: '#ea580c',
+  Moon: '#2563eb',
+  Mars: '#dc2626',
+  Mercury: '#16a34a',
+  Jupiter: '#d97706',
+  Venus: '#c026d3',
+  Saturn: '#475569',
+  Rahu: '#7c3aed',
+  Ketu: '#9333ea',
+};
 
 function formatBengaliPositionString(
   planetId: string,
@@ -449,6 +486,334 @@ export default function AstrologerDashboard() {
   const [yumsharolValidationErr, setYumsharolValidationErr] = useState('');
   const [calcResult, setCalcResult] = useState<any>(null);
   const [isCalculating, setIsCalculating] = useState(false);
+  const [expandedDashaMaha, setExpandedDashaMaha] = useState<number | null>(null);
+
+  const executeToolCalculation = (tool: any, formValues = calcForm) => {
+    if (!tool) return;
+    const mType = tool.id || tool.type;
+
+    if (mType === 'dasha-yengpham' || tool.id === 'dasha-yengpham') {
+      try {
+        const chartData = calculatePlanetaryPositions({
+          name: formValues.name,
+          gender: formValues.sex,
+          dateOfBirth: formValues.dob,
+          timeOfBirth: formValues.tob || '12:00',
+          latitude: Number(formValues.lat) || 24.8170,
+          longitude: Number(formValues.lng) || 93.9368,
+          timezone: 'Asia/Kolkata',
+          utcOffset: Number(formValues.timezone) || 5.5,
+          ayanamsa: 'Lahiri',
+        });
+
+        const moonObj = chartData.planets.find((p: any) => p.id === 'mo') || chartData.planets[1];
+        const moonLong = (moonObj.signIndex * 30) + moonObj.signDegree;
+        const [bY, bM, bD] = formValues.dob.split('-').map(Number);
+        const [bH, bMin] = (formValues.tob || '12:00').split(':').map(Number);
+        const birthDateObj = new Date(bY, (bM || 1) - 1, bD || 1, bH || 12, bMin || 0);
+
+        const fullVimshottari = calculateVimshottariDasha(moonLong, birthDateObj);
+        const detailedVimshottari = calculateDetailedVimshottari(moonLong, birthDateObj);
+        const exactAge = calculateExactAge(formValues.dob, formValues.tob);
+
+        const now = new Date();
+        const targetDate = now.getTime() < birthDateObj.getTime() ? birthDateObj : now;
+        const currentDashaState = getCurrentDasha(fullVimshottari, targetDate);
+
+        const activeMaha = currentDashaState.maha || fullVimshottari[0];
+        const activeAntar = currentDashaState.antar || (activeMaha?.subPeriods ? activeMaha.subPeriods[0] : null);
+        const activePratyantar = currentDashaState.pratyantar || (activeAntar?.subPeriods ? activeAntar.subPeriods[0] : null);
+
+        const remainingMaha = activeMaha?.endDate ? calculateRemainingDashaTime(now, activeMaha.endDate) : null;
+        const remainingAntar = activeAntar?.endDate ? calculateRemainingDashaTime(now, activeAntar.endDate) : null;
+        const remainingPratyantar = activePratyantar?.endDate ? calculateRemainingDashaTime(now, activePratyantar.endDate) : null;
+
+        const moonNak = getNakshatraInfo(moonLong);
+
+        setCalcResult({
+          isDashaTimeline: true,
+          type: 'Present Running Dasha & Life Timeline (Vimshottari Dasha)',
+          name: formValues.name,
+          sex: formValues.sex,
+          dob: formValues.dob,
+          tob: formValues.tob,
+          pob: formValues.pob,
+          exactAge,
+          moonObj,
+          moonNak,
+          fullVimshottari,
+          detailedVimshottari,
+          activeMaha,
+          activeAntar,
+          activePratyantar,
+          remainingMaha,
+          remainingAntar,
+          remainingPratyantar,
+          birthDateObj,
+        });
+      } catch (err: any) {
+        console.error('Error calculating Dasha:', err);
+      }
+      return;
+    }
+
+    if (mType === 'kuthi-generator' || tool.id === 'kuthi-generator') {
+      const chartData = calculatePlanetaryPositions({
+        name: formValues.name,
+        gender: formValues.sex,
+        dateOfBirth: formValues.dob,
+        timeOfBirth: formValues.tob,
+        latitude: Number(formValues.lat) || 24.8170,
+        longitude: Number(formValues.lng) || 93.9368,
+        timezone: 'Asia/Kolkata',
+        utcOffset: Number(formValues.timezone) || 5.5,
+        ayanamsa: 'Lahiri',
+      });
+
+      const ascSignIndex = Math.floor(chartData.ascendant / 30);
+      const ascSignDegree = chartData.ascendant % 30;
+      const ascNakshatra = getNakshatraInfo(chartData.ascendant);
+
+      const ascendantItem = {
+        id: 'asc',
+        name: 'Ascendant / Lagna (লগ্ন)',
+        bengaliName: 'লগ্ন',
+        signIndex: ascSignIndex,
+        signName: BENGALI_RASHI_NAMES[ascSignIndex],
+        signDegree: ascSignDegree,
+        nakshatraIndex: ascNakshatra.index,
+        nakshatraName: ascNakshatra.name,
+        nakshatraPada: ascNakshatra.pada,
+        houseNumber: 1,
+        formattedString: formatBengaliPositionString('asc', ascNakshatra.index, ascSignIndex, ascSignDegree),
+      };
+
+      const d1MappedPlanets = chartData.planets.map((p: any) => ({
+        name: p.name,
+        abbr: BENGALI_PLANET_MAP[p.id]?.abbr || p.name.substring(0, 2),
+        houseNumber: p.signIndex + 1,
+        isRetrograde: p.isRetrograde,
+      }));
+
+      const navPlanets = calculateAllNavamsha(chartData.planets);
+      const navAsc = calculateNavamsha(chartData.ascendant);
+      const d9MappedPlanets = navPlanets.map((p: any) => ({
+        name: p.name,
+        abbr: BENGALI_PLANET_MAP[p.id]?.abbr || p.name.substring(0, 2),
+        houseNumber: p.signIndex + 1,
+        isRetrograde: p.isRetrograde,
+      }));
+
+      const formattedPlanets = chartData.planets.map((p: any) => {
+        const hNum = ((p.signIndex - ascSignIndex + 12) % 12) + 1;
+        return {
+          ...p,
+          bengaliName: BENGALI_PLANET_MAP[p.id]?.bengaliName || p.name,
+          bengaliRashiName: BENGALI_RASHI_NAMES[p.signIndex],
+          houseNumber: hNum,
+          formattedString: formatBengaliPositionString(p.id, p.nakshatraIndex, p.signIndex, p.signDegree),
+        };
+      });
+
+      const sunObj = chartData.planets.find((p: any) => p.id === 'su') || chartData.planets[0];
+      const moonObj = chartData.planets.find((p: any) => p.id === 'mo') || chartData.planets[1];
+      const panchangaDetails = calculatePanchangaDetails(
+        formValues.dob,
+        sunObj.signIndex * 30 + sunObj.signDegree,
+        moonObj.signIndex * 30 + moonObj.signDegree
+      );
+
+      const moonSignIndex = moonObj.signIndex;
+      const moonSignDegree = moonObj.signDegree;
+      const moonDeg = Math.floor(moonSignDegree);
+      const moonMin = Math.floor((moonSignDegree % 1) * 60);
+      const moonSec = Math.round((((moonSignDegree % 1) * 60) % 1) * 60);
+
+      const basicC36Value = `${moonSignIndex}|${moonDeg}°|${moonMin}'|${moonSec}"`;
+      const basicC36Bengali = `${toBengaliDigits(moonSignIndex)}|${toBengaliDigits(moonDeg)}°|${toBengaliDigits(moonMin)}'|${toBengaliDigits(moonSec)}"`;
+
+      const moonItem = {
+        id: 'mo',
+        name: 'Moon / Chandra (চন্দ্র)',
+        bengaliName: 'চন্দ্র',
+        signIndex: moonSignIndex,
+        signName: BENGALI_RASHI_NAMES[moonSignIndex],
+        signDegree: moonSignDegree,
+        nakshatraIndex: moonObj.nakshatraIndex,
+        nakshatraName: moonObj.nakshatraName,
+        nakshatraPada: moonObj.nakshatraPada,
+        basicC36Value,
+        basicC36Bengali,
+        formattedString: formatBengaliPositionString('mo', moonObj.nakshatraIndex, moonSignIndex, moonSignDegree),
+      };
+
+      const ayanamsaVal = chartData.ayanamsa ?? 24.2261;
+      const ayanamsaDeg = Math.floor(ayanamsaVal);
+      const ayanamsaMin = Math.floor((ayanamsaVal % 1) * 60);
+      const ayanamsaSecRaw = (((ayanamsaVal % 1) * 60) % 1) * 60;
+      const ayanamsaSecFormatted = (ayanamsaSecRaw < 10 ? '0' : '') + ayanamsaSecRaw.toFixed(2);
+      const ayanamsaValueJ23 = `${ayanamsaDeg}° ${ayanamsaMin}' ${ayanamsaSecFormatted}''`;
+      const ayanamsaBengali = `${toBengaliDigits(ayanamsaDeg)}° ${toBengaliDigits(ayanamsaMin)}' ${toBengaliDigits(ayanamsaSecFormatted)}''`;
+
+      setCalcResult({
+        isKuthiChart: true,
+        type: 'Kuthi Generator (Natal Birth Chart)',
+        name: formValues.name,
+        sex: formValues.sex,
+        dob: formValues.dob,
+        tob: formValues.tob,
+        pob: formValues.pob,
+        ascendantItem,
+        moonItem,
+        ayanamsaValueJ23,
+        ayanamsaBengali,
+        ascSignIndex,
+        navAscSignIndex: navAsc.signIndex,
+        ascSign1to12: ascSignIndex + 1,
+        navAscSign1to12: navAsc.signIndex + 1,
+        planets: formattedPlanets,
+        d1MappedPlanets,
+        d9MappedPlanets,
+        panchangaDetails,
+      });
+      return;
+    }
+
+    if (mType === 'shani-sade-sati' || tool.id === 'shani-sade-sati') {
+      const res = calculateSadeSati({
+        name: formValues.name,
+        gender: formValues.sex,
+        dob: formValues.dob,
+        tob: formValues.tob || '12:00',
+        lat: Number(formValues.lat) || 24.8170,
+        lng: Number(formValues.lng) || 93.9368,
+        timezone: Number(formValues.timezone) || 5.5,
+      });
+      setCalcResult({
+        isSadeSati: true,
+        type: 'Shani Sade Sati Analysis & Remedial Guidance',
+        ...res,
+      });
+      return;
+    }
+
+    if (mType === 'mangalik-dosh' || tool.id === 'mangalik-dosh') {
+      const res = calculateManglikDosh({
+        name: formValues.name,
+        gender: formValues.sex,
+        dob: formValues.dob,
+        tob: formValues.tob || '12:00',
+        lat: Number(formValues.lat) || 24.8170,
+        lng: Number(formValues.lng) || 93.9368,
+        timezone: Number(formValues.timezone) || 5.5,
+      });
+      setCalcResult({
+        isManglikReport: true,
+        type: 'Manglik Dosh & Kuja Bhanga Analysis',
+        ...res,
+      });
+      return;
+    }
+
+    if (mType === 'kaal-sarp-dosh' || tool.id === 'kaal-sarp-dosh') {
+      const res = calculateKaalSarpDosh({
+        name: formValues.name,
+        gender: formValues.sex,
+        dob: formValues.dob,
+        tob: formValues.tob || '12:00',
+        lat: Number(formValues.lat) || 24.8170,
+        lng: Number(formValues.lng) || 93.9368,
+        timezone: Number(formValues.timezone) || 5.5,
+      });
+      setCalcResult({
+        isKaalSarp: true,
+        type: 'Kaal Sarp Dosh Analysis & Shanti Remedies',
+        ...res,
+      });
+      return;
+    }
+
+    if (mType === 'astrology-yoga' || tool.id === 'astrology-yoga') {
+      const res = calculatePlanetaryYogas({
+        name: formValues.name,
+        gender: formValues.sex,
+        dob: formValues.dob,
+        tob: formValues.tob || '12:00',
+        lat: Number(formValues.lat) || 24.8170,
+        lng: Number(formValues.lng) || 93.9368,
+        timezone: Number(formValues.timezone) || 5.5,
+      });
+      setCalcResult({
+        isPlanetaryYogas: true,
+        type: 'Planetary Yogas & Classical Vedic Combinations',
+        ...res,
+      });
+      return;
+    }
+
+    if (mType === 'match-making' || tool.id === 'match-making') {
+      const res = calculateCoupleMatch({
+        groom: {
+          name: formValues.name || 'Groom',
+          dob: formValues.dob,
+          tob: formValues.tob || '12:00',
+          pob: formValues.pob,
+          lat: Number(formValues.lat) || 24.8170,
+          lng: Number(formValues.lng) || 93.9368,
+        },
+        bride: {
+          name: formValues.partnerName || 'Bride',
+          dob: formValues.partnerDob || '1997-08-20',
+          tob: formValues.partnerTob || '10:30',
+          pob: formValues.partnerPob || 'Imphal, Manipur',
+          lat: Number(formValues.partnerLat) || 24.8170,
+          lng: Number(formValues.partnerLng) || 93.9368,
+        },
+      });
+      setCalcResult({
+        isMatchMaking: true,
+        type: 'Match Making (Ashtakoot Gun Milan & Manglik)',
+        ...res,
+      });
+      return;
+    }
+
+    if (mType === 'yumsharol' || tool.id === 'yumsharol') {
+      try {
+        setYumsharolValidationErr('');
+        const res = calculateYumsharol({
+          dob: formValues.dob,
+          tob: formValues.tob || '12:00',
+          nakshatra: Number(formValues.nakshatra) || 1,
+          constantValue: Number(formValues.constantValue) || 15,
+        });
+        setCalcResult({
+          isYumsharol: true,
+          type: 'Yumsharol (Traditional Vastu & House Science)',
+          name: formValues.name,
+          ...res,
+        });
+      } catch (err: any) {
+        setYumsharolValidationErr(err.message || 'Error calculating Yumsharol.');
+      }
+      return;
+    }
+
+    if (mType === 'nga-eeshing' || tool.id === 'nga-eeshing') {
+      const res = calculateNgaEeshing({
+        groomRashi: Number(formValues.groomRashi) || 0,
+        brideRashi: Number(formValues.brideRashi) || 0,
+        groomName: formValues.name || 'Groom',
+        brideName: formValues.partnerName || 'Bride',
+      });
+      setCalcResult({
+        isNgaEeshingReport: true,
+        type: 'ঙা-ঈশিং (Nga-Eeshing)',
+        ...res,
+      });
+      return;
+    }
+  };
 
   // Theme State (Dark / Light) - Default to Light
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
@@ -1973,6 +2338,31 @@ Question: ${details.question || 'N/A'}`;
                                 <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                 <span>Workstation</span>
                               </button>
+                              <button
+                                onClick={() => {
+                                  setCalcForm((prev) => ({
+                                    ...prev,
+                                    name: order.clientDetails?.name || 'Client',
+                                    dob: order.clientDetails?.dob || '2004-06-28',
+                                    tob: order.clientDetails?.tob || '12:00',
+                                    pob: order.clientDetails?.pob || 'Imphal, Manipur',
+                                    sex: order.clientDetails?.sex || 'Male',
+                                    lat: 24.8170,
+                                    lng: 93.9368,
+                                    timezone: 5.5,
+                                    ayanamsa: 'Lahiri',
+                                  }));
+                                  setActiveToolModal({
+                                    id: 'bnn-workstation',
+                                    title: 'Bhrigu Nandi Nadi (BNN) Workstation',
+                                  });
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 transition-colors cursor-pointer"
+                                title="Open Client in BNN Prediction Engine"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                <span>BNN Nadi</span>
+                              </button>
                               {order.status !== 'COMPLETED' ? (
                                 <button
                                   onClick={() => setUploadingOrder(order)}
@@ -2107,6 +2497,31 @@ Question: ${details.question || 'N/A'}`;
                               >
                                 <Compass className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                 <span>Workstation</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setCalcForm((prev) => ({
+                                    ...prev,
+                                    name: order.clientDetails?.name || 'Client',
+                                    dob: order.clientDetails?.dob || '2004-06-28',
+                                    tob: order.clientDetails?.tob || '12:00',
+                                    pob: order.clientDetails?.pob || 'Imphal, Manipur',
+                                    sex: order.clientDetails?.sex || 'Male',
+                                    lat: 24.8170,
+                                    lng: 93.9368,
+                                    timezone: 5.5,
+                                    ayanamsa: 'Lahiri',
+                                  }));
+                                  setActiveToolModal({
+                                    id: 'bnn-workstation',
+                                    title: 'Bhrigu Nandi Nadi (BNN) Workstation',
+                                  });
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-700 dark:text-indigo-400 border border-indigo-500/30 transition-colors cursor-pointer"
+                                title="Open Client in BNN Prediction Engine"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
+                                <span>BNN Nadi</span>
                               </button>
                               <button
                                 onClick={() => setUploadingOrder(order)}
@@ -3595,6 +4010,7 @@ Question: ${details.question || 'N/A'}`;
                         theme === 'dark' ? 'bg-[#0b132b] text-[#fbbf24] border border-[#3a506b]' : 'bg-[#fef3c7]/80 text-[#d97706] border border-[#fde68a]'
                       }`}>
                         {t.id === 'vedic-workstation' ? '🪐' :
+                         t.id === 'bnn-workstation' ? '✨' :
                          t.id === 'yumsharol' ? '🏡' :
                          t.id === 'nga-eeshing' ? '🐟' :
                          t.id === 'dasha-yengpham' ? '📜' :
@@ -3622,8 +4038,12 @@ Question: ${details.question || 'N/A'}`;
                     {/* Gold Button matching 2.png */}
                     <button
                       onClick={() => {
+                        setCalcResult(null); // Always clear result on open
                         setActiveToolModal(t);
-                        setCalcResult(null);
+                        if (t.id !== 'vedic-workstation' && t.id !== 'bnn-workstation') {
+                          executeToolCalculation(t, calcForm);
+                        }
+                        // Workstations: calcResult stays null → birth form shows first
                       }}
                       className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#d97706] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.02] border border-[#fde68a]/40"
                     >
@@ -4219,24 +4639,272 @@ Question: ${details.question || 'N/A'}`;
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs ${
           theme === 'dark' ? 'bg-[#0b132b]/85' : 'bg-slate-900/60'
         }`}>
-          {activeToolModal.id === 'vedic-workstation' ? (
-            <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
-              <VedicWorkstation
-                initialBirthData={{
-                  name: calcForm.name || 'Sanatomba Meitei',
-                  dob: calcForm.dob || '2026-08-28',
-                  tob: calcForm.tob || '06:00',
-                  pob: calcForm.pob || 'Imphal, Manipur',
-                  lat: Number(calcForm.lat) || 24.8170,
-                  lng: Number(calcForm.lng) || 93.9368,
-                  timezone: Number(calcForm.timezone) || 5.5,
-                  sex: calcForm.sex || 'Male',
+          {(activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation') && calcResult?.type === 'workstation-ready' ? (
+            /* ── WORKSTATION: show after birth form is submitted ── */
+            activeToolModal.id === 'vedic-workstation' ? (
+              <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+                <VedicWorkstation
+                  initialBirthData={{
+                    name: calcForm.name || 'Sanatomba Meitei',
+                    dob: calcForm.dob || '2004-06-28',
+                    tob: calcForm.tob || '06:00',
+                    pob: calcForm.pob || 'Imphal, Manipur',
+                    lat: Number(calcForm.lat) || 24.8170,
+                    lng: Number(calcForm.lng) || 93.9368,
+                    timezone: Number(calcForm.timezone) || 5.5,
+                    sex: calcForm.sex || 'Male',
+                  }}
+                  onClose={() => {
+                    setActiveToolModal(null);
+                    setCalcResult(null);
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+                <BNNWorkstation
+                  initialBirthData={{
+                    name: calcForm.name || 'Sanatomba Meitei',
+                    dob: calcForm.dob || '2004-06-28',
+                    tob: calcForm.tob || '06:00',
+                    pob: calcForm.pob || 'Imphal, Manipur',
+                    lat: Number(calcForm.lat) || 24.8170,
+                    lng: Number(calcForm.lng) || 93.9368,
+                    timezone: Number(calcForm.timezone) || 5.5,
+                    sex: calcForm.sex || 'Male',
+                  }}
+                  onClose={() => {
+                    setActiveToolModal(null);
+                    setCalcResult(null);
+                  }}
+                />
+              </div>
+            )
+          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation') && !calcResult ? (
+            /* ── BIRTH DETAILS FORM for workstation tools ── */
+            <div className={`w-full max-w-2xl rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-6 transition-colors ${
+              theme === 'dark'
+                ? 'bg-[#1c2541] border-[#3a506b] text-white'
+                : 'bg-[#fffdfa] border-[#f3e8d2] text-slate-900'
+            }`}>
+              {/* Header */}
+              <div className={`flex items-center justify-between border-b pb-4 ${
+                theme === 'dark' ? 'border-[#3a506b]' : 'border-[#f3e8d2]'
+              }`}>
+                <div className="flex items-center gap-3">
+                  <div className={`w-11 h-11 rounded-2xl border flex items-center justify-center ${
+                    theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-100 border-amber-300'
+                  }`}>
+                    <User className={`w-6 h-6 ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#b45309]'}`} />
+                  </div>
+                  <div>
+                    <h3 className={`font-serif font-bold text-xl ${
+                      theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-900'
+                    }`}>
+                      {activeToolModal.title}
+                    </h3>
+                    <p className={`text-xs mt-0.5 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-slate-500'
+                    }`}>
+                      Enter the native&apos;s birth details to launch the workstation
+                    </p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => { setActiveToolModal(null); setCalcResult(null); }}
+                  className={`p-1.5 rounded-lg cursor-pointer transition-colors ${
+                    theme === 'dark' ? 'text-gray-400 hover:text-white hover:bg-slate-800' : 'text-slate-400 hover:text-slate-800 hover:bg-amber-100/50'
+                  }`}
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              {/* Birth Details Form */}
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  setCalcResult({ type: 'workstation-ready' });
                 }}
-                onClose={() => {
-                  setActiveToolModal(null);
-                  setCalcResult(null);
-                }}
-              />
+                className="space-y-4"
+              >
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+                  {/* Name */}
+                  <div className="sm:col-span-2">
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Full Name (মমিং) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={calcForm.name}
+                      onChange={(e) => setCalcForm({ ...calcForm, name: e.target.value })}
+                      placeholder="e.g. Sanatomba Meitei"
+                      className={`w-full rounded-xl border p-3 focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500'
+                          : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Gender */}
+                  <div>
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Gender (নুপা / নুপী)
+                    </label>
+                    <select
+                      value={calcForm.sex}
+                      onChange={(e) => setCalcForm({ ...calcForm, sex: e.target.value })}
+                      className={`w-full rounded-xl border p-3 focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-white'
+                          : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    >
+                      <option value="Male">Male (নুপা)</option>
+                      <option value="Female">Female (নুপী)</option>
+                    </select>
+                  </div>
+
+                  {/* Date of Birth */}
+                  <div>
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Date of Birth (পোকপা নুমিৎ) *
+                    </label>
+                    <input
+                      type="date"
+                      required
+                      max={new Date().toISOString().split('T')[0]}
+                      value={calcForm.dob}
+                      onChange={(e) => setCalcForm({ ...calcForm, dob: e.target.value })}
+                      className={`w-full rounded-xl border p-3 focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-white'
+                          : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Time of Birth */}
+                  <div>
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Time of Birth (পোকপা পুংফম) *
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={calcForm.tob}
+                      onChange={(e) => setCalcForm({ ...calcForm, tob: e.target.value })}
+                      className={`w-full rounded-xl border p-3 focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-white'
+                          : 'bg-white border-slate-300 text-slate-900'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Place of Birth */}
+                  <div className="sm:col-span-2">
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Place of Birth (পোকপা মফম)
+                    </label>
+                    <input
+                      type="text"
+                      value={calcForm.pob}
+                      onChange={(e) => setCalcForm({ ...calcForm, pob: e.target.value })}
+                      placeholder="e.g. Imphal, Manipur"
+                      className={`w-full rounded-xl border p-3 focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500'
+                          : 'bg-white border-slate-300 text-slate-900 placeholder-slate-400'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Latitude */}
+                  <div>
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Latitude (°N)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={calcForm.lat}
+                      onChange={(e) => setCalcForm({ ...calcForm, lat: Number(e.target.value) })}
+                      className={`w-full rounded-xl border p-3 font-mono focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-amber-300'
+                          : 'bg-white border-slate-300 text-amber-900'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Longitude */}
+                  <div>
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      Longitude (°E)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.0001"
+                      value={calcForm.lng}
+                      onChange={(e) => setCalcForm({ ...calcForm, lng: Number(e.target.value) })}
+                      className={`w-full rounded-xl border p-3 font-mono focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-amber-300'
+                          : 'bg-white border-slate-300 text-amber-900'
+                      }`}
+                    />
+                  </div>
+
+                  {/* Timezone */}
+                  <div>
+                    <label className={`block font-bold mb-1.5 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                    }`}>
+                      UTC Offset (hrs, e.g. +5.5)
+                    </label>
+                    <input
+                      type="number"
+                      step="0.5"
+                      min="-12"
+                      max="14"
+                      value={calcForm.timezone}
+                      onChange={(e) => setCalcForm({ ...calcForm, timezone: Number(e.target.value) })}
+                      className={`w-full rounded-xl border p-3 font-mono focus:outline-none focus:ring-2 focus:ring-amber-400 ${
+                        theme === 'dark'
+                          ? 'bg-[#0b132b] border-[#3a506b] text-amber-300'
+                          : 'bg-white border-slate-300 text-amber-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+
+                {/* Launch Button */}
+                <button
+                  type="submit"
+                  className="w-full py-4 rounded-2xl bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#d97706] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-sm shadow-lg flex items-center justify-center gap-2 cursor-pointer transition-all hover:scale-[1.01]"
+                >
+                  <Compass className="w-5 h-5" />
+                  <span>Launch {activeToolModal.title} →</span>
+                </button>
+              </form>
             </div>
           ) : (
             <div className={`w-full max-w-5xl xl:max-w-6xl rounded-3xl border shadow-2xl overflow-hidden relative text-left font-sans p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto transition-colors ${
@@ -4278,6 +4946,44 @@ Question: ${details.question || 'N/A'}`;
                 </button>
               </div>
 
+              {/* Birth Details Summary — visible when result is shown */}
+              {calcResult && activeToolModal.id !== 'nga-eeshing' && (
+                <div className={`rounded-2xl border p-3.5 flex flex-wrap items-center justify-between gap-3 text-xs transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-[#0b132b]/70 border-[#3a506b]'
+                    : 'bg-amber-50/80 border-amber-200'
+                }`}>
+                  <div className="space-y-0.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`font-extrabold text-sm ${theme === 'dark' ? 'text-amber-300' : 'text-amber-900'}`}>
+                        {calcResult.name || calcForm.name}
+                      </span>
+                      <span className={`text-[10px] font-mono ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        {calcResult.sex || calcForm.sex}
+                      </span>
+                    </div>
+                    <div className={`font-mono text-[10px] flex flex-wrap gap-x-3 gap-y-0.5 ${theme === 'dark' ? 'text-gray-400' : 'text-slate-600'}`}>
+                      <span>📅 DOB: <strong>{calcResult.dob || calcForm.dob}</strong></span>
+                      <span>🕐 TOB: <strong>{calcResult.tob || calcForm.tob}</strong></span>
+                      {(calcResult.pob || calcForm.pob) && (
+                        <span>📍 POB: <strong>{calcResult.pob || calcForm.pob}</strong></span>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setCalcResult(null)}
+                    className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border cursor-pointer transition-colors ${
+                      theme === 'dark'
+                        ? 'bg-[#1c2541] hover:bg-[#334155] text-amber-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-amber-100 text-amber-800 border-amber-300 shadow-xs'
+                    }`}
+                  >
+                    ✏️ Edit & Recalculate
+                  </button>
+                </div>
+              )}
+
               {/* Inputs Form */}
               {!calcResult && (
               <form
@@ -4286,277 +4992,8 @@ Question: ${details.question || 'N/A'}`;
                   setIsCalculating(true);
                   setTimeout(() => {
                     setIsCalculating(false);
-                    const mType = activeToolModal.id || activeToolModal.type;
-
-                    if (mType === 'yumsharol' || activeToolModal.id === 'yumsharol') {
-                      try {
-                        setYumsharolValidationErr('');
-                        const res = calculateYumsharol({
-                          dob: calcForm.dob,
-                          tob: calcForm.tob || '12:00',
-                          nakshatra: Number(calcForm.nakshatra) || 1,
-                          constantValue: Number(calcForm.constantValue) || 15,
-                        });
-
-                        setCalcResult({
-                          isYumsharol: true,
-                          type: 'Yumsharol (Traditional Vastu & House Science)',
-                          name: calcForm.name,
-                          ...res,
-                        });
-                      } catch (err: any) {
-                        setYumsharolValidationErr(err.message || 'Error calculating Yumsharol.');
-                      }
-                      return;
-                    }
-
-                    if (mType === 'kuthi-generator' || activeToolModal.id === 'kuthi-generator') {
-                      const chartData = calculatePlanetaryPositions({
-                        name: calcForm.name,
-                        gender: calcForm.sex,
-                        dateOfBirth: calcForm.dob,
-                        timeOfBirth: calcForm.tob,
-                        latitude: Number(calcForm.lat) || 24.8170,
-                        longitude: Number(calcForm.lng) || 93.9368,
-                        timezone: 'Asia/Kolkata',
-                        utcOffset: Number(calcForm.timezone) || 5.5,
-                        ayanamsa: 'Lahiri',
-                      });
-
-                      const ascSignIndex = Math.floor(chartData.ascendant / 30);
-                      const ascSignDegree = chartData.ascendant % 30;
-                      const ascNakshatra = getNakshatraInfo(chartData.ascendant);
-
-                      // Ascendant Position Object
-                      const ascendantItem = {
-                        id: 'asc',
-                        name: 'Ascendant / Lagna (লগ্ন)',
-                        bengaliName: 'লগ্ন',
-                        signIndex: ascSignIndex,
-                        signName: BENGALI_RASHI_NAMES[ascSignIndex],
-                        signDegree: ascSignDegree,
-                        nakshatraIndex: ascNakshatra.index,
-                        nakshatraName: ascNakshatra.name,
-                        nakshatraPada: ascNakshatra.pada,
-                        houseNumber: 1,
-                        formattedString: formatBengaliPositionString('asc', ascNakshatra.index, ascSignIndex, ascSignDegree),
-                      };
-
-                      // D1 Rashi Chart Mapping (South Indian / Bengali Grid)
-                      const d1MappedPlanets = chartData.planets.map((p: any) => ({
-                        name: p.name,
-                        abbr: BENGALI_PLANET_MAP[p.id]?.abbr || p.name.substring(0, 2),
-                        houseNumber: p.signIndex + 1, // Sign cell 1-12
-                        isRetrograde: p.isRetrograde,
-                      }));
-
-                      // D9 Navamsha Chart Mapping (South Indian / Bengali Grid)
-                      const navPlanets = calculateAllNavamsha(chartData.planets);
-                      const navAsc = calculateNavamsha(chartData.ascendant);
-                      const d9MappedPlanets = navPlanets.map((p: any) => ({
-                        name: p.name,
-                        abbr: BENGALI_PLANET_MAP[p.id]?.abbr || p.name.substring(0, 2),
-                        houseNumber: p.signIndex + 1, // Navamsha Sign cell 1-12
-                        isRetrograde: p.isRetrograde,
-                      }));
-
-                      // Format all planets with Bengali string format
-                      const formattedPlanets = chartData.planets.map((p: any) => {
-                        const hNum = ((p.signIndex - ascSignIndex + 12) % 12) + 1;
-                        return {
-                          ...p,
-                          bengaliName: BENGALI_PLANET_MAP[p.id]?.bengaliName || p.name,
-                          bengaliRashiName: BENGALI_RASHI_NAMES[p.signIndex],
-                          houseNumber: hNum,
-                          formattedString: formatBengaliPositionString(p.id, p.nakshatraIndex, p.signIndex, p.signDegree),
-                        };
-                      });
-
-                      // Calculate Sakabta, Bengali Solar Date, Panchanga & Dasha Balances
-                      const sunObj = chartData.planets.find((p: any) => p.id === 'su') || chartData.planets[0];
-                      const moonObj = chartData.planets.find((p: any) => p.id === 'mo') || chartData.planets[1];
-                      const panchangaDetails = calculatePanchangaDetails(
-                        calcForm.dob,
-                        sunObj.signIndex * 30 + sunObj.signDegree,
-                        moonObj.signIndex * 30 + moonObj.signDegree
-                      );
-
-                      // Calculate Moon Rashi & Excel =Basic!C36 representation (SignIndex|Deg°|Min'|Sec")
-                      const moonSignIndex = moonObj.signIndex;
-                      const moonSignDegree = moonObj.signDegree;
-                      const moonDeg = Math.floor(moonSignDegree);
-                      const moonMin = Math.floor((moonSignDegree % 1) * 60);
-                      const moonSec = Math.round((((moonSignDegree % 1) * 60) % 1) * 60);
-
-                      // Basic!C36 formula: K17-1&"|"&B17&"°"&"|"&D17&"'"&"|"&O17&""""
-                      const basicC36Value = `${moonSignIndex}|${moonDeg}°|${moonMin}'|${moonSec}"`;
-                      const basicC36Bengali = `${toBengaliDigits(moonSignIndex)}|${toBengaliDigits(moonDeg)}°|${toBengaliDigits(moonMin)}'|${toBengaliDigits(moonSec)}"`;
-
-                      const moonItem = {
-                        id: 'mo',
-                        name: 'Moon / Chandra (চন্দ্র)',
-                        bengaliName: 'চন্দ্র',
-                        signIndex: moonSignIndex,
-                        signName: BENGALI_RASHI_NAMES[moonSignIndex],
-                        signDegree: moonSignDegree,
-                        nakshatraIndex: moonObj.nakshatraIndex,
-                        nakshatraName: moonObj.nakshatraName,
-                        nakshatraPada: moonObj.nakshatraPada,
-                        basicC36Value,
-                        basicC36Bengali,
-                        formattedString: formatBengaliPositionString('mo', moonObj.nakshatraIndex, moonSignIndex, moonSignDegree),
-                      };
-
-                      // Calculate Ayanamsha matching Excel =Value!J23: 24° 13' 34.08''
-                      const ayanamsaVal = chartData.ayanamsa ?? 24.2261;
-                      const ayanamsaDeg = Math.floor(ayanamsaVal);
-                      const ayanamsaMin = Math.floor((ayanamsaVal % 1) * 60);
-                      const ayanamsaSecRaw = (((ayanamsaVal % 1) * 60) % 1) * 60;
-                      const ayanamsaSecFormatted = (ayanamsaSecRaw < 10 ? '0' : '') + ayanamsaSecRaw.toFixed(2);
-
-                      // Standard DMS matching Excel =Value!J23: 24° 13' 34.08''
-                      const ayanamsaValueJ23 = `${ayanamsaDeg}° ${ayanamsaMin}' ${ayanamsaSecFormatted}''`;
-                      // Bengali representation (Kuthi!AB43): ২৪° ১৩' ৩৪.০৮''
-                      const ayanamsaBengali = `${toBengaliDigits(ayanamsaDeg)}° ${toBengaliDigits(ayanamsaMin)}' ${toBengaliDigits(ayanamsaSecFormatted)}''`;
-
-                      setCalcResult({
-                        isKuthiChart: true,
-                        type: 'Kuthi Generator (Natal Birth Chart)',
-                        name: calcForm.name,
-                        sex: calcForm.sex,
-                        dob: calcForm.dob,
-                        tob: calcForm.tob,
-                        pob: calcForm.pob,
-                        ascendantItem,
-                        moonItem,
-                        ayanamsaValueJ23,
-                        ayanamsaBengali,
-                        ascSignIndex,
-                        navAscSignIndex: navAsc.signIndex,
-                        ascSign1to12: ascSignIndex + 1,
-                        navAscSign1to12: navAsc.signIndex + 1,
-                        planets: formattedPlanets,
-                        d1MappedPlanets,
-                        d9MappedPlanets,
-                        panchangaDetails,
-                      });
-                      return;
-                    }
-
-                    if (mType === 'shani-sade-sati' || activeToolModal.id === 'shani-sade-sati') {
-                      const res = calculateSadeSati({
-                        name: calcForm.name,
-                        gender: calcForm.sex,
-                        dob: calcForm.dob,
-                        tob: calcForm.tob || '12:00',
-                        lat: Number(calcForm.lat) || 24.8170,
-                        lng: Number(calcForm.lng) || 93.9368,
-                        timezone: Number(calcForm.timezone) || 5.5,
-                      });
-                      setCalcResult({
-                        isSadeSati: true,
-                        type: 'Shani Sade Sati Analysis & Remedial Guidance',
-                        ...res,
-                      });
-                      return;
-                    }
-
-                    if (mType === 'mangalik-dosh' || activeToolModal.id === 'mangalik-dosh') {
-                      const res = calculateManglikDosh({
-                        name: calcForm.name,
-                        gender: calcForm.sex,
-                        dob: calcForm.dob,
-                        tob: calcForm.tob || '12:00',
-                        lat: Number(calcForm.lat) || 24.8170,
-                        lng: Number(calcForm.lng) || 93.9368,
-                        timezone: Number(calcForm.timezone) || 5.5,
-                      });
-                      setCalcResult({
-                        isManglikReport: true,
-                        type: 'Manglik Dosh & Kuja Bhanga Analysis',
-                        ...res,
-                      });
-                      return;
-                    }
-
-                    if (mType === 'kaal-sarp-dosh' || activeToolModal.id === 'kaal-sarp-dosh') {
-                      const res = calculateKaalSarpDosh({
-                        name: calcForm.name,
-                        gender: calcForm.sex,
-                        dob: calcForm.dob,
-                        tob: calcForm.tob || '12:00',
-                        lat: Number(calcForm.lat) || 24.8170,
-                        lng: Number(calcForm.lng) || 93.9368,
-                        timezone: Number(calcForm.timezone) || 5.5,
-                      });
-                      setCalcResult({
-                        isKaalSarp: true,
-                        type: 'Kaal Sarp Dosh Analysis & Shanti Remedies',
-                        ...res,
-                      });
-                      return;
-                    }
-
-                    if (mType === 'match-making' || activeToolModal.id === 'match-making') {
-                      const res = calculateCoupleMatch({
-                        groom: {
-                          name: calcForm.name || 'Groom',
-                          dob: calcForm.dob,
-                          tob: calcForm.tob || '12:00',
-                          pob: calcForm.pob,
-                          lat: Number(calcForm.lat) || 24.8170,
-                          lng: Number(calcForm.lng) || 93.9368,
-                        },
-                        bride: {
-                          name: calcForm.partnerName || 'Bride',
-                          dob: calcForm.partnerDob || '1997-08-20',
-                          tob: calcForm.partnerTob || '10:30',
-                          pob: calcForm.partnerPob || 'Imphal, Manipur',
-                          lat: Number(calcForm.partnerLat) || 24.8170,
-                          lng: Number(calcForm.partnerLng) || 93.9368,
-                        },
-                      });
-                      setCalcResult({
-                        isMatchMaking: true,
-                        type: 'Match Making (Ashtakoot Gun Milan & Manglik)',
-                        ...res,
-                      });
-                      return;
-                    }
-
-                    if (mType === 'astrology-yoga' || activeToolModal.id === 'astrology-yoga') {
-                      const res = calculatePlanetaryYogas({
-                        name: calcForm.name,
-                        gender: calcForm.sex,
-                        dob: calcForm.dob,
-                        tob: calcForm.tob || '12:00',
-                        lat: Number(calcForm.lat) || 24.8170,
-                        lng: Number(calcForm.lng) || 93.9368,
-                        timezone: Number(calcForm.timezone) || 5.5,
-                      });
-                      setCalcResult({
-                        isPlanetaryYogas: true,
-                        type: 'Planetary Yogas & Classical Vedic Combinations',
-                        ...res,
-                      });
-                      return;
-                    }
-
-                    if (mType === 'nga-eeshing' || activeToolModal.id === 'nga-eeshing') {
-                      const res = calculateNgaEeshing({
-                        groomRashi: Number(calcForm.groomRashi) || 0,
-                        brideRashi: Number(calcForm.brideRashi) || 0,
-                        groomName: calcForm.name || 'Groom',
-                        brideName: calcForm.partnerName || 'Bride',
-                      });
-                      setCalcResult({
-                        isNgaEeshingReport: true,
-                        type: 'ঙা-ঈশিং (Nga-Eeshing)',
-                        ...res,
-                      });
-                      return;
-                    }
-                  }, 500);
+                    executeToolCalculation(activeToolModal, calcForm);
+                  }, 200);
                 }}
                 className="space-y-4 font-sans text-xs"
               >
@@ -7432,6 +7869,466 @@ Question: ${details.question || 'N/A'}`;
               </div>
             )}
 
+            {/* Results Output for Present Running Dasha & Life Timeline (Vimshottari Dasha) */}
+            {calcResult && calcResult.isDashaTimeline && (
+              <div className="space-y-6 font-sans text-xs">
+                {/* 1. TOP HEADER BANNER */}
+                <div className={`p-6 rounded-3xl border flex flex-col md:flex-row justify-between items-stretch md:items-center gap-4 transition-colors ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-gradient-to-r from-amber-50 via-white to-emerald-50/50 border-[#c3d9c3] shadow-xs'
+                }`}>
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                        theme === 'dark' ? 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30' : 'bg-indigo-100 text-indigo-900 border-indigo-300'
+                      }`}>
+                        Vimshottari Dasha Engine (Lahiri)
+                      </span>
+                      <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
+                        theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                      }`}>
+                        120-Year Parashari Cycle
+                      </span>
+                    </div>
+
+                    <h4 className={`text-2xl font-serif font-black ${
+                      theme === 'dark' ? 'text-white' : 'text-slate-900'
+                    }`}>
+                      {calcResult.name} ({calcResult.sex})
+                    </h4>
+                    
+                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-300' : 'text-slate-600'}`}>
+                      DOB: <span className="font-bold">{calcResult.dob}</span> at <span className="font-bold">{calcResult.tob || '12:00'}</span> • POB: <span className="font-bold">{calcResult.pob || 'Imphal, Manipur'}</span>
+                    </p>
+
+                    {calcResult.exactAge && (
+                      <p className={`text-xs font-mono font-bold ${
+                        theme === 'dark' ? 'text-emerald-400' : 'text-emerald-800'
+                      }`}>
+                        Current Age: {calcResult.exactAge.years} y {calcResult.exactAge.months} month {calcResult.exactAge.days} days • Running {calcResult.exactAge.runningYear} Year (চৎলিবা {calcResult.exactAge.runningYear}শুবা চহি)
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Janma Nakshatra Details */}
+                  {calcResult.moonNak && (
+                    <div className={`p-4 rounded-2xl border text-center space-y-1 shadow-xs shrink-0 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-amber-300'
+                    }`}>
+                      <span className={`block text-[10px] uppercase font-black tracking-wider ${
+                        theme === 'dark' ? 'text-amber-400' : 'text-amber-800'
+                      }`}>
+                        Janma Nakshatra (জন্ম নক্ষত্র)
+                      </span>
+                      <div className={`font-serif font-black text-base ${
+                        theme === 'dark' ? 'text-amber-300' : 'text-amber-950'
+                      }`}>
+                        {calcResult.moonNak.name} (Pada {calcResult.moonNak.pada})
+                      </div>
+                      <span className={`text-[11px] block font-bold ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-slate-700'
+                      }`}>
+                        Nakshatra Lord: <span className="text-amber-600 dark:text-amber-400 font-extrabold">{calcResult.moonNak.ruler}</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. PRESENT RUNNING DASHA STATUS CARDS */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <h5 className={`font-serif font-black text-sm uppercase tracking-wider ${
+                        theme === 'dark' ? 'text-emerald-400' : 'text-emerald-950'
+                      }`}>
+                        Present Running Dasha Status (হৌজিক চৎলিবা দশা ও অবশিষ্ট কাল)
+                      </h5>
+                    </div>
+                    <span className="text-[10px] font-mono text-slate-500">
+                      Calculated as of Today ({formatDateNice(new Date())})
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5">
+                    {/* Active Mahadasha */}
+                    <div className={`p-4 rounded-2xl border space-y-2 relative overflow-hidden ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-br from-emerald-950/40 via-[#1c2541] to-[#0b132b] border-emerald-500/40'
+                        : 'bg-emerald-50/70 border-emerald-300 shadow-2xs'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-emerald-600 text-white">
+                          Mahadasha (মহাদশা)
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-emerald-700 dark:text-emerald-400">
+                          Active Now
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-serif font-black" style={{ color: DASHA_PLANET_COLORS[calcResult.activeMaha?.planet] || '#059669' }}>
+                          {calcResult.activeMaha?.planet} ({BENGALI_PLANET_NAMES_MAP[calcResult.activeMaha?.planet]?.split(' ')[0] || calcResult.activeMaha?.planet})
+                        </div>
+                        <p className={`text-[11px] font-medium mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                          {formatDateNice(calcResult.activeMaha?.startDate)} — {formatDateNice(calcResult.activeMaha?.endDate)}
+                        </p>
+                      </div>
+                      <div className={`pt-1.5 border-t border-emerald-200/60 text-[11px] font-mono font-bold ${
+                        theme === 'dark' ? 'text-emerald-300' : 'text-emerald-900'
+                      }`}>
+                        Remaining: {calcResult.remainingMaha?.text || '-'}
+                        <span className="block text-[10px] font-serif font-normal text-emerald-800 dark:text-emerald-400 mt-0.5">
+                          (লেমহৌরিবা মতম: {calcResult.remainingMaha?.text || '-'})
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Active Antardasha */}
+                    <div className={`p-4 rounded-2xl border space-y-2 relative overflow-hidden ${
+                      theme === 'dark'
+                        ? 'bg-gradient-to-br from-indigo-950/40 via-[#1c2541] to-[#0b132b] border-indigo-500/40'
+                        : 'bg-indigo-50/70 border-indigo-200 shadow-2xs'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-indigo-600 text-white">
+                          Antardasha (অন্তর্দশা)
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-indigo-700 dark:text-indigo-400">
+                          Sub-Period
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-serif font-black" style={{ color: DASHA_PLANET_COLORS[calcResult.activeAntar?.planet] || '#4f46e5' }}>
+                          {calcResult.activeAntar?.planet} ({BENGALI_PLANET_NAMES_MAP[calcResult.activeAntar?.planet]?.split(' ')[0] || calcResult.activeAntar?.planet})
+                        </div>
+                        <p className={`text-[11px] font-medium mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                          {formatDateNice(calcResult.activeAntar?.startDate)} — {formatDateNice(calcResult.activeAntar?.endDate)}
+                        </p>
+                      </div>
+                      <div className={`pt-1.5 border-t border-indigo-200/60 text-[11px] font-mono font-bold ${
+                        theme === 'dark' ? 'text-indigo-300' : 'text-indigo-950'
+                      }`}>
+                        Remaining: {calcResult.remainingAntar?.text || '-'}
+                        <span className="block text-[10px] font-serif font-normal text-indigo-800 dark:text-indigo-400 mt-0.5">
+                          (লেমহৌরিবা মতম: {calcResult.remainingAntar?.text || '-'})
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Active Pratyantardasha */}
+                    <div className={`p-4 rounded-2xl border space-y-2 relative overflow-hidden ${
+                      theme === 'dark'
+                        ? 'bg-[#1c2541] border-[#3a506b]'
+                        : 'bg-slate-50 border-slate-200 shadow-2xs'
+                    }`}>
+                      <div className="flex items-center justify-between">
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-slate-700 text-white">
+                          Pratyantar (প্রত্যন্তর)
+                        </span>
+                        <span className="text-[10px] font-mono font-bold text-slate-500">
+                          Micro-Period
+                        </span>
+                      </div>
+                      <div>
+                        <div className="text-xl font-serif font-black" style={{ color: DASHA_PLANET_COLORS[calcResult.activePratyantar?.planet] || '#334155' }}>
+                          {calcResult.activePratyantar?.planet} ({BENGALI_PLANET_NAMES_MAP[calcResult.activePratyantar?.planet]?.split(' ')[0] || calcResult.activePratyantar?.planet})
+                        </div>
+                        <p className={`text-[11px] font-medium mt-0.5 ${theme === 'dark' ? 'text-gray-300' : 'text-slate-700'}`}>
+                          {formatDateNice(calcResult.activePratyantar?.startDate)} — {formatDateNice(calcResult.activePratyantar?.endDate)}
+                        </p>
+                      </div>
+                      <div className={`pt-1.5 border-t border-slate-200 text-[11px] font-mono font-bold ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-slate-800'
+                      }`}>
+                        Remaining: {calcResult.remainingPratyantar?.text || '-'}
+                        <span className="block text-[10px] font-serif font-normal text-slate-500 mt-0.5">
+                          (লেমহৌরিবা: {calcResult.remainingPratyantar?.text || '-'})
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. ACTIVE DASHA PREDICTIVE SYNTHESIS */}
+                <div className={`p-4 rounded-2xl border space-y-2.5 ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-[#fffdfa] border-amber-200 shadow-xs'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-500" />
+                    <h5 className={`font-serif font-bold text-sm ${
+                      theme === 'dark' ? 'text-[#fbbf24]' : 'text-amber-950'
+                    }`}>
+                      Astrological Reading for Current Dasha Period ({calcResult.activeMaha?.planet} - {calcResult.activeAntar?.planet}):
+                    </h5>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs leading-relaxed">
+                    {/* English Reading */}
+                    <div className={`p-3 rounded-xl border ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5 text-gray-200' : 'bg-white border-amber-100 text-slate-800'
+                    }`}>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-amber-700 block mb-1">
+                        Professional & Life Trends (English):
+                      </span>
+                      <p className="font-medium">
+                        Under the governing influence of Mahadasha lord <strong>{calcResult.activeMaha?.planet}</strong> combined with Antardasha lord <strong>{calcResult.activeAntar?.planet}</strong>, this phase activates primary vocational energies and decision-making clarity. Favorable for intellectual ventures, administrative responsibility, and strategic planning. Watch communications and maintain consistency in daily focus.
+                      </p>
+                    </div>
+
+                    {/* Manipuri Reading */}
+                    <div className={`p-3 rounded-xl border ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5 text-emerald-200 font-serif' : 'bg-emerald-50/60 border-emerald-200 text-emerald-950 font-serif'
+                    }`}>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-emerald-800 dark:text-emerald-400 block mb-1 font-sans">
+                        মৈতৈলোন ফল (Manipuri Synthesis):
+                      </span>
+                      <p>
+                        চৎলিবা <strong>{BENGALI_PLANET_NAMES_MAP[calcResult.activeMaha?.planet]?.split(' ')[0] || calcResult.activeMaha?.planet}</strong>গী মহাদশা অমসুং <strong>{BENGALI_PLANET_NAMES_MAP[calcResult.activeAntar?.planet]?.split(' ')[0] || calcResult.activeAntar?.planet}</strong>গী অন্তর্দশাগী মতমসিদা পুন্সিগী মরুওইবা থবক-থৌরমশিং অমসুং লৌশিংগী থৌদাং লৌবদা ফবা মতম ওইগনি। Career Milestone অমসুং থবক্তা চাউখৎপা ফংনবা হোৎনবদা মথৌ তৌবা থৌনা লৈগনি।
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4. COMPLETE 120-YEAR LIFE TIMELINE TABLE */}
+                <div className={`rounded-2xl border overflow-hidden ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <div className={`p-3.5 border-b flex items-center justify-between flex-wrap gap-2 ${
+                    theme === 'dark' ? 'bg-[#0f172a] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                  }`}>
+                    <div>
+                      <h5 className={`font-serif font-black text-sm ${
+                        theme === 'dark' ? 'text-white' : 'text-slate-900'
+                      }`}>
+                        Full 120-Year Vimshottari Dasha Timeline (১ম–৯ম মহাদশা খোঙচৎ)
+                      </h5>
+                      <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-slate-500'}`}>
+                        Click on any Mahadasha row to expand and view its 9 detailed Antardashas (sub-periods).
+                      </p>
+                    </div>
+                    <span className="text-[10px] font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-950/60 px-2 py-0.5 rounded border border-indigo-200">
+                      Parashari Classical Order
+                    </span>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse text-xs">
+                      <thead>
+                        <tr className={`border-b text-[10px] font-black uppercase tracking-wider ${
+                          theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-gray-300' : 'bg-slate-100/70 border-slate-200 text-slate-700'
+                        }`}>
+                          <th className="p-3">#</th>
+                          <th className="p-3">Mahadasha Planet (গ্রহ)</th>
+                          <th className="p-3">Start Date (হৌবা)</th>
+                          <th className="p-3">End Date (লোইবা)</th>
+                          <th className="p-3">Duration</th>
+                          <th className="p-3">Native Age</th>
+                          <th className="p-3 text-right">Status / Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-200 dark:divide-slate-800">
+                        {calcResult.fullVimshottari?.map((maha: any, idx: number) => {
+                          const isCurrent = calcResult.activeMaha?.planet === maha.planet;
+                          const isExpanded = expandedDashaMaha === idx;
+                          const bYear = parseInt((calcResult.dob || '2004-01-01').split('-')[0], 10) || 2004;
+                          const sYear = new Date(maha.startDate).getFullYear();
+                          const eYear = new Date(maha.endDate).getFullYear();
+                          const ageStart = Math.max(0, sYear - bYear);
+                          const ageEnd = Math.max(0, eYear - bYear);
+
+                          return (
+                            <React.Fragment key={idx}>
+                              <tr
+                                onClick={() => setExpandedDashaMaha(isExpanded ? null : idx)}
+                                className={`cursor-pointer transition-colors ${
+                                  isCurrent
+                                    ? theme === 'dark'
+                                      ? 'bg-emerald-950/40 hover:bg-emerald-900/50 text-emerald-200 font-bold'
+                                      : 'bg-emerald-50 hover:bg-emerald-100/70 text-emerald-950 font-bold'
+                                    : theme === 'dark'
+                                    ? 'hover:bg-[#1c2541]/70 text-gray-200'
+                                    : 'hover:bg-slate-50 text-slate-800'
+                                }`}
+                              >
+                                <td className="p-3 font-mono font-bold text-[11px] text-slate-400">
+                                  {idx + 1}
+                                </td>
+                                <td className="p-3">
+                                  <div className="flex items-center gap-2">
+                                    <span
+                                      className="w-3 h-3 rounded-full shrink-0"
+                                      style={{ backgroundColor: DASHA_PLANET_COLORS[maha.planet] || '#64748b' }}
+                                    />
+                                    <span className="font-serif font-black text-sm">
+                                      {maha.planet}
+                                    </span>
+                                    <span className="text-[11px] opacity-80 font-serif font-normal">
+                                      ({BENGALI_PLANET_NAMES_MAP[maha.planet]?.split(' ')[0] || maha.planet})
+                                    </span>
+                                  </div>
+                                </td>
+                                <td className="p-3 font-mono text-[11px]">
+                                  {formatDateNice(maha.startDate)}
+                                </td>
+                                <td className="p-3 font-mono text-[11px]">
+                                  {formatDateNice(maha.endDate)}
+                                </td>
+                                <td className="p-3 font-mono text-[11px]">
+                                  {maha.durationYears || maha.duration || (eYear - sYear)} Years
+                                </td>
+                                <td className="p-3 font-mono text-[11px]">
+                                  Age {ageStart} – {ageEnd}
+                                </td>
+                                <td className="p-3 text-right">
+                                  {isCurrent ? (
+                                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-600 text-white shadow-2xs">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                                      Active Now
+                                    </span>
+                                  ) : (
+                                    <span className="text-[11px] text-slate-400 hover:text-indigo-600 font-bold">
+                                      {isExpanded ? 'Hide Antar ▲' : 'View Antar ▼'}
+                                    </span>
+                                  )}
+                                </td>
+                              </tr>
+
+                              {/* Expanded Antardasha Sub-Table */}
+                              {isExpanded && maha.subPeriods && (
+                                <tr>
+                                  <td colSpan={7} className="p-3 bg-slate-50 dark:bg-[#070d1e] border-y border-slate-200 dark:border-slate-700">
+                                    <div className="space-y-2">
+                                      <div className="flex items-center justify-between text-[11px] font-bold text-slate-600 dark:text-gray-300 pb-1 border-b border-slate-200 dark:border-slate-800">
+                                        <span>Antardasha Sub-Periods of {maha.planet} Mahadasha:</span>
+                                        <span className="font-mono text-[10px]">9 Sub-Divisions</span>
+                                      </div>
+                                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                        {maha.subPeriods.map((antar: any, aIdx: number) => {
+                                          const isAntarActive = isCurrent && calcResult.activeAntar?.planet === antar.planet;
+                                          return (
+                                            <div
+                                              key={aIdx}
+                                              className={`p-2.5 rounded-xl border text-[11px] space-y-0.5 ${
+                                                isAntarActive
+                                                  ? 'bg-emerald-100 dark:bg-emerald-950/60 border-emerald-400 font-bold text-emerald-950 dark:text-emerald-200 shadow-2xs'
+                                                  : 'bg-white dark:bg-[#1c2541] border-slate-200 dark:border-slate-800 text-slate-800 dark:text-gray-300'
+                                              }`}
+                                            >
+                                              <div className="flex items-center justify-between">
+                                                <span className="font-black">
+                                                  {maha.planet} - {antar.planet}
+                                                </span>
+                                                {isAntarActive && (
+                                                  <span className="px-1.5 py-0.2 rounded text-[9px] font-black uppercase bg-emerald-600 text-white">
+                                                    Current
+                                                  </span>
+                                                )}
+                                              </div>
+                                              <div className="text-[10px] font-mono opacity-85">
+                                                {formatDateNice(antar.startDate)} to {formatDateNice(antar.endDate)}
+                                              </div>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </div>
+                                  </td>
+                                </tr>
+                              )}
+                            </React.Fragment>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* 5. ASTROLOGICAL REMEDIES & SPIRITUAL GUIDANCE */}
+                <div className={`p-4 rounded-2xl border space-y-2.5 ${
+                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-50/50 border-amber-200 shadow-xs'
+                }`}>
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-amber-600" />
+                    <h5 className={`font-serif font-bold text-sm ${
+                      theme === 'dark' ? 'text-amber-400' : 'text-amber-950'
+                    }`}>
+                      Vedic Remedies & Upayes for Running Mahadasha ({calcResult.activeMaha?.planet}):
+                    </h5>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-amber-200 shadow-2xs'
+                    }`}>
+                      <span className="text-[10px] font-black uppercase text-amber-700 block">
+                        Prescribed Deity Worship
+                      </span>
+                      <p className="font-semibold text-slate-800 dark:text-gray-200">
+                        {calcResult.activeMaha?.planet === 'Mercury' ? 'Lord Vishnu / Budha Gayatri' :
+                         calcResult.activeMaha?.planet === 'Saturn' ? 'Lord Shiva / Hanuman Ji' :
+                         calcResult.activeMaha?.planet === 'Jupiter' ? 'Guru Brihaspati / Shiva' :
+                         calcResult.activeMaha?.planet === 'Venus' ? 'Maa Lakshmi / Durga' :
+                         calcResult.activeMaha?.planet === 'Sun' ? 'Surya Bhagwan / Gayatri' :
+                         calcResult.activeMaha?.planet === 'Moon' ? 'Lord Shiva / Chandra Dev' :
+                         calcResult.activeMaha?.planet === 'Mars' ? 'Kartikeya / Hanuman' :
+                         calcResult.activeMaha?.planet === 'Rahu' ? 'Maa Durga / Bhairav' : 'Lord Ganesha'}
+                      </p>
+                    </div>
+
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-amber-200 shadow-2xs'
+                    }`}>
+                      <span className="text-[10px] font-black uppercase text-amber-700 block">
+                        Beneficial Vedic Beej Mantra
+                      </span>
+                      <p className="font-mono font-bold text-amber-900 dark:text-amber-300 select-all">
+                        {calcResult.activeMaha?.planet === 'Mercury' ? 'Om Bum Budhaya Namaha' :
+                         calcResult.activeMaha?.planet === 'Saturn' ? 'Om Sham Shanaishcharaya Namaha' :
+                         calcResult.activeMaha?.planet === 'Jupiter' ? 'Om Gram Greem Graum Sah Gurave Namaha' :
+                         calcResult.activeMaha?.planet === 'Venus' ? 'Om Shum Shukraya Namaha' :
+                         calcResult.activeMaha?.planet === 'Sun' ? 'Om Hram Hreem Hroum Sah Suryaya Namaha' :
+                         calcResult.activeMaha?.planet === 'Moon' ? 'Om Shram Shreem Shraum Sah Chandraya Namaha' :
+                         calcResult.activeMaha?.planet === 'Mars' ? 'Om Kram Kreem Kroum Sah Bhaumaya Namaha' :
+                         calcResult.activeMaha?.planet === 'Rahu' ? 'Om Bhram Bhreem Bhroum Sah Rahave Namaha' : 'Om Sram Sreem Sroum Sah Ketave Namaha'}
+                      </p>
+                    </div>
+
+                    <div className={`p-3 rounded-xl border space-y-1 ${
+                      theme === 'dark' ? 'bg-[#1c2541] border-white/5' : 'bg-white border-amber-200 shadow-2xs'
+                    }`}>
+                      <span className="text-[10px] font-black uppercase text-amber-700 block">
+                        Charity & Dana Guidance
+                      </span>
+                      <p className="text-slate-800 dark:text-gray-200">
+                        Offer green moong daal, donate to students/scholars, support nature & green plants on Wednesdays.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 6. ACTIONS */}
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => window.print()}
+                    className="flex-1 py-3.5 rounded-xl bg-[#d97706] hover:bg-[#b45309] text-white font-bold text-xs shadow-md transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4" />
+                    <span>Print Vimshottari Dasha Timeline</span>
+                  </button>
+                  <button
+                    onClick={() => setCalcResult(null)}
+                    className={`py-3.5 px-6 rounded-xl font-bold text-xs border cursor-pointer transition-colors flex items-center gap-2 ${
+                      theme === 'dark'
+                        ? 'bg-[#0b132b] hover:bg-[#334155] text-gray-300 border-[#3a506b]'
+                        : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-300 shadow-xs'
+                    }`}
+                  >
+                    <Edit className="w-4 h-4" />
+                    <span>Edit Birth Details / Recalculate</span>
+                  </button>
+                </div>
+              </div>
+            )}
+
             {/* Default Generic Results Output */}
             {calcResult &&
               !calcResult.isKuthiChart &&
@@ -7441,7 +8338,8 @@ Question: ${details.question || 'N/A'}`;
               !calcResult.isKaalSarp &&
               !calcResult.isMatchMaking &&
               !calcResult.isPlanetaryYogas &&
-              !calcResult.isNgaEeshingReport && (
+              !calcResult.isNgaEeshingReport &&
+              !calcResult.isDashaTimeline && (
               <div className="space-y-5 font-sans text-xs">
                 <div className={`p-5 rounded-2xl border text-center space-y-1 transition-colors ${
                   theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'

@@ -532,6 +532,46 @@ export function calculateDetailedVimshottari(
 }
 
 /**
+ * Calculate remaining time until Dasha sub-period end
+ */
+export function calculateRemainingDashaTime(
+  now: Date,
+  targetEnd: Date | string
+): { text: string; years: number; months: number; days: number } {
+  const end = typeof targetEnd === 'string' ? new Date(targetEnd) : targetEnd;
+  const diffMs = end.getTime() - now.getTime();
+  if (diffMs <= 0) {
+    return { text: 'Completed', years: 0, months: 0, days: 0 };
+  }
+
+  let y = end.getFullYear() - now.getFullYear();
+  let m = end.getMonth() - now.getMonth();
+  let d = end.getDate() - now.getDate();
+
+  if (d < 0) {
+    m -= 1;
+    const prevMonthDays = new Date(end.getFullYear(), end.getMonth(), 0).getDate();
+    d += prevMonthDays;
+  }
+  if (m < 0) {
+    y -= 1;
+    m += 12;
+  }
+
+  const parts: string[] = [];
+  if (y > 0) parts.push(`${y} ${y === 1 ? 'year' : 'years'}`);
+  if (m > 0) parts.push(`${m} ${m === 1 ? 'month' : 'months'}`);
+  if (d > 0 || parts.length === 0) parts.push(`${d} ${d === 1 ? 'day' : 'days'}`);
+
+  return {
+    text: parts.join(' '),
+    years: Math.max(0, y),
+    months: Math.max(0, m),
+    days: Math.max(0, d),
+  };
+}
+
+/**
  * Compute Gochara (Transit) Positions for a given event/transit date
  */
 export function calculateGocharaPositions(

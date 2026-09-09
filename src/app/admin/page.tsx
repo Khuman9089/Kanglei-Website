@@ -5374,31 +5374,31 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* PRODUCT EDIT FORM MODAL */}
               {editingProduct && (
-                <form onSubmit={handleSaveProduct} className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4 text-xs font-sans text-white shadow-2xl">
-                  <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
-                    <h4 className="font-serif font-bold text-xl text-[#fbbf24]">
+                <form onSubmit={handleSaveProduct} className={`p-6 sm:p-8 rounded-3xl border space-y-5 text-xs font-sans shadow-2xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+                  <div className={`flex justify-between items-center pb-3 border-b ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
+                    <h4 className={`font-serif font-bold text-xl ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#b45309]'}`}>
                       {editingProduct.id ? 'Edit Product Details' : 'Add New E-Store Product'}
                     </h4>
-                    <button type="button" onClick={() => setEditingProduct(null)} className="p-1 text-gray-400 hover:text-white">
+                    <button type="button" onClick={() => setEditingProduct(null)} className={`p-1 transition-colors ${theme === 'dark' ? 'text-gray-400 hover:text-white' : 'text-gray-400 hover:text-gray-700'}`}>
                       <X className="w-5 h-5" />
                     </button>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                     <div className="sm:col-span-8">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Product Title *</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">Product Title *</label>
                       <input
                         type="text"
                         required
                         placeholder="e.g. Natural Ceylon Yellow Sapphire (Pukhraj)"
                         value={editingProduct.title || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, title: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a] focus:border-[#d97706]'} font-bold text-xs"
                       />
                     </div>
                     <div className="sm:col-span-4">
                       <div className="flex items-center justify-between mb-1">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d]">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}">
                           Category *
                         </label>
                         <button
@@ -5417,7 +5417,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="Category name..."
                             value={newCategoryInput}
                             onChange={(e) => setNewCategoryInput(e.target.value)}
-                            className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs font-bold"
+                            className="w-full h-10 px-3 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a] focus:border-[#d97706]'} text-xs font-bold"
                           />
                           <button
                             type="button"
@@ -5431,7 +5431,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <select
                           value={editingProduct.category || shopCategories[0] || 'Gemstones'}
                           onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                          className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a] focus:border-[#d97706]'} font-bold text-xs"
                         >
                           {shopCategories.map((cat) => (
                             <option key={cat} value={cat}>
@@ -5445,54 +5445,54 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Selling Price (₹) *</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">Selling Price (₹) *</label>
                       <input
                         type="number"
                         required
                         placeholder="6999"
                         value={editingProduct.price || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Original MRP Price (₹)</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">Original MRP Price (₹)</label>
                       <input
                         type="number"
                         placeholder="8999"
                         value={editingProduct.originalPrice || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, originalPrice: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-300 font-mono text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-gray-300' : 'border-[#fde68a] bg-[#fffdfa] text-gray-600'} font-mono text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Available Stock *</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">Available Stock *</label>
                       <input
                         type="number"
                         required
                         placeholder="10"
                         value={editingProduct.stock ?? 10}
                         onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-green-400 font-mono font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-green-400' : 'border-[#fde68a] bg-[#fffdfa] text-green-700'} font-mono font-bold text-xs"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Product SKU (Auto)</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">Product SKU (Auto)</label>
                       <input
                         type="text"
                         placeholder="SKU-GEM-84920"
                         value={editingProduct.sku || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-sky-300' : 'border-[#fde68a] bg-[#fffdfa] text-blue-700'} font-mono font-bold text-xs"
                       />
                     </div>
                   </div>
 
                   {/* Badge & Image Upload Section */}
-                  <div className="space-y-3 p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b]/60">
+                  <div className="space-y-3 p-4 rounded-2xl ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]/60' : 'bg-[#fefcf6] border-[#fde68a]'}">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           Badge Tag Label
                         </label>
                         <input
@@ -5500,12 +5500,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="Lab Certified 100% Original"
                           value={editingProduct.badge || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
-                          className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-amber-300 font-bold text-xs"
+                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-amber-300' : 'border-[#fde68a] bg-white text-amber-800'} font-bold text-xs"
                         />
                       </div>
 
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           📁 Upload Product Photo from Device *
                         </label>
                         <input
@@ -5519,7 +5519,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-2 border-t border-[#3a506b]/40">
                       <div className="sm:col-span-8">
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           🌐 Or Paste Image Web URL
                         </label>
                         <input
@@ -5527,7 +5527,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="https://images.unsplash.com/..."
                           value={editingProduct.image || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
-                          className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-sky-300 font-mono text-xs"
+                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-sky-300' : 'border-[#fde68a] bg-white text-blue-700'} font-mono text-xs"
                         />
                       </div>
 
@@ -5541,7 +5541,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </div>
 
                   {/* Pack Options Bundles & Promotional Offers Controls */}
-                  <div className="space-y-3 p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b]/60">
+                  <div className="space-y-3 p-4 rounded-2xl ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]/60' : 'bg-[#fefcf6] border-[#fde68a]'}">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black uppercase tracking-wider text-[#fbbf24] flex items-center gap-1.5">
                         <Sparkles className="w-4 h-4 text-[#d97706]" />
@@ -5552,7 +5552,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                       {/* Pack 1 */}
-                      <div className="p-3 rounded-xl bg-[#1c2541] border border-[#3a506b] space-y-2">
+                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-[#fde68a] shadow-xs'} space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-gray-300 uppercase">Pack of 1 (Single)</span>
                           <span className="text-[9px] font-mono text-gray-400">Default Pack</span>
@@ -5564,7 +5564,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="799"
                             value={editingProduct.packOptions?.[0]?.price ?? editingProduct.price ?? ''}
                             onChange={(e) => updatePackOptionField(0, 'price', e.target.value)}
-                            className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
                           />
                         </div>
                         <div>
@@ -5574,7 +5574,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Standard"
                             value={editingProduct.packOptions?.[0]?.badge || ''}
                             onChange={(e) => updatePackOptionField(0, 'badge', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-amber-300' : 'border-[#fde68a] bg-[#fffdfa] text-amber-800'} font-bold text-[10px]"
                           />
                         </div>
                         <div>
@@ -5584,13 +5584,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Base Price"
                             value={editingProduct.packOptions?.[0]?.savingsText || ''}
                             onChange={(e) => updatePackOptionField(0, 'savingsText', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-emerald-400' : 'border-[#fde68a] bg-[#fffdfa] text-emerald-700'} font-bold text-[10px]"
                           />
                         </div>
                       </div>
 
                       {/* Pack 2 */}
-                      <div className="p-3 rounded-xl bg-[#1c2541] border border-amber-500/40 space-y-2 ring-1 ring-amber-500/20">
+                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-[#1c2541] border-amber-500/40' : 'bg-amber-50/50 border-amber-300'} space-y-2 ring-1 ring-amber-500/20">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-amber-300 uppercase">Pack of 2 (Double)</span>
                           <span className="text-[9px] font-extrabold bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded">POPULAR</span>
@@ -5602,7 +5602,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="1199"
                             value={editingProduct.packOptions?.[1]?.price ?? (editingProduct.price ? Math.round(editingProduct.price * 1.5) : '')}
                             onChange={(e) => updatePackOptionField(1, 'price', e.target.value)}
-                            className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
                           />
                         </div>
                         <div>
@@ -5612,7 +5612,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="Most Popular"
                             value={editingProduct.packOptions?.[1]?.badge ?? 'Most Popular'}
                             onChange={(e) => updatePackOptionField(1, 'badge', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-amber-300' : 'border-[#fde68a] bg-[#fffdfa] text-amber-800'} font-bold text-[10px]"
                           />
                         </div>
                         <div>
@@ -5622,13 +5622,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Extra ₹400 Off"
                             value={editingProduct.packOptions?.[1]?.savingsText ?? 'Extra ₹400 Off'}
                             onChange={(e) => updatePackOptionField(1, 'savingsText', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-emerald-400' : 'border-[#fde68a] bg-[#fffdfa] text-emerald-700'} font-bold text-[10px]"
                           />
                         </div>
                       </div>
 
                       {/* Pack 3 */}
-                      <div className="p-3 rounded-xl bg-[#1c2541] border border-[#3a506b] space-y-2">
+                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-[#fde68a] shadow-xs'} space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-sky-300 uppercase">Pack of 3 (Family / Bulk)</span>
                           <span className="text-[9px] font-mono text-gray-400">Best Value</span>
@@ -5640,7 +5640,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="1599"
                             value={editingProduct.packOptions?.[2]?.price ?? (editingProduct.price ? Math.round(editingProduct.price * 2.0) : '')}
                             onChange={(e) => updatePackOptionField(2, 'price', e.target.value)}
-                            className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
                           />
                         </div>
                         <div>
@@ -5650,7 +5650,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Best Value"
                             value={editingProduct.packOptions?.[2]?.badge || ''}
                             onChange={(e) => updatePackOptionField(2, 'badge', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-amber-300' : 'border-[#fde68a] bg-[#fffdfa] text-amber-800'} font-bold text-[10px]"
                           />
                         </div>
                         <div>
@@ -5660,7 +5660,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Extra ₹800 Off"
                             value={editingProduct.packOptions?.[2]?.savingsText ?? 'Extra ₹800 Off'}
                             onChange={(e) => updatePackOptionField(2, 'savingsText', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-emerald-400' : 'border-[#fde68a] bg-[#fffdfa] text-emerald-700'} font-bold text-[10px]"
                           />
                         </div>
                       </div>
@@ -5669,7 +5669,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     {/* Special Offer Title & Timer Settings */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#3a506b]/40">
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           Special Offer Title
                         </label>
                         <input
@@ -5677,11 +5677,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="Vaikasi Visakam Special Offer"
                           value={editingProduct.specialOfferTitle || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, specialOfferTitle: e.target.value })}
-                          className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
+                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-[#fde68a] bg-white text-[#0f172a]'} font-bold text-xs"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           Special Offer Discount Tag
                         </label>
                         <input
@@ -5689,11 +5689,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="Save ₹500"
                           value={editingProduct.specialOfferDiscount || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, specialOfferDiscount: e.target.value })}
-                          className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#1c2541] text-emerald-400 font-bold text-xs"
+                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-emerald-400' : 'border-[#fde68a] bg-white text-emerald-700'} font-bold text-xs"
                         />
                       </div>
                       <div>
-                        <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           ⏰ Offer End Timer (Hours)
                         </label>
                         <input
@@ -5703,26 +5703,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="16"
                           value={editingProduct.offerEndsInHours ?? 16}
                           onChange={(e) => setEditingProduct({ ...editingProduct, offerEndsInHours: Number(e.target.value) })}
-                          className="w-full h-8 px-2.5 rounded-lg border border-[#3a506b] bg-[#1c2541] text-red-400 font-mono font-bold text-xs"
+                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-red-400' : 'border-[#fde68a] bg-white text-red-600'} font-mono font-bold text-xs"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#e0a96d] mb-1">Product Description Copy</label>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">Product Description Copy</label>
                     <textarea
                       rows={2}
                       required
                       placeholder="Detailed description of the product..."
                       value={editingProduct.description || ''}
                       onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                      className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs"
+                      className={`w-full p-3 rounded-xl border text-xs transition-colors ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-gray-200' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a]'}`}
                     />
                   </div>
 
-                  <div className="flex justify-end gap-3 pt-2 border-t border-[#3a506b]">
-                    <button type="button" onClick={() => setEditingProduct(null)} className="px-5 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 text-xs font-bold border border-[#3a506b]">Cancel</button>
+                  <div className={`flex justify-end gap-3 pt-2 border-t ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
+                    <button type="button" onClick={() => setEditingProduct(null)} className={`px-5 py-2.5 rounded-xl text-xs font-bold border transition-colors ${theme === 'dark' ? 'bg-[#0b132b] text-gray-300 border-[#3a506b] hover:bg-[#15203b]' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}>Cancel</button>
                     <button type="submit" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md">Save Product Live →</button>
                   </div>
                 </form>
@@ -6604,9 +6604,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* CATEGORY MANAGER MODAL */}
           {showCategoryManagerModal && (
-            <div className="fixed inset-0 z-50 bg-[#0b132b]/80 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-[#1c2541] w-full max-w-lg rounded-3xl border border-[#3a506b] p-6 space-y-5 text-xs font-sans text-white shadow-2xl">
-                <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
+            <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+              <div className={`w-full max-w-lg rounded-3xl border p-6 space-y-5 text-xs font-sans shadow-2xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+                <div className={`flex justify-between items-center pb-3 border-b ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
                   <div className="flex items-center gap-2">
                     <Tag className="w-5 h-5 text-[#fbbf24]" />
                     <h4 className="font-serif font-bold text-xl text-white">E-Store Dynamic Categories Manager</h4>
@@ -7494,17 +7494,17 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <form onSubmit={(e) => {
                 handleRegisterNewAstro(e);
                 setActiveTab('astrologers');
-              }} className="p-6 sm:p-8 rounded-3xl bg-[#fefcf6] border border-[#fde68a] space-y-7 font-sans text-xs text-[#0f172a] shadow-sm">
+              }} className={`p-6 sm:p-8 rounded-3xl space-y-7 font-sans text-xs shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-[#fefcf6] border-[#fde68a] text-[#0f172a]'}`}>
                 
                 {/* SECTION 1: PERSONAL & CONTACT INFORMATION */}
                 <div className="space-y-4">
-                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
                     <Users className="w-5 h-5 text-[#d97706]" />
                     <span>1. Personal Particulars & Contact Information</span>
                   </h4>
 
                   {/* PROFILE PHOTO / AVATAR UPLOADER */}
-                  <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl bg-white border border-[#fde68a] shadow-xs">
+                  <div className={`flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl border shadow-xs transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-[#fde68a]'}`}>
                     <div className="relative shrink-0">
                       <img
                         src={newAstroForm.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
@@ -7663,7 +7663,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                 {/* SECTION 2: SPECIALTY & QUALIFICATIONS */}
                 <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
                     <Award className="w-5 h-5 text-[#d97706]" />
                     <span>2. Astrological Specialty & Qualifications</span>
                   </h4>
@@ -7721,7 +7721,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                 {/* SECTION 3: FULL RESIDENTIAL & MANIPUR LOCATION ADDRESS */}
                 <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
                     <FileText className="w-5 h-5 text-[#d97706]" />
                     <span>3. Residential Address & Location Details</span>
                   </h4>
@@ -7860,7 +7860,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                 {/* SECTION 5: EMPANELMENT PLAN TIER & TOOL ACCESS PERMISSIONS */}
                 <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
                     <ShieldCheck className="w-5 h-5 text-[#d97706]" />
                     <span>5. Empanelment Plan Tier & Tool Access Permissions</span>
                   </h4>
@@ -7950,7 +7950,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                 {/* SECTION 6: PORTAL ACCESS & ACCOUNT STATUS */}
                 <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className="font-serif font-bold text-lg text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
                     <Lock className="w-5 h-5 text-[#d97706]" />
                     <span>6. Portal Login Security & Account Status</span>
                   </h4>
@@ -8015,7 +8015,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <button
                     type="button"
                     onClick={() => setActiveTab('astrologers')}
-                    className="px-6 py-3 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer"
+                    className={`px-6 py-3 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-gray-300 hover:bg-[#15203b]' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                   >
                     Cancel
                   </button>
@@ -9027,7 +9027,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <p className="text-xs text-gray-500">Track Kuthi, Numit Yengba, and Matching orders assigned to empaneled Gurus</p>
                 </div>
                 <button
-                  onClick={() => setShowAddAstroModal(true)}
+                  onClick={() => {
+                    setEditingAstroId(null);
+                    setNewAstroForm(DEFAULT_ASTRO_FORM);
+                    setActiveTab('add_astro');
+                  }}
                   className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                 >
                   <Plus className="w-4 h-4" />
@@ -12833,8 +12837,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       {/* MODAL: CREATE / EDIT PROMO COUPON */}
       {showCouponModal && editingCoupon && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] w-full max-w-md rounded-3xl border border-[#3a506b] shadow-2xl p-6 sm:p-8 space-y-5 text-white relative">
-            <div className="flex justify-between items-center border-b border-[#3a506b] pb-3">
+          <div className={`w-full max-w-md rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-5 relative transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+            <div className={`flex justify-between items-center border-b pb-3 ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
               <h3 className="font-serif font-bold text-xl text-[#fbbf24]">
                 {editingCoupon.id ? 'Edit Promo Coupon' : 'Create New Promo Coupon'}
               </h3>
@@ -12943,8 +12947,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       {/* MODAL: CREATE / EDIT SHOP HERO SLIDER */}
       {showSliderModal && editingSlider && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className="bg-[#1c2541] w-full max-w-lg rounded-3xl border border-[#3a506b] shadow-2xl p-6 sm:p-8 space-y-5 text-white relative max-h-[90vh] overflow-y-auto">
-            <div className="flex justify-between items-center border-b border-[#3a506b] pb-3">
+          <div className={`w-full max-w-lg rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-5 relative max-h-[90vh] overflow-y-auto transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+            <div className={`flex justify-between items-center border-b pb-3 ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
               <h3 className="font-serif font-bold text-xl text-[#fbbf24]">
                 {editingSlider.id ? 'Edit Shop Hero Slider' : 'Create New Shop Hero Slider'}
               </h3>

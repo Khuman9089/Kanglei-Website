@@ -23,6 +23,15 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
     description: 'Renders full Jagannatha Hora style Parashari Light workstation with D1, D9 Navamsha, D10 Dashamsha, exact degrees, Shadbala strength bars, multi-level Vimshottari Dasha, Lordships, and Gochara transit analysis.',
   },
   {
+    id: 'bnn-workstation',
+    title: 'Bhrigu Nandi Nadi (BNN) Workstation',
+    subtitle: 'Karakatwa, 4-Directional Trikona (1-5-9), 2-12 links & Jupiter 12-yr progression prediction engine.',
+    category: 'astrology',
+    iconName: 'Sparkles',
+    color: 'text-indigo-500',
+    description: 'Advanced BNN predictive system analyzing Jiva (Jupiter), Karma (Saturn), Directional elements, and year-by-year age progressions.',
+  },
+  {
     id: 'kuthi-generator',
     title: 'Kuthi Generator',
     subtitle: 'Generate accurate D1 Rashi & D9 Navamsha birth charts with planetary positions & house analysis.',
@@ -33,12 +42,12 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
   },
   {
     id: 'dasha-yengpham',
-    title: 'Dasha Yengpham',
-    subtitle: 'Get Vimshottari Dasha Details (Mahadasha, Antardasha & Pratyantardasha timeline).',
+    title: 'Present Running Dasha & Life Timeline (Dasha Yengpham)',
+    subtitle: 'Get Vimshottari Dasha details, current running Mahadasha/Antardasha & 120-year timeline.',
     category: 'astrology',
     iconName: 'Clock',
     color: 'text-[#d97706]',
-    description: 'Calculates 120-year planetary Vimshottari Dasha timeline based on Moon Nakshatra at birth.',
+    description: 'Calculates complete 120-year Vimshottari Dasha timeline, active running periods, exact remaining time countdown, and predictive guidance.',
   },
   {
     id: 'shani-sade-sati',
@@ -96,7 +105,7 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
   },
   {
     id: 'nga-eeshing',
-    title: 'ঙা-ঈশিং (Nga-Eeshing)',
+    title: 'Nga-Eeshing (ঙা-ঈশিং)',
     subtitle: 'Traditional Manipuri matrimonial compatibility & remedial ceremony calculation.',
     category: 'love',
     iconName: 'Waves',
