@@ -40,6 +40,8 @@ export function Footer() {
             <h4 className="font-serif text-lg font-bold text-[#fbbf24] mb-4">Quick Links</h4>
             <ul className="space-y-2.5 text-xs text-gray-300">
               <li><Link href="/" className="hover:text-[#fbbf24] transition-colors">Home</Link></li>
+              <li><Link href="/vastu" className="hover:text-[#fbbf24] transition-colors font-bold text-[#fbbf24]">Free Vastu Shastra Audit</Link></li>
+              <li><Link href="/tarot" className="hover:text-[#fbbf24] transition-colors font-bold text-[#fbbf24]">Free 6-Card Tarot Reading</Link></li>
               <li><Link href="/manipuri_free_kuthi" className="hover:text-[#fbbf24] transition-colors">Free Kundli Generator</Link></li>
               <li><Link href="/matching" className="hover:text-[#fbbf24] transition-colors">Kundli Matching (Gun Milan)</Link></li>
               <li><Link href="/services" className="hover:text-[#fbbf24] transition-colors">Services & Reports</Link></li>

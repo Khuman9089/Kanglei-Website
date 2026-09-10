@@ -95,6 +95,8 @@ const DEFAULT_NAVBAR_CONFIG: NavbarConfig = {
       subItems: [
         { id: 'sub-f1', title: 'Free Manipuri Kundli Generator', href: '/manipuri_free_kuthi', description: 'Generate natal chart PDF instantly', badge: 'FREE', active: true },
         { id: 'sub-f2', title: 'Free Gun Milan Matcher', href: '/matching', description: 'Quick 36-point Ashtakoot score check', active: true },
+        { id: 'sub-f3', title: 'Free 6-Card Tarot Reading', href: '/tarot', description: 'Interactive 6-card divine tarot forecast', badge: 'NEW', active: true },
+        { id: 'sub-f4', title: 'Free Vastu Shastra Audit', href: '/vastu', description: 'Floorplan harmony & non-demolition remedies', badge: 'POPULAR', active: true },
       ],
     },
     {

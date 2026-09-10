@@ -10,7 +10,6 @@ export interface ToolDefinition {
 
 /**
  * MASTER TOOL REGISTRY
- * Tool #1: Kuthi Generator
  */
 export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
   {
@@ -111,5 +110,23 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
     iconName: 'Waves',
     color: 'text-cyan-400',
     description: 'Calculates whether ঙা-ঈশিং falls for the couple based on Bride & Groom Janma Rashis (0–11), detects Fish/Water element, and provides remedial procedures.',
+  },
+  {
+    id: 'numerology-workstation',
+    title: 'Vedic Numerology (Ank Shastra) Workstation',
+    subtitle: 'Moolank • Bhagyank • Name Number • Personal Cycles • Karmic Debt with Devanagari letter-planet mapping.',
+    category: 'numerology',
+    iconName: 'Hash',
+    color: 'text-amber-600',
+    description: 'Classical Sanskrit/Devanagari letter-to-planet numerology (Chaldean Vedic system) with Moolank, Bhagyank, Name Number, 9-year Personal Cycles, Pinnacles, Challenges, Karmic Debt detection (13/14/16/19), and Vedic Bridge to Vimshottari Dasha lords.',
+  },
+  {
+    id: 'vastu-workstation',
+    title: 'Vastu Shastra & Manipur Yumsharol Workstation',
+    subtitle: 'Live 360° Compass Dial, 16 MahaVastu Zones, 32 Entrance Padas, Lainingthou Sanamahi Lore & Commercial Vastu.',
+    category: 'astrology',
+    iconName: 'Compass',
+    color: 'text-emerald-500',
+    description: 'Comprehensive Vedic spatial architecture workstation featuring live 360° compass heading, 16 MahaVastu energy zones, 32 Pada entrance gate analysis, Meitei Yumsharol modulo 8 calculation, and Sanamahi Kachin energy alignment.',
   },
 ];

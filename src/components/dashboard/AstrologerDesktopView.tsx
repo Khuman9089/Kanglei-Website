@@ -29,8 +29,11 @@ import { calculateManglikDosh } from '@/lib/astrology/manglik';
 import { calculateKaalSarpDosh } from '@/lib/astrology/kaalSarp';
 import { calculateCoupleMatch } from '@/lib/astrology/matchMaking';
 import { calculatePlanetaryYogas } from '@/lib/astrology/yogas';
+import { calculateVedicNumerology } from '@/engine/numerology';
 import VedicWorkstation, { calculateExactAge } from '@/components/dashboard/VedicWorkstation';
 import BNNWorkstation from '@/components/dashboard/BNNWorkstation';
+import NumerologyWorkstation from '@/components/dashboard/NumerologyWorkstation';
+import VastuWorkstation from '@/components/dashboard/VastuWorkstation';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
 import { calculateDetailedVimshottari, calculateRemainingDashaTime } from '@/engine/vedicWorkstationEngine';
@@ -810,6 +813,20 @@ export default function AstrologerDashboard() {
       setCalcResult({
         isNgaEeshingReport: true,
         type: 'ঙা-ঈশিং (Nga-Eeshing)',
+        ...res,
+      });
+      return;
+    }
+
+    if (mType === 'numerology-workstation' || tool.id === 'numerology-workstation') {
+      const res = calculateVedicNumerology({
+        fullName: formValues.name,
+        dob: formValues.dob,
+        gender: formValues.sex as any,
+      });
+      setCalcResult({
+        isNumerologyReport: true,
+        type: 'Vedic Numerology (Ank Shastra)',
         ...res,
       });
       return;
@@ -4041,7 +4058,7 @@ Question: ${details.question || 'N/A'}`;
                       onClick={() => {
                         setCalcResult(null); // Always clear result on open
                         setActiveToolModal(t);
-                        if (t.id !== 'vedic-workstation' && t.id !== 'bnn-workstation') {
+                        if (t.id !== 'vedic-workstation' && t.id !== 'bnn-workstation' && t.id !== 'numerology-workstation') {
                           executeToolCalculation(t, calcForm);
                         }
                         // Workstations: calcResult stays null → birth form shows first
@@ -4640,8 +4657,8 @@ Question: ${details.question || 'N/A'}`;
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs ${
           theme === 'dark' ? 'bg-[#0b132b]/85' : 'bg-slate-900/60'
         }`}>
-          {(activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation') && calcResult?.type === 'workstation-ready' ? (
-            /* ── WORKSTATION: show after birth form is submitted ── */
+          {(activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && (calcResult?.type === 'workstation-ready' || calcResult?.isNumerologyReport) ? (
+            /* ── WORKSTATION: show after calculation is ready ── */
             activeToolModal.id === 'vedic-workstation' ? (
               <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
                 <VedicWorkstation
@@ -4661,7 +4678,7 @@ Question: ${details.question || 'N/A'}`;
                   }}
                 />
               </div>
-            ) : (
+            ) : activeToolModal.id === 'bnn-workstation' ? (
               <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
                 <BNNWorkstation
                   initialBirthData={{
@@ -4680,8 +4697,40 @@ Question: ${details.question || 'N/A'}`;
                   }}
                 />
               </div>
+            ) : activeToolModal.id === 'numerology-workstation' ? (
+              <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+                <NumerologyWorkstation
+                  initialBirthData={{
+                    name: calcForm.name || 'Sanatomba Meitei',
+                    dob: calcForm.dob || '2004-06-28',
+                    tob: calcForm.tob || '06:00',
+                    pob: calcForm.pob || 'Imphal, Manipur',
+                    sex: calcForm.sex || 'Male',
+                  }}
+                  onClose={() => {
+                    setActiveToolModal(null);
+                    setCalcResult(null);
+                  }}
+                />
+              </div>
+            ) : (
+              <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+                <VastuWorkstation
+                  initialBirthData={{
+                    name: calcForm.name || 'Sanatomba Meitei',
+                    dob: calcForm.dob || '2004-06-28',
+                    tob: calcForm.tob || '06:00',
+                    pob: calcForm.pob || 'Imphal, Manipur',
+                    sex: calcForm.sex || 'Male',
+                  }}
+                  onClose={() => {
+                    setActiveToolModal(null);
+                    setCalcResult(null);
+                  }}
+                />
+              </div>
             )
-          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation') && !calcResult ? (
+          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && !calcResult ? (
             /* ── BIRTH DETAILS FORM for workstation tools ── */
             <div className={`w-full max-w-2xl rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-6 transition-colors ${
               theme === 'dark'
