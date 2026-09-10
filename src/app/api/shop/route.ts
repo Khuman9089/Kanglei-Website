@@ -137,11 +137,13 @@ export interface ShopSliderItem {
 
 const DEFAULT_CATEGORIES: string[] = ['Gemstones', 'Astrology Books', 'Yantras & Mala', 'Puja Items', 'Consecrated Remedies'];
 
+import { INITIAL_GEMSTONE_PRODUCTS } from '@/config/defaultProducts';
+
 const DEFAULT_COMMISSION_SETTINGS = {
   defaultCommissionPct: 15,
 };
 
-const DEFAULT_PRODUCTS: ProductItem[] = [];
+const DEFAULT_PRODUCTS: ProductItem[] = INITIAL_GEMSTONE_PRODUCTS;
 
 const DEFAULT_SHOP_SLIDERS: ShopSliderItem[] = [
   {
