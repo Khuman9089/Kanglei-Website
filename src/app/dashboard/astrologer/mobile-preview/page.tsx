@@ -116,6 +116,33 @@ export default function AstrologerMobileSimulatorPage() {
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [saveToast, setSaveToast] = useState<boolean>(false);
 
+  // Load saved configuration on mount if present
+  useEffect(() => {
+    const saved = localStorage.getItem('kanglei_mobile_customizer_config');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed) {
+          if (typeof parsed.showAdBanner === 'boolean') setShowAdBanner(parsed.showAdBanner);
+          if (parsed.adTitle) setAdTitle(parsed.adTitle);
+          if (parsed.adSubtitle) setAdSubtitle(parsed.adSubtitle);
+          if (parsed.adBannerUrl) setAdBannerUrl(parsed.adBannerUrl);
+          if (parsed.adTag) setAdTag(parsed.adTag);
+          if (parsed.stationCity) setStationCity(parsed.stationCity);
+          if (parsed.tithiText) setTithiText(parsed.tithiText);
+          if (parsed.nakshatraText) setNakshatraText(parsed.nakshatraText);
+          if (parsed.rahuKaalText) setRahuKaalText(parsed.rahuKaalText);
+          if (typeof parsed.pendingKuthiOrders === 'number') setPendingKuthiOrders(parsed.pendingKuthiOrders);
+          if (typeof parsed.activeLiveCalls === 'number') setActiveLiveCalls(parsed.activeLiveCalls);
+          if (typeof parsed.walletBalance === 'number') setWalletBalance(parsed.walletBalance);
+          if (typeof parsed.isOnline === 'boolean') setIsAstrologerOnline(parsed.isOnline);
+          if (parsed.enabledEngines) setEnabledEngines(parsed.enabledEngines);
+          if (Array.isArray(parsed.notices)) setNotices(parsed.notices);
+        }
+      } catch (e) {}
+    }
+  }, []);
+
   const handleCopyFlutterCode = () => {
     fetch('/src/components/dashboard/AstrologerMobileDashboard.dart')
       .then(() => {
@@ -129,6 +156,28 @@ export default function AstrologerMobileSimulatorPage() {
   };
 
   const handleSaveChanges = () => {
+    const configToSave = {
+      showAdBanner,
+      adTag,
+      adTitle,
+      adSubtitle,
+      adBannerUrl,
+      stationCity,
+      tithiText,
+      nakshatraText,
+      rahuKaalText,
+      pendingKuthiOrders,
+      activeLiveCalls,
+      walletBalance,
+      isOnline: isAstrologerOnline,
+      enabledEngines,
+      notices,
+    };
+
+    localStorage.setItem('kanglei_mobile_customizer_config', JSON.stringify(configToSave));
+    window.dispatchEvent(new Event('storage'));
+    window.dispatchEvent(new Event('kanglei_mobile_config_updated'));
+
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 3000);
   };
@@ -255,340 +304,27 @@ export default function AstrologerMobileSimulatorPage() {
               <div className="absolute -left-[7px] top-58 w-[3px] h-12 bg-slate-700 rounded-l-md" />
               <div className="absolute -right-[7px] top-36 w-[3px] h-16 bg-slate-700 rounded-r-md" />
 
-              {/* Screen Area (Scrollable Interactive Mobile View) */}
-              <div className={`w-full h-full rounded-[42px] overflow-hidden overflow-y-auto no-scrollbar relative flex flex-col transition-colors ${
-                deviceTheme === 'dark' ? 'bg-[#0b132b] text-white' : 'bg-[#f8fafc] text-slate-900'
-              }`}>
-                
-                {/* 1. Mobile Status Bar */}
-                <div className={`pt-3 pb-1 px-6 flex items-center justify-between text-[11px] font-bold z-40 shrink-0 ${
-                  deviceTheme === 'dark' ? 'text-slate-300' : 'text-slate-800'
-                }`}>
-                  <span>9:41</span>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-mono">5G</span>
-                    <div className="w-4 h-2 rounded-xs border border-current flex items-center p-0.5">
-                      <div className="w-full h-full bg-current rounded-2xs" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 2. Top Header Component */}
-                <div className={`px-4 py-2.5 border-b flex items-center justify-between shrink-0 ${
-                  deviceTheme === 'dark' ? 'bg-[#1c2541]/95 border-[#3a506b]' : 'bg-white border-slate-200'
-                }`}>
-                  <div className="flex items-center gap-2">
-                    <div className="relative">
-                      <div className="w-9 h-9 rounded-full p-[2px] bg-gradient-to-tr from-amber-500 to-amber-600">
-                        <img
-                          src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80"
-                          alt="Guru"
-                          className="w-full h-full object-cover rounded-full"
-                        />
-                      </div>
-                      <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 ${
-                        deviceTheme === 'dark' ? 'border-[#1c2541]' : 'border-white'
-                      } ${isAstrologerOnline ? 'bg-emerald-500' : 'bg-slate-400'}`} />
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-1">
-                        <span className="text-xs font-bold font-serif leading-tight">Acharya Sanatombi</span>
-                        <ShieldCheck className="w-3.5 h-3.5 text-amber-500" />
-                      </div>
-                      <span className={`text-[10px] font-bold ${isAstrologerOnline ? 'text-emerald-500' : 'text-slate-400'}`}>
-                        {isAstrologerOnline ? 'Accepting Orders' : 'Away (Offline)'}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => setDeviceTheme((t) => (t === 'light' ? 'dark' : 'light'))}
-                      className={`w-7 h-7 rounded-xl border flex items-center justify-center ${
-                        deviceTheme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-white border-slate-200 text-amber-600'
-                      }`}
-                    >
-                      {deviceTheme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
-                    </button>
-                    <div className="relative">
-                      <div className={`w-7 h-7 rounded-xl border flex items-center justify-center ${
-                        deviceTheme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-slate-300' : 'bg-white border-slate-200 text-slate-700'
-                      }`}>
-                        <Bell className="w-3.5 h-3.5" />
-                      </div>
-                      <span className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-rose-500 text-white rounded-full text-[8px] font-black flex items-center justify-center">
-                        3
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. Main Body Scrollable Stream */}
-                <div className="flex-1 overflow-y-auto px-3.5 py-3 space-y-3.5">
-                  
-                  {/* --- A. SPONSORED AD BANNER SLOT (16:5 Standard) --- */}
-                  {showAdBanner && (
-                    <div className={`rounded-2xl border p-2.5 transition-all shadow-xs relative overflow-hidden ${
-                      deviceTheme === 'dark'
-                        ? 'bg-gradient-to-r from-amber-950/40 via-[#1c2541] to-[#1c2541] border-amber-500/40'
-                        : 'bg-gradient-to-r from-amber-50/80 via-white to-amber-50/40 border-amber-300 shadow-amber-500/5'
-                    }`}>
-                      <div className="flex items-center gap-2.5">
-                        <img
-                          src={adBannerUrl}
-                          alt="Sponsored"
-                          className="w-14 h-14 rounded-xl object-cover border border-amber-500/30 shrink-0"
-                        />
-                        <div className="flex-1 min-w-0 pr-4">
-                          <div className="flex items-center gap-1 mb-0.5">
-                            <span className="px-1.5 py-0.2 rounded text-[7.5px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
-                              {adTag}
-                            </span>
-                          </div>
-                          <h4 className="text-[11.5px] font-bold leading-tight truncate">{adTitle}</h4>
-                          <p className="text-[9.5px] text-slate-500 dark:text-gray-300 truncate mt-0.5">{adSubtitle}</p>
-                        </div>
-                        <ChevronRight className="w-4 h-4 text-amber-500 shrink-0" />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* --- B. NOTICES & ANNOUNCEMENT CAROUSEL --- */}
-                  {notices.filter((n) => n.active).length > 0 && (
-                    <div className={`p-3 rounded-2xl border shadow-xs relative overflow-hidden space-y-2 ${
-                      notices[activeNoticeIndex]?.severity === 'URGENT'
-                        ? deviceTheme === 'dark'
-                          ? 'bg-rose-950/40 border-rose-500/40 text-white'
-                          : 'bg-rose-50 border-rose-300 text-slate-900'
-                        : deviceTheme === 'dark'
-                        ? 'bg-[#1c2541] border-[#3a506b]'
-                        : 'bg-white border-slate-200'
-                    }`}>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex items-center gap-1.5">
-                          <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase bg-amber-500/20 text-amber-600 dark:text-amber-300">
-                            {notices[activeNoticeIndex]?.badge}
-                          </span>
-                        </div>
-                        <span className="text-[9px] font-mono text-slate-400">
-                          {activeNoticeIndex + 1}/{notices.filter((n) => n.active).length}
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold leading-snug">{notices[activeNoticeIndex]?.title}</h4>
-                        <p className="text-[10px] text-slate-600 dark:text-gray-300 mt-0.5 leading-relaxed">
-                          {notices[activeNoticeIndex]?.message}
-                        </p>
-                      </div>
-                      <div className="flex items-center justify-between pt-1">
-                        <div className="flex gap-1">
-                          {notices.filter((n) => n.active).map((_, idx) => (
-                            <button
-                              key={idx}
-                              onClick={() => setActiveNoticeIndex(idx)}
-                              className={`w-2 h-1.5 rounded-full transition-all ${
-                                idx === activeNoticeIndex ? 'w-4 bg-amber-500' : 'bg-slate-300 dark:bg-slate-700'
-                              }`}
-                            />
-                          ))}
-                        </div>
-                        <button className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-600 text-slate-950 text-[10px] font-bold">
-                          {notices[activeNoticeIndex]?.action} →
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* --- C. PANCHANGA & TRANSIT STRIP --- */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                      <div className="flex items-center gap-1">
-                        <Compass className="w-3.5 h-3.5" />
-                        <span>Daily Panchanga & Transit</span>
-                      </div>
-                      <span className="text-[9.5px] font-mono text-slate-500 dark:text-slate-400 lowercase">{stationCity}</span>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-1.5 text-center">
-                      <div className={`p-2 rounded-xl border ${
-                        deviceTheme === 'dark' ? 'bg-[#1c2541] border-amber-500/40 text-amber-200' : 'bg-amber-50/90 border-amber-300 text-amber-900'
-                      }`}>
-                        <span className="text-[8.5px] font-bold uppercase block opacity-75">Tithi</span>
-                        <strong className="text-[10.5px] block truncate font-serif font-black">{tithiText}</strong>
-                      </div>
-                      <div className={`p-2 rounded-xl border ${
-                        deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                      }`}>
-                        <span className="text-[8.5px] font-bold uppercase block opacity-75">Nakshatra</span>
-                        <strong className="text-[10.5px] block truncate">{nakshatraText}</strong>
-                      </div>
-                      <div className={`p-2 rounded-xl border ${
-                        deviceTheme === 'dark' ? 'bg-[#1c2541] border-rose-500/40 text-rose-200' : 'bg-rose-50 border-rose-200 text-rose-900'
-                      }`}>
-                        <span className="text-[8.5px] font-bold uppercase block opacity-75">Rahu Kaal</span>
-                        <strong className="text-[10.5px] block font-mono">{rahuKaalText}</strong>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* --- D. CORE WORKSPACE TILES (2 COLUMNS) --- */}
-                  <div className="grid grid-cols-2 gap-2">
-                    {/* Kuthi Hub */}
-                    <div className={`p-3 rounded-2xl border flex flex-col justify-between space-y-2 ${
-                      deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <div className="w-7 h-7 rounded-lg bg-amber-500/20 text-amber-500 flex items-center justify-center">
-                          <FileText className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="px-1.5 py-0.2 rounded-full bg-amber-500 text-slate-950 font-black text-[8.5px]">
-                          {pendingKuthiOrders} Pending
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold leading-tight">Kuthi Order Hub</h4>
-                        <p className="text-[9.5px] text-slate-500 dark:text-gray-400 mt-0.5">Matching & Delivery</p>
-                      </div>
-                      <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400">Manage Orders →</span>
-                    </div>
-
-                    {/* Live Consultations */}
-                    <div className={`p-3 rounded-2xl border flex flex-col justify-between space-y-2 ${
-                      deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
-                    }`}>
-                      <div className="flex items-center justify-between">
-                        <div className="w-7 h-7 rounded-lg bg-emerald-500/20 text-emerald-500 flex items-center justify-center">
-                          <Video className="w-3.5 h-3.5" />
-                        </div>
-                        <span className="px-1.5 py-0.2 rounded-full bg-emerald-500 text-white font-black text-[8.5px] animate-pulse">
-                          LIVE
-                        </span>
-                      </div>
-                      <div>
-                        <h4 className="text-xs font-bold leading-tight">Live Consultation</h4>
-                        <p className="text-[9.5px] text-slate-500 dark:text-gray-400 mt-0.5">Video/Voice Rooms</p>
-                      </div>
-                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400">Enter Room →</span>
-                    </div>
-                  </div>
-
-                  {/* --- E. QUICK ASTROLOGICAL ENGINES --- */}
-                  <div className="space-y-1.5">
-                    <div className="flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
-                      <span>Quick Astrological Engines</span>
-                      <span className="text-[9px] font-mono text-slate-500">Vedic Math</span>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-1.5 text-center">
-                      {enabledEngines.sadesati && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">🪐</span>
-                          <span className="text-[9px] font-bold">Sade Sati</span>
-                        </div>
-                      )}
-                      {enabledEngines.manglik && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">🔥</span>
-                          <span className="text-[9px] font-bold">Manglik</span>
-                        </div>
-                      )}
-                      {enabledEngines.kaalsarp && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">🐍</span>
-                          <span className="text-[9px] font-bold">Kaal Sarp</span>
-                        </div>
-                      )}
-                      {enabledEngines.ngaaeeshing && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">🐟</span>
-                          <span className="text-[9px] font-bold">ঙা-ঈশিং</span>
-                        </div>
-                      )}
-                      {enabledEngines.matchmaking && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">💍</span>
-                          <span className="text-[9px] font-bold">Matching</span>
-                        </div>
-                      )}
-                      {enabledEngines.yogas && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">✨</span>
-                          <span className="text-[9px] font-bold">Yogas</span>
-                        </div>
-                      )}
-                      {enabledEngines.yumsharol && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">🏡</span>
-                          <span className="text-[9px] font-bold text-emerald-600 dark:text-emerald-400">Yumsharol</span>
-                        </div>
-                      )}
-                      {enabledEngines.kundali && (
-                        <div className={`p-2 rounded-xl border flex flex-col items-center gap-1 ${
-                          deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                        }`}>
-                          <span className="text-sm">🧭</span>
-                          <span className="text-[9px] font-bold">Kundli</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* --- F. SUMMARY STATS --- */}
-                  <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
-                    <div className={`p-2.5 rounded-2xl border ${deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'}`}>
-                      <span className="text-[9px] text-slate-500 block font-bold">Kuthi Total</span>
-                      <strong className="text-sm font-bold text-amber-500">{pendingKuthiOrders}</strong>
-                    </div>
-                    <div className={`p-2.5 rounded-2xl border ${deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'}`}>
-                      <span className="text-[9px] text-slate-500 block font-bold">Live Calls</span>
-                      <strong className="text-sm font-bold text-emerald-500">{activeLiveCalls}</strong>
-                    </div>
-                    <div className={`p-2.5 rounded-2xl border ${deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'}`}>
-                      <span className="text-[9px] text-slate-500 block font-bold">Earnings</span>
-                      <strong className="text-xs font-bold text-amber-500 font-mono">₹{walletBalance.toLocaleString()}</strong>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. Bottom Docked Navigation Bar */}
-                <div className={`px-2 py-2 border-t flex items-center justify-around shrink-0 ${
-                  deviceTheme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200'
-                }`}>
-                  <div className="flex flex-col items-center gap-0.5 text-amber-500">
-                    <Layers className="w-4 h-4" />
-                    <span className="text-[8px] font-black">Overview</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-0.5 text-slate-400">
-                    <FileText className="w-4 h-4" />
-                    <span className="text-[8px] font-bold">Kuthi</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-0.5 text-slate-400">
-                    <Video className="w-4 h-4" />
-                    <span className="text-[8px] font-bold">Live</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-0.5 text-slate-400">
-                    <Compass className="w-4 h-4" />
-                    <span className="text-[8px] font-bold">Charts</span>
-                  </div>
-                  <div className="flex flex-col items-center gap-0.5 text-slate-400">
-                    <ShieldCheck className="w-4 h-4" />
-                    <span className="text-[8px] font-bold">Profile</span>
-                  </div>
-                </div>
+              {/* Screen Area (Interactive AstrologerMobileView inside Frame) */}
+              <div className="w-full h-full rounded-[42px] overflow-hidden overflow-y-auto no-scrollbar relative flex flex-col">
+                <AstrologerMobileView
+                  customConfig={{
+                    showAdBanner,
+                    adTag,
+                    adTitle,
+                    adSubtitle,
+                    adBannerUrl,
+                    stationCity,
+                    tithiText,
+                    nakshatraText,
+                    rahuKaalText,
+                    pendingKuthiOrders,
+                    activeLiveCalls,
+                    walletBalance,
+                    isOnline: isAstrologerOnline,
+                    enabledEngines,
+                    notices,
+                  }}
+                />
               </div>
             </div>
           </div>

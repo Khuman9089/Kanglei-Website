@@ -147,7 +147,38 @@ const INITIAL_KUTHI_ORDERS: KuthiOrder[] = [];
 
 const INITIAL_LIVE_CALLS: LiveCallAppointment[] = [];
 
-export default function AstrologerMobileDashboard() {
+export interface MobileCustomizerConfig {
+  showAdBanner?: boolean;
+  adTag?: string;
+  adTitle?: string;
+  adSubtitle?: string;
+  adBannerUrl?: string;
+  stationCity?: string;
+  tithiText?: string;
+  nakshatraText?: string;
+  rahuKaalText?: string;
+  pendingKuthiOrders?: number;
+  activeLiveCalls?: number;
+  walletBalance?: number;
+  isOnline?: boolean;
+  enabledEngines?: {
+    sadesati?: boolean;
+    manglik?: boolean;
+    kaalsarp?: boolean;
+    ngaaeeshing?: boolean;
+    matchmaking?: boolean;
+    yogas?: boolean;
+    yumsharol?: boolean;
+    kundali?: boolean;
+  };
+  notices?: any[];
+}
+
+interface AstrologerMobileDashboardProps {
+  customConfig?: MobileCustomizerConfig;
+}
+
+export default function AstrologerMobileDashboard({ customConfig }: AstrologerMobileDashboardProps = {}) {
   // Theme state matching desktop version (defaults to 'light', synced with localStorage)
   const [theme, setTheme] = useState<'dark' | 'light'>('light');
   const [astroUser, setAstroUser] = useState<any>({
@@ -155,6 +186,33 @@ export default function AstrologerMobileDashboard() {
     avatar: '',
     phone: '',
     specialty: 'Master Vedic Astrologer & Kuthi Specialist',
+  });
+
+  // Customizer Configuration State (with defaults or localStorage sync)
+  const [config, setConfig] = useState<MobileCustomizerConfig>({
+    showAdBanner: true,
+    adTag: 'SPONSORED',
+    adTitle: 'Ceylon Unheated Yellow Sapphires (Pukhraj)',
+    adSubtitle: 'Lab Certified 100% Natural • Special Astrologer Partner Discount',
+    adBannerUrl: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
+    stationCity: 'Imphal · 24.8°N',
+    tithiText: 'Shukla Navami (নৱমী)',
+    nakshatraText: 'Rohini (রোহিণী)',
+    rahuKaalText: '16:30 – 18:00',
+    pendingKuthiOrders: 4,
+    activeLiveCalls: 1,
+    walletBalance: 14850,
+    isOnline: true,
+    enabledEngines: {
+      sadesati: true,
+      manglik: true,
+      kaalsarp: true,
+      ngaaeeshing: true,
+      matchmaking: true,
+      yogas: true,
+      yumsharol: true,
+      kundali: true,
+    },
   });
 
   useEffect(() => {
@@ -167,7 +225,46 @@ export default function AstrologerMobileDashboard() {
         if (u && u.name) setAstroUser(u);
       } catch (e) {}
     }
+
+    const loadSavedConfig = () => {
+      const savedMobileConfig = localStorage.getItem('kanglei_mobile_customizer_config');
+      if (savedMobileConfig) {
+        try {
+          const parsed = JSON.parse(savedMobileConfig);
+          if (parsed) {
+            setConfig((prev) => ({ ...prev, ...parsed }));
+            if (typeof parsed.walletBalance === 'number') {
+              setWalletBalance(parsed.walletBalance);
+            }
+            if (typeof parsed.isOnline === 'boolean') {
+              setIsOnline(parsed.isOnline);
+            }
+          }
+        } catch (e) {}
+      }
+    };
+
+    loadSavedConfig();
+
+    const handleConfigUpdate = () => {
+      loadSavedConfig();
+    };
+
+    window.addEventListener('storage', handleConfigUpdate);
+    window.addEventListener('kanglei_mobile_config_updated', handleConfigUpdate);
+
+    return () => {
+      window.removeEventListener('storage', handleConfigUpdate);
+      window.removeEventListener('kanglei_mobile_config_updated', handleConfigUpdate);
+    };
   }, []);
+
+  // Sync if customConfig prop changes in real-time
+  useEffect(() => {
+    if (customConfig) {
+      setConfig((prev) => ({ ...prev, ...customConfig }));
+    }
+  }, [customConfig]);
 
   const toggleTheme = () => {
     const nextTheme = theme === 'dark' ? 'light' : 'dark';
@@ -798,6 +895,41 @@ export default function AstrologerMobileDashboard() {
               exit={{ opacity: 0, y: -8 }}
               className="space-y-5"
             >
+              {/* ------------------------------------------------------------- */}
+              {/* SPONSORED / AD BANNER SLOT (16:5 Standard Height)            */}
+              {/* ------------------------------------------------------------- */}
+              {config.showAdBanner && (
+                <section className="mb-2">
+                  <div className={`p-2.5 rounded-2xl border transition-all shadow-xs relative overflow-hidden ${
+                    isDark
+                      ? 'bg-gradient-to-r from-amber-950/40 via-[#1c2541] to-[#1c2541] border-amber-500/40'
+                      : 'bg-gradient-to-r from-amber-50/80 via-white to-amber-50/40 border-amber-300 shadow-amber-500/5'
+                  }`}>
+                    <div className="flex items-center gap-2.5">
+                      <img
+                        src={config.adBannerUrl || 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop'}
+                        alt="Sponsored"
+                        className="w-14 h-14 rounded-xl object-cover border border-amber-500/30 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0 pr-4">
+                        <div className="flex items-center gap-1 mb-0.5">
+                          <span className="px-1.5 py-0.2 rounded text-[7.5px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-600 dark:text-amber-300 border border-amber-500/30">
+                            {config.adTag || 'SPONSORED'}
+                          </span>
+                        </div>
+                        <h4 className="text-[11.5px] font-bold leading-tight truncate text-slate-900 dark:text-white">
+                          {config.adTitle || 'Ceylon Unheated Yellow Sapphires (Pukhraj)'}
+                        </h4>
+                        <p className="text-[9.5px] text-slate-500 dark:text-gray-300 truncate mt-0.5">
+                          {config.adSubtitle || 'Lab Certified 100% Natural • Special Astrologer Partner Discount'}
+                        </p>
+                      </div>
+                      <ChevronRight className="w-4 h-4 text-amber-500 shrink-0" />
+                    </div>
+                  </div>
+                </section>
+              )}
+
               {/* ADMIN ANNOUNCEMENTS, PROMO ADS & URGENT NOTICES (Exact Match to Desktop) */}
               {announcements.filter((a) => !dismissedAnnouncements.includes(a.id)).length > 0 && (
                 <section className="space-y-2.5">
@@ -899,7 +1031,7 @@ export default function AstrologerMobileDashboard() {
                     <span>Daily Panchanga & Transit (পঞ্জিকা)</span>
                   </span>
                   <span className={`text-[10px] font-mono ${isDark ? 'text-amber-200/80' : 'text-slate-500'}`}>
-                    Imphal · 24.8°N
+                    {config.stationCity || 'Imphal · 24.8°N'}
                   </span>
                 </div>
 
@@ -927,7 +1059,7 @@ export default function AstrologerMobileDashboard() {
                         <span className={`text-xs font-extrabold block leading-tight ${
                           isDark ? 'text-white' : 'text-slate-900'
                         }`}>
-                          {item.value}
+                          {item.label === 'Tithi' && config.tithiText ? config.tithiText : item.label === 'Nakshatra' && config.nakshatraText ? config.nakshatraText : item.label === 'Rahu Kaal' && config.rahuKaalText ? config.rahuKaalText : item.value}
                         </span>
                         {item.sub && (
                           <span className={`text-[9px] font-mono block ${
@@ -1012,131 +1144,133 @@ export default function AstrologerMobileDashboard() {
                 </div>
 
                 <div className="grid grid-cols-4 gap-2">
-                  <button
-                    onClick={() => { setActiveToolModal('sadesati'); setMobileToolResult(null); }}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600/30 to-blue-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 text-base">
-                      🪐
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      Sade Sati
-                    </span>
-                  </button>
+                  {config.enabledEngines?.sadesati !== false && (
+                    <button
+                      onClick={() => { setActiveToolModal('sadesati'); setMobileToolResult(null); }}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600/30 to-blue-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 text-base">
+                        🪐
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight">
+                        Sade Sati
+                      </span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveToolModal('manglik'); setMobileToolResult(null); }}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600/30 to-orange-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-base">
-                      🔥
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      Manglik
-                    </span>
-                  </button>
+                  {config.enabledEngines?.manglik !== false && (
+                    <button
+                      onClick={() => { setActiveToolModal('manglik'); setMobileToolResult(null); }}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600/30 to-orange-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-base">
+                        🔥
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight">
+                        Manglik
+                      </span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveToolModal('kaalsarp'); setMobileToolResult(null); }}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600/30 to-violet-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 text-base">
-                      🐍
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      Kaal Sarp
-                    </span>
-                  </button>
+                  {config.enabledEngines?.kaalsarp !== false && (
+                    <button
+                      onClick={() => { setActiveToolModal('kaalsarp'); setMobileToolResult(null); }}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600/30 to-violet-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 text-base">
+                        🐍
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight">
+                        Kaal Sarp
+                      </span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveToolModal('nga-eeshing'); setMobileNgaEeshingResult(null); }}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-base">
-                      🐟
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      ঙা-ঈশিং
-                    </span>
-                  </button>
+                  {config.enabledEngines?.ngaaeeshing !== false && (
+                    <button
+                      onClick={() => { setActiveToolModal('nga-eeshing'); setMobileNgaEeshingResult(null); }}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-base">
+                        🐟
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight">
+                        ঙা-ঈশিং
+                      </span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveToolModal('matchmaking'); setMobileToolResult(null); }}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-600/30 to-rose-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 text-base">
-                      💍
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      Matching
-                    </span>
-                  </button>
+                  {config.enabledEngines?.matchmaking !== false && (
+                    <button
+                      onClick={() => { setActiveToolModal('matchmaking'); setMobileToolResult(null); }}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-600/30 to-rose-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 text-base">
+                        💍
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight">
+                        Matching
+                      </span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveToolModal('yogas'); setMobileToolResult(null); }}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-yellow-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-base">
-                      ✨
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      Yogas
-                    </span>
-                  </button>
+                  {config.enabledEngines?.yogas !== false && (
+                    <button
+                      onClick={() => { setActiveToolModal('yogas'); setMobileToolResult(null); }}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-yellow-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-base">
+                        ✨
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight">
+                        Yogas
+                      </span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => { setActiveToolModal('yumsharol'); setMobileYumResult(null); setMobileYumErr(''); }}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600/30 to-teal-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-500 dark:text-emerald-400 text-base">
-                      🏡
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight text-emerald-600 dark:text-emerald-400">
-                      Yumsharol
-                    </span>
-                  </button>
+                  {config.enabledEngines?.yumsharol !== false && (
+                    <button
+                      onClick={() => { setActiveToolModal('yumsharol'); setMobileYumResult(null); setMobileYumErr(''); }}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600/30 to-teal-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-500 dark:text-emerald-400 text-base">
+                        🏡
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight text-emerald-600 dark:text-emerald-400">
+                        Yumsharol
+                      </span>
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => setActiveToolModal('kundali')}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#d97706] dark:text-[#fbbf24]">
-                      <Compass className="w-4 h-4" />
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      Kundli
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveToolModal('dasha')}
-                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
-                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
-                    }`}
-                  >
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-yellow-600/30 to-amber-600/20 border border-yellow-500/40 flex items-center justify-center text-amber-500">
-                      <Clock className="w-4 h-4" />
-                    </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
-                      Dasha
-                    </span>
-                  </button>
+                  {config.enabledEngines?.kundali !== false && (
+                    <button
+                      onClick={() => setActiveToolModal('kundali')}
+                      className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                        isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                      }`}
+                    >
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#d97706] dark:text-[#fbbf24]">
+                        <Compass className="w-4 h-4" />
+                      </div>
+                      <span className="text-[9px] font-bold text-center leading-tight">
+                        Kundli
+                      </span>
+                    </button>
+                  )}
                 </div>
               </section>
 
