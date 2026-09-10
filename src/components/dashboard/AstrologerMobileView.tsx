@@ -60,6 +60,9 @@ import { calculateKaalSarpDosh } from '@/lib/astrology/kaalSarp';
 import { calculateCoupleMatch } from '@/lib/astrology/matchMaking';
 import { calculatePlanetaryYogas } from '@/lib/astrology/yogas';
 import { calculateNgaEeshing, RASHI_LIST_NGA_EESHING, NgaEeshingResult } from '@/lib/astrology/ngaEeshing';
+import { calculateVedicNumerology } from '@/engine/numerology';
+import { calculateDetailedVimshottari } from '@/engine/vedicWorkstationEngine';
+import { calculatePlanetaryPositions } from '@/engine/ephemeris';
 
 // ==========================================
 // BENGALI FORMATTING & DICTIONARIES
@@ -172,6 +175,7 @@ export interface MobileCustomizerConfig {
     kundali?: boolean;
   };
   notices?: any[];
+  sections?: any[];
 }
 
 interface AstrologerMobileDashboardProps {
@@ -317,16 +321,32 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
     dob: '',
     tob: '',
     pob: '',
+    lat: '24.8170',
+    lng: '93.9368',
+    timezone: '5.5',
+    faithTradition: 'Sanamahi Laining',
+    yek: 'Ningthouja',
+    gotra: 'Kashyap',
     partnerName: '',
     partnerDob: '',
     partnerTob: '',
     partnerPob: '',
+    partnerLat: '24.8170',
+    partnerLng: '93.9368',
   });
   const [mobileGroomRashi, setMobileGroomRashi] = useState<number>(0);
   const [mobileBrideRashi, setMobileBrideRashi] = useState<number>(0);
   const [mobileGroomName, setMobileGroomName] = useState<string>('');
   const [mobileBrideName, setMobileBrideName] = useState<string>('');
   const [mobileNgaEeshingResult, setMobileNgaEeshingResult] = useState<NgaEeshingResult | null>(null);
+  const [copyToast, setCopyToast] = useState<string | null>(null);
+  const copyToClipboard = (text: string, label: string = 'Copied') => {
+    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+      navigator.clipboard.writeText(text);
+      setCopyToast(`${label} copied to clipboard!`);
+      setTimeout(() => setCopyToast(null), 2500);
+    }
+  };
 
   // Wallet State
   const [walletBalance, setWalletBalance] = useState<number>(14850);
@@ -2547,13 +2567,11 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                 initial={{ y: 50 }}
                 animate={{ y: 0 }}
                 exit={{ y: 50 }}
-                className={`w-full max-w-[440px] rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[88vh] max-h-[88dvh] overflow-y-auto border overscroll-contain pb-6 sm:pb-5 ${
+                className={`w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl p-5 border shadow-2xl space-y-4 ${
                   isDark ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
                 }`}
               >
-                <div className={`flex items-center justify-between border-b pb-3 ${
-                  isDark ? 'border-[#3a506b]' : 'border-slate-200'
-                }`}>
+                <div className="flex items-center justify-between pb-3 border-b border-gray-500/20">
                   <span className={`text-xs font-serif font-bold flex items-center gap-2 ${
                     isDark ? 'text-[#fbbf24]' : 'text-amber-800'
                   }`}>
@@ -2562,17 +2580,33 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       {activeToolModal === 'nga-eeshing' && 'ঙা-ঈশিং (Nga-Eeshing) Matrimony'}
                       {activeToolModal === 'yumsharol' && 'Yumsharol (House Science & Vastu)'}
                       {activeToolModal === 'kundali' && 'Instant Bengali Kundli Generator'}
+                      {activeToolModal === 'kuthi-generator' && 'Kuthi Birth Chart Generator'}
                       {activeToolModal === 'dasha' && 'Vimshottari Dasha Calculator'}
+                      {activeToolModal === 'dasha-yengpham' && 'Vimshottari Dasha Calculator'}
                       {activeToolModal === 'sadesati' && 'Shani Sade Sati Calculator'}
+                      {activeToolModal === 'shani-sade-sati' && 'Shani Sade Sati Calculator'}
                       {activeToolModal === 'manglik' && 'Manglik Dosh & Kuja Bhanga'}
+                      {activeToolModal === 'mangalik-dosh' && 'Manglik Dosh & Kuja Bhanga'}
                       {activeToolModal === 'kaalsarp' && 'Kaal Sarp Dosh Calculator'}
+                      {activeToolModal === 'kaal-sarp-dosh' && 'Kaal Sarp Dosh Calculator'}
                       {activeToolModal === 'matchmaking' && 'Ashtakoota 36-Gun Milan Matching'}
+                      {activeToolModal === 'match-making' && 'Ashtakoota 36-Gun Milan Matching'}
                       {activeToolModal === 'yogas' && 'Planetary Vedic Yogas'}
+                      {activeToolModal === 'astrology-yoga' && 'Planetary Vedic Yogas'}
+                      {activeToolModal === 'vedic-numerology' && 'Vedic Numerology (Ank Shastra)'}
+                      {activeToolModal === 'vedic-workstation' && 'Vedic Workstation'}
+                      {activeToolModal === 'bnn-workstation' && 'Bhrigu Nandi Nadi Workstation'}
+                      {activeToolModal === 'vastu-workstation' && 'Vastu Workstation'}
                       {activeToolModal === 'transit' && 'Live Ephemeris & Gochar Wheel'}
                     </span>
                   </span>
                   <button
-                    onClick={() => { setActiveToolModal(null); setMobileYumResult(null); setMobileToolResult(null); setMobileNgaEeshingResult(null); }}
+                    onClick={() => {
+                      setActiveToolModal(null);
+                      setMobileYumResult(null);
+                      setMobileToolResult(null);
+                      setMobileNgaEeshingResult(null);
+                    }}
                     className={`p-1 rounded-full cursor-pointer ${
                       isDark ? 'bg-[#0b132b] text-gray-300' : 'bg-slate-200/60 text-slate-700'
                     }`}
@@ -2581,8 +2615,19 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                   </button>
                 </div>
 
+                {/* Floating Feedback Toast for Mantra / Guidance Copies */}
+                {copyToast && (
+                  <div className="p-2.5 rounded-xl bg-emerald-500 text-white font-bold text-xs text-center shadow-lg animate-in fade-in zoom-in-95 duration-150 flex items-center justify-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" />
+                    <span>{copyToast}</span>
+                  </div>
+                )}
+
+                {/* ───────────────────────────────────────────────────────────── */}
+                {/* TOOL 1: NGA-EESHING ঙা-ঈশিং MATRIMONY */}
+                {/* ───────────────────────────────────────────────────────────── */}
                 {activeToolModal === 'nga-eeshing' && (
-                  <div className="space-y-3.5 text-xs">
+                  <div className="space-y-3.5 text-xs font-sans">
                     {!mobileNgaEeshingResult ? (
                       <form
                         onSubmit={(e) => {
@@ -2597,31 +2642,30 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         }}
                         className="space-y-3"
                       >
-                        <div className="p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/30 text-[11px] flex items-center gap-2">
-                          <span className="text-base">🐟</span>
-                          <span className="text-cyan-700 dark:text-cyan-300 font-medium leading-relaxed">
+                        <div className="p-3 rounded-2xl bg-gradient-to-r from-cyan-500/15 via-blue-500/10 to-teal-500/15 border border-cyan-500/30 text-[11px] flex items-center gap-2.5">
+                          <span className="text-xl">🐟</span>
+                          <span className="text-cyan-900 dark:text-cyan-200 font-medium leading-relaxed">
                             Traditional Manipuri matrimonial matching: ঙা-ঈশিং য়েংবা অমসুং কোক্লবা থৌরমগী পাউতাক।
                           </span>
                         </div>
 
                         {/* Groom Section */}
-                        <div className={`p-3 rounded-2xl border space-y-2 ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                        <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                          isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200 shadow-2xs'
                         }`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400">
-                              নুপাগী অকুপ্পা (Groom)
-                            </span>
-                          </div>
+                          <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 block">
+                            🤵 নুপাগী অকুপ্পা (Groom)
+                          </span>
                           <div>
                             <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
-                              নুপাগী মমিং (Name)
+                              নুপাগী মমিং (Groom Name)
                             </label>
                             <input
                               type="text"
                               value={mobileGroomName}
                               onChange={(e) => setMobileGroomName(e.target.value)}
-                              className={`w-full h-9 px-3 rounded-xl border text-xs focus:outline-none ${
+                              placeholder="e.g. Sanatomba"
+                              className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
                                 isDark ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
                               }`}
                             />
@@ -2633,7 +2677,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                             <select
                               value={mobileGroomRashi}
                               onChange={(e) => setMobileGroomRashi(Number(e.target.value))}
-                              className={`w-full h-9 px-2.5 rounded-xl border text-xs font-semibold focus:outline-none ${
+                              className={`w-full h-10 px-2.5 rounded-xl border text-xs font-semibold focus:outline-none ${
                                 isDark ? 'bg-[#1c2541] border-[#3a506b] text-amber-300' : 'bg-white border-slate-300 text-amber-900'
                               }`}
                             >
@@ -2647,23 +2691,22 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         </div>
 
                         {/* Bride Section */}
-                        <div className={`p-3 rounded-2xl border space-y-2 ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                        <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                          isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200 shadow-2xs'
                         }`}>
-                          <div className="flex items-center justify-between">
-                            <span className="text-[11px] font-bold text-rose-500 dark:text-rose-400">
-                              নুপীগী অকুপ্পা (Bride)
-                            </span>
-                          </div>
+                          <span className="text-[11px] font-bold text-rose-500 dark:text-rose-400 block">
+                            👰 নুপীগী অকুপ্পা (Bride)
+                          </span>
                           <div>
                             <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
-                              নুপীগী মমিং (Name)
+                              নুপীগী মমিং (Bride Name)
                             </label>
                             <input
                               type="text"
                               value={mobileBrideName}
                               onChange={(e) => setMobileBrideName(e.target.value)}
-                              className={`w-full h-9 px-3 rounded-xl border text-xs focus:outline-none ${
+                              placeholder="e.g. Thoibi"
+                              className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
                                 isDark ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
                               }`}
                             />
@@ -2675,7 +2718,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                             <select
                               value={mobileBrideRashi}
                               onChange={(e) => setMobileBrideRashi(Number(e.target.value))}
-                              className={`w-full h-9 px-2.5 rounded-xl border text-xs font-semibold focus:outline-none ${
+                              className={`w-full h-10 px-2.5 rounded-xl border text-xs font-semibold focus:outline-none ${
                                 isDark ? 'bg-[#1c2541] border-[#3a506b] text-rose-300' : 'bg-white border-slate-300 text-rose-900'
                               }`}
                             >
@@ -2690,31 +2733,31 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
 
                         <button
                           type="submit"
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-cyan-600 to-blue-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-98 transition-all"
                         >
                           <Sparkles className="w-4 h-4 text-cyan-200" />
-                          <span>ঙা-ঈশিং থিদোকউ (Calculate)</span>
+                          <span>ঙা-ঈশিং থিদোকউ (Calculate Matrimony)</span>
                         </button>
                       </form>
                     ) : (
-                      <div className="space-y-3">
-                        {/* Result Verdict Banner */}
+                      <div className="space-y-3.5">
+                        {/* Hero Verdict Banner */}
                         <div
-                          className={`p-4 rounded-2xl border text-center space-y-2 ${
+                          className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md relative overflow-hidden ${
                             mobileNgaEeshingResult.isNgaEeshing
                               ? isDark
-                                ? 'bg-rose-500/15 border-rose-500/40 text-rose-300'
-                                : 'bg-rose-50 border-rose-300 text-rose-800'
+                                ? 'bg-gradient-to-br from-rose-950/70 via-[#1c2541] to-rose-900/40 border-rose-500/40 text-rose-200'
+                                : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/80 border-rose-300 text-rose-900'
                               : isDark
-                              ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
-                              : 'bg-emerald-50 border-emerald-300 text-emerald-800'
+                              ? 'bg-gradient-to-br from-emerald-950/70 via-[#1c2541] to-emerald-900/40 border-emerald-500/40 text-emerald-200'
+                              : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/80 border-emerald-300 text-emerald-900'
                           }`}
                         >
-                          <div className="text-3xl">
+                          <div className="text-3xl sm:text-4xl">
                             {mobileNgaEeshingResult.isNgaEeshing ? '🐟' : '✨'}
                           </div>
                           <span
-                            className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase border inline-block ${
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border inline-block ${
                               mobileNgaEeshingResult.isNgaEeshing
                                 ? isDark
                                   ? 'bg-rose-500/20 text-rose-300 border-rose-500/30'
@@ -2726,140 +2769,135 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                           >
                             {mobileNgaEeshingResult.verdictText}
                           </span>
-                          <h4
-                            className={`font-serif font-bold text-xl ${
-                              mobileNgaEeshingResult.isNgaEeshing
-                                ? 'text-rose-500 dark:text-rose-400'
-                                : 'text-emerald-700 dark:text-emerald-400'
-                            }`}
-                          >
+                          <h4 className="font-serif font-black text-lg sm:text-xl">
                             {mobileNgaEeshingResult.verdictText}
                           </h4>
-                        </div>
-
-                        {/* Nature Statement */}
-                        <div
-                          className={`p-3 rounded-xl border text-center ${
-                            isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-50 border-amber-200'
-                          }`}
-                        >
-                          <span className={`text-[10px] uppercase font-bold block ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>
-                            মওং / প্রকৃতি
-                          </span>
-                          <div className={`text-xs font-black mt-0.5 ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>
+                          <p className="text-[11px] font-medium opacity-90 max-w-xs mx-auto">
                             {mobileNgaEeshingResult.natureStatement}
-                          </div>
+                          </p>
                         </div>
 
-                        {/* Partner Overviews (No math steps shown) */}
+                        {/* Partner Overviews */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className={`p-2.5 rounded-xl border space-y-1 ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
+                          <div className={`p-3 rounded-2xl border space-y-1 ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'}`}>
                             <span className="text-[10px] font-bold text-amber-600 dark:text-amber-400 block">
-                              নুপা: {mobileNgaEeshingResult.groomName}
+                              নুপা: {mobileNgaEeshingResult.groomName || 'Groom'}
                             </span>
-                            <div className="text-[11px] font-semibold text-slate-800 dark:text-white">
+                            <div className="text-xs font-bold text-slate-900 dark:text-white">
                               {mobileNgaEeshingResult.groomRashi.nameBengali}
                             </div>
                             {mobileNgaEeshingResult.isNgaEeshing && (
-                              <div className={`text-xs font-black text-center p-1.5 rounded-lg mt-1.5 border ${
+                              <span className={`inline-block text-[10px] font-black px-2 py-0.5 rounded-md border mt-1 ${
                                 mobileNgaEeshingResult.groomNature === 'ঙা'
-                                  ? (isDark ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-blue-50 text-blue-800 border-blue-200')
-                                  : (isDark ? 'bg-teal-500/20 text-teal-300 border-teal-500/30' : 'bg-teal-50 text-teal-800 border-teal-200')
+                                  ? 'bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-500/30'
+                                  : 'bg-teal-500/20 text-teal-600 dark:text-teal-300 border-teal-500/30'
                               }`}>
-                                {mobileNgaEeshingResult.groomNature}
-                              </div>
+                                মওং: {mobileNgaEeshingResult.groomNature}
+                              </span>
                             )}
                           </div>
 
-                          <div className={`p-2.5 rounded-xl border space-y-1 ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
+                          <div className={`p-3 rounded-2xl border space-y-1 ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'}`}>
                             <span className="text-[10px] font-bold text-rose-500 dark:text-rose-400 block">
-                              নুপী: {mobileNgaEeshingResult.brideName}
+                              নুপী: {mobileNgaEeshingResult.brideName || 'Bride'}
                             </span>
-                            <div className="text-[11px] font-semibold text-slate-800 dark:text-white">
+                            <div className="text-xs font-bold text-slate-900 dark:text-white">
                               {mobileNgaEeshingResult.brideRashi.nameBengali}
                             </div>
                             {mobileNgaEeshingResult.isNgaEeshing && (
-                              <div className={`text-xs font-black text-center p-1.5 rounded-lg mt-1.5 border ${
+                              <span className={`inline-block text-[10px] font-black px-2 py-0.5 rounded-md border mt-1 ${
                                 mobileNgaEeshingResult.brideNature === 'ঙা'
-                                  ? (isDark ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-blue-50 text-blue-800 border-blue-200')
-                                  : (isDark ? 'bg-teal-500/20 text-teal-300 border-teal-500/30' : 'bg-teal-50 text-teal-800 border-teal-200')
+                                  ? 'bg-blue-500/20 text-blue-600 dark:text-blue-300 border-blue-500/30'
+                                  : 'bg-teal-500/20 text-teal-600 dark:text-teal-300 border-teal-500/30'
                               }`}>
-                                {mobileNgaEeshingResult.brideNature}
-                              </div>
+                                মওং: {mobileNgaEeshingResult.brideNature}
+                              </span>
                             )}
                           </div>
                         </div>
 
-                        {/* Remedy & Rite if YES */}
+                        {/* Remedy & Traditional Rite */}
                         {mobileNgaEeshingResult.isNgaEeshing && (
-                          <div className="space-y-3">
-                            {/* Guidance */}
-                            <div
-                              className={`p-3 rounded-xl border text-xs leading-relaxed space-y-1.5 ${
-                                isDark
-                                  ? 'bg-amber-950/30 border-amber-500/30 text-amber-200'
-                                  : 'bg-amber-50/90 border-amber-200 text-amber-900'
-                              }`}
-                            >
-                              <div className="font-extrabold text-[11px] flex items-center gap-1.5">
-                                <span>📜</span>
-                                <span>প্রতিকারগী পাউতাক</span>
+                          <div className="space-y-2.5">
+                            <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                              isDark ? 'bg-amber-950/30 border-amber-500/30 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900'
+                            }`}>
+                              <div className="flex items-center justify-between">
+                                <span className="font-serif font-bold text-xs flex items-center gap-1.5">
+                                  <span>📜</span> <span>প্রতিকারগী পাউতাক (Vedic Remedial Guidance)</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => copyToClipboard(mobileNgaEeshingResult.remedyGuidance || '', 'Nga-Eeshing Remedy')}
+                                  className="px-2 py-1 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-700 dark:text-amber-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                                >
+                                  <Copy className="w-3 h-3" />
+                                  <span>Copy</span>
+                                </button>
                               </div>
-                              <p className="whitespace-pre-line text-[11px]">
+                              <p className="whitespace-pre-line text-[11px] leading-relaxed">
                                 {mobileNgaEeshingResult.remedyGuidance}
                               </p>
                             </div>
 
-                            {/* Ceremony */}
-                            <div
-                              className={`p-3.5 rounded-2xl border space-y-3 text-xs ${
-                                isDark
-                                  ? 'bg-[#0b132b] border-white/10 text-gray-200'
-                                  : 'bg-white border-slate-200 text-slate-800 shadow-xs'
-                              }`}
-                            >
-                              <h5 className="font-serif font-bold text-xs text-amber-600 dark:text-[#fbbf24] border-b pb-2 border-gray-500/20">
-                                {mobileNgaEeshingResult.remedyTitle}
-                              </h5>
-                              <div className="space-y-1">
-                                <span className="font-black text-[10px] uppercase text-rose-500 dark:text-rose-400 block">
-                                  পোৎচং মওং -
-                                </span>
-                                <p className="leading-relaxed text-[11px]">
-                                  {mobileNgaEeshingResult.potchangText}
-                                </p>
+                            {mobileNgaEeshingResult.remedyTitle && (
+                              <div className={`p-3.5 rounded-2xl border space-y-2 text-xs ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                              }`}>
+                                <h5 className="font-serif font-bold text-xs text-amber-600 dark:text-amber-400 border-b pb-1.5 border-slate-200 dark:border-white/10">
+                                  {mobileNgaEeshingResult.remedyTitle}
+                                </h5>
+                                {mobileNgaEeshingResult.potchangText && (
+                                  <div>
+                                    <span className="font-bold text-[10px] uppercase text-rose-500 block mb-0.5">পোৎচং মওং:</span>
+                                    <p className="text-[11px] leading-relaxed text-slate-700 dark:text-gray-300">
+                                      {mobileNgaEeshingResult.potchangText}
+                                    </p>
+                                  </div>
+                                )}
+                                {mobileNgaEeshingResult.laironText && (
+                                  <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                    <span className="font-bold text-[10px] uppercase text-amber-600 dark:text-amber-400 block mb-0.5">লাইরোন:</span>
+                                    <p className="text-[11px] italic leading-relaxed text-slate-800 dark:text-gray-200">
+                                      "{mobileNgaEeshingResult.laironText}"
+                                    </p>
+                                  </div>
+                                )}
                               </div>
-                              <div
-                                className={`p-2.5 rounded-xl border space-y-1 ${
-                                  isDark ? 'bg-[#1c2541] border-white/5' : 'bg-slate-50 border-slate-200'
-                                }`}
-                              >
-                                <span className="font-black text-[10px] uppercase text-amber-600 dark:text-amber-400 block">
-                                  লাইরোন -
-                                </span>
-                                <p className="leading-relaxed text-[11px] italic">
-                                  "{mobileNgaEeshingResult.laironText}"
-                                </p>
-                              </div>
-                            </div>
+                            )}
                           </div>
                         )}
 
-                        <button
-                          onClick={() => setMobileNgaEeshingResult(null)}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs border cursor-pointer ${
-                            isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-slate-100 border-slate-300 text-slate-800'
-                          }`}
-                        >
-                          Calculate Another Couple
-                        </button>
+                        {/* Actions */}
+                        <div className="space-y-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="w-full py-3 rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-cyan-600 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                          >
+                            <Download className="w-4 h-4" />
+                            <span>Print / Save Matrimony Report</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMobileNgaEeshingResult(null)}
+                            className={`w-full py-2.5 rounded-2xl font-bold text-xs border cursor-pointer ${
+                              isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300' : 'border-slate-300 bg-white text-slate-800'
+                            }`}
+                          >
+                            Calculate Another Couple
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
                 )}
 
+                {/* ───────────────────────────────────────────────────────────── */}
+                {/* TOOL 2: YUMSHAROL য়ুমশারোল (TRADITIONAL HOUSE SCIENCE & VASTU) */}
+                {/* ───────────────────────────────────────────────────────────── */}
                 {activeToolModal === 'yumsharol' && (
-                  <div className="space-y-3.5 text-xs">
+                  <div className="space-y-3.5 text-xs font-sans">
                     {!mobileYumResult ? (
                       <form
                         onSubmit={(e) => {
@@ -2879,53 +2917,66 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         }}
                         className="space-y-3"
                       >
-                        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-[11px] flex items-center gap-2">
-                          <span className="text-base">🏡</span>
-                          <span className="text-emerald-700 dark:text-emerald-300 font-medium">
+                        <div className="p-3 rounded-2xl bg-gradient-to-r from-emerald-500/15 via-teal-500/10 to-emerald-500/15 border border-emerald-500/30 text-[11px] flex items-center gap-2.5">
+                          <span className="text-xl">🏡</span>
+                          <span className="text-emerald-900 dark:text-emerald-200 font-medium leading-relaxed">
                             Traditional Manipuri house-building numerology & 8-direction compatibility.
                           </span>
                         </div>
 
                         {mobileYumErr && (
-                          <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[11px] font-bold">
-                            ⚠️ {mobileYumErr}
+                          <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-[11px] font-bold flex items-center gap-1.5">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            <span>{mobileYumErr}</span>
                           </div>
                         )}
 
                         <div className="grid grid-cols-2 gap-2">
                           <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Date of Birth *</label>
+                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                              Date of Birth *
+                            </label>
                             <input
                               type="date"
                               required
                               value={mobileYumDob}
                               max={new Date().toISOString().split('T')[0]}
-                              onChange={(e) => { setMobileYumDob(e.target.value); setMobileYumErr(''); }}
-                              className={`w-full h-10 px-2.5 rounded-xl border text-xs focus:outline-none ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                              onChange={(e) => {
+                                setMobileYumDob(e.target.value);
+                                setMobileYumErr('');
+                              }}
+                              className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
                               }`}
                             />
                           </div>
                           <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Time of Birth</label>
+                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                              Time of Birth
+                            </label>
                             <input
                               type="time"
                               value={mobileYumTob}
-                              onChange={(e) => { setMobileYumTob(e.target.value); setMobileYumErr(''); }}
-                              className={`w-full h-10 px-2.5 rounded-xl border text-xs focus:outline-none ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                              onChange={(e) => {
+                                setMobileYumTob(e.target.value);
+                                setMobileYumErr('');
+                              }}
+                              className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
                               }`}
                             />
                           </div>
                         </div>
 
                         <div>
-                          <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Birth Nakshatra (1–27) *</label>
+                          <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                            Birth Nakshatra (1–27) *
+                          </label>
                           <select
                             value={mobileYumNakshatra}
                             onChange={(e) => setMobileYumNakshatra(Number(e.target.value))}
-                            className={`w-full h-10 px-2.5 rounded-xl border text-xs font-semibold focus:outline-none ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-slate-50 border-slate-300 text-amber-900'
+                            className={`w-full h-10 px-3 rounded-xl border text-xs font-semibold focus:outline-none ${
+                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-white border-slate-300 text-amber-900'
                             }`}
                           >
                             {NAKSHATRAS_LIST.map((nak) => (
@@ -2938,559 +2989,144 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
 
                         <div>
                           <div className="flex justify-between items-center mb-1">
-                            <label className={`block text-[10px] font-bold ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Constant Value</label>
-                            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">Default: 15</span>
+                            <label className={`block text-[10px] font-bold ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                              Constant Value
+                            </label>
+                            <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold">
+                              Default: 15
+                            </span>
                           </div>
                           <input
                             type="number"
                             value={mobileYumConstant}
                             onChange={(e) => setMobileYumConstant(Number(e.target.value))}
-                            className={`w-full h-10 px-2.5 rounded-xl border font-mono font-bold text-xs focus:outline-none ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                            className={`w-full h-10 px-3 rounded-xl border font-mono font-bold text-xs focus:outline-none ${
+                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
                             }`}
                           />
                         </div>
 
                         <button
                           type="submit"
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+                          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-98 transition-all"
                         >
                           <Sparkles className="w-4 h-4 text-emerald-200" />
-                          <span>Calculate Yumsharol</span>
+                          <span>Calculate Yumsharol (য়ুমশারোল)</span>
                         </button>
                       </form>
                     ) : (
-                      <div className="space-y-3">
+                      <div className="space-y-3.5">
                         {/* Result Banner */}
-                        <div className={`p-4 rounded-2xl border text-center space-y-2 ${
-                          mobileYumResult.directionInfo.quality === 'Auspicious'
-                            ? (isDark ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400' : 'bg-emerald-50 border-emerald-300 text-emerald-800')
-                            : (isDark ? 'bg-rose-500/15 border-rose-500/40 text-rose-400' : 'bg-rose-50 border-rose-300 text-rose-800')
-                        }`}>
+                        <div
+                          className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md ${
+                            mobileYumResult.directionInfo.quality === 'Auspicious'
+                              ? isDark
+                                ? 'bg-gradient-to-br from-emerald-950/70 via-[#1c2541] to-emerald-900/40 border-emerald-500/40 text-emerald-200'
+                                : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/80 border-emerald-300 text-emerald-900'
+                              : isDark
+                              ? 'bg-gradient-to-br from-rose-950/70 via-[#1c2541] to-rose-900/40 border-rose-500/40 text-rose-200'
+                              : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/80 border-rose-300 text-rose-900'
+                          }`}
+                        >
                           <div className="text-3xl">{mobileYumResult.directionInfo.symbol}</div>
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase border ${
-                            isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
-                          }`}>
+                          <span
+                            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase border inline-block ${
+                              isDark ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                            }`}
+                          >
                             Index #{mobileYumResult.traditionalIndex} • {mobileYumResult.directionInfo.quality}
                           </span>
-                          <h4 className={`font-serif font-bold text-lg ${isDark ? 'text-white' : 'text-slate-900'}`}>
+                          <h4 className="font-serif font-black text-xl text-slate-900 dark:text-white">
                             {mobileYumResult.directionInfo.name}
                           </h4>
-                          <p className={`text-xs font-semibold ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>
+                          <p className="text-xs font-bold text-amber-700 dark:text-amber-300">
                             Direction: {mobileYumResult.directionInfo.direction} ({mobileYumResult.directionInfo.directionManipuri})
                           </p>
                         </div>
 
                         {/* Breakdown Grid */}
                         <div className="grid grid-cols-2 gap-2 text-xs">
-                          <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-medium block ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>Running Age:</span>
-                            <strong className="text-amber-600 dark:text-amber-400 text-sm font-mono block">{mobileYumResult.runningAge}th Year</strong>
+                          <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'}`}>
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">Running Age:</span>
+                            <strong className="text-amber-600 dark:text-amber-400 text-sm font-mono block mt-0.5">{mobileYumResult.runningAge}th Year</strong>
                           </div>
-                          <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-medium block ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>Nakshatra:</span>
-                            <strong className={`text-xs truncate block ${isDark ? 'text-white' : 'text-slate-900'}`}>#{mobileYumResult.nakshatra} {mobileYumResult.nakshatraName}</strong>
+                          <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'}`}>
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">Nakshatra:</span>
+                            <strong className="text-xs truncate block text-slate-900 dark:text-white mt-0.5">#{mobileYumResult.nakshatra} {mobileYumResult.nakshatraName}</strong>
                           </div>
-                          <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-medium block ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>Constant Value:</span>
-                            <strong className="text-emerald-600 dark:text-emerald-400 text-sm font-mono block">{mobileYumResult.constantValue}</strong>
+                          <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'}`}>
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">Constant Value:</span>
+                            <strong className="text-emerald-600 dark:text-emerald-400 text-sm font-mono block mt-0.5">{mobileYumResult.constantValue}</strong>
                           </div>
-                          <div className={`p-2.5 rounded-xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
-                            <span className={`text-[10px] font-medium block ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>Modulo 8:</span>
-                            <strong className="text-sky-700 dark:text-cyan-400 text-sm font-mono block">mod={mobileYumResult.standardMod}</strong>
+                          <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'}`}>
+                            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 block">Modulo 8:</span>
+                            <strong className="text-sky-600 dark:text-cyan-400 text-sm font-mono block mt-0.5">Remainder = {mobileYumResult.standardMod}</strong>
                           </div>
                         </div>
 
-                        {/* Result with Centered Big Remainder */}
-                        <div className={`p-4 rounded-2xl border text-center space-y-2 ${
+                        {/* Remainder Card & Classical Lore */}
+                        <div className={`p-4 rounded-3xl border text-center space-y-2 shadow-sm ${
                           isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-50/70 border-amber-300'
                         }`}>
-                          <span className={`text-[10px] font-extrabold uppercase tracking-widest block ${
-                            isDark ? 'text-gray-400' : 'text-amber-900/70'
-                          }`}>
-                            Result • Remainder
+                          <span className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 dark:text-gray-400 block">
+                            Remainder Result
                           </span>
-                          <div className={`text-5xl font-black font-mono tracking-tight py-1 ${
-                            isDark ? 'text-[#fbbf24]' : 'text-amber-800'
-                          }`}>
+                          <div className="text-4xl sm:text-5xl font-black font-mono text-[#d97706] dark:text-[#fbbf24]">
                             {mobileYumResult.standardMod}
                           </div>
-                          <div className={`p-3 rounded-xl border text-center ${
-                            isDark ? 'bg-[#1c2541] border-amber-500/30' : 'bg-white border-amber-300'
+                          <div className={`p-3 rounded-2xl border ${
+                            isDark ? 'bg-[#1c2541] border-amber-500/30' : 'bg-white border-amber-200'
                           }`}>
-                            <p className="font-blipi text-base font-normal leading-relaxed text-amber-700 dark:text-amber-200 tracking-wide">
-                              {mobileYumResult.remainderPrediction || (
-                                <>
-                                  {mobileYumResult.standardMod === 0 && '0 El§a lzjaen| Kuidzmo_+a feo_| Amz-yah~eTaz k=mem| iSba nz@|'}
-                                  {mobileYumResult.standardMod === 1 && '1 El§a ifralda E~ley, ln-Tum caR~K\\il|'}
-                                  {mobileYumResult.standardMod === 2 && '2 El§a E~mKuin, feo_, E~meh; lazepak nzgiL| Ec(I yum oh~rbsu h~muz Zmxmk mih laz@| f\\et|'}
-                                  {mobileYumResult.standardMod === 3 && '3 El§a EnazSain, mah~ pakpa caR~K\\pa, yumTuna Saba Zm@, E~fey|'}
-                                  {mobileYumResult.standardMod === 4 && '4 El§a lmHh~in, El;iSz taNduna Etak@, waeTak laneTak@, maz tak@|'}
-                                  {mobileYumResult.standardMod === 5 && '5 El§id ih-yah~ Apan-Arz Zmxmk fze~j@, ln tuzh~, yamxa E~f@|'}
-                                  {mobileYumResult.standardMod === 6 && '6 El§id Elalaen| Ana-Aeyk Etah~na nz@| Ku\\#-Ku\\lah~na ESakpa pnba, yumSaba, R~#ba mIga, yu§uga K\\ne~cnba nz@|'}
-                                  {mobileYumResult.standardMod === 7 && '7 El§id Samuen| mana minl nah~dna yum Saba Zme~j@| ln-Tum caR~K\\il|'}
-                                </>
-                              )}
+                            <p className="font-serif text-sm leading-relaxed text-amber-900 dark:text-amber-200">
+                              {mobileYumResult.remainderPrediction || 'Auspicious building orientation calculated.'}
                             </p>
                           </div>
                         </div>
 
-                        {/* Traditional Significance */}
-                        <div className={`p-3 rounded-xl border space-y-1 text-[11px] ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                        {/* Significance & Guidance */}
+                        <div className={`p-3.5 rounded-2xl border space-y-2 text-[11px] ${
+                          isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
                         }`}>
-                          <p className={`leading-relaxed ${isDark ? 'text-gray-200' : 'text-slate-800'}`}>
-                            <strong className={isDark ? 'text-white' : 'text-slate-900'}>Significance:</strong> {mobileYumResult.directionInfo.significance}
+                          <p className="leading-relaxed text-slate-800 dark:text-gray-200">
+                            <strong className="text-slate-900 dark:text-white">Significance: </strong>
+                            {mobileYumResult.directionInfo.significance}
                           </p>
-                          <p className={`leading-relaxed pt-1 border-t ${
-                            isDark ? 'border-gray-500/20 text-amber-300' : 'border-slate-200 text-amber-900'
-                          }`}>
-                            <strong className={isDark ? 'text-white' : 'text-slate-900'}>Guidance:</strong> {mobileYumResult.directionInfo.recommendation}
+                          <p className="leading-relaxed pt-1.5 border-t border-slate-200 dark:border-white/10 text-amber-800 dark:text-amber-300">
+                            <strong className="text-slate-900 dark:text-white">Guidance: </strong>
+                            {mobileYumResult.directionInfo.recommendation}
                           </p>
                         </div>
 
-                        <button
-                          onClick={() => setMobileYumResult(null)}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs border cursor-pointer ${
-                            isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-slate-100 border-slate-300 text-slate-800'
-                          }`}
-                        >
-                          Calculate Another Profile
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {activeToolModal === 'kundali' && (
-                  <div className="space-y-3 text-xs">
-                    <div>
-                      <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Native Full Name *</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Sanatombi Devi"
-                        value={mobileBirthForm.name}
-                        onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
-                        className={`w-full h-10 px-3 rounded-xl border focus:outline-none ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'
-                        }`}
-                      />
-                    </div>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Date of Birth</label>
-                        <input
-                          type="date"
-                          value={mobileBirthForm.dob}
-                          onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
-                          className={`w-full h-10 px-3 rounded-xl border font-mono ${
-                            isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                          }`}
-                        />
-                      </div>
-                      <div>
-                        <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Time of Birth</label>
-                        <input
-                          type="time"
-                          value={mobileBirthForm.tob}
-                          onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
-                          className={`w-full h-10 px-3 rounded-xl border font-mono ${
-                            isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                          }`}
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Place of Birth</label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Imphal West, Manipur"
-                        value={mobileBirthForm.pob}
-                        onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, pob: e.target.value })}
-                        className={`w-full h-10 px-3 rounded-xl border ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'
-                        }`}
-                      />
-                    </div>
-                    <button
-                      onClick={() => {
-                        setActiveToolModal(null);
-                        setActiveTab('charts');
-                      }}
-                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold shadow-md mt-2 cursor-pointer active:scale-95"
-                    >
-                      Generate Bengali Kundli →
-                    </button>
-                  </div>
-                )}
-
-                {activeToolModal === 'dasha' && (
-                  <div className="space-y-2 text-xs">
-                    <p className={`text-[11px] ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>Current Vimshottari Mahadasha timeline for native:</p>
-                    <div className={`p-3 rounded-xl border space-y-2 font-mono text-[11px] ${
-                      isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
-                    }`}>
-                      <div className={`flex justify-between font-bold ${isDark ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
-                        <span>বৃহস্পতি মহাদশা (Jupiter)</span>
-                        <span>২০১৫ – ২০৩১ (১৬ বছর)</span>
-                      </div>
-                      <div className="pl-3 border-l-2 border-amber-500/50 space-y-1">
-                        <div className="flex justify-between font-semibold">
-                          <span>অন্তর্দশা: শনি (Saturn)</span>
-                          <span>২০২৪ – ২০২৭</span>
-                        </div>
-                        <div className={`flex justify-between text-[10px] ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
-                          <span>প্রত্যন্তর: বুধ (Mercury)</span>
-                          <span>আগস্ট ২০২৬ – জানু ২০২৭</span>
-                        </div>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setActiveToolModal(null)}
-                      className={`w-full py-2 rounded-xl font-bold text-xs mt-2 border cursor-pointer ${
-                        isDark ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-slate-100 border-slate-300 text-slate-800'
-                      }`}
-                    >
-                      Close Window
-                    </button>
-                  </div>
-                )}
-
-                {/* Shani Sade Sati Mobile Tool */}
-                {activeToolModal === 'sadesati' && (
-                  <div className="space-y-3 text-xs">
-                    {!mobileToolResult ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const res = calculateSadeSati({
-                            name: mobileBirthForm.name,
-                            gender: mobileBirthForm.gender,
-                            dob: mobileBirthForm.dob,
-                            tob: mobileBirthForm.tob,
-                          });
-                          setMobileToolResult({ isSadeSati: true, ...res });
-                        }}
-                        className="space-y-3"
-                      >
-                        <div className="p-3 rounded-xl bg-sky-500/10 border border-sky-500/30 text-[11px] flex items-center gap-2">
-                          <span className="text-base">🪐</span>
-                          <span className="text-sky-700 dark:text-sky-300 font-medium">
-                            Calculates current 7.5-year Saturn transit phase and Kantaka/Ashtama Shani impacts.
-                          </span>
-                        </div>
-                        <div>
-                          <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Native Name</label>
-                          <input
-                            type="text"
-                            value={mobileBirthForm.name}
-                            onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
-                            className={`w-full h-10 px-3 rounded-xl border ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                        {/* Actions */}
+                        <div className="space-y-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="w-full py-3 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-600 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                          >
+                            <Download className="w-4 h-4" />
+                            <span>Print / Save Yumsharol PDF</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMobileYumResult(null)}
+                            className={`w-full py-2.5 rounded-2xl font-bold text-xs border cursor-pointer ${
+                              isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300' : 'border-slate-300 bg-white text-slate-800'
                             }`}
-                          />
+                          >
+                            Calculate Another Profile
+                          </button>
                         </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Date of Birth</label>
-                            <input
-                              type="date"
-                              required
-                              value={mobileBirthForm.dob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Time of Birth</label>
-                            <input
-                              type="time"
-                              required
-                              value={mobileBirthForm.tob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-sky-600 to-blue-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                        >
-                          <Sparkles className="w-4 h-4 text-sky-200" />
-                          <span>Calculate Sade Sati</span>
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className={`p-4 rounded-2xl border text-center space-y-1.5 ${
-                          mobileToolResult.isSadeSatiActive
-                            ? (isDark ? 'bg-rose-500/15 border-rose-500/40' : 'bg-rose-50 border-rose-300')
-                            : (isDark ? 'bg-emerald-500/15 border-emerald-500/40' : 'bg-emerald-50 border-emerald-300')
-                        }`}>
-                          <span className={`text-[10px] uppercase font-bold block ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Sade Sati Phase</span>
-                          <h4 className={`font-serif font-bold text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>{mobileToolResult.phase}</h4>
-                          <span className={`text-[11px] font-semibold block ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>{mobileToolResult.phaseManipuri}</span>
-                          <span className={`text-[10px] font-bold block ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
-                            Moon: {mobileToolResult.moonSign} • Transit Saturn: {mobileToolResult.currentSaturnSign}
-                          </span>
-                        </div>
-                        <div className={`p-3 rounded-xl border text-[11px] leading-relaxed ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-slate-50 border-slate-200 text-slate-800'
-                        }`}>
-                          {mobileToolResult.statusDescription}
-                        </div>
-                        <div className={`p-3 rounded-xl border space-y-1 text-[11px] ${
-                          isDark ? 'bg-[#0b132b] border-sky-500/30' : 'bg-sky-50 border-sky-200'
-                        }`}>
-                          <strong className={`block ${isDark ? 'text-sky-300' : 'text-sky-900'}`}>Prescribed Mantra:</strong>
-                          <p className={`font-mono text-[10px] select-all font-bold ${isDark ? 'text-white' : 'text-slate-900'}`}>
-                            {mobileToolResult.vedicRemedies?.mantra}
-                          </p>
-                          <strong className={`block pt-1 ${isDark ? 'text-sky-300' : 'text-sky-900'}`}>Charity:</strong>
-                          <p className={`text-[10px] ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
-                            {mobileToolResult.vedicRemedies?.charity}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setMobileToolResult(null)}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs border cursor-pointer ${
-                            isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300 hover:bg-[#1c2541]' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-2xs'
-                          }`}
-                        >
-                          Calculate Another Profile
-                        </button>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Manglik Dosh Mobile Tool */}
-                {activeToolModal === 'manglik' && (
-                  <div className="space-y-3 text-xs">
-                    {!mobileToolResult ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const res = calculateManglikDosh({
-                            name: mobileBirthForm.name,
-                            gender: mobileBirthForm.gender,
-                            dob: mobileBirthForm.dob,
-                            tob: mobileBirthForm.tob,
-                          });
-                          setMobileToolResult({ isManglikReport: true, ...res });
-                        }}
-                        className="space-y-3"
-                      >
-                        <div className="p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-[11px] flex items-center gap-2">
-                          <span className="text-base">🔥</span>
-                          <span className="text-rose-700 dark:text-rose-300 font-medium">
-                            Kuja Dosha calculation from Lagna, Moon & Venus with classical Bhanga cancellations.
-                          </span>
-                        </div>
-                        <div>
-                          <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Native Name</label>
-                          <input
-                            type="text"
-                            value={mobileBirthForm.name}
-                            onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
-                            className={`w-full h-10 px-3 rounded-xl border ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                            }`}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Date of Birth</label>
-                            <input
-                              type="date"
-                              required
-                              value={mobileBirthForm.dob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Time of Birth</label>
-                            <input
-                              type="time"
-                              required
-                              value={mobileBirthForm.tob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-rose-600 to-orange-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                        >
-                          <Sparkles className="w-4 h-4 text-rose-200" />
-                          <span>Calculate Manglik Dosh</span>
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className={`p-4 rounded-2xl border text-center space-y-1.5 ${
-                          mobileToolResult.score > 0
-                            ? (isDark ? 'bg-rose-500/15 border-rose-500/40' : 'bg-rose-50 border-rose-300')
-                            : (isDark ? 'bg-emerald-500/15 border-emerald-500/40' : 'bg-emerald-50 border-emerald-300')
-                        }`}>
-                          <span className={`text-[10px] uppercase font-bold block ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Dosha Status</span>
-                          <h4 className={`font-serif font-bold text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>{mobileToolResult.status}</h4>
-                          <span className={`text-[11px] font-semibold block ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>{mobileToolResult.statusManipuri}</span>
-                          <span className={`text-xs font-bold block ${isDark ? 'text-rose-400' : 'text-rose-700'}`}>Score: {mobileToolResult.score}%</span>
-                        </div>
-                        <div className={`p-3 rounded-xl border text-[11px] leading-relaxed ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-slate-50 border-slate-200 text-slate-800'
-                        }`}>
-                          {mobileToolResult.marriageGuidance}
-                        </div>
-                        <div className={`p-3 rounded-xl border space-y-1 text-[11px] ${
-                          isDark ? 'bg-[#0b132b] border-rose-500/30' : 'bg-rose-50 border-rose-200'
-                        }`}>
-                          <strong className={`block ${isDark ? 'text-rose-300' : 'text-rose-900'}`}>Mantra:</strong>
-                          <p className={`font-mono text-[10px] select-all font-bold ${isDark ? 'text-amber-200' : 'text-amber-900'}`}>
-                            {mobileToolResult.vedicRemedies?.mantra}
-                          </p>
-                          <strong className={`block pt-1 ${isDark ? 'text-rose-300' : 'text-rose-900'}`}>Ritual:</strong>
-                          <p className={`text-[10px] ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
-                            {mobileToolResult.vedicRemedies?.ritual}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setMobileToolResult(null)}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs border cursor-pointer ${
-                            isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300 hover:bg-[#1c2541]' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-2xs'
-                          }`}
-                        >
-                          Calculate Another Profile
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Kaal Sarp Dosh Mobile Tool */}
-                {activeToolModal === 'kaalsarp' && (
-                  <div className="space-y-3 text-xs">
-                    {!mobileToolResult ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const res = calculateKaalSarpDosh({
-                            name: mobileBirthForm.name,
-                            gender: mobileBirthForm.gender,
-                            dob: mobileBirthForm.dob,
-                            tob: mobileBirthForm.tob,
-                          });
-                          setMobileToolResult({ isKaalSarp: true, ...res });
-                        }}
-                        className="space-y-3"
-                      >
-                        <div className="p-3 rounded-xl bg-purple-500/10 border border-purple-500/30 text-[11px] flex items-center gap-2">
-                          <span className="text-base">🐍</span>
-                          <span className="text-purple-700 dark:text-purple-300 font-medium">
-                            Identifies 12 classical Kaal Sarp yogas & nodal containment axis.
-                          </span>
-                        </div>
-                        <div>
-                          <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Native Name</label>
-                          <input
-                            type="text"
-                            value={mobileBirthForm.name}
-                            onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
-                            className={`w-full h-10 px-3 rounded-xl border ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                            }`}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Date of Birth</label>
-                            <input
-                              type="date"
-                              required
-                              value={mobileBirthForm.dob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Time of Birth</label>
-                            <input
-                              type="time"
-                              required
-                              value={mobileBirthForm.tob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-violet-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
-                        >
-                          <Sparkles className="w-4 h-4 text-purple-200" />
-                          <span>Calculate Kaal Sarp Dosh</span>
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className={`p-4 rounded-2xl border text-center space-y-1.5 ${
-                          mobileToolResult.hasKaalSarp
-                            ? (isDark ? 'bg-purple-500/15 border-purple-500/40' : 'bg-purple-50 border-purple-300')
-                            : (isDark ? 'bg-emerald-500/15 border-emerald-500/40' : 'bg-emerald-50 border-emerald-300')
-                        }`}>
-                          <span className={`text-[10px] uppercase font-bold block ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Yoga Type</span>
-                          <h4 className={`font-serif font-bold text-base ${isDark ? 'text-white' : 'text-slate-900'}`}>{mobileToolResult.doshType}</h4>
-                          <span className={`text-[11px] font-semibold block ${isDark ? 'text-amber-300' : 'text-amber-800'}`}>{mobileToolResult.doshTypeManipuri}</span>
-                          <span className={`text-xs font-bold block ${isDark ? 'text-purple-400' : 'text-purple-700'}`}>Intensity: {mobileToolResult.intensity}</span>
-                        </div>
-                        <div className={`p-3 rounded-xl border text-[11px] leading-relaxed ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-slate-50 border-slate-200 text-slate-800'
-                        }`}>
-                          {mobileToolResult.classicalDescription}
-                        </div>
-                        <div className={`p-3 rounded-xl border space-y-1 text-[11px] ${
-                          isDark ? 'bg-[#0b132b] border-purple-500/30' : 'bg-purple-50 border-purple-200'
-                        }`}>
-                          <strong className={`block ${isDark ? 'text-purple-300' : 'text-purple-900'}`}>Shanti Puja:</strong>
-                          <p className={`text-[10px] ${isDark ? 'text-white' : 'text-slate-900 font-bold'}`}>
-                            {mobileToolResult.vedicRemedies?.shantiPuja}
-                          </p>
-                          <strong className={`block pt-1 ${isDark ? 'text-purple-300' : 'text-purple-900'}`}>Rudraksha:</strong>
-                          <p className={`text-[10px] ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
-                            {mobileToolResult.vedicRemedies?.rudraksha}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => setMobileToolResult(null)}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs border cursor-pointer ${
-                            isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300 hover:bg-[#1c2541]' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-2xs'
-                          }`}
-                        >
-                          Calculate Another Profile
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Match Making Mobile Tool */}
-                {activeToolModal === 'matchmaking' && (
-                  <div className="space-y-3 text-xs">
+                {/* ───────────────────────────────────────────────────────────── */}
+                {/* TOOL 3: ASHTAKOOT 36-GUN MILAN (MATCH MAKING) */}
+                {/* ───────────────────────────────────────────────────────────── */}
+                {(activeToolModal === 'matchmaking' || activeToolModal === 'match-making') && (
+                  <div className="space-y-3.5 text-xs font-sans">
                     {!mobileToolResult ? (
                       <form
                         onSubmit={(e) => {
@@ -3511,34 +3147,36 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         }}
                         className="space-y-3"
                       >
-                        <div className="p-3 rounded-xl bg-pink-500/10 border border-pink-500/30 text-[11px] flex items-center gap-2">
-                          <span className="text-base">💍</span>
-                          <span className="text-pink-700 dark:text-pink-300 font-medium">
+                        <div className="p-3 rounded-2xl bg-gradient-to-r from-pink-500/15 via-rose-500/10 to-pink-500/15 border border-pink-500/30 text-[11px] flex items-center gap-2.5">
+                          <span className="text-xl">💍</span>
+                          <span className="text-pink-900 dark:text-pink-200 font-medium leading-relaxed">
                             Full Ashtakoot 36-Gun Milan & Manglik mutual compatibility check.
                           </span>
                         </div>
-                        <div className={`p-3 rounded-xl border space-y-2 ${
-                          isDark ? 'border-cyan-500/30 bg-[#0b132b]/60' : 'border-sky-200 bg-sky-50/70'
+
+                        {/* Groom Section */}
+                        <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                          isDark ? 'border-cyan-500/30 bg-[#0b132b]' : 'border-sky-200 bg-sky-50/60 shadow-2xs'
                         }`}>
-                          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-cyan-400' : 'text-sky-900'}`}>
+                          <span className={`text-[11px] font-bold uppercase block ${isDark ? 'text-cyan-400' : 'text-sky-900'}`}>
                             🤵 Groom (বর)
                           </span>
                           <input
                             type="text"
                             value={mobileBirthForm.name}
                             onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
-                            className={`w-full h-8 px-2.5 rounded-lg border text-xs focus:outline-none ${
+                            className={`w-full h-9 px-3 rounded-xl border text-xs focus:outline-none ${
                               isDark ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-slate-300 bg-white text-slate-900'
                             }`}
-                            placeholder="Groom Name"
+                            placeholder="Groom Full Name"
                           />
-                          <div className="grid grid-cols-2 gap-1.5">
+                          <div className="grid grid-cols-2 gap-2">
                             <input
                               type="date"
                               required
                               value={mobileBirthForm.dob}
                               onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
-                              className={`w-full h-8 px-2 rounded-lg border text-xs focus:outline-none ${
+                              className={`w-full h-9 px-2.5 rounded-xl border text-xs focus:outline-none ${
                                 isDark ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-slate-300 bg-white text-slate-900'
                               }`}
                             />
@@ -3547,35 +3185,36 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                               required
                               value={mobileBirthForm.tob}
                               onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
-                              className={`w-full h-8 px-2 rounded-lg border text-xs focus:outline-none ${
+                              className={`w-full h-9 px-2.5 rounded-xl border text-xs focus:outline-none ${
                                 isDark ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-slate-300 bg-white text-slate-900'
                               }`}
                             />
                           </div>
                         </div>
 
-                        <div className={`p-3 rounded-xl border space-y-2 ${
-                          isDark ? 'border-pink-500/30 bg-[#0b132b]/60' : 'border-pink-200 bg-pink-50/70'
+                        {/* Bride Section */}
+                        <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                          isDark ? 'border-pink-500/30 bg-[#0b132b]' : 'border-pink-200 bg-pink-50/60 shadow-2xs'
                         }`}>
-                          <span className={`text-[10px] font-bold uppercase block ${isDark ? 'text-pink-400' : 'text-pink-900'}`}>
+                          <span className={`text-[11px] font-bold uppercase block ${isDark ? 'text-pink-400' : 'text-pink-900'}`}>
                             👰 Bride (কন্যা)
                           </span>
                           <input
                             type="text"
                             value={mobileBirthForm.partnerName}
                             onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, partnerName: e.target.value })}
-                            className={`w-full h-8 px-2.5 rounded-lg border text-xs focus:outline-none ${
+                            className={`w-full h-9 px-3 rounded-xl border text-xs focus:outline-none ${
                               isDark ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-slate-300 bg-white text-slate-900'
                             }`}
-                            placeholder="Bride Name"
+                            placeholder="Bride Full Name"
                           />
-                          <div className="grid grid-cols-2 gap-1.5">
+                          <div className="grid grid-cols-2 gap-2">
                             <input
                               type="date"
                               required
                               value={mobileBirthForm.partnerDob}
                               onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, partnerDob: e.target.value })}
-                              className={`w-full h-8 px-2 rounded-lg border text-xs focus:outline-none ${
+                              className={`w-full h-9 px-2.5 rounded-xl border text-xs focus:outline-none ${
                                 isDark ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-slate-300 bg-white text-slate-900'
                               }`}
                             />
@@ -3584,7 +3223,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                               required
                               value={mobileBirthForm.partnerTob}
                               onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, partnerTob: e.target.value })}
-                              className={`w-full h-8 px-2 rounded-lg border text-xs focus:outline-none ${
+                              className={`w-full h-9 px-2.5 rounded-xl border text-xs focus:outline-none ${
                                 isDark ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-slate-300 bg-white text-slate-900'
                               }`}
                             />
@@ -3593,175 +3232,922 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
 
                         <button
                           type="submit"
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                          className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-98 transition-all"
                         >
                           <Sparkles className="w-4 h-4 text-pink-200" />
-                          <span>Calculate Gun Milan</span>
+                          <span>Calculate 36-Gun Milan (ম্যাচিং)</span>
                         </button>
                       </form>
                     ) : (
-                      <div className="space-y-3">
-                        <div className={`p-4 rounded-2xl border text-center space-y-1.5 ${
+                      <div className="space-y-3.5">
+                        {/* Hero Score Banner */}
+                        <div className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md relative overflow-hidden ${
                           mobileToolResult.totalScore >= 18
-                            ? (isDark ? 'bg-emerald-500/15 border-emerald-500/40' : 'bg-emerald-50 border-emerald-300')
-                            : (isDark ? 'bg-rose-500/15 border-rose-500/40' : 'bg-rose-50 border-rose-300')
+                            ? isDark
+                              ? 'bg-gradient-to-br from-emerald-950/70 via-[#1c2541] to-emerald-900/40 border-emerald-500/40'
+                              : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/80 border-emerald-300'
+                            : isDark
+                            ? 'bg-gradient-to-br from-rose-950/70 via-[#1c2541] to-rose-900/40 border-rose-500/40'
+                            : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/80 border-rose-300'
                         }`}>
-                          <span className={`text-[10px] uppercase font-bold block ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>Gun Milan Score</span>
-                          <div className={`text-3xl font-black font-mono ${isDark ? 'text-[#fbbf24]' : 'text-amber-800'}`}>
-                            {mobileToolResult.totalScore} <span className={`text-sm font-normal ${isDark ? 'text-gray-400' : 'text-slate-500'}`}>/ 36</span>
-                          </div>
-                          <span className={`text-xs font-bold block ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>{mobileToolResult.verdict}</span>
-                          <span className={`text-[10px] block ${isDark ? 'text-gray-300' : 'text-slate-600'}`}>
-                            Groom: {mobileToolResult.groomMoonSign} • Bride: {mobileToolResult.brideMoonSign}
+                          <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400 block">
+                            Ashtakoot Gun Milan Score
                           </span>
+                          <div className="text-4xl sm:text-5xl font-black font-mono text-[#d97706] dark:text-[#fbbf24]">
+                            {mobileToolResult.totalScore}
+                            <span className="text-base font-bold text-slate-400 dark:text-gray-500"> / 36</span>
+                          </div>
+                          <span className={`px-3 py-1 rounded-full text-xs font-black inline-block border ${
+                            mobileToolResult.totalScore >= 18
+                              ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30'
+                              : 'bg-rose-500/20 text-rose-600 dark:text-rose-300 border-rose-500/30'
+                          }`}>
+                            {mobileToolResult.verdict}
+                          </span>
+                          <div className="text-[11px] font-medium text-slate-600 dark:text-gray-300 pt-1 flex justify-center gap-3">
+                            <span>🤵 {mobileToolResult.groomMoonSign}</span>
+                            <span>•</span>
+                            <span>👰 {mobileToolResult.brideMoonSign}</span>
+                          </div>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-2 text-[10px]">
-                          <div className={`p-2 rounded-xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
-                            <strong>Nadi Dosh:</strong> {mobileToolResult.nadiDoshAlert ? '⚠️ Alert' : '✓ Safe'}
+                        {/* Critical Alerts */}
+                        <div className="grid grid-cols-2 gap-2 text-[11px]">
+                          <div className={`p-3 rounded-2xl border flex items-center justify-between ${
+                            mobileToolResult.nadiDoshAlert
+                              ? (isDark ? 'bg-rose-950/40 border-rose-500/40 text-rose-300' : 'bg-rose-50 border-rose-300 text-rose-800')
+                              : (isDark ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-emerald-50 border-emerald-300 text-emerald-800')
+                          }`}>
+                            <span className="font-bold">Nadi Dosh:</span>
+                            <span className="font-extrabold">{mobileToolResult.nadiDoshAlert ? '⚠️ Alert (0/8)' : '✓ Safe (8/8)'}</span>
                           </div>
-                          <div className={`p-2 rounded-xl border ${isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'}`}>
-                            <strong>Bhakoot Dosh:</strong> {mobileToolResult.bhakootDoshAlert ? '⚠️ Alert' : '✓ Safe'}
+                          <div className={`p-3 rounded-2xl border flex items-center justify-between ${
+                            mobileToolResult.bhakootDoshAlert
+                              ? (isDark ? 'bg-rose-950/40 border-rose-500/40 text-rose-300' : 'bg-rose-50 border-rose-300 text-rose-800')
+                              : (isDark ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-300' : 'bg-emerald-50 border-emerald-300 text-emerald-800')
+                          }`}>
+                            <span className="font-bold">Bhakoot Dosh:</span>
+                            <span className="font-extrabold">{mobileToolResult.bhakootDoshAlert ? '⚠️ Alert (0/7)' : '✓ Safe (7/7)'}</span>
                           </div>
                         </div>
 
-                        <div className={`p-3 rounded-xl border text-[11px] leading-relaxed ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-amber-50 border-amber-200 text-amber-950'
+                        {/* Manglik Analysis */}
+                        <div className={`p-3.5 rounded-2xl border text-xs leading-relaxed space-y-1 ${
+                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-amber-50/80 border-amber-200 text-amber-950 shadow-2xs'
                         }`}>
-                          {mobileToolResult.manglikCompatibilityVerdict}
+                          <span className="font-bold text-[10px] uppercase text-[#d97706] block">Kuja Samya Verdict:</span>
+                          <p className="text-[11px]">
+                            {mobileToolResult.manglikCompatibilityVerdict}
+                          </p>
                         </div>
 
-                        <button
-                          onClick={() => setMobileToolResult(null)}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs border cursor-pointer ${
-                            isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300 hover:bg-[#1c2541]' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-2xs'
-                          }`}
-                        >
-                          Calculate Another Couple
-                        </button>
+                        {/* 8-Koot Score Breakdown */}
+                        {mobileToolResult.kootBreakdown && (
+                          <div className={`p-3.5 rounded-2xl border space-y-2.5 ${
+                            isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                          }`}>
+                            <span className="text-[11px] font-serif font-bold text-slate-900 dark:text-white block">
+                              Ashtakoot 8-Fold Point Breakdown:
+                            </span>
+                            <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                              {mobileToolResult.kootBreakdown.map((k: any, idx: number) => (
+                                <div key={idx} className={`p-2 rounded-xl border flex items-center justify-between ${
+                                  isDark ? 'bg-[#1c2541]/70 border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                                }`}>
+                                  <span className="font-semibold">{k.kootName}</span>
+                                  <span className="font-mono font-bold text-amber-600 dark:text-amber-400">
+                                    {k.obtainedPoints}/{k.maxPoints}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        <div className="space-y-2 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => window.print()}
+                            className="w-full py-3 rounded-2xl bg-gradient-to-r from-pink-600 via-rose-600 to-pink-600 text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                          >
+                            <Download className="w-4 h-4" />
+                            <span>Print / Save 36-Gun Milan PDF</span>
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setMobileToolResult(null)}
+                            className={`w-full py-2.5 rounded-2xl font-bold text-xs border cursor-pointer ${
+                              isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300' : 'border-slate-300 bg-white text-slate-800'
+                            }`}
+                          >
+                            Calculate Another Couple
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
                 )}
 
-                {/* Planetary Yogas Mobile Tool */}
-                {activeToolModal === 'yogas' && (
-                  <div className="space-y-3 text-xs">
-                    {!mobileToolResult ? (
-                      <form
-                        onSubmit={(e) => {
-                          e.preventDefault();
-                          const res = calculatePlanetaryYogas({
-                            name: mobileBirthForm.name,
-                            gender: mobileBirthForm.gender,
-                            dob: mobileBirthForm.dob,
-                            tob: mobileBirthForm.tob,
-                          });
-                          setMobileToolResult({ isPlanetaryYogas: true, ...res });
-                        }}
-                        className="space-y-3"
-                      >
-                        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-[11px] flex items-center gap-2">
-                          <span className="text-base">✨</span>
-                          <span className="text-amber-800 dark:text-amber-300 font-medium">
-                            Evaluates Gajakesari, Pancha Mahapurusha, Raja Yogas & classical combinations.
-                          </span>
-                        </div>
-                        <div>
-                          <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Native Name</label>
-                          <input
-                            type="text"
-                            value={mobileBirthForm.name}
-                            onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
-                            className={`w-full h-10 px-3 rounded-xl border ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                            }`}
-                          />
-                        </div>
-                        <div className="grid grid-cols-2 gap-2">
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Date of Birth</label>
-                            <input
-                              type="date"
-                              required
-                              value={mobileBirthForm.dob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                          <div>
-                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Time of Birth</label>
-                            <input
-                              type="time"
-                              required
-                              value={mobileBirthForm.tob}
-                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
-                              className={`w-full h-10 px-3 rounded-xl border ${
-                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
-                              }`}
-                            />
-                          </div>
-                        </div>
-                        <button
-                          type="submit"
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-600 to-yellow-600 text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-1.5 active:scale-95"
+                {/* ───────────────────────────────────────────────────────────── */}
+                {/* TOOL 4: GENERAL COMPLETE FULL BIRTH DETAILS FORM */}
+                {/* (For Workstations, Kundli, Dasha, Sade Sati, Manglik, Kaal Sarp, Yogas, Numerology) */}
+                {/* ───────────────────────────────────────────────────────────── */}
+                {activeToolModal !== 'nga-eeshing' &&
+                  activeToolModal !== 'yumsharol' &&
+                  activeToolModal !== 'match-making' &&
+                  activeToolModal !== 'matchmaking' &&
+                  activeToolModal !== 'transit' && (
+                    <div className="space-y-3.5 text-xs font-sans">
+                      {!mobileToolResult ? (
+                        <form
+                          onSubmit={(e) => {
+                            e.preventDefault();
+                            if (
+                              activeToolModal === 'vedic-workstation' ||
+                              activeToolModal === 'bnn-workstation' ||
+                              activeToolModal === 'vastu-workstation'
+                            ) {
+                              setMobileToolResult({ type: 'workstation-ready' });
+                            } else if (activeToolModal === 'kundali' || activeToolModal === 'kuthi-generator') {
+                              try {
+                                const chartCalc = calculatePlanetaryPositions({
+                                  name: mobileBirthForm.name || 'Native Client',
+                                  gender: mobileBirthForm.gender || 'Female',
+                                  dateOfBirth: mobileBirthForm.dob || '1998-10-24',
+                                  timeOfBirth: mobileBirthForm.tob || '09:45',
+                                  latitude: Number(mobileBirthForm.lat) || 24.8170,
+                                  longitude: Number(mobileBirthForm.lng) || 93.9368,
+                                  timezone: 'Asia/Kolkata',
+                                  utcOffset: Number(mobileBirthForm.timezone) || 5.5,
+                                  ayanamsa: 'Lahiri',
+                                });
+                                const moon = chartCalc.planets.find((p) => p.id === 'mo') || chartCalc.planets[1];
+                                const sun = chartCalc.planets.find((p) => p.id === 'su') || chartCalc.planets[0];
+                                setSelectedChartOrder((prev) => ({
+                                  ...prev,
+                                  clientName: mobileBirthForm.name || 'Native Client',
+                                  clientDetails: {
+                                    ...prev.clientDetails,
+                                    sex: mobileBirthForm.gender,
+                                    dob: mobileBirthForm.dob,
+                                    tob: mobileBirthForm.tob,
+                                    pob: mobileBirthForm.pob,
+                                    faithTradition: mobileBirthForm.faithTradition,
+                                    yek: mobileBirthForm.yek,
+                                    gotra: mobileBirthForm.gotra,
+                                    lagna: 'বৃশ্চিক (Scorpio)',
+                                    moonSign: moon.signName || 'Vrishabha (বৃষ)',
+                                  },
+                                }));
+                                setMobileToolResult({
+                                  isKuthiReport: true,
+                                  nativeName: mobileBirthForm.name,
+                                  dob: mobileBirthForm.dob,
+                                  tob: mobileBirthForm.tob,
+                                  pob: mobileBirthForm.pob,
+                                  faithTradition: mobileBirthForm.faithTradition,
+                                  yek: mobileBirthForm.yek,
+                                  gotra: mobileBirthForm.gotra,
+                                  moonSign: moon.signName || 'বৃষ (Vrishabha)',
+                                  sunSign: sun.signName || 'সিংহ (Simha)',
+                                  nakshatra: moon.nakshatraName || 'Rohini',
+                                  pada: moon.nakshatraPada || 2,
+                                  lagna: 'বৃশ্চিক (Scorpio)',
+                                });
+                              } catch (err) {
+                                setSelectedChartOrder((prev) => ({
+                                  ...prev,
+                                  clientName: mobileBirthForm.name || 'Native Client',
+                                }));
+                                setActiveToolModal(null);
+                                setActiveTab('charts');
+                              }
+                            } else if (activeToolModal === 'sadesati' || activeToolModal === 'shani-sade-sati') {
+                              const res = calculateSadeSati({
+                                name: mobileBirthForm.name,
+                                gender: mobileBirthForm.gender,
+                                dob: mobileBirthForm.dob,
+                                tob: mobileBirthForm.tob || '12:00',
+                                lat: Number(mobileBirthForm.lat) || 24.8170,
+                                lng: Number(mobileBirthForm.lng) || 93.9368,
+                                timezone: Number(mobileBirthForm.timezone) || 5.5,
+                              });
+                              setMobileToolResult({ isSadeSati: true, ...res });
+                            } else if (activeToolModal === 'manglik' || activeToolModal === 'mangalik-dosh') {
+                              const res = calculateManglikDosh({
+                                name: mobileBirthForm.name,
+                                gender: mobileBirthForm.gender,
+                                dob: mobileBirthForm.dob,
+                                tob: mobileBirthForm.tob || '12:00',
+                                lat: Number(mobileBirthForm.lat) || 24.8170,
+                                lng: Number(mobileBirthForm.lng) || 93.9368,
+                                timezone: Number(mobileBirthForm.timezone) || 5.5,
+                              });
+                              setMobileToolResult({ isManglikReport: true, ...res });
+                            } else if (activeToolModal === 'kaalsarp' || activeToolModal === 'kaal-sarp-dosh') {
+                              const res = calculateKaalSarpDosh({
+                                name: mobileBirthForm.name,
+                                gender: mobileBirthForm.gender,
+                                dob: mobileBirthForm.dob,
+                                tob: mobileBirthForm.tob || '12:00',
+                                lat: Number(mobileBirthForm.lat) || 24.8170,
+                                lng: Number(mobileBirthForm.lng) || 93.9368,
+                                timezone: Number(mobileBirthForm.timezone) || 5.5,
+                              });
+                              setMobileToolResult({ isKaalSarp: true, ...res });
+                            } else if (activeToolModal === 'yogas' || activeToolModal === 'astrology-yoga') {
+                              const res = calculatePlanetaryYogas({
+                                name: mobileBirthForm.name,
+                                gender: mobileBirthForm.gender,
+                                dob: mobileBirthForm.dob,
+                                tob: mobileBirthForm.tob || '12:00',
+                                lat: Number(mobileBirthForm.lat) || 24.8170,
+                                lng: Number(mobileBirthForm.lng) || 93.9368,
+                                timezone: Number(mobileBirthForm.timezone) || 5.5,
+                              });
+                              setMobileToolResult({ isPlanetaryYogas: true, ...res });
+                            } else if (activeToolModal === 'dasha' || activeToolModal === 'dasha-yengpham') {
+                              try {
+                                const [year, month, day] = (mobileBirthForm.dob || '1998-10-24').split('-').map(Number);
+                                const [hr, min] = (mobileBirthForm.tob || '09:45').split(':').map(Number);
+                                const chartCalc = calculatePlanetaryPositions({
+                                  name: mobileBirthForm.name || 'Native Client',
+                                  gender: mobileBirthForm.gender || 'Female',
+                                  dateOfBirth: mobileBirthForm.dob || '1998-10-24',
+                                  timeOfBirth: mobileBirthForm.tob || '09:45',
+                                  latitude: Number(mobileBirthForm.lat) || 24.8170,
+                                  longitude: Number(mobileBirthForm.lng) || 93.9368,
+                                  timezone: 'Asia/Kolkata',
+                                  utcOffset: Number(mobileBirthForm.timezone) || 5.5,
+                                  ayanamsa: 'Lahiri',
+                                });
+                                const moon = chartCalc.planets.find((p) => p.id === 'mo') || chartCalc.planets[1];
+                                const birthDateObj = new Date(year, month - 1, day, hr, min);
+                                const dashas = calculateDetailedVimshottari(moon.longitude, birthDateObj);
+                                const activeDasha = dashas.find((d) => new Date(d.startDate).getTime() <= Date.now() && new Date(d.endDate).getTime() >= Date.now()) || dashas[0];
+                                setMobileToolResult({
+                                  isDashaReport: true,
+                                  dashas,
+                                  activeDasha,
+                                  nativeName: mobileBirthForm.name,
+                                  dob: mobileBirthForm.dob,
+                                  moonSign: moon.signName,
+                                  nakshatra: moon.nakshatraName,
+                                });
+                              } catch (err) {
+                                setMobileToolResult({
+                                  isDashaReport: true,
+                                  nativeName: mobileBirthForm.name || 'Native Client',
+                                  activeDasha: {
+                                    lord: 'Jupiter (বৃহস্পতি)',
+                                    startDate: '2015-04-12',
+                                    endDate: '2031-04-12',
+                                    antardashas: [
+                                      { lord: 'Saturn (শনি)', startDate: '2024-02-10', endDate: '2027-08-20' },
+                                      { lord: 'Mercury (বুধ)', startDate: '2027-08-20', endDate: '2029-11-25' },
+                                    ]
+                                  }
+                                });
+                              }
+                            } else if (activeToolModal === 'vedic-numerology') {
+                              try {
+                                const numRes = calculateVedicNumerology({
+                                  fullName: mobileBirthForm.name || 'Sanatomba Meitei',
+                                  dob: mobileBirthForm.dob || '2004-06-28',
+                                  gender: (mobileBirthForm.gender as any) || 'Male',
+                                });
+                                setMobileToolResult({
+                                  isNumerologyReport: true,
+                                  ...numRes,
+                                  nativeName: mobileBirthForm.name,
+                                });
+                              } catch (err: any) {
+                                setMobileToolResult({
+                                  isNumerologyReport: true,
+                                  nativeName: mobileBirthForm.name,
+                                  core: { moolank: 1, bhagyank: 4, nameNumber: 5, moolankPlanet: 'Sun (রবি)', bhagyankPlanet: 'Rahu (রাহু)', nameNumberPlanet: 'Mercury (বুধ)' }
+                                });
+                              }
+                            }
+                          }}
+                          className="space-y-3"
                         >
-                          <Sparkles className="w-4 h-4 text-amber-200" />
-                          <span>Detect Planetary Yogas</span>
-                        </button>
-                      </form>
-                    ) : (
-                      <div className="space-y-3">
-                        <div className={`p-4 rounded-2xl border text-center space-y-1 ${
-                          isDark ? 'border-amber-500/40 bg-gradient-to-br from-[#1c2541] to-[#0b132b]' : 'border-amber-300 bg-gradient-to-br from-amber-50 via-white to-amber-100/60'
-                        }`}>
-                          <span className={`text-[10px] uppercase font-bold block ${isDark ? 'text-amber-300' : 'text-amber-900'}`}>Total Yogas Detected</span>
-                          <div className={`text-3xl font-black font-mono ${isDark ? 'text-[#fbbf24]' : 'text-amber-800'}`}>{mobileToolResult.totalYogasDetected}</div>
-                          <span className={`text-xs font-bold block ${isDark ? 'text-emerald-400' : 'text-emerald-700'}`}>
-                            {mobileToolResult.auspiciousCount} Auspicious • {mobileToolResult.inauspiciousCount} Challenging
-                          </span>
-                          <span className={`text-[10px] block ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
-                            Lagna: {mobileToolResult.ascendantSign} • Moon: {mobileToolResult.moonSign}
-                          </span>
-                        </div>
+                          <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-[11px] flex items-center gap-2.5">
+                            <span className="text-xl">✨</span>
+                            <span className="text-amber-900 dark:text-amber-200 font-medium leading-relaxed">
+                              {activeToolModal === 'sadesati' || activeToolModal === 'shani-sade-sati'
+                                ? '7.5-Year Saturn Transit Phase & Moon Sign impact analysis.'
+                                : activeToolModal === 'manglik' || activeToolModal === 'mangalik-dosh'
+                                ? 'Kuja Dosha calculation from Lagna, Moon & Venus with classical Bhanga.'
+                                : activeToolModal === 'kaalsarp' || activeToolModal === 'kaal-sarp-dosh'
+                                ? 'Identifies 12 classical Kaal Sarp yogas & nodal containment axis.'
+                                : activeToolModal === 'yogas' || activeToolModal === 'astrology-yoga'
+                                ? 'Evaluates Gajakesari, Raja Yogas & classical astrological combinations.'
+                                : activeToolModal === 'dasha' || activeToolModal === 'dasha-yengpham'
+                                ? 'Vimshottari 120-year Dasha timeline and active running Antardashas.'
+                                : activeToolModal === 'vedic-numerology'
+                                ? 'Ank Shastra: Moolank, Bhagyank, Name vibrations & Cheiro numerology.'
+                                : 'Enter native birth parameters to generate calculation.'}
+                            </span>
+                          </div>
 
-                        <div className="space-y-2 max-h-[300px] overflow-y-auto pr-1">
-                          {mobileToolResult.yogas?.map((y: any) => (
-                            <div key={y.id} className={`p-3 rounded-xl border space-y-1 ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
-                            }`}>
-                              <div className="flex justify-between items-center">
-                                <strong className={`text-xs ${isDark ? 'text-white' : 'text-slate-900 font-bold'}`}>{y.name}</strong>
-                                <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold ${
-                                  y.nature === 'Challenging' ? 'bg-rose-500/20 text-rose-500 dark:text-rose-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                          <div>
+                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                              Native Full Name *
+                            </label>
+                            <input
+                              type="text"
+                              required
+                              value={mobileBirthForm.name}
+                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
+                              placeholder="e.g. Sanatombi Devi"
+                              className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                              }`}
+                            />
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2">
+                            <div>
+                              <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                                Date of Birth *
+                              </label>
+                              <input
+                                type="date"
+                                required
+                                value={mobileBirthForm.dob}
+                                onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
+                                className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
+                                  isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                                }`}
+                              />
+                            </div>
+                            <div>
+                              <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                                Time of Birth *
+                              </label>
+                              <input
+                                type="time"
+                                required
+                                value={mobileBirthForm.tob}
+                                onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
+                                className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
+                                  isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                                }`}
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                              Gender
+                            </label>
+                            <select
+                              value={mobileBirthForm.gender}
+                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, gender: e.target.value })}
+                              className={`w-full h-10 px-3 rounded-xl border text-xs font-semibold focus:outline-none ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                              }`}
+                            >
+                              <option value="Female">Female (নুপী)</option>
+                              <option value="Male">Male (নুপা)</option>
+                              <option value="Other">Other</option>
+                            </select>
+                          </div>
+
+                          <div>
+                            <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>
+                              Place of Birth (City / Town)
+                            </label>
+                            <input
+                              type="text"
+                              value={mobileBirthForm.pob}
+                              onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, pob: e.target.value })}
+                              placeholder="e.g. Imphal West, Manipur"
+                              className={`w-full h-10 px-3 rounded-xl border text-xs focus:outline-none ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-white border-slate-300 text-slate-900'
+                              }`}
+                            />
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#d97706] text-white font-extrabold text-xs shadow-md cursor-pointer flex items-center justify-center gap-2 active:scale-98 transition-all"
+                          >
+                            <Sparkles className="w-4 h-4 text-amber-200" />
+                            <span>Calculate Astrological Analysis</span>
+                          </button>
+                        </form>
+                      ) : (
+                        <div className="space-y-3.5">
+                          {/* -------------------------------------------------- */}
+                          {/* RESULT VIEW: SHANI SADE SATI */}
+                          {/* -------------------------------------------------- */}
+                          {mobileToolResult.isSadeSati && (
+                            <div className="space-y-3.5">
+                              <div className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md ${
+                                mobileToolResult.isSadeSatiActive
+                                  ? (isDark ? 'bg-gradient-to-br from-rose-950/70 via-[#1c2541] to-rose-900/40 border-rose-500/40' : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/80 border-rose-300')
+                                  : (isDark ? 'bg-gradient-to-br from-emerald-950/70 via-[#1c2541] to-emerald-900/40 border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/80 border-emerald-300')
+                              }`}>
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400 block">
+                                  Shani Sade Sati Status
+                                </span>
+                                <h4 className="font-serif font-black text-xl text-slate-900 dark:text-white">
+                                  {mobileToolResult.phase}
+                                </h4>
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-300 block">
+                                  {mobileToolResult.phaseManipuri}
+                                </span>
+                                <div className="text-[11px] text-slate-600 dark:text-gray-300 pt-1 flex justify-center gap-2 font-medium">
+                                  <span>Moon: <strong>{mobileToolResult.moonSign}</strong></span>
+                                  <span>•</span>
+                                  <span>Transit Saturn: <strong>{mobileToolResult.currentSaturnSign}</strong></span>
+                                </div>
+                              </div>
+
+                              <div className={`p-3.5 rounded-2xl border text-xs leading-relaxed ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-white border-slate-200 text-slate-800 shadow-2xs'
+                              }`}>
+                                {mobileToolResult.statusDescription}
+                              </div>
+
+                              {/* Domain Impacts Matrix */}
+                              {mobileToolResult.domainImpacts && (
+                                <div className={`p-3.5 rounded-2xl border space-y-2.5 ${
+                                  isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
                                 }`}>
-                                  {y.nature}
+                                  <span className="text-[11px] font-bold text-slate-900 dark:text-white block">
+                                    Life Domain Impact Analysis:
+                                  </span>
+                                  <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                                    {Object.entries(mobileToolResult.domainImpacts).map(([domain, info]: any) => (
+                                      <div key={domain} className={`p-2.5 rounded-xl border space-y-0.5 ${
+                                        isDark ? 'bg-[#1c2541]/70 border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                                      }`}>
+                                        <div className="flex items-center justify-between">
+                                          <span className="font-bold capitalize text-slate-900 dark:text-white">{domain}</span>
+                                          <span className={`text-[9px] font-extrabold px-1.5 py-0.5 rounded ${
+                                            info.severity === 'High' ? 'bg-rose-500/20 text-rose-500' : 'bg-amber-500/20 text-amber-600'
+                                          }`}>
+                                            {info.severity}
+                                          </span>
+                                        </div>
+                                        <p className="text-[10px] text-slate-500 dark:text-gray-400 line-clamp-2">{info.note}</p>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Vedic Remedies & Mantra */}
+                              <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                                isDark ? 'bg-sky-950/30 border-sky-500/30' : 'bg-sky-50 border-sky-200 text-sky-950'
+                              }`}>
+                                <div className="flex items-center justify-between">
+                                  <span className="font-serif font-bold text-xs flex items-center gap-1.5">
+                                    <span>🪐</span> <span>Prescribed Shani Mantra</span>
+                                  </span>
+                                  {mobileToolResult.vedicRemedies?.mantra && (
+                                    <button
+                                      type="button"
+                                      onClick={() => copyToClipboard(mobileToolResult.vedicRemedies.mantra, 'Shani Mantra')}
+                                      className="px-2 py-1 rounded-lg bg-sky-500/20 hover:bg-sky-500/30 text-sky-700 dark:text-sky-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Copy className="w-3 h-3" />
+                                      <span>Copy</span>
+                                    </button>
+                                  )}
+                                </div>
+                                <p className="font-mono text-xs font-bold select-all bg-white/50 dark:bg-black/20 p-2 rounded-xl border border-sky-300/40">
+                                  {mobileToolResult.vedicRemedies?.mantra}
+                                </p>
+                                <div className="text-[11px] pt-1 space-y-1 opacity-90">
+                                  <p><strong>Charity / Daan:</strong> {mobileToolResult.vedicRemedies?.charity}</p>
+                                  <p><strong>Rudraksha:</strong> {mobileToolResult.vedicRemedies?.gemstone}</p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* -------------------------------------------------- */}
+                          {/* RESULT VIEW: MANGLIK DOSH (KUJA DOSHA) */}
+                          {/* -------------------------------------------------- */}
+                          {mobileToolResult.isManglikReport && (
+                            <div className="space-y-3.5">
+                              <div className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md ${
+                                mobileToolResult.score > 0
+                                  ? (isDark ? 'bg-gradient-to-br from-rose-950/70 via-[#1c2541] to-rose-900/40 border-rose-500/40' : 'bg-gradient-to-br from-rose-50 via-white to-rose-100/80 border-rose-300')
+                                  : (isDark ? 'bg-gradient-to-br from-emerald-950/70 via-[#1c2541] to-emerald-900/40 border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/80 border-emerald-300')
+                              }`}>
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400 block">
+                                  Manglik Dosh Evaluation
+                                </span>
+                                <h4 className="font-serif font-black text-xl text-slate-900 dark:text-white">
+                                  {mobileToolResult.status}
+                                </h4>
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-300 block">
+                                  {mobileToolResult.statusManipuri}
+                                </span>
+                                <div className="text-2xl font-black font-mono text-rose-600 dark:text-rose-400">
+                                  Score: {mobileToolResult.score}%
+                                </div>
+                              </div>
+
+                              <div className={`p-3.5 rounded-2xl border text-xs leading-relaxed ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-white border-slate-200 text-slate-800 shadow-2xs'
+                              }`}>
+                                <span className="font-bold text-[10px] uppercase text-rose-500 block mb-1">Marriage Guidance:</span>
+                                {mobileToolResult.marriageGuidance}
+                              </div>
+
+                              {/* Placements Matrix */}
+                              {mobileToolResult.placements && (
+                                <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                                  isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                                }`}>
+                                  <span className="text-[11px] font-bold text-slate-900 dark:text-white block">
+                                    3-Reference Mars Positions:
+                                  </span>
+                                  <div className="grid grid-cols-3 gap-2 text-center text-[10.5px]">
+                                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                      <span className="text-slate-500 dark:text-gray-400 block">Lagna</span>
+                                      <strong className={mobileToolResult.placements.fromLagna?.isManglik ? 'text-rose-500' : 'text-emerald-500'}>
+                                        {mobileToolResult.placements.fromLagna?.isManglik ? `H${mobileToolResult.placements.fromLagna.house} (Dosh)` : 'Clear'}
+                                      </strong>
+                                    </div>
+                                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                      <span className="text-slate-500 dark:text-gray-400 block">Moon</span>
+                                      <strong className={mobileToolResult.placements.fromMoon?.isManglik ? 'text-rose-500' : 'text-emerald-500'}>
+                                        {mobileToolResult.placements.fromMoon?.isManglik ? `H${mobileToolResult.placements.fromMoon.house} (Dosh)` : 'Clear'}
+                                      </strong>
+                                    </div>
+                                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                      <span className="text-slate-500 dark:text-gray-400 block">Venus</span>
+                                      <strong className={mobileToolResult.placements.fromVenus?.isManglik ? 'text-rose-500' : 'text-emerald-500'}>
+                                        {mobileToolResult.placements.fromVenus?.isManglik ? `H${mobileToolResult.placements.fromVenus.house} (Dosh)` : 'Clear'}
+                                      </strong>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Vedic Remedies */}
+                              <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                                isDark ? 'bg-rose-950/30 border-rose-500/30' : 'bg-rose-50 border-rose-200 text-rose-950'
+                              }`}>
+                                <div className="flex items-center justify-between">
+                                  <span className="font-serif font-bold text-xs flex items-center gap-1.5">
+                                    <span>🔥</span> <span>Mangal Gayatri Mantra</span>
+                                  </span>
+                                  {mobileToolResult.vedicRemedies?.mantra && (
+                                    <button
+                                      type="button"
+                                      onClick={() => copyToClipboard(mobileToolResult.vedicRemedies.mantra, 'Mangal Mantra')}
+                                      className="px-2 py-1 rounded-lg bg-rose-500/20 hover:bg-rose-500/30 text-rose-700 dark:text-rose-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                                    >
+                                      <Copy className="w-3 h-3" />
+                                      <span>Copy</span>
+                                    </button>
+                                  )}
+                                </div>
+                                <p className="font-mono text-xs font-bold select-all bg-white/50 dark:bg-black/20 p-2 rounded-xl border border-rose-300/40">
+                                  {mobileToolResult.vedicRemedies?.mantra}
+                                </p>
+                                <p className="text-[11px] pt-1 opacity-90">
+                                  <strong>Ritual / Puja:</strong> {mobileToolResult.vedicRemedies?.ritual}
+                                </p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* -------------------------------------------------- */}
+                          {/* RESULT VIEW: KAAL SARP DOSH */}
+                          {/* -------------------------------------------------- */}
+                          {mobileToolResult.isKaalSarp && (
+                            <div className="space-y-3.5">
+                              <div className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md ${
+                                mobileToolResult.hasKaalSarp
+                                  ? (isDark ? 'bg-gradient-to-br from-purple-950/70 via-[#1c2541] to-purple-900/40 border-purple-500/40' : 'bg-gradient-to-br from-purple-50 via-white to-purple-100/80 border-purple-300')
+                                  : (isDark ? 'bg-gradient-to-br from-emerald-950/70 via-[#1c2541] to-emerald-900/40 border-emerald-500/40' : 'bg-gradient-to-br from-emerald-50 via-white to-emerald-100/80 border-emerald-300')
+                              }`}>
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400 block">
+                                  Kaal Sarp Yoga Type
+                                </span>
+                                <h4 className="font-serif font-black text-xl text-slate-900 dark:text-white">
+                                  {mobileToolResult.doshType}
+                                </h4>
+                                <span className="text-xs font-bold text-amber-700 dark:text-amber-300 block">
+                                  {mobileToolResult.doshTypeManipuri}
+                                </span>
+                                <span className={`px-3 py-1 rounded-full text-xs font-bold inline-block border ${
+                                  mobileToolResult.hasKaalSarp ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border-purple-500/30' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border-emerald-500/30'
+                                }`}>
+                                  Intensity: {mobileToolResult.intensity}
                                 </span>
                               </div>
-                              <p className={`text-[10px] ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>{y.prediction}</p>
+
+                              <div className={`p-3.5 rounded-2xl border text-xs leading-relaxed ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b] text-gray-300' : 'bg-white border-slate-200 text-slate-800 shadow-2xs'
+                              }`}>
+                                {mobileToolResult.classicalDescription}
+                              </div>
+
+                              {/* Trapped vs Free Planets */}
+                              <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                                isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                              }`}>
+                                <span className="text-[11px] font-bold text-slate-900 dark:text-white block">
+                                  Nodal Containment Axis:
+                                </span>
+                                <div className="space-y-1 text-[11px]">
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500 dark:text-gray-400">Trapped Planets:</span>
+                                    <strong className="text-purple-600 dark:text-purple-300 font-mono">
+                                      {mobileToolResult.trappedPlanets?.join(', ') || 'All 7 Planets Trapped'}
+                                    </strong>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span className="text-slate-500 dark:text-gray-400">Free Planets:</span>
+                                    <strong className="text-emerald-600 dark:text-emerald-400 font-mono">
+                                      {mobileToolResult.freePlanets?.length > 0 ? mobileToolResult.freePlanets.join(', ') : 'None (Full Yoga)'}
+                                    </strong>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Vedic Remedies */}
+                              <div className={`p-3.5 rounded-2xl border space-y-2 ${
+                                isDark ? 'bg-purple-950/30 border-purple-500/30' : 'bg-purple-50 border-purple-200 text-purple-950'
+                              }`}>
+                                <div className="flex items-center justify-between">
+                                  <span className="font-serif font-bold text-xs flex items-center gap-1.5">
+                                    <span>🐍</span> <span>Maha Mrityunjaya Remedy</span>
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => copyToClipboard('ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम्। उर्वारुकमिव बन्धनान्मृत्योर्मुक्षीय मामृतात्॥', 'Maha Mrityunjaya Mantra')}
+                                    className="px-2 py-1 rounded-lg bg-purple-500/20 hover:bg-purple-500/30 text-purple-700 dark:text-purple-300 font-bold text-[10px] flex items-center gap-1 cursor-pointer"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                    <span>Copy</span>
+                                  </button>
+                                </div>
+                                <p className="font-mono text-xs font-bold select-all bg-white/50 dark:bg-black/20 p-2 rounded-xl border border-purple-300/40">
+                                  ॐ त्र्यम्बकं यजामहे सुगन्धिं पुष्टिवर्धनम्। उर्वारुकमिव बन्धनान्मृत्योर्मुक्षीय मामृतात्॥
+                                </p>
+                                <div className="text-[11px] pt-1 space-y-1 opacity-90">
+                                  <p><strong>Shanti Ritual:</strong> {mobileToolResult.vedicRemedies?.shantiPuja}</p>
+                                  <p><strong>Rudraksha:</strong> {mobileToolResult.vedicRemedies?.rudraksha}</p>
+                                </div>
+                              </div>
                             </div>
-                          ))}
+                          )}
+
+                          {/* -------------------------------------------------- */}
+                          {/* RESULT VIEW: PLANETARY YOGAS */}
+                          {/* -------------------------------------------------- */}
+                          {mobileToolResult.isPlanetaryYogas && (
+                            <div className="space-y-3.5">
+                              <div className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md ${
+                                isDark ? 'bg-gradient-to-br from-amber-950/70 via-[#1c2541] to-amber-900/40 border-amber-500/40' : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/80 border-amber-300'
+                              }`}>
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400 block">
+                                  Total Yogas Identified
+                                </span>
+                                <div className="text-4xl font-black font-mono text-[#d97706] dark:text-[#fbbf24]">
+                                  {mobileToolResult.totalYogasDetected}
+                                </div>
+                                <div className="flex items-center justify-center gap-2">
+                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30">
+                                    {mobileToolResult.auspiciousCount} Auspicious
+                                  </span>
+                                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-600 dark:text-rose-300 border border-rose-500/30">
+                                    {mobileToolResult.inauspiciousCount} Challenging
+                                  </span>
+                                </div>
+                                <div className="text-[11px] text-slate-600 dark:text-gray-300 pt-1 font-medium">
+                                  Lagna: <strong>{mobileToolResult.ascendantSign}</strong> • Moon: <strong>{mobileToolResult.moonSign}</strong>
+                                </div>
+                              </div>
+
+                              <div className="space-y-2 max-h-[320px] overflow-y-auto pr-1">
+                                {mobileToolResult.yogas?.map((y: any) => (
+                                  <div key={y.id} className={`p-3.5 rounded-2xl border space-y-1.5 ${
+                                    isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                                  }`}>
+                                    <div className="flex justify-between items-center">
+                                      <strong className="text-xs font-serif text-slate-900 dark:text-white">{y.name}</strong>
+                                      <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase ${
+                                        y.nature === 'Challenging' ? 'bg-rose-500/20 text-rose-500 dark:text-rose-300' : 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300'
+                                      }`}>
+                                        {y.nature}
+                                      </span>
+                                    </div>
+                                    <p className="text-[11px] leading-relaxed text-slate-700 dark:text-gray-300">{y.prediction}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* -------------------------------------------------- */}
+                          {/* RESULT VIEW: VIMSHOTTARI DASHA */}
+                          {/* -------------------------------------------------- */}
+                          {mobileToolResult.isDashaReport && (
+                            <div className="space-y-3.5">
+                              <div className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md ${
+                                isDark ? 'bg-gradient-to-br from-amber-950/70 via-[#1c2541] to-amber-900/40 border-amber-500/40' : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/80 border-amber-300'
+                              }`}>
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400 block">
+                                  Current Running Mahadasha
+                                </span>
+                                <h4 className="font-serif font-black text-xl text-slate-900 dark:text-white">
+                                  {mobileToolResult.activeDasha?.lord || 'Jupiter (বৃহস্পতি)'}
+                                </h4>
+                                <span className="text-xs font-mono font-bold text-amber-700 dark:text-amber-300 block">
+                                  {mobileToolResult.activeDasha?.startDate?.split('T')[0]} → {mobileToolResult.activeDasha?.endDate?.split('T')[0]}
+                                </span>
+                                {mobileToolResult.moonSign && (
+                                  <div className="text-[11px] text-slate-600 dark:text-gray-300 pt-1 font-medium">
+                                    Moon: <strong>{mobileToolResult.moonSign}</strong> ({mobileToolResult.nakshatra || 'Rohini'})
+                                  </div>
+                                )}
+                              </div>
+
+                              {/* Antardasha Timeline */}
+                              {mobileToolResult.activeDasha?.antardashas && (
+                                <div className={`p-3.5 rounded-2xl border space-y-2.5 ${
+                                  isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                                }`}>
+                                  <span className="text-[11px] font-bold text-slate-900 dark:text-white block">
+                                    Sub-Period (Antardasha) Sequence:
+                                  </span>
+                                  <div className="space-y-2 text-[11px]">
+                                    {mobileToolResult.activeDasha.antardashas.slice(0, 5).map((ad: any, idx: number) => (
+                                      <div key={idx} className={`p-2.5 rounded-xl border flex items-center justify-between ${
+                                        isDark ? 'bg-[#1c2541]/70 border-[#3a506b]' : 'bg-slate-50 border-slate-200'
+                                      }`}>
+                                        <div>
+                                          <span className="font-bold text-slate-900 dark:text-white block">{ad.lord}</span>
+                                          <span className="text-[10px] text-slate-500 dark:text-gray-400 font-mono">
+                                            {ad.startDate?.split('T')[0]} → {ad.endDate?.split('T')[0]}
+                                          </span>
+                                        </div>
+                                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                                          Antar #{idx + 1}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* -------------------------------------------------- */}
+                          {/* RESULT VIEW: VEDIC NUMEROLOGY (ANK SHASTRA) */}
+                          {/* -------------------------------------------------- */}
+                          {mobileToolResult.isNumerologyReport && (
+                            <div className="space-y-3.5">
+                              <div className="grid grid-cols-3 gap-2 text-center">
+                                <div className={`p-3 rounded-2xl border ${
+                                  isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                                }`}>
+                                  <span className="text-[10px] font-bold text-slate-500 dark:text-gray-400 block">Moolank</span>
+                                  <span className="text-3xl font-black font-mono text-[#d97706] dark:text-[#fbbf24] block mt-1">
+                                    {mobileToolResult.core?.moolank}
+                                  </span>
+                                  <span className="text-[9.5px] font-bold text-slate-600 dark:text-gray-300 block truncate">
+                                    {mobileToolResult.core?.moolankPlanet?.split('(')[0]}
+                                  </span>
+                                </div>
+                                <div className={`p-3 rounded-2xl border ${
+                                  isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                                }`}>
+                                  <span className="text-[10px] font-bold text-slate-500 dark:text-gray-400 block">Bhagyank</span>
+                                  <span className="text-3xl font-black font-mono text-[#d97706] dark:text-[#fbbf24] block mt-1">
+                                    {mobileToolResult.core?.bhagyank}
+                                  </span>
+                                  <span className="text-[9.5px] font-bold text-slate-600 dark:text-gray-300 block truncate">
+                                    {mobileToolResult.core?.bhagyankPlanet?.split('(')[0]}
+                                  </span>
+                                </div>
+                                <div className={`p-3 rounded-2xl border ${
+                                  isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                                }`}>
+                                  <span className="text-[10px] font-bold text-slate-500 dark:text-gray-400 block">Name No.</span>
+                                  <span className="text-3xl font-black font-mono text-[#d97706] dark:text-[#fbbf24] block mt-1">
+                                    {mobileToolResult.core?.nameNumber}
+                                  </span>
+                                  <span className="text-[9.5px] font-bold text-slate-600 dark:text-gray-300 block truncate">
+                                    {mobileToolResult.core?.nameNumberPlanet?.split('(')[0]}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {/* Attributes & Lucky Vibrations */}
+                              {mobileToolResult.lucky && (
+                                <div className={`p-3.5 rounded-2xl border space-y-2 text-xs ${
+                                  isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-200 shadow-2xs'
+                                }`}>
+                                  <span className="text-[11px] font-bold text-slate-900 dark:text-white block">
+                                    Harmonious Numerology Vibrations:
+                                  </span>
+                                  <div className="grid grid-cols-2 gap-2 text-[10.5px]">
+                                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                      <span className="text-slate-500 dark:text-gray-400 block">Lucky Numbers:</span>
+                                      <strong className="text-amber-600 dark:text-amber-400 font-mono">{mobileToolResult.lucky.numbers?.join(', ')}</strong>
+                                    </div>
+                                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                      <span className="text-slate-500 dark:text-gray-400 block">Lucky Days:</span>
+                                      <strong className="text-slate-900 dark:text-white">{mobileToolResult.lucky.days?.join(', ')}</strong>
+                                    </div>
+                                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                      <span className="text-slate-500 dark:text-gray-400 block">Lucky Gemstone:</span>
+                                      <strong className="text-slate-900 dark:text-white">{mobileToolResult.lucky.gemstone}</strong>
+                                    </div>
+                                    <div className="p-2 rounded-xl bg-slate-50 dark:bg-[#1c2541] border border-slate-200 dark:border-[#3a506b]">
+                                      <span className="text-slate-500 dark:text-gray-400 block">Lucky Direction:</span>
+                                      <strong className="text-slate-900 dark:text-white">{mobileToolResult.lucky.direction}</strong>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* -------------------------------------------------- */}
+                          {/* RESULT VIEW: KUTHI / NATAL KUNDLI */}
+                          {/* -------------------------------------------------- */}
+                          {mobileToolResult.isKuthiReport && (
+                            <div className="space-y-3.5">
+                              <div className={`p-4 sm:p-5 rounded-3xl border text-center space-y-2 shadow-md ${
+                                isDark ? 'bg-gradient-to-br from-amber-950/70 via-[#1c2541] to-amber-900/40 border-amber-500/40' : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/80 border-amber-300'
+                              }`}>
+                                <span className="text-[10px] uppercase font-bold tracking-wider text-slate-500 dark:text-gray-400 block">
+                                  Bengali Natal Kundli
+                                </span>
+                                <h4 className="font-serif font-black text-xl text-slate-900 dark:text-white">
+                                  {mobileToolResult.nativeName || 'Native Client'}
+                                </h4>
+                                <div className="text-xs font-bold text-amber-700 dark:text-amber-300">
+                                  Lagna: {mobileToolResult.lagna} • Moon: {mobileToolResult.moonSign}
+                                </div>
+                                <div className="text-[11px] text-slate-600 dark:text-gray-300 pt-1 font-medium">
+                                  Nakshatra: <strong>{mobileToolResult.nakshatra} (Pada {mobileToolResult.pada})</strong>
+                                </div>
+                              </div>
+
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setActiveToolModal(null);
+                                  setActiveTab('charts');
+                                }}
+                                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                              >
+                                <Compass className="w-4 h-4" />
+                                <span>Open Full Interactive Bengali Chart →</span>
+                              </button>
+                            </div>
+                          )}
+
+                          {/* Actions */}
+                          <div className="space-y-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={() => window.print()}
+                              className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#d97706] via-[#f59e0b] to-[#d97706] text-white font-extrabold text-xs shadow-md flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                            >
+                              <Download className="w-4 h-4" />
+                              <span>Print / Save PDF Report</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setMobileToolResult(null)}
+                              className={`w-full py-2.5 rounded-2xl font-bold text-xs border cursor-pointer ${
+                                isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300' : 'border-slate-300 bg-white text-slate-800'
+                              }`}
+                            >
+                              Calculate Another Profile
+                            </button>
+                          </div>
                         </div>
+                      )}
+                    </div>
+                  )}
 
-                        <button
-                          onClick={() => setMobileToolResult(null)}
-                          className={`w-full py-2.5 rounded-xl font-bold text-xs border cursor-pointer ${
-                            isDark ? 'border-[#3a506b] bg-[#0b132b] text-gray-300 hover:bg-[#1c2541]' : 'border-slate-300 bg-white text-slate-800 hover:bg-slate-100 shadow-2xs'
-                          }`}
-                        >
-                          Calculate Another Profile
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-
+                {/* ───────────────────────────────────────────────────────────── */}
+                {/* TOOL 5: LIVE EPHEMERIS & GOCHAR WHEEL */}
+                {/* ───────────────────────────────────────────────────────────── */}
                 {activeToolModal === 'transit' && (
-                  <div className="space-y-2 text-xs font-mono">
-                    <p className={`text-[11px] font-sans ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>Live Planetary Ephemeris (Lahiri Ayanamsha ২৪°১০&apos;):</p>
-                    <div className={`p-2.5 rounded-xl border space-y-1.5 text-[11px] ${
+                  <div className="space-y-3 text-xs font-mono">
+                    <p className={`text-[11px] font-sans ${isDark ? 'text-gray-300' : 'text-slate-700'}`}>
+                      Live Planetary Ephemeris (Lahiri Ayanamsha ২৪°১০&apos;):
+                    </p>
+                    <div className={`p-3.5 rounded-2xl border space-y-2 text-[11px] ${
                       isDark ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-slate-50 border-slate-200'
                     }`}>
                       <div className="flex justify-between">
@@ -3779,7 +4165,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     </div>
                     <button
                       onClick={() => setActiveToolModal(null)}
-                      className={`w-full py-2 rounded-xl font-bold text-xs mt-2 border cursor-pointer ${
+                      className={`w-full py-2.5 rounded-2xl font-bold text-xs mt-2 border cursor-pointer ${
                         isDark ? 'bg-[#0b132b] border-[#3a506b] text-amber-300' : 'bg-slate-100 border-slate-300 text-slate-800'
                       }`}
                     >
