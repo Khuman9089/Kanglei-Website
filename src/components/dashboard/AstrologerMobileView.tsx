@@ -207,28 +207,28 @@ export default function AstrologerMobileDashboard() {
 
   // Quick Tools Modal
   const [activeToolModal, setActiveToolModal] = useState<string | null>(null);
-  const [mobileYumDob, setMobileYumDob] = useState('1995-05-15');
-  const [mobileYumTob, setMobileYumTob] = useState('12:00');
+  const [mobileYumDob, setMobileYumDob] = useState('');
+  const [mobileYumTob, setMobileYumTob] = useState('');
   const [mobileYumNakshatra, setMobileYumNakshatra] = useState(1);
   const [mobileYumConstant, setMobileYumConstant] = useState(15);
   const [mobileYumResult, setMobileYumResult] = useState<any>(null);
   const [mobileYumErr, setMobileYumErr] = useState('');
   const [mobileToolResult, setMobileToolResult] = useState<any>(null);
   const [mobileBirthForm, setMobileBirthForm] = useState({
-    name: 'Sanatombi Devi',
+    name: '',
     gender: 'Female',
-    dob: '1998-10-24',
-    tob: '09:45',
-    pob: 'Imphal West, Manipur',
-    partnerName: 'Tomba Singh',
-    partnerDob: '1995-05-15',
-    partnerTob: '14:30',
-    partnerPob: 'Imphal East, Manipur',
+    dob: '',
+    tob: '',
+    pob: '',
+    partnerName: '',
+    partnerDob: '',
+    partnerTob: '',
+    partnerPob: '',
   });
   const [mobileGroomRashi, setMobileGroomRashi] = useState<number>(0);
   const [mobileBrideRashi, setMobileBrideRashi] = useState<number>(0);
-  const [mobileGroomName, setMobileGroomName] = useState<string>('চাওবা (Groom)');
-  const [mobileBrideName, setMobileBrideName] = useState<string>('চাওবী (Bride)');
+  const [mobileGroomName, setMobileGroomName] = useState<string>('');
+  const [mobileBrideName, setMobileBrideName] = useState<string>('');
   const [mobileNgaEeshingResult, setMobileNgaEeshingResult] = useState<NgaEeshingResult | null>(null);
 
   // Wallet State
@@ -2413,7 +2413,7 @@ export default function AstrologerMobileDashboard() {
                 initial={{ y: 50 }}
                 animate={{ y: 0 }}
                 exit={{ y: 50 }}
-                className={`w-full max-w-[420px] rounded-t-3xl sm:rounded-3xl p-5 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto border ${
+                className={`w-full max-w-[440px] rounded-t-3xl sm:rounded-3xl p-4 sm:p-5 space-y-3.5 shadow-2xl max-h-[88vh] max-h-[88dvh] overflow-y-auto border overscroll-contain pb-6 sm:pb-5 ${
                   isDark ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
                 }`}
               >
@@ -2934,9 +2934,11 @@ export default function AstrologerMobileDashboard() {
                       <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Native Full Name *</label>
                       <input
                         type="text"
-                        defaultValue="Sanatombi Devi"
+                        placeholder="e.g. Sanatombi Devi"
+                        value={mobileBirthForm.name}
+                        onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, name: e.target.value })}
                         className={`w-full h-10 px-3 rounded-xl border focus:outline-none ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'
                         }`}
                       />
                     </div>
@@ -2945,7 +2947,8 @@ export default function AstrologerMobileDashboard() {
                         <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Date of Birth</label>
                         <input
                           type="date"
-                          defaultValue="1998-10-24"
+                          value={mobileBirthForm.dob}
+                          onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, dob: e.target.value })}
                           className={`w-full h-10 px-3 rounded-xl border font-mono ${
                             isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                           }`}
@@ -2955,7 +2958,8 @@ export default function AstrologerMobileDashboard() {
                         <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Time of Birth</label>
                         <input
                           type="time"
-                          defaultValue="09:45"
+                          value={mobileBirthForm.tob}
+                          onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, tob: e.target.value })}
                           className={`w-full h-10 px-3 rounded-xl border font-mono ${
                             isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
                           }`}
@@ -2966,9 +2970,11 @@ export default function AstrologerMobileDashboard() {
                       <label className={`block text-[10px] font-bold mb-1 ${isDark ? 'text-[#e0a96d]' : 'text-slate-800'}`}>Place of Birth</label>
                       <input
                         type="text"
-                        defaultValue="Imphal West, Manipur"
+                        placeholder="e.g. Imphal West, Manipur"
+                        value={mobileBirthForm.pob}
+                        onChange={(e) => setMobileBirthForm({ ...mobileBirthForm, pob: e.target.value })}
                         className={`w-full h-10 px-3 rounded-xl border ${
-                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-slate-50 border-slate-300 text-slate-900'
+                          isDark ? 'bg-[#0b132b] border-[#3a506b] text-white placeholder-gray-500' : 'bg-slate-50 border-slate-300 text-slate-900 placeholder-slate-400'
                         }`}
                       />
                     </div>
@@ -2977,7 +2983,7 @@ export default function AstrologerMobileDashboard() {
                         setActiveToolModal(null);
                         setActiveTab('charts');
                       }}
-                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold shadow-md mt-2 cursor-pointer"
+                      className="w-full py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold shadow-md mt-2 cursor-pointer active:scale-95"
                     >
                       Generate Bengali Kundli →
                     </button>

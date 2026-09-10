@@ -212,6 +212,12 @@ export async function GET() {
   const commissionSettings = await readPersistentDataAsync('shop_commission', DEFAULT_COMMISSION_SETTINGS);
   const sliders = await readPersistentDataAsync<ShopSliderItem[]>('shop_sliders', DEFAULT_SHOP_SLIDERS);
 
+  // If products is empty in storage, initialize with the full catalog
+  if (!Array.isArray(products) || products.length === 0) {
+    products = DEFAULT_PRODUCTS;
+    await writePersistentDataAsync('shop_products', products);
+  }
+
   let updatedAnySku = false;
   products = products.map((p) => {
     if (!p.sku || p.sku.trim() === '') {

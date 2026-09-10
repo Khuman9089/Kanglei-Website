@@ -58,11 +58,11 @@ interface BNNWorkstationProps {
 }
 
 const DEFAULT_PRESET = {
-  name: 'Sanatomba Meitei',
+  name: '',
   sex: 'Male',
-  dob: '2004-06-28',
-  tob: '06:00',
-  pob: 'Imphal, Manipur',
+  dob: '',
+  tob: '',
+  pob: '',
   lat: 24.817,
   lng: 93.9368,
   timezone: 5.5,
@@ -906,12 +906,12 @@ export default function BNNWorkstation({ initialBirthData, onClose }: BNNWorksta
         </div>
       )}
 
-      {/* 5. TAB 4: EDIT DETAILS (পোকপগী অকুপ্পা ৱারোল হোংদোকপা) */}
+      {/* 5. TAB 4: EDIT DETAILS */}
       {activeTab === 'input' && (
         <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs space-y-4 max-w-2xl mx-auto">
           <div className="border-b border-slate-100 pb-2">
             <h3 className="font-serif font-black text-lg text-slate-900">
-              Edit Particulars (পোকপগী অকুপ্পা ৱারোল হোংদোকপা)
+              Edit Particulars
             </h3>
             <p className="text-xs text-slate-500">
               Update client birth date, time, or location to recalculate BNN directional positions and predictions.
@@ -920,29 +920,30 @@ export default function BNNWorkstation({ initialBirthData, onClose }: BNNWorksta
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div>
-              <label className="block text-slate-600 font-bold mb-1">Full Name (মমিং):</label>
+              <label className="block text-slate-600 font-bold mb-1">Full Name:</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g. Sanatomba Meitei"
                 className="w-full rounded-xl border border-slate-300 p-2 text-slate-900 bg-[#fffdfa]"
               />
             </div>
 
             <div>
-              <label className="block text-slate-600 font-bold mb-1">Gender (নুপা / নুপী):</label>
+              <label className="block text-slate-600 font-bold mb-1">Gender:</label>
               <select
                 value={formData.sex}
                 onChange={(e) => setFormData({ ...formData, sex: e.target.value })}
                 className="w-full rounded-xl border border-slate-300 p-2 text-slate-900 bg-[#fffdfa]"
               >
-                <option value="Male">Male (নুপা - Jupiter is Jiva Karaka / গুরু অসি জীবனி)</option>
-                <option value="Female">Female (নুপী - Venus is Jiva Karaka / শুক্র অসি জীবনি)</option>
+                <option value="Male">Male (Jupiter is Jiva Karaka)</option>
+                <option value="Female">Female (Venus is Jiva Karaka)</option>
               </select>
             </div>
 
             <div>
-              <label className="block text-slate-600 font-bold mb-1">Date of Birth (পোকপা নুমিৎ):</label>
+              <label className="block text-slate-600 font-bold mb-1">Date of Birth:</label>
               <input
                 type="date"
                 value={formData.dob}
@@ -952,7 +953,7 @@ export default function BNNWorkstation({ initialBirthData, onClose }: BNNWorksta
             </div>
 
             <div>
-              <label className="block text-slate-600 font-bold mb-1">Time of Birth (পোকপা পুংফম):</label>
+              <label className="block text-slate-600 font-bold mb-1">Time of Birth:</label>
               <input
                 type="time"
                 value={formData.tob}
@@ -962,11 +963,12 @@ export default function BNNWorkstation({ initialBirthData, onClose }: BNNWorksta
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-slate-600 font-bold mb-1">Place of Birth (পোকপা মফম):</label>
+              <label className="block text-slate-600 font-bold mb-1">Place of Birth:</label>
               <input
                 type="text"
                 value={formData.pob}
                 onChange={(e) => setFormData({ ...formData, pob: e.target.value })}
+                placeholder="e.g. Imphal, Manipur"
                 className="w-full rounded-xl border border-slate-300 p-2 text-slate-900 bg-[#fffdfa]"
               />
             </div>
@@ -975,9 +977,9 @@ export default function BNNWorkstation({ initialBirthData, onClose }: BNNWorksta
           <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               onClick={() => setActiveTab('matrix')}
-              className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition-all shadow-xs"
+              className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold text-xs hover:bg-indigo-700 transition-all shadow-xs cursor-pointer"
             >
-              Update & Recalculate (অমুক্কা হন্না য়েংবা)
+              Update & Recalculate
             </button>
           </div>
         </div>

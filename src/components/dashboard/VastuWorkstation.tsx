@@ -74,9 +74,9 @@ export default function VastuWorkstation({ initialBirthData, onClose }: VastuWor
   >('compass');
 
   // Client Details
-  const [clientName, setClientName] = useState(initialBirthData?.name || 'Sanatomba Meitei');
-  const [clientDob, setClientDob] = useState(initialBirthData?.dob || '2004-06-28');
-  const [clientTob, setClientTob] = useState(initialBirthData?.tob || '06:00');
+  const [clientName, setClientName] = useState(initialBirthData?.name || '');
+  const [clientDob, setClientDob] = useState(initialBirthData?.dob || '');
+  const [clientTob, setClientTob] = useState(initialBirthData?.tob || '');
   const [clientNakshatra, setClientNakshatra] = useState<number>(14); // Default Chitra
 
   // Interactive Live Compass State
@@ -869,6 +869,7 @@ Generated on KuthiYengpham / KangleiAstro Vastu Workstation`;
                   type="text"
                   value={clientName}
                   onChange={(e) => setClientName(e.target.value)}
+                  placeholder="e.g. Sanatomba Meitei"
                   className="w-full h-11 px-4 rounded-xl border border-slate-300 dark:border-[#3a506b] bg-slate-50 dark:bg-[#0b132b] text-slate-900 dark:text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>

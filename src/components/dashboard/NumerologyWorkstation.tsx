@@ -57,11 +57,11 @@ interface NumerologyWorkstationProps {
 }
 
 const DEFAULT_PRESET = {
-  name: 'Sanatomba Meitei',
+  name: '',
   sex: 'Male',
-  dob: '2004-06-28',
-  tob: '06:00',
-  pob: 'Imphal, Manipur',
+  dob: '',
+  tob: '',
+  pob: '',
 };
 
 const NUMEROLOGY_DASHBOARD_STYLES = {
@@ -90,16 +90,16 @@ export default function NumerologyWorkstation({ initialBirthData, onClose }: Num
   >('core');
 
   // Sub-tool states
-  const [partnerName, setPartnerName] = useState('Thoibi Ningthoujam');
-  const [partnerDob, setPartnerDob] = useState('2005-08-15');
+  const [partnerName, setPartnerName] = useState('');
+  const [partnerDob, setPartnerDob] = useState('');
   const [targetPlanet, setTargetPlanet] = useState('ju');
-  const [testSpelling, setTestSpelling] = useState(formData.name);
-  const [businessNameInput, setBusinessNameInput] = useState('Kanglei Astro Consult');
+  const [testSpelling, setTestSpelling] = useState(formData.name || '');
+  const [businessNameInput, setBusinessNameInput] = useState('');
   const [businessIntention, setBusinessIntention] = useState<'wealth' | 'fame' | 'stability' | 'innovation' | 'harmony'>('wealth');
-  const [mobileInput, setMobileInput] = useState('9862012345');
-  const [vehicleInput, setVehicleInput] = useState('MN01AB1234');
-  const [houseInput, setHouseInput] = useState('42');
-  const [prashnaQuestion, setPrashnaQuestion] = useState('Will this new venture be prosperous?');
+  const [mobileInput, setMobileInput] = useState('');
+  const [vehicleInput, setVehicleInput] = useState('');
+  const [houseInput, setHouseInput] = useState('');
+  const [prashnaQuestion, setPrashnaQuestion] = useState('');
   const [prashnaResult, setPrashnaResult] = useState<any>(null);
   const [copiedNotification, setCopiedNotification] = useState(false);
   const [calcError, setCalcError] = useState('');
@@ -1068,6 +1068,7 @@ DOB: ${formData.dob} | POB: ${formData.pob || 'N/A'}
                   type="text"
                   value={businessNameInput}
                   onChange={(e) => setBusinessNameInput(e.target.value)}
+                  placeholder="e.g. Kanglei Astro Consult"
                   className={NUMEROLOGY_DASHBOARD_STYLES.input}
                 />
               </div>
@@ -1301,6 +1302,7 @@ DOB: ${formData.dob} | POB: ${formData.pob || 'N/A'}
                 type="text"
                 value={vehicleInput}
                 onChange={(e) => setVehicleInput(e.target.value)}
+                placeholder="e.g. MN01AB1234"
                 className={NUMEROLOGY_DASHBOARD_STYLES.input}
               />
             </div>
@@ -1338,6 +1340,7 @@ DOB: ${formData.dob} | POB: ${formData.pob || 'N/A'}
                 type="text"
                 value={houseInput}
                 onChange={(e) => setHouseInput(e.target.value)}
+                placeholder="e.g. 42 or B-108"
                 className={NUMEROLOGY_DASHBOARD_STYLES.input}
               />
             </div>

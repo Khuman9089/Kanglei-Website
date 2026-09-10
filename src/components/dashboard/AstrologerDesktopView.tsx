@@ -466,22 +466,22 @@ export default function AstrologerDashboard() {
   // Tool Calculation Modal & Form State inside Astrologer Dashboard
   const [activeToolModal, setActiveToolModal] = useState<any>(null);
   const [calcForm, setCalcForm] = useState({
-    name: 'Sanatomba Meitei',
+    name: '',
     sex: 'Male',
-    partnerName: 'Thoibi Ningthoujam',
-    dob: '1995-05-15',
-    tob: '06:00',
-    pob: 'Imphal, Manipur',
+    partnerName: '',
+    dob: '',
+    tob: '',
+    pob: '',
     lat: 24.8170,
     lng: 93.9368,
-    partnerDob: '1997-08-20',
-    partnerTob: '10:30',
-    partnerPob: 'Imphal, Manipur',
+    partnerDob: '',
+    partnerTob: '',
+    partnerPob: '',
     partnerLat: 24.8170,
     partnerLng: 93.9368,
     timezone: 5.5,
     ayanamsa: 'Lahiri (Chitrapaksha)',
-    vehicleNo: 'MN01AB1234',
+    vehicleNo: '',
     nakshatra: 1,
     constantValue: 15,
     groomRashi: 0,
@@ -4732,7 +4732,7 @@ Question: ${details.question || 'N/A'}`;
             )
           ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && !calcResult ? (
             /* ── BIRTH DETAILS FORM for workstation tools ── */
-            <div className={`w-full max-w-2xl rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-6 transition-colors ${
+            <div className={`w-full max-w-2xl max-h-[90vh] max-h-[90dvh] overflow-y-auto rounded-3xl border shadow-2xl p-5 sm:p-8 space-y-5 transition-colors ${
               theme === 'dark'
                 ? 'bg-[#1c2541] border-[#3a506b] text-white'
                 : 'bg-[#fffdfa] border-[#f3e8d2] text-slate-900'
@@ -4957,7 +4957,7 @@ Question: ${details.question || 'N/A'}`;
               </form>
             </div>
           ) : (
-            <div className={`w-full max-w-5xl xl:max-w-6xl rounded-3xl border shadow-2xl overflow-hidden relative text-left font-sans p-6 sm:p-8 space-y-6 max-h-[92vh] overflow-y-auto transition-colors ${
+            <div className={`w-full max-w-5xl xl:max-w-6xl rounded-3xl border shadow-2xl overflow-hidden relative text-left font-sans p-4 sm:p-6 md:p-8 space-y-5 max-h-[90vh] max-h-[90dvh] overflow-y-auto transition-colors ${
               theme === 'dark'
                 ? 'bg-[#1c2541] border-[#3a506b] text-white'
                 : 'bg-[#fffdfa] border-[#f3e8d2] text-slate-900'

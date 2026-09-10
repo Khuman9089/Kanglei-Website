@@ -177,13 +177,13 @@ interface VedicWorkstationProps {
   onClose?: () => void;
 }
 
-// Default Sample Data (Scorpio Ascendant, matches reference screenshot)
+// Default Sample Data
 const DEFAULT_PRESET = {
-  name: 'Sanatomba Meitei (Sample)',
+  name: '',
   sex: 'Male',
-  dob: '2004-06-28',
-  tob: '06:00',
-  pob: 'Imphal, Manipur',
+  dob: '',
+  tob: '',
+  pob: '',
   lat: 24.8170,
   lng: 93.9368,
   timezone: 5.5,

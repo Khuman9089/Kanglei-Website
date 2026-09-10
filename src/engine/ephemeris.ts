@@ -61,13 +61,13 @@ export function calculatePlanetaryPositions(
     month = birthData.dateOfBirth.getMonth() + 1;
     day = birthData.dateOfBirth.getDate();
   } else {
-    const parts = String(birthData.dateOfBirth).split('-').map(Number);
-    year = parts[0];
-    month = parts[1];
-    day = parts[2];
+    const parts = String(birthData.dateOfBirth || '').split('-').map(Number);
+    year = parts[0] || 2000;
+    month = parts[1] || 1;
+    day = parts[2] || 1;
   }
 
-  const timeParts = birthData.timeOfBirth.split(':').map(Number);
+  const timeParts = (birthData.timeOfBirth || '06:00').split(':').map(Number);
   h = timeParts[0] || 0;
   m = timeParts[1] || 0;
 
