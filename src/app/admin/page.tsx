@@ -563,14 +563,17 @@ export default function AdminDashboardPage() {
         timing?: string;
       }>,
     },
+    geminiApiKey: '',
   });
   const [savingSettings, setSavingSettings] = useState(false);
+  const [testingGeminiKey, setTestingGeminiKey] = useState(false);
+  const [geminiKeyStatus, setGeminiKeyStatus] = useState<'' | 'VALID' | 'INVALID'>('');
 
   useEffect(() => {
     fetch('/api/settings')
       .then((res) => res.json())
       .then((data) => {
-        if (data && (data.headerSettings || data.upiSettings || data.payuSettings || data.contactSettings)) {
+        if (data) {
           setSiteSettings((prev) => ({
             headerSettings: { ...prev.headerSettings, ...(data.headerSettings || {}) },
             upiSettings: { ...prev.upiSettings, ...(data.upiSettings || {}) },
@@ -582,6 +585,7 @@ export default function AdminDashboardPage() {
                 ? data.contactSettings.branchOffices
                 : (prev.contactSettings?.branchOffices || [])
             },
+            geminiApiKey: data.geminiApiKey || prev.geminiApiKey || '',
           }));
         }
       })
@@ -589,6 +593,32 @@ export default function AdminDashboardPage() {
 
     fetchReturnRequests();
   }, []);
+
+  const handleTestGeminiKey = async () => {
+    setTestingGeminiKey(true);
+    setGeminiKeyStatus('');
+    try {
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'TEST_KEY', apiKey: siteSettings.geminiApiKey }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setGeminiKeyStatus('VALID');
+        setSaveAlert('✅ Google Gemini API Key is valid & operational!');
+      } else {
+        setGeminiKeyStatus('INVALID');
+        setSaveAlert('❌ ' + (data.error || 'Invalid Gemini API key'));
+      }
+    } catch (err: any) {
+      setGeminiKeyStatus('INVALID');
+      setSaveAlert('❌ Error connecting to Gemini: ' + (err.message || 'Network error'));
+    } finally {
+      setTestingGeminiKey(false);
+      setTimeout(() => setSaveAlert(''), 4000);
+    }
+  };
 
   const handleSaveSiteSettings = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -2442,6 +2472,227 @@ export default function AdminDashboardPage() {
     reader.readAsDataURL(file);
   };
 
+  const [isGeneratingProductAi, setIsGeneratingProductAi] = useState(false);
+  const [isEnhancingProductImage, setIsEnhancingProductImage] = useState(false);
+
+  const handleGenerateProductAi = async (mode: 'vision' | 'text' = 'text') => {
+    if (!editingProduct) return;
+    setIsGeneratingProductAi(true);
+    try {
+      let res;
+      if (mode === 'vision' && editingProduct.image) {
+        res = await fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'ANALYZE_IMAGE',
+            imageBase64: editingProduct.image,
+            category: editingProduct.category,
+          }),
+        });
+      } else {
+        if (!editingProduct.title) {
+          alert('Please enter a product title or upload a photo first.');
+          setIsGeneratingProductAi(false);
+          return;
+        }
+        res = await fetch('/api/ai', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'GENERATE_PRODUCT_DETAILS',
+            productTitle: editingProduct.title,
+            category: editingProduct.category || 'Gemstones',
+          }),
+        });
+      }
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to generate product details with Gemini AI');
+      }
+
+      const info = data.data;
+      setEditingProduct((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          title: info.title || prev.title,
+          category: info.category || prev.category,
+          description: info.description || prev.description,
+          shortDescription: info.shortDescription || prev.shortDescription,
+          rulingPlanet: info.rulingPlanet || prev.rulingPlanet,
+          zodiacRashi: info.zodiacRashi || prev.zodiacRashi,
+          caratWeight: info.caratWeight || prev.caratWeight,
+          rattiWeight: info.rattiWeight || prev.rattiWeight,
+          origin: info.origin || prev.origin,
+          color: info.color || prev.color,
+          cutShape: info.cutShape || prev.cutShape,
+          treatment: info.treatment || prev.treatment,
+          certification: info.certification || prev.certification,
+          recommendedMetal: info.recommendedMetal || prev.recommendedMetal,
+          wearingFinger: info.wearingFinger || prev.wearingFinger,
+          wearingDayTime: info.wearingDayTime || prev.wearingDayTime,
+          vedicMantra: info.vedicMantra || prev.vedicMantra,
+          badge: info.badge || prev.badge,
+          price: prev.price || info.estimatedPrice || 8999,
+          originalPrice: prev.originalPrice || Math.round((prev.price || info.estimatedPrice || 8999) * 1.35),
+        };
+      });
+
+      setSaveAlert('✨ Gemini AI auto-populated rich Vedic product specifications!');
+      setTimeout(() => setSaveAlert(''), 4000);
+    } catch (err: any) {
+      console.error(err);
+      alert('AI Generation Error: ' + (err.message || 'Check your Gemini API Key in Settings'));
+    } finally {
+      setIsGeneratingProductAi(false);
+    }
+  };
+
+  const handleEnhanceProductToStudioWhite = async () => {
+    if (!editingProduct?.image) {
+      alert('Please upload or select an image first.');
+      return;
+    }
+    setIsEnhancingProductImage(true);
+    try {
+      const img = new Image();
+      img.crossOrigin = 'anonymous';
+      img.src = editingProduct.image;
+      await new Promise((resolve, reject) => {
+        img.onload = resolve;
+        img.onerror = reject;
+      });
+
+      const canvas = document.createElement('canvas');
+      const size = 800;
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas not supported');
+
+      // Studio White background with very subtle radial soft gradient
+      const gradient = ctx.createRadialGradient(size / 2, size / 2, 50, size / 2, size / 2, size / 1.5);
+      gradient.addColorStop(0, '#ffffff');
+      gradient.addColorStop(1, '#f8fafc');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, size, size);
+
+      // Draw soft platform shadow
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(size / 2, size * 0.78, size * 0.28, size * 0.04, 0, 0, 2 * Math.PI);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.08)';
+      ctx.filter = 'blur(10px)';
+      ctx.fill();
+      ctx.restore();
+
+      // Compute aspect ratio fit
+      const padding = 110;
+      const drawWidth = size - padding * 2;
+      const drawHeight = size - padding * 2;
+      let w = img.width;
+      let h = img.height;
+      const scale = Math.min(drawWidth / w, drawHeight / h);
+      w = w * scale;
+      h = h * scale;
+      const x = (size - w) / 2;
+      const y = (size - h) / 2 - 15;
+
+      ctx.drawImage(img, x, y, w, h);
+
+      const enhancedDataUrl = canvas.toDataURL('image/png', 0.95);
+      setEditingProduct((prev) => (prev ? { ...prev, image: enhancedDataUrl } : prev));
+      setSaveAlert('✨ Product enhanced to studio white presentation!');
+      setTimeout(() => setSaveAlert(''), 3500);
+    } catch (err: any) {
+      console.error('Enhance error:', err);
+      alert('Could not enhance image. Please ensure the image is accessible.');
+    } finally {
+      setIsEnhancingProductImage(false);
+    }
+  };
+
+  const [isGeneratingImageWithAi, setIsGeneratingImageWithAi] = useState(false);
+
+  const [geminiQuotaAlert, setGeminiQuotaAlert] = useState<string>('');
+
+  const handleCopyGeminiPrompt = () => {
+    if (!editingProduct?.title) return;
+    const promptText = `/product images of ${editingProduct.title}, luxury authentic product photography, centered on solid clean white studio background (#FFFFFF), macro view, flawless facets, brilliant reflection, soft platform drop shadow, 8k resolution, no watermark, no text`;
+    navigator.clipboard.writeText(promptText);
+    setSaveAlert('📋 Prompt copied! Paste it in Gemini (gemini.google.com).');
+    setTimeout(() => setSaveAlert(''), 4000);
+  };
+
+  const handlePasteImageFromClipboard = async () => {
+    try {
+      const items = await navigator.clipboard.read();
+      for (const item of items) {
+        for (const type of item.types) {
+          if (type.startsWith('image/')) {
+            const blob = await item.getType(type);
+            const reader = new FileReader();
+            reader.onload = () => {
+              if (typeof reader.result === 'string') {
+                setEditingProduct((prev) => (prev ? { ...prev, image: reader.result as string } : prev));
+                setSaveAlert('✨ Gemini image pasted directly from clipboard!');
+                setTimeout(() => setSaveAlert(''), 4000);
+              }
+            };
+            reader.readAsDataURL(blob);
+            return;
+          }
+        }
+      }
+      alert('No image found in clipboard. In Gemini, right-click the generated image -> "Copy image", then click Paste here.');
+    } catch (err) {
+      alert('Could not access clipboard. Please right-click and Copy Image from Gemini, or paste image URL.');
+    }
+  };
+
+  const handleGenerateProductImageWithAi = async () => {
+    if (!editingProduct?.title || editingProduct.title.trim() === '') {
+      alert('Please enter a product title first so Gemini AI can generate matching photography.');
+      return;
+    }
+
+    setIsGeneratingImageWithAi(true);
+    setGeminiQuotaAlert('');
+    try {
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'GENERATE_PRODUCT_IMAGE',
+          productTitle: editingProduct.title,
+          category: editingProduct.category || 'Gemstones',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success || !data.imageUrl) {
+        if (data.isQuotaExceeded) {
+          setGeminiQuotaAlert(data.error || 'Gemini Free Tier image quota exceeded.');
+          handleCopyGeminiPrompt();
+        }
+        throw new Error(data.error || 'Failed to generate product image with Gemini AI');
+      }
+
+      setEditingProduct((prev) => (prev ? { ...prev, image: data.imageUrl } : prev));
+      setSaveAlert(`✨ Gemini AI generated authentic studio photo matching "${editingProduct.title}"!`);
+      setTimeout(() => setSaveAlert(''), 4000);
+    } catch (err: any) {
+      console.error(err);
+      if (!err.message?.includes('quota')) {
+        alert('Gemini Image Generation: ' + err.message);
+      }
+    } finally {
+      setIsGeneratingImageWithAi(false);
+    }
+  };
+
   const handleAddCategory = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     const catName = newCategoryInput.trim();
@@ -3084,7 +3335,13 @@ export default function AdminDashboardPage() {
     e.preventDefault();
     if (!editingProduct?.title || !editingProduct?.price) return;
 
+    const mainImage = editingProduct.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop';
+    const subImages = Array.isArray(editingProduct.images) && editingProduct.images.length > 0
+      ? (editingProduct.images.includes(mainImage) ? editingProduct.images : [mainImage, ...editingProduct.images])
+      : [mainImage];
+
     const newProd: ProductItem = {
+      ...editingProduct,
       id: editingProduct.id || 'prod-' + Date.now(),
       title: editingProduct.title,
       category: editingProduct.category || 'Gemstones',
@@ -3092,7 +3349,8 @@ export default function AdminDashboardPage() {
       originalPrice: Number(editingProduct.originalPrice || editingProduct.price * 1.2),
       rating: editingProduct.rating || 4.9,
       reviewsCount: editingProduct.reviewsCount || 169,
-      image: editingProduct.image || 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+      image: mainImage,
+      images: subImages,
       badge: editingProduct.badge || 'Certified Original',
       stock: Number(editingProduct.stock || 10),
       description: editingProduct.description || editingProduct.title,
@@ -5384,6 +5642,63 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </button>
                   </div>
 
+                  {/* Gemini AI Copilot & Image Studio Assistant Ribbon */}
+                  <div className={`p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-3 ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-[#fef3c7]/60 border-[#fde68a]'}`}>
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center shadow-xs">
+                        <Sparkles className="w-4 h-4" />
+                      </div>
+                      <div>
+                        <span className="font-serif font-bold text-xs text-[#b45309] block">
+                          ✨ Gemini AI Vedic Product Copilot
+                        </span>
+                        <span className="text-[10px] text-gray-500">
+                          Auto-populate Vedic specs (planet, rashi, mantra, metal, pricing) from title or uploaded image
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={isGeneratingProductAi}
+                        onClick={() => handleGenerateProductAi(editingProduct.image ? 'vision' : 'text')}
+                        className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-xs shadow-xs hover:shadow-md transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                        title="Analyze image or title and populate Vedic astrologer specifications"
+                      >
+                        {isGeneratingProductAi ? (
+                          <>
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <span>Gemini AI Thinking...</span>
+                          </>
+                        ) : (
+                          <>
+                            <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+                            <span>✨ AI Auto-Fill Vedic Specs</span>
+                          </>
+                        )}
+                      </button>
+
+                      {editingProduct.image && (
+                        <button
+                          type="button"
+                          disabled={isEnhancingProductImage}
+                          onClick={handleEnhanceProductToStudioWhite}
+                          className="px-3 py-1.5 rounded-xl bg-white hover:bg-amber-50 border border-amber-300 text-[#b45309] font-extrabold text-xs transition-all flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                          title="Isolate background & center product on studio white canvas"
+                        >
+                          {isEnhancingProductImage ? (
+                            <span>Enhancing...</span>
+                          ) : (
+                            <>
+                              <span>🎨 Studio White Canvas</span>
+                            </>
+                          )}
+                        </button>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 sm:grid-cols-12 gap-4">
                     <div className="sm:col-span-8">
                       <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">Product Title *</label>
@@ -5488,8 +5803,139 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </div>
                   </div>
 
-                  {/* Badge & Image Upload Section */}
-                  <div className="space-y-3 p-4 rounded-2xl ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]/60' : 'bg-[#fefcf6] border-[#fde68a]'}">
+                  {/* Badge & Image Upload Section with Nano Banana AI Studio */}
+                  <div className="space-y-4 p-4 rounded-2xl ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]/60' : 'bg-[#fefcf6] border-[#fde68a]'}">
+                    {/* NANO BANANA AI PRODUCT IMAGE GENERATOR TOOLBAR */}
+                    <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/15 border border-amber-400/40 space-y-3">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                        <div className="flex items-center gap-2.5">
+                          <span className="text-2xl">🍌</span>
+                          <div>
+                            <span className="font-serif font-bold text-xs text-[#b45309] block">
+                              Nano Banana AI Product Photography Studio
+                            </span>
+                            <p className="text-[10px] text-gray-500 font-mono">
+                              Prompt: <span className="text-[#b45309] font-bold">/product images of &ldquo;{editingProduct.title || 'Product Title'}&rdquo;</span> (8K Studio White BG)
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center gap-2 shrink-0">
+                          <button
+                            type="button"
+                            disabled={isGeneratingImageWithAi || !editingProduct.title}
+                            onClick={handleGenerateProductImageWithAi}
+                            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+                            title="Generate fresh photorealistic studio product image via Gemini API"
+                          >
+                            {isGeneratingImageWithAi ? (
+                              <>
+                                <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                <span>Generating...</span>
+                              </>
+                            ) : (
+                              <>
+                                <span>🍌 Generate /product images</span>
+                              </>
+                            )}
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={handleCopyGeminiPrompt}
+                            disabled={!editingProduct.title}
+                            className="px-3 py-2 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 border border-amber-300 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50 shadow-sm"
+                            title="Copy prompt to generate directly in Gemini (gemini.google.com)"
+                          >
+                            <span>📋 Copy Prompt</span>
+                          </button>
+
+                          <a
+                            href="https://gemini.google.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                            title="Open Google Gemini in new tab"
+                          >
+                            <span>🚀 Open Gemini ↗</span>
+                          </a>
+
+                          <button
+                            type="button"
+                            onClick={handlePasteImageFromClipboard}
+                            className="px-3 py-2 rounded-xl bg-emerald-100 hover:bg-emerald-200 text-emerald-900 border border-emerald-300 font-bold text-xs flex items-center gap-1.5 transition-colors cursor-pointer shadow-sm"
+                            title="Paste image directly from clipboard after copying in Gemini"
+                          >
+                            <span>📋 Paste Copied Image</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* GEMINI QUOTA ALERT OR DIRECT INSTRUCTIONS BANNER */}
+                      {geminiQuotaAlert && (
+                        <div className="p-3 rounded-xl bg-amber-500/15 border border-amber-500/50 text-[11px] text-amber-950 space-y-2">
+                          <div className="flex items-start gap-2">
+                            <span className="text-base shrink-0">⚠️</span>
+                            <div>
+                              <p className="font-bold text-amber-900">
+                                Google AI Studio Free Tier Quota Exhausted for Direct API Calling
+                              </p>
+                              <p className="text-[10px] text-amber-800 mt-0.5">
+                                Google&apos;s free API key limits daily direct image generation, but <span className="font-bold">Gemini Web (gemini.google.com)</span> generates the exact same high-quality product images for free! Use this seamless 3-step shortcut:
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap items-center gap-2 pt-1">
+                            <button
+                              type="button"
+                              onClick={handleCopyGeminiPrompt}
+                              className="px-2.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[10px] flex items-center gap-1 shadow-sm cursor-pointer"
+                            >
+                              <span>1️⃣ Copy Prompt</span>
+                            </button>
+                            <a
+                              href="https://gemini.google.com"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-2.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-[10px] flex items-center gap-1 shadow-sm cursor-pointer"
+                            >
+                              <span>2️⃣ Open Gemini &amp; Generate ↗</span>
+                            </a>
+                            <button
+                              type="button"
+                              onClick={handlePasteImageFromClipboard}
+                              className="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] flex items-center gap-1 shadow-sm cursor-pointer"
+                            >
+                              <span>3️⃣ Click Here to Paste Image</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider">Style suggestions:</span>
+                        {[
+                          'Flawless Cut Gemstone',
+                          'Vedic Temple Consecrated',
+                          '22K Gold Ring Mount',
+                          'Pure White Studio Macro'
+                        ].map((suggestion) => (
+                          <button
+                            key={suggestion}
+                            type="button"
+                            onClick={() => {
+                              if (!editingProduct.title?.includes(suggestion)) {
+                                setEditingProduct({ ...editingProduct, title: `${editingProduct.title || ''} (${suggestion})`.trim() });
+                              }
+                            }}
+                            className="px-2 py-0.5 rounded-lg bg-white/80 border border-amber-200 text-[#b45309] text-[9px] font-bold hover:bg-amber-100 transition-colors cursor-pointer"
+                          >
+                            + {suggestion}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
@@ -5506,7 +5952,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
-                          📁 Upload Product Photo from Device *
+                          📁 Or Upload Product Photo from Device
                         </label>
                         <input
                           type="file"
@@ -5520,25 +5966,56 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-2 border-t border-[#3a506b]/40">
                       <div className="sm:col-span-8">
                         <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
-                          🌐 Or Paste Image Web URL
+                          🌐 Current Product Image (URL / Base64 / Generated)
                         </label>
                         <input
                           type="text"
-                          placeholder="https://images.unsplash.com/..."
+                          placeholder="Paste image URL or press Ctrl+V with copied Gemini image"
                           value={editingProduct.image || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, image: e.target.value })}
+                          onPaste={(e) => {
+                            const items = e.clipboardData?.items;
+                            if (items) {
+                              for (let i = 0; i < items.length; i++) {
+                                if (items[i].type.indexOf('image') !== -1) {
+                                  e.preventDefault();
+                                  const blob = items[i].getAsFile();
+                                  if (blob) {
+                                    const reader = new FileReader();
+                                    reader.onload = () => {
+                                      if (typeof reader.result === 'string') {
+                                        setEditingProduct((prev) => (prev ? { ...prev, image: reader.result as string } : prev));
+                                        setSaveAlert('✨ Image pasted directly from clipboard!');
+                                        setTimeout(() => setSaveAlert(''), 4000);
+                                      }
+                                    };
+                                    reader.readAsDataURL(blob);
+                                    return;
+                                  }
+                                }
+                              }
+                            }
+                          }}
                           className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-sky-300' : 'border-[#fde68a] bg-white text-blue-700'} font-mono text-xs"
                         />
                       </div>
 
                       {/* Live Image Preview Thumbnail Box */}
                       <div className="sm:col-span-4 flex items-center gap-3">
-                        <div className="w-16 h-16 rounded-xl bg-cover bg-center border border-[#fbbf24] shadow-md shrink-0 bg-[#1c2541] flex items-center justify-center overflow-hidden" style={{ backgroundImage: editingProduct.image ? `url(${editingProduct.image})` : undefined }}>
+                        <div className="w-16 h-16 rounded-xl bg-contain bg-center bg-no-repeat border border-[#fbbf24] shadow-md shrink-0 bg-white flex items-center justify-center overflow-hidden" style={{ backgroundImage: editingProduct.image ? `url(${editingProduct.image})` : undefined }}>
                           {!editingProduct.image && <ImageIcon className="w-6 h-6 text-gray-500" />}
                         </div>
+                        <div className="text-[10px] text-gray-500">
+                          {editingProduct.image ? (
+                            <span className="text-emerald-600 font-bold block">✓ Image Attached</span>
+                          ) : (
+                            <span>No image selected</span>
+                          )}
+                          <span className="text-[9px] text-gray-400">800x800 Studio Display</span>
                         </div>
                       </div>
                     </div>
+                  </div>
 
                   {/* Pack Options Bundles & Promotional Offers Controls */}
                   <div className="space-y-3 p-4 rounded-2xl ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]/60' : 'bg-[#fefcf6] border-[#fde68a]'}">
@@ -9840,8 +10317,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Header Support Bar & Merchant UPI QR Settings</h3>
-                  <p className="text-xs text-gray-500">Manage website top support header, customer helpline info, UPI merchant handles & payment QR codes</p>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Site Settings & AI Automation Engine</h3>
+                  <p className="text-xs text-gray-500">Manage Google Gemini AI engine, customer helpline info, UPI merchant handles & payment gateways</p>
                 </div>
                 <button
                   onClick={handleSaveSiteSettings}
@@ -9849,8 +10326,120 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
                 >
                   <Save className="w-4 h-4" />
-                  <span>{savingSettings ? 'Saving Settings...' : 'Save Header & UPI QR Settings Live →'}</span>
+                  <span>{savingSettings ? 'Saving Settings...' : 'Save All Settings Live →'}</span>
                 </button>
+              </div>
+
+              {/* CARD 0: GOOGLE GEMINI AI API CONFIGURATION & AUTOMATION ENGINE */}
+              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 via-amber-500 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
+                      <Sparkles className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-serif font-bold text-xl text-[#b45309]">
+                          Google Gemini AI Engine & API Key Configuration
+                        </h4>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider ${
+                          geminiKeyStatus === 'VALID'
+                            ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
+                            : siteSettings.geminiApiKey
+                            ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                            : 'bg-gray-100 text-gray-600 border border-gray-300'
+                        }`}>
+                          {geminiKeyStatus === 'VALID' ? '● Verified & Active' : siteSettings.geminiApiKey ? '● Configured' : '○ Not Set'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Powers 1-click blog drafting, vision image analysis, background isolate, and Vedic product description generator
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      disabled={testingGeminiKey}
+                      onClick={handleTestGeminiKey}
+                      className="px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-[#b45309] font-bold text-xs border border-amber-300 transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {testingGeminiKey ? (
+                        <>
+                          <div className="w-3.5 h-3.5 border-2 border-[#b45309] border-t-transparent rounded-full animate-spin" />
+                          <span>Testing API...</span>
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                          <span>Test API Connection</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                      Gemini API Key (Google AI Studio) *
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="password"
+                        placeholder="AIzaSy..."
+                        value={siteSettings.geminiApiKey || ''}
+                        onChange={(e) => setSiteSettings({ ...siteSettings, geminiApiKey: e.target.value })}
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      />
+                    </div>
+                    <p className="text-[11px] text-gray-500 mt-1">
+                      Get your Gemini API key from <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[#b45309] font-bold underline">Google AI Studio</a>. Uses <code>gemini-2.5-flash</code> for high-speed analysis and generation.
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                    <div className="p-3 rounded-2xl bg-amber-50/70 border border-amber-200 space-y-1">
+                      <span className="font-bold text-[#b45309] flex items-center gap-1">
+                        <span>📝</span> Blog Studio Copilot
+                      </span>
+                      <p className="text-[11px] text-amber-950">
+                        1-Click drafting of complete astrological articles with headings, remedies, and SEO meta tags.
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-1">
+                      <span className="font-bold text-emerald-800 flex items-center gap-1">
+                        <span>💎</span> Vedic Product Vision
+                      </span>
+                      <p className="text-[11px] text-emerald-950">
+                        Inspects uploaded gemstone photos to auto-populate ruling planet, rashi, carat weight, metal, and mantra.
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-200 space-y-1">
+                      <span className="font-bold text-indigo-800 flex items-center gap-1">
+                        <span>🎨</span> Studio Enhancement
+                      </span>
+                      <p className="text-[11px] text-indigo-950">
+                        Isolates backgrounds and places items on pristine white canvases with soft platform shadows.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex justify-end pt-2 border-t border-[#fde68a]">
+                  <button
+                    type="button"
+                    onClick={handleSaveSiteSettings}
+                    disabled={savingSettings}
+                    className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2 cursor-pointer"
+                  >
+                    <Save className="w-4 h-4" />
+                    <span>{savingSettings ? 'Saving...' : 'Save Gemini API Key Live →'}</span>
+                  </button>
+                </div>
               </div>
 
               {/* CARD 1: TOP BAR CUSTOMER SUPPORT HEADER CMS */}

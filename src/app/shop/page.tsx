@@ -220,11 +220,11 @@ export default function ShopPage() {
                   </div>
 
                   {/* PRODUCT IMAGE CONTAINER */}
-                  <Link href={`/shop/${product.id}`} className="block relative aspect-square bg-[#f7f4ee]/60 overflow-hidden group/img">
+                  <Link href={`/shop/${product.id}`} className="block relative aspect-square bg-white overflow-hidden group/img p-2">
                     <img
                       src={product.image}
                       alt={product.title}
-                      className="w-full h-full object-cover object-center group-hover/img:scale-105 transition-transform duration-500"
+                      className="w-full h-full object-contain object-center group-hover/img:scale-105 transition-transform duration-500"
                     />
 
                     {/* FLOATING RATING BADGE (BOTTOM-RIGHT OF IMAGE) */}

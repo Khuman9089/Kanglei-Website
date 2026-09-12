@@ -208,6 +208,15 @@ export default function PanchangPage() {
                   className="w-full px-3.5 py-2 rounded-xl border border-[#fde68a] bg-[#fefcf6] font-bold text-xs text-[#0f172a] focus:outline-none focus:border-[#d97706]"
                 />
               </div>
+
+              <Link
+                href="/calendar"
+                className="px-3 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs shrink-0"
+                title="View Full Manipuri Monthly Calendar"
+              >
+                <Calendar className="w-3.5 h-3.5 text-amber-600" />
+                <span>Monthly Calendar (থাগী ক্যালেন্ডার) →</span>
+              </Link>
             </div>
 
             {/* Location Selector */}

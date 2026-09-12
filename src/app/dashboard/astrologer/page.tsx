@@ -40,24 +40,63 @@ function DashboardLoading({ title = "Loading Astrologer Portal..." }: { title?: 
 export default function AstrologerDashboardPage() {
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
   const [mounted, setMounted] = useState<boolean>(false);
+  const [isManualOverride, setIsManualOverride] = useState<boolean>(false);
 
   useEffect(() => {
     setMounted(true);
-    // Check saved preference first
-    const saved = localStorage.getItem('astro_view_mode') as 'desktop' | 'mobile' | null;
-    if (saved) {
-      setViewMode(saved);
-    } else {
-      // Auto-detect mobile screen width on initial load
-      if (window.innerWidth < 768) {
-        setViewMode('mobile');
+
+    const checkDeviceAndSetMode = () => {
+      // Check if user explicitly set a manual override in current session
+      const savedOverride = sessionStorage.getItem('astro_view_mode_override') as 'desktop' | 'mobile' | null;
+      if (savedOverride) {
+        setViewMode(savedOverride);
+        setIsManualOverride(true);
+        return;
       }
-    }
+
+      // Automatically determine mode: screen width < 1024px or mobile user agent = mobile view, >= 1024px = desktop view
+      const isMobileScreen = window.innerWidth < 1024;
+      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      
+      if (isMobileScreen || isMobileUA) {
+        setViewMode('mobile');
+      } else {
+        setViewMode('desktop');
+      }
+    };
+
+    checkDeviceAndSetMode();
+
+    // Listen to resize events dynamically
+    const handleResize = () => {
+      const savedOverride = sessionStorage.getItem('astro_view_mode_override');
+      if (!savedOverride) {
+        if (window.innerWidth < 1024) {
+          setViewMode('mobile');
+        } else {
+          setViewMode('desktop');
+        }
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, []);
 
   const handleToggleView = (mode: 'desktop' | 'mobile') => {
     setViewMode(mode);
-    localStorage.setItem('astro_view_mode', mode);
+    setIsManualOverride(true);
+    sessionStorage.setItem('astro_view_mode_override', mode);
+  };
+
+  const handleResetToAuto = () => {
+    sessionStorage.removeItem('astro_view_mode_override');
+    setIsManualOverride(false);
+    if (window.innerWidth < 1024) {
+      setViewMode('mobile');
+    } else {
+      setViewMode('desktop');
+    }
   };
 
   if (!mounted) {

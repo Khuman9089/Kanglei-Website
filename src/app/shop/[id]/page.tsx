@@ -144,11 +144,11 @@ export default function ProductDetailPage({
           {/* LEFT: MULTI-IMAGE GALLERY (col-span-6) */}
           <div className="lg:col-span-6 space-y-4">
             {/* Main Featured Display Image */}
-            <div className="w-full h-52 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#f3e8d2] shadow-md relative bg-white flex items-center justify-center max-w-sm sm:max-w-none mx-auto">
+            <div className="w-full h-52 sm:h-80 md:h-96 rounded-2xl sm:rounded-3xl overflow-hidden border-2 border-[#f3e8d2] shadow-md relative bg-white flex items-center justify-center max-w-sm sm:max-w-none mx-auto p-4">
               <img
                 src={selectedImage}
                 alt={product.title}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
               />
               <span className="absolute top-3 left-3 sm:top-4 sm:left-4 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-lg sm:rounded-xl bg-[#0f172a]/90 text-[#fbbf24] text-[10px] sm:text-xs font-extrabold uppercase tracking-wider backdrop-blur-xs border border-[#fbbf24]/30">
                 {product.badge || 'AUTHENTIC VEDIC'}
@@ -167,11 +167,11 @@ export default function ProductDetailPage({
                   <button
                     key={idx}
                     onClick={() => setSelectedImage(imgUrl)}
-                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white shrink-0 ${
+                    className={`w-14 h-14 sm:w-16 sm:h-16 rounded-xl sm:rounded-2xl overflow-hidden border-2 transition-all cursor-pointer bg-white shrink-0 p-1 ${
                       selectedImage === imgUrl ? 'border-[#d97706] ring-2 ring-[#d97706]/30 scale-105' : 'border-gray-200 opacity-70 hover:opacity-100'
                     }`}
                   >
-                    <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img src={imgUrl} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-contain" />
                   </button>
                 ))}
               </div>

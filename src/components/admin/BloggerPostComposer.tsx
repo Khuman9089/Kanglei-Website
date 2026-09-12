@@ -142,6 +142,13 @@ export default function BloggerPostComposer({
   const [showHighlightMenu, setShowHighlightMenu] = useState(false);
   const [showAlignMenu, setShowAlignMenu] = useState(false);
 
+  // Gemini AI Generator States
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+  const [aiTopic, setAiTopic] = useState('');
+  const [aiCategory, setAiCategory] = useState(post.category || 'Transits & Dashas');
+  const [aiGenerating, setAiGenerating] = useState(false);
+  const [aiError, setAiError] = useState('');
+
   const editorRef = useRef<HTMLDivElement>(null);
   const savedSelectionRef = useRef<Range | null>(null);
 
@@ -409,6 +416,61 @@ export default function BloggerPostComposer({
     setCalloutText('');
   };
 
+  // Google Gemini AI Blog Generator Handler
+  const handleGenerateAiBlog = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (!aiTopic.trim()) {
+      setAiError('Please enter a topic or astrological question.');
+      return;
+    }
+    setAiGenerating(true);
+    setAiError('');
+
+    try {
+      const res = await fetch('/api/ai', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'GENERATE_BLOG_POST',
+          topic: aiTopic.trim(),
+          category: aiCategory || category || 'Vedic Guidance',
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || 'Failed to generate article with Gemini AI');
+      }
+
+      const generated = data.data;
+      if (generated.title) {
+        setTitle(generated.title);
+        const generatedSlug = generated.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)+/g, '');
+        setSlug(generated.slug || generatedSlug);
+      }
+      if (generated.excerpt) setExcerpt(generated.excerpt);
+      if (aiCategory) setCategory(aiCategory);
+
+      if (generated.content) {
+        setHtmlContent(generated.content);
+        if (editorRef.current) {
+          editorRef.current.innerHTML = generated.content;
+        }
+      }
+
+      setAiModalOpen(false);
+      setSaveSuccessMsg('✨ AI Article Generated & Formatted!');
+      setTimeout(() => setSaveSuccessMsg(''), 4000);
+    } catch (err: any) {
+      setAiError(err.message || 'Error communicating with Google Gemini AI');
+    } finally {
+      setAiGenerating(false);
+    }
+  };
+
   // Save Blog Post Handler
   const handleSave = async (targetStatus?: 'PUBLISHED' | 'DRAFT') => {
     const finalStatus = targetStatus || status;
@@ -578,6 +640,20 @@ export default function BloggerPostComposer({
             <span className="hidden md:inline">&lt;HTML&gt;</span>
           </button>
         </div>
+
+        {/* Gemini AI Article Generator Button */}
+        <button
+          type="button"
+          onClick={() => {
+            if (title && !aiTopic) setAiTopic(title);
+            setAiModalOpen(true);
+          }}
+          className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-600 hover:to-orange-600 text-white font-extrabold text-xs flex items-center gap-1.5 shadow-xs hover:shadow-md transition-all cursor-pointer mr-1"
+          title="Write complete article with Google Gemini AI"
+        >
+          <Sparkles className="w-3.5 h-3.5 text-amber-200" />
+          <span>✨ Gemini AI Copilot</span>
+        </button>
 
         <div className="h-5 w-px bg-gray-300 mx-0.5" />
 
@@ -1723,6 +1799,135 @@ export default function BloggerPostComposer({
                 }}
               />
             </div>
+          </div>
+        </div>
+      )}
+      {/* ─────────────────────────────────────────────────────────────
+         10. MODAL: GEMINI AI BLOG POST GENERATOR COPILOT
+         ───────────────────────────────────────────────────────────── */}
+      {aiModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white w-full max-w-lg rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-200">
+            {/* Header */}
+            <div className="p-5 bg-gradient-to-r from-[#fffbeb] via-[#fef3c7] to-[#fef9c3] border-b border-[#fde68a] flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center shadow-md">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif font-bold text-base sm:text-lg text-[#b45309]">
+                    Gemini AI Article Writer
+                  </h3>
+                  <p className="text-[11px] text-gray-600">
+                    Draft a high-ranking Vedic astrological article in seconds
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAiModalOpen(false)}
+                className="p-1.5 rounded-xl hover:bg-white/60 text-gray-500 hover:text-gray-900 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Form */}
+            <form onSubmit={handleGenerateAiBlog} className="p-6 space-y-4">
+              {aiError && (
+                <div className="p-3 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-medium flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0" />
+                  <span>{aiError}</span>
+                </div>
+              )}
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                  Article Topic or Astrological Question *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Saturn Sade Sati Effects on Capricorn & Powerful Vedic Remedies"
+                  value={aiTopic}
+                  onChange={(e) => setAiTopic(e.target.value)}
+                  className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none placeholder:font-normal placeholder:text-gray-400"
+                />
+              </div>
+
+              {/* Quick Topic Chips */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider block">
+                  Quick Topic Ideas:
+                </span>
+                <div className="flex flex-wrap gap-1.5">
+                  {[
+                    'Jupiter Transit 2026 Remedies',
+                    'How to Wear Yellow Sapphire (Pukhraj)',
+                    'Manglik Dosha Myths vs Vedic Truth',
+                    'Navagraha Shanti Mantras for Health',
+                  ].map((preset) => (
+                    <button
+                      key={preset}
+                      type="button"
+                      onClick={() => setAiTopic(preset)}
+                      className="px-2.5 py-1 rounded-lg bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] text-[10px] font-bold border border-[#fde68a] cursor-pointer transition-colors"
+                    >
+                      + {preset}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                  Astrological Category
+                </label>
+                <select
+                  value={aiCategory}
+                  onChange={(e) => setAiCategory(e.target.value)}
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none cursor-pointer"
+                >
+                  {PRESET_CATEGORIES.map((cat) => (
+                    <option key={cat} value={cat}>
+                      {cat}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="p-3.5 rounded-2xl bg-amber-50/70 border border-amber-200 text-amber-900 text-[11px] leading-relaxed">
+                🤖 <strong>AI Output Includes:</strong> Compelling title, SEO slug, brief excerpt, formatted H2/H3 sections, Vedic shlokas, remedial bullet points, and special warning callouts.
+              </div>
+
+              <div className="flex justify-end gap-2.5 pt-3 border-t border-gray-100">
+                <button
+                  type="button"
+                  disabled={aiGenerating}
+                  onClick={() => setAiModalOpen(false)}
+                  className="px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-bold text-xs hover:bg-gray-50 cursor-pointer disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={aiGenerating || !aiTopic.trim()}
+                  className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  {aiGenerating ? (
+                    <>
+                      <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      <span>Writing with Gemini AI...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-4 h-4 text-amber-200" />
+                      <span>Generate Full Article →</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

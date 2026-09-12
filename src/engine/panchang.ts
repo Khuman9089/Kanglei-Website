@@ -60,6 +60,8 @@ export interface PanchangData {
     moonSign: string;
     sunDegree: string;
     moonDegree: string;
+    sunLongitude?: number;
+    moonLongitude?: number;
     vikramSamvat: number;
     sakaSamvat: number;
     ritu: string;
@@ -70,6 +72,8 @@ export interface PanchangData {
     name: string;
     signName: string;
     degreeStr: string;
+    longitude?: number;
+    speed?: number;
     nakshatraName: string;
     nakshatraPada: number;
     nakshatraLord: string;
@@ -317,6 +321,8 @@ export function calculateVedicPanchang(
       moonSign: moon.signName,
       sunDegree: `${(sun.longitude % 30).toFixed(1)}° in ${sun.signName}`,
       moonDegree: `${(moon.longitude % 30).toFixed(1)}° in ${moon.signName}`,
+      sunLongitude: sun.longitude,
+      moonLongitude: moon.longitude,
       vikramSamvat: year + 57,
       sakaSamvat: year - 78,
       ritu: getVedicRitu(month),
@@ -334,6 +340,8 @@ export function calculateVedicPanchang(
         name: p.name,
         signName: p.signName,
         degreeStr,
+        longitude: p.longitude,
+        speed: p.speed,
         nakshatraName: p.nakshatraName,
         nakshatraPada: p.nakshatraPada,
         nakshatraLord: lord,

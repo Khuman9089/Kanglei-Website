@@ -28,10 +28,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.9,
     reviewsCount: 48,
     badge: 'BESTSELLER • 100% UNHEATED',
-    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/pukhraj_p1.png',
     images: [
-      'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/pukhraj_p1.png',
+      '/assets/products/pukhraj_p2.png'
     ],
     features: [
       '100% Natural & Untreated Ceylon Yellow Sapphire',
@@ -71,10 +71,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 5.0,
     reviewsCount: 64,
     badge: 'ROYAL GRADE • FAST ACTING',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/neelam_single_1789189245796.jpg',
     images: [
-      'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/neelam_single_1789189245796.jpg',
+      '/assets/products/neelam_multiview_1789189284857.jpg'
     ],
     features: [
       'Unheated & Untreated Ceylon Gemstone',
@@ -114,10 +114,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.8,
     reviewsCount: 39,
     badge: 'VIVID GREEN • INTELLECT',
-    image: 'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/panna_single_1789189322603.jpg',
     images: [
-      'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=800&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/panna_single_1789189322603.jpg',
+      '/assets/products/panna_multiview_1789189376159.jpg'
     ],
     features: [
       'Deep Vivid Green Zambian Origin',
@@ -157,9 +157,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.9,
     reviewsCount: 53,
     badge: 'PIGEON BLOOD • RARE ROYAL',
-    image: 'https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/manik_single_1789189417773.jpg',
     images: [
-      'https://images.unsplash.com/photo-1600003014755-ba31aa59c4b6?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/manik_single_1789189417773.jpg',
+      '/assets/products/manik_multiview_1789189470757.jpg'
     ],
     features: [
       'Historic Mogok Burma Origin Unheated Ruby',
@@ -199,9 +200,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.8,
     reviewsCount: 42,
     badge: 'OX-BLOOD • MANGLIK CURE',
-    image: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/moonga_single_1789189542547.jpg',
     images: [
-      'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/moonga_single_1789189542547.jpg',
+      '/assets/products/moonga_multiview_1789189592700.jpg'
     ],
     features: [
       'Natural Mediterranean Italian Coral',
@@ -241,9 +243,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.9,
     reviewsCount: 35,
     badge: 'LUMINOUS • EMOTIONAL CALM',
-    image: 'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/moti_single_1789189638802.jpg',
     images: [
-      'https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/moti_single_1789189638802.jpg',
+      '/assets/products/moti_multiview_1789189699723.jpg'
     ],
     features: [
       'Thick Nacre Natural South Sea Pearl',
@@ -283,9 +286,9 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.7,
     reviewsCount: 29,
     badge: 'HONEY CEYLON • RAHU SHANTI',
-    image: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gomed_single_1789189755177.jpg',
     images: [
-      'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gomed_single_1789189755177.jpg'
     ],
     features: [
       'Natural Untreated Ceylon Hessonite',
@@ -325,9 +328,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.9,
     reviewsCount: 27,
     badge: 'SHARP CHATOYANCY • KETU',
-    image: 'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gem_catseye_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1599643477877-530eb83abc8e?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gem_catseye_single.jpg',
+      '/assets/products/gem_catseye_multi.jpg'
     ],
     features: [
       'Natural Chrysoberyl (Not Quartz)',
@@ -367,9 +371,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.9,
     reviewsCount: 44,
     badge: 'RAINBOW FIRE • SHUKRA',
-    image: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gem_opal_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gem_opal_single.jpg',
+      '/assets/products/gem_opal_multi.jpg'
     ],
     features: [
       '100% Solid Natural Australian Opal',
@@ -409,9 +414,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.8,
     reviewsCount: 31,
     badge: 'DIAMOND ALTERNATIVE • UNHEATED',
-    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gem_white_sapphire_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gem_white_sapphire_single.jpg',
+      '/assets/products/gem_white_sapphire_multi.jpg'
     ],
     features: [
       '100% Natural Unheated Ceylon White Sapphire',
@@ -451,9 +457,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 5.0,
     reviewsCount: 26,
     badge: 'RARE BI-COLOR • GURU-SHANI',
-    image: 'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gem_pitambari_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gem_pitambari_single.jpg',
+      '/assets/products/gem_pitambari_multi.jpg'
     ],
     features: [
       'Rare Natural Untreated Pitambari Corundum',
@@ -493,9 +500,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.8,
     reviewsCount: 58,
     badge: 'SHANI UPRATNA • STRESS CURE',
-    image: 'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gem_amethyst_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1598560917505-59a3ad559071?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gem_amethyst_single.jpg',
+      '/assets/products/gem_amethyst_multi.jpg'
     ],
     features: [
       'Vivid Royal Purple Brazilian Amethyst',
@@ -535,9 +543,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.7,
     reviewsCount: 36,
     badge: 'PANNA UPRATNA • INTELLECT',
-    image: 'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gem_peridot_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1615655406736-b37c4fabf923?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gem_peridot_single.jpg',
+      '/assets/products/gem_peridot_multi.jpg'
     ],
     features: [
       '100% Natural Untreated Himalayan Peridot',
@@ -577,9 +586,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 4.9,
     reviewsCount: 61,
     badge: 'MERCHANT WEALTH STONE • GURU',
-    image: 'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/gem_citrine_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1605100804763-247f67b3557e?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/gem_citrine_single.jpg',
+      '/assets/products/gem_citrine_multi.jpg'
     ],
     features: [
       'Natural Brazilian Golden Citrine',
@@ -619,9 +629,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 5.0,
     reviewsCount: 82,
     badge: '100% NEPALI • SHIVA BLESSED',
-    image: 'https://images.unsplash.com/photo-1610375461246-83df859d849d?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/rudraksha_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1610375461246-83df859d849d?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/rudraksha_single.jpg',
+      '/assets/products/rudraksha_multi.jpg'
     ],
     features: [
       '100% Genuine High-Altitude Nepal Rudraksha',
@@ -661,9 +672,10 @@ export const INITIAL_GEMSTONE_PRODUCTS: ProductItem[] = [
     rating: 5.0,
     reviewsCount: 94,
     badge: '24K GOLD • MAHALAKSHMI GRACE',
-    image: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop',
+    image: '/assets/products/shree_yantra_single.jpg',
     images: [
-      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=800&auto=format&fit=crop'
+      '/assets/products/shree_yantra_single.jpg',
+      '/assets/products/shree_yantra_multi.jpg'
     ],
     features: [
       'Flawless 3D Sacred Geometry according to Agamas',

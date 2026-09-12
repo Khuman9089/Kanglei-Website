@@ -9,6 +9,7 @@ export interface BengaliPlanetInfo {
   houseNumber: number; // Sign index 1..12 or house 1..12
   isRetrograde?: boolean;
   signDegree?: number;
+  orderNumber?: number; // 1 to 9
 }
 
 interface BengaliChartProps {
@@ -20,6 +21,7 @@ interface BengaliChartProps {
   height?: number;
   theme?: 'light' | 'dark';
   className?: string;
+  displayMode?: 'NUMBERS' | 'NAMES' | 'BOTH';
 }
 
 // Traditional Bengali Planet Names & Short Abbreviations
@@ -34,6 +36,19 @@ const BENGALI_PLANET_NAMES: Record<string, string> = {
   Rahu: 'রাহু',
   Ketu: 'কেতু',
   Ascendant: 'লগ্ন',
+};
+
+const BENGALI_PLANET_DIGITS: Record<string, string> = {
+  Sun: '১',
+  Moon: '২',
+  Mars: '৩',
+  Mercury: '৪',
+  Jupiter: '৫',
+  Venus: '৬',
+  Saturn: '৭',
+  Rahu: '৮',
+  Ketu: '৯',
+  Ascendant: 'ল',
 };
 
 // 12 Compartment Configuration for 3x3 Traditional Bengali Rashi Chakra
@@ -60,6 +75,7 @@ export function BengaliChart({
   height = 380,
   theme = 'light',
   className = '',
+  displayMode,
 }: BengaliChartProps) {
   const isLight = theme === 'light';
 
@@ -70,16 +86,30 @@ export function BengaliChart({
   }
 
   // Add Lagna to ascendantSign compartment
+  let lagnaLabel = 'লগ্ন';
+  if (displayMode === 'NUMBERS') {
+    lagnaLabel = 'ল';
+  }
   signItems[ascendantSign].push({
     name: 'Ascendant',
-    bName: 'লগ্ন',
+    bName: lagnaLabel,
     isRetro: false,
   });
 
   planets.forEach((p) => {
     // Determine target sign index (0..11)
     const targetSign = (p.houseNumber - 1) % 12;
-    const bName = p.abbr || BENGALI_PLANET_NAMES[p.name] || p.name;
+    
+    let bName = p.abbr || BENGALI_PLANET_NAMES[p.name] || p.name;
+    if (displayMode === 'NUMBERS') {
+      bName = BENGALI_PLANET_DIGITS[p.name] || (p.orderNumber !== undefined ? String(p.orderNumber) : bName);
+    } else if (displayMode === 'NAMES') {
+      bName = BENGALI_PLANET_NAMES[p.name] || p.abbr || p.name;
+    } else if (displayMode === 'BOTH') {
+      const digit = BENGALI_PLANET_DIGITS[p.name];
+      const name = BENGALI_PLANET_NAMES[p.name] || p.abbr || p.name;
+      bName = digit ? `${digit} ${name}` : name;
+    }
 
     signItems[targetSign].push({
       name: p.name,
@@ -161,24 +191,53 @@ export function BengaliChart({
                   textAnchor="middle"
                   className="font-bold text-sm sm:text-base leading-snug"
                 >
-                  <tspan x={cfg.titleX} dy="0">
-                    {items.map((item, idx) => {
-                      let itemFill = isLight ? '#0f172a' : '#f5f0e8';
-                      if (item.name === 'Ascendant') itemFill = isLight ? '#b45309' : '#fbbf24';
-                      else if (item.isRetro) itemFill = '#dc2626';
+                  {items.length <= 2 ? (
+                    <tspan x={cfg.titleX} dy="0">
+                      {items.map((item, idx) => {
+                        let itemFill = isLight ? '#0f172a' : '#f5f0e8';
+                        if (item.name === 'Ascendant') itemFill = isLight ? '#b45309' : '#fbbf24';
+                        else if (item.isRetro) itemFill = '#dc2626';
 
-                      return (
-                        <tspan
-                          key={idx}
-                          dx={idx > 0 ? 4 : 0}
-                          fill={itemFill}
-                          className="font-black"
-                        >
-                          {item.bName}{item.isRetro ? '(ব)' : ''}
-                        </tspan>
-                      );
-                    })}
-                  </tspan>
+                        return (
+                          <tspan
+                            key={idx}
+                            dx={idx > 0 ? 5 : 0}
+                            fill={itemFill}
+                            className="font-black"
+                          >
+                            {item.bName}{item.isRetro ? '(ব)' : ''}
+                          </tspan>
+                        );
+                      })}
+                    </tspan>
+                  ) : (
+                    <>
+                      <tspan x={cfg.titleX} dy="-5">
+                        {items.slice(0, 2).map((item, idx) => {
+                          let itemFill = isLight ? '#0f172a' : '#f5f0e8';
+                          if (item.name === 'Ascendant') itemFill = isLight ? '#b45309' : '#fbbf24';
+                          else if (item.isRetro) itemFill = '#dc2626';
+                          return (
+                            <tspan key={idx} dx={idx > 0 ? 4 : 0} fill={itemFill} className="font-black text-xs sm:text-sm">
+                              {item.bName}{item.isRetro ? '(ব)' : ''}
+                            </tspan>
+                          );
+                        })}
+                      </tspan>
+                      <tspan x={cfg.titleX} dy="16">
+                        {items.slice(2).map((item, idx) => {
+                          let itemFill = isLight ? '#0f172a' : '#f5f0e8';
+                          if (item.name === 'Ascendant') itemFill = isLight ? '#b45309' : '#fbbf24';
+                          else if (item.isRetro) itemFill = '#dc2626';
+                          return (
+                            <tspan key={idx} dx={idx > 0 ? 4 : 0} fill={itemFill} className="font-black text-xs sm:text-sm">
+                              {item.bName}{item.isRetro ? '(ব)' : ''}
+                            </tspan>
+                          );
+                        })}
+                      </tspan>
+                    </>
+                  )}
                 </text>
               )}
             </g>

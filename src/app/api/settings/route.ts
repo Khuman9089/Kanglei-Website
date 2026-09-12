@@ -39,6 +39,7 @@ export interface ContactSettings {
 }
 
 export interface SiteSettings {
+  geminiApiKey?: string;
   headerSettings: {
     supportTiming: string;
     supportEmail: string;
@@ -56,6 +57,7 @@ export interface SiteSettings {
 }
 
 const DEFAULT_SETTINGS: SiteSettings = {
+  geminiApiKey: '',
   headerSettings: {
     supportTiming: 'Live Support (9:30 AM – 6:00 PM IST)',
     supportEmail: 'ccare@kuthiyengpham.in',
@@ -113,6 +115,10 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
     let currentSettings = await readPersistentDataAsync<SiteSettings>('site_settings', DEFAULT_SETTINGS);
+
+    if (typeof body.geminiApiKey === 'string') {
+      currentSettings.geminiApiKey = body.geminiApiKey.trim();
+    }
 
     if (body.headerSettings) {
       currentSettings.headerSettings = {

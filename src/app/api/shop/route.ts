@@ -1,8 +1,36 @@
 import { NextResponse } from 'next/server';
+import fs from 'fs';
+import path from 'path';
 import { supabase } from '@/lib/supabase';
 import { readPersistentDataAsync, writePersistentDataAsync } from '@/lib/persistentStore';
 
 export const dynamic = 'force-dynamic';
+
+function saveBase64ImageIfPresent(imageStr?: string, prefix = 'product'): string {
+  if (!imageStr || typeof imageStr !== 'string' || !imageStr.startsWith('data:image/')) {
+    return imageStr || '';
+  }
+  try {
+    const match = imageStr.match(/^data:image\/([a-zA-Z0-9+]+);base64,(.+)$/);
+    if (!match) return imageStr;
+    const rawExt = match[1].toLowerCase();
+    const ext = rawExt === 'jpeg' ? 'jpg' : rawExt === 'svg+xml' ? 'svg' : (rawExt.split('+')[0] || 'png');
+    const base64Data = match[2];
+    const buffer = Buffer.from(base64Data, 'base64');
+
+    const fileName = `${prefix}_${Date.now()}_${Math.floor(1000 + Math.random() * 9000)}.${ext}`;
+    const uploadDir = path.join(process.cwd(), 'public', 'assets', 'products');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    const filePath = path.join(uploadDir, fileName);
+    fs.writeFileSync(filePath, buffer);
+    return `/assets/products/${fileName}`;
+  } catch (err) {
+    console.error('Error saving base64 image to disk:', err);
+    return imageStr;
+  }
+}
 
 export interface ProductVariant {
   id: string;
@@ -216,6 +244,27 @@ export async function GET() {
   if (!Array.isArray(products) || products.length === 0) {
     products = DEFAULT_PRODUCTS;
     await writePersistentDataAsync('shop_products', products);
+  } else {
+    // Only backfill missing images if product has no image at all
+    let didUpdate = false;
+    products = products.map((prod) => {
+      const defaultMatch = DEFAULT_PRODUCTS.find((dp) => dp.id === prod.id);
+      if (defaultMatch) {
+        if (!prod.image && defaultMatch.image) {
+          didUpdate = true;
+          return {
+            ...prod,
+            image: defaultMatch.image,
+            images: prod.images && prod.images.length > 0 ? prod.images : defaultMatch.images,
+          };
+        }
+      }
+      return prod;
+    });
+
+    if (didUpdate) {
+      await writePersistentDataAsync('shop_products', products);
+    }
   }
 
   let updatedAnySku = false;
@@ -317,6 +366,16 @@ export async function POST(request: Request) {
       } else if (!prod.status) {
         prod.status = 'APPROVED';
         prod.adminCommissionPct = 0;
+      }
+
+      // Convert any base64 images into fast-loading static assets in public/assets/products
+      if (prod.image && prod.image.startsWith('data:image/')) {
+        prod.image = saveBase64ImageIfPresent(prod.image, 'product');
+      }
+      if (Array.isArray(prod.images) && prod.images.length > 0) {
+        prod.images = prod.images.map((img) => saveBase64ImageIfPresent(img, 'product_sub'));
+      } else if (prod.image) {
+        prod.images = [prod.image];
       }
 
       if (prod.category && !categories.includes(prod.category)) {
