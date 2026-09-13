@@ -201,20 +201,28 @@ export default function YekSalaiMatchingPage() {
     try {
       // Groom Planetary Chart
       const groomChart = calculatePlanetaryPositions({
+        name: groomName,
+        gender: 'male',
         dateOfBirth: groomDob,
         timeOfBirth: groomTob,
         latitude: groomLat,
         longitude: groomLon,
-        name: groomName
+        timezone: 'Asia/Kolkata',
+        utcOffset: 5.5,
+        ayanamsa: 'lahiri'
       });
 
       // Bride Planetary Chart
       const brideChart = calculatePlanetaryPositions({
+        name: brideName,
+        gender: 'female',
         dateOfBirth: brideDob,
         timeOfBirth: brideTob,
         latitude: brideLat,
         longitude: brideLon,
-        name: brideName
+        timezone: 'Asia/Kolkata',
+        utcOffset: 5.5,
+        ayanamsa: 'lahiri'
       });
 
       const groomMoon = groomChart.planets.find(p => p.id === 'mo') || groomChart.planets[1];

@@ -51,7 +51,14 @@ if [ -f "public/.htaccess" ]; then
     chmod 644 .htaccess
 fi
 
-# 6b. Remove leftover physical "blog" directory in root if present (prevents Apache directory redirect loops)
+# 6b. Sync public assets to root ./assets for direct Apache/LiteSpeed web server delivery
+if [ -d "public/assets" ]; then
+    echo "🖼️ Syncing public/assets for web server..."
+    cp -r public/assets ./assets 2>/dev/null || true
+    chmod -R 755 public/assets ./assets 2>/dev/null || true
+fi
+
+# 6c. Remove leftover physical "blog" directory in root if present (prevents Apache directory redirect loops)
 if [ -d "blog" ]; then
     echo "🧹 Removing conflicting physical 'blog' directory in root..."
     rm -rf blog

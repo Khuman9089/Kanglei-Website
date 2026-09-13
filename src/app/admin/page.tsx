@@ -114,6 +114,7 @@ interface ProductItem {
   originalPrice: number;
   stock: number;
   image: string;
+  images?: string[];
   seoMetaTitle?: string;
   seoMetaDescription?: string;
   rating?: number;

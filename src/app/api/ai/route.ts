@@ -274,11 +274,13 @@ Respond ONLY with raw JSON:
       });
 
       if (!res.ok) {
-        let errorMsg = res.error;
-        try {
-          const parsed = JSON.parse(res.error);
-          errorMsg = parsed?.error?.message || res.error;
-        } catch (e) {}
+        let errorMsg = res.error || 'API call failed';
+        if (res.error) {
+          try {
+            const parsed = JSON.parse(res.error);
+            errorMsg = parsed?.error?.message || res.error;
+          } catch (e) {}
+        }
         return NextResponse.json({ success: false, error: errorMsg }, { status: 400 });
       }
 

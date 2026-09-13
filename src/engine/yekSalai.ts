@@ -108,6 +108,7 @@ export interface ManipuriSurnameEntry {
   salais_meitei: string[];
   primary_salai: string;
   primary_salai_meitei: string;
+  isCustom?: boolean;
 }
 
 export const MANIPUR_SURNAMES_DB: ManipuriSurnameEntry[] = manipurSurnamesData as ManipuriSurnameEntry[];
