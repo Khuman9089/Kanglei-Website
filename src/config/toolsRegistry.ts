@@ -129,4 +129,23 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
     color: 'text-emerald-500',
     description: 'Comprehensive Vedic spatial architecture workstation featuring live 360° compass heading, 16 MahaVastu energy zones, 32 Pada entrance gate analysis, Meitei Yumsharol modulo 8 calculation, and Sanamahi Kachin energy alignment.',
   },
+  {
+    id: 'saka-to-birth',
+    title: 'Saka Era to Birth Converter (শকাব্দ to English DOB)',
+    subtitle: 'Extract English DOB, Birth Time (Danda/Pal/Bipal), Epakpa Thabanik, Rashi & Nakshatra from Traditional Manipuri Kuthi.',
+    category: 'astrology',
+    iconName: 'ScrollText',
+    color: 'text-amber-500',
+    description: 'Direct conversion engine matching qw.xlsm Saka_to_Birth. Translates Saka Year (1842-1972), Solar Month (Mass 0-11), Sangkranti day (1-32), and Danda-Pal-Bipal into English Date of Birth, Local Solar Time, Weekday, Epakpa Numitki Tithi (Thabanik), Rashi & Nakshatra with ending times.',
+  },
+  {
+    id: 'kuthi-result-sheets',
+    title: 'Kuthi Horoscope Result Sheets (Result • Meetei_Result • MM_Result_M)',
+    subtitle: '3-in-1 Unified Horoscope Result Sheets with Budha.ttf font, Directional predictions & Dasha timeline.',
+    category: 'astrology',
+    iconName: 'FileText',
+    color: 'text-amber-600',
+    description: 'Renders complete authentic Manipuri Kuthi horoscope documents across 3 tabbed sheets: Result (Classic format), Meetei_Result (BLipi15), and MM_Result_M (Budha.ttf font), with 8-direction travel predictions, lucky planetary numbers, and life dasha narrative.',
+  },
 ];
+

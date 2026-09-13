@@ -34,6 +34,8 @@ import VedicWorkstation, { calculateExactAge } from '@/components/dashboard/Vedi
 import BNNWorkstation from '@/components/dashboard/BNNWorkstation';
 import NumerologyWorkstation from '@/components/dashboard/NumerologyWorkstation';
 import VastuWorkstation from '@/components/dashboard/VastuWorkstation';
+import SakaToBirthWorkstation from '@/components/dashboard/SakaToBirthWorkstation';
+import KuthiResultWorkstation from '@/components/dashboard/KuthiResultWorkstation';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
 import { calculateDetailedVimshottari, calculateRemainingDashaTime } from '@/engine/vedicWorkstationEngine';
@@ -4029,6 +4031,8 @@ Question: ${details.question || 'N/A'}`;
                       }`}>
                         {t.id === 'vedic-workstation' ? '🪐' :
                          t.id === 'bnn-workstation' ? '✨' :
+                         t.id === 'saka-to-birth' ? '📜' :
+                         t.id === 'kuthi-result-sheets' ? '🪶' :
                          t.id === 'yumsharol' ? '🏡' :
                          t.id === 'nga-eeshing' ? '🐟' :
                          t.id === 'dasha-yengpham' ? '📜' :
@@ -4058,7 +4062,14 @@ Question: ${details.question || 'N/A'}`;
                       onClick={() => {
                         setCalcResult(null); // Always clear result on open
                         setActiveToolModal(t);
-                        if (t.id !== 'vedic-workstation' && t.id !== 'bnn-workstation' && t.id !== 'numerology-workstation') {
+                        if (
+                          t.id !== 'vedic-workstation' &&
+                          t.id !== 'bnn-workstation' &&
+                          t.id !== 'numerology-workstation' &&
+                          t.id !== 'vastu-workstation' &&
+                          t.id !== 'saka-to-birth' &&
+                          t.id !== 'kuthi-result-sheets'
+                        ) {
                           executeToolCalculation(t, calcForm);
                         }
                         // Workstations: calcResult stays null → birth form shows first
@@ -4657,7 +4668,47 @@ Question: ${details.question || 'N/A'}`;
         <div className={`fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 backdrop-blur-xs ${
           theme === 'dark' ? 'bg-[#0b132b]/85' : 'bg-slate-900/60'
         }`}>
-          {(activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && (calcResult?.type === 'workstation-ready' || calcResult?.isNumerologyReport) ? (
+          {activeToolModal.id === 'saka-to-birth' ? (
+            <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+              <SakaToBirthWorkstation
+                theme={theme}
+                onClose={() => {
+                  setActiveToolModal(null);
+                  setCalcResult(null);
+                }}
+                onOpenKuthi={(dob, tob, name) => {
+                  setCalcForm((prev) => ({
+                    ...prev,
+                    dob,
+                    tob,
+                    name: name || prev.name,
+                  }));
+                  const vedicTool = ACTIVE_TOOLS_REGISTRY.find((t) => t.id === 'vedic-workstation') || {
+                    id: 'vedic-workstation',
+                    title: 'Vedic Workstation',
+                  };
+                  setActiveToolModal(vedicTool);
+                  setCalcResult({ type: 'workstation-ready' });
+                }}
+              />
+            </div>
+          ) : activeToolModal.id === 'kuthi-result-sheets' ? (
+            <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+              <KuthiResultWorkstation
+                theme={theme}
+                initialData={{
+                  name: calcForm.name || 'Moirangthem Suraj Singh',
+                  dob: calcForm.dob || '2-7-1986 AD',
+                  tob: calcForm.tob || '9:45 AM',
+                  pob: calcForm.pob || 'Tentha Khunou Maning Leikai',
+                }}
+                onClose={() => {
+                  setActiveToolModal(null);
+                  setCalcResult(null);
+                }}
+              />
+            </div>
+          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && (calcResult?.type === 'workstation-ready' || calcResult?.isNumerologyReport) ? (
             /* ── WORKSTATION: show after calculation is ready ── */
             activeToolModal.id === 'vedic-workstation' ? (
               <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">

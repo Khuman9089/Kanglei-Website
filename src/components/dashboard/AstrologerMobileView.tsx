@@ -63,6 +63,8 @@ import { calculateNgaEeshing, RASHI_LIST_NGA_EESHING, NgaEeshingResult } from '@
 import { calculateVedicNumerology } from '@/engine/numerology';
 import { calculateDetailedVimshottari } from '@/engine/vedicWorkstationEngine';
 import { calculatePlanetaryPositions } from '@/engine/ephemeris';
+import SakaToBirthWorkstation from '@/components/dashboard/SakaToBirthWorkstation';
+import KuthiResultWorkstation from '@/components/dashboard/KuthiResultWorkstation';
 
 // ==========================================
 // BENGALI FORMATTING & DICTIONARIES
@@ -1291,6 +1293,40 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       </span>
                     </button>
                   )}
+
+                  <button
+                    onClick={() => {
+                      setActiveToolModal('saka-to-birth');
+                      setMobileToolResult(null);
+                    }}
+                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#d97706] dark:text-[#fbbf24] text-base">
+                      📜
+                    </div>
+                    <span className="text-[9px] font-bold text-center leading-tight">
+                      Saka-to-DOB
+                    </span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setActiveToolModal('kuthi-result-sheets');
+                      setMobileToolResult(null);
+                    }}
+                    className={`flex flex-col items-center gap-1.5 p-2 rounded-2xl border active:scale-95 transition-all cursor-pointer shadow-xs ${
+                      isDark ? 'bg-[#1c2541]/80 hover:bg-[#1c2541] border-[#3a506b]/60' : 'bg-white hover:bg-slate-50 border-slate-200'
+                    }`}
+                  >
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#d97706] dark:text-[#fbbf24] text-base">
+                      🪶
+                    </div>
+                    <span className="text-[9px] font-bold text-center leading-tight">
+                      Kuthi-Result
+                    </span>
+                  </button>
                 </div>
               </section>
 
@@ -2563,14 +2599,45 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4"
             >
-              <motion.div
-                initial={{ y: 50 }}
-                animate={{ y: 0 }}
-                exit={{ y: 50 }}
-                className={`w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl p-5 border shadow-2xl space-y-4 ${
-                  isDark ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
-                }`}
-              >
+              {activeToolModal === 'saka-to-birth' ? (
+                <motion.div
+                  initial={{ y: 50 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: 50 }}
+                  className="w-full max-w-2xl max-h-[94vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl"
+                >
+                  <SakaToBirthWorkstation
+                    theme={isDark ? 'dark' : 'light'}
+                    onClose={() => {
+                      setActiveToolModal(null);
+                      setMobileToolResult(null);
+                    }}
+                  />
+                </motion.div>
+              ) : activeToolModal === 'kuthi-result-sheets' ? (
+                <motion.div
+                  initial={{ y: 50 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: 50 }}
+                  className="w-full max-w-2xl max-h-[94vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl"
+                >
+                  <KuthiResultWorkstation
+                    theme={isDark ? 'dark' : 'light'}
+                    onClose={() => {
+                      setActiveToolModal(null);
+                      setMobileToolResult(null);
+                    }}
+                  />
+                </motion.div>
+              ) : (
+                <motion.div
+                  initial={{ y: 50 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: 50 }}
+                  className={`w-full max-w-md max-h-[90vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl p-5 border shadow-2xl space-y-4 ${
+                    isDark ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-slate-200 text-slate-900'
+                  }`}
+                >
                 <div className="flex items-center justify-between pb-3 border-b border-gray-500/20">
                   <span className={`text-xs font-serif font-bold flex items-center gap-2 ${
                     isDark ? 'text-[#fbbf24]' : 'text-amber-800'
@@ -4174,6 +4241,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                   </div>
                 )}
               </motion.div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>

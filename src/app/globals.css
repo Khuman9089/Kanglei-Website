@@ -60,7 +60,7 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────
-   Custom Manipuri Font: Blipi15
+   Custom Manipuri Font: Blipi15 & Budha
    ───────────────────────────────────────────────────────────── */
 @font-face {
   font-family: 'Blipi15';
@@ -70,9 +70,18 @@ body {
   font-display: swap;
 }
 
+@font-face {
+  font-family: 'Budha';
+  src: url('/fonts/Budha.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 /* Custom font utility classes */
 .font-blipi { font-family: 'Blipi15', sans-serif !important; }
 .font-meetei { font-family: 'Blipi15', sans-serif !important; }
+.font-budha { font-family: 'Budha', sans-serif !important; }
 
 h1, h2, h3, h4, h5, h6 {
   font-family: 'Cormorant Garamond', Georgia, serif;
