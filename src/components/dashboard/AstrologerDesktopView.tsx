@@ -4696,11 +4696,17 @@ Question: ${details.question || 'N/A'}`;
             <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
               <KuthiResultWorkstation
                 theme={theme}
+                astrologerProfile={{
+                  name: profileForm.name,
+                  title: profileForm.specialty || 'Vedic Astro',
+                  address: (profileForm as any).address || 'Imphal, Manipur',
+                  phone: profileForm.phone || profileForm.whatsappNo,
+                }}
                 initialData={{
-                  name: calcForm.name || 'Moirangthem Suraj Singh',
-                  dob: calcForm.dob || '2-7-1986 AD',
-                  tob: calcForm.tob || '9:45 AM',
-                  pob: calcForm.pob || 'Tentha Khunou Maning Leikai',
+                  name: calcForm.name || 'Sanatomba Meitei',
+                  dob: calcForm.dob || '2004-06-28',
+                  tob: calcForm.tob || '06:00',
+                  pob: calcForm.pob || 'Imphal, Manipur',
                 }}
                 onClose={() => {
                   setActiveToolModal(null);

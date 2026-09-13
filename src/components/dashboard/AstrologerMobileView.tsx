@@ -2623,6 +2623,12 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                 >
                   <KuthiResultWorkstation
                     theme={isDark ? 'dark' : 'light'}
+                    astrologerProfile={{
+                      name: astroUser?.name,
+                      title: 'Vedic Astro',
+                      address: astroUser?.address,
+                      phone: astroUser?.phone || astroUser?.whatsappNo,
+                    }}
                     onClose={() => {
                       setActiveToolModal(null);
                       setMobileToolResult(null);

@@ -39,6 +39,12 @@ interface KuthiResultWorkstationProps {
     pob?: string;
     gender?: 'male' | 'female';
   };
+  astrologerProfile?: {
+    name?: string;
+    title?: string;
+    address?: string;
+    phone?: string;
+  };
   theme?: 'dark' | 'light';
   onClose?: () => void;
 }
@@ -128,6 +134,7 @@ const NAKSHATRA_DISPLAY: Record<number, { en: string; mm: string; blipi: string 
 
 export default function KuthiResultWorkstation({
   initialData,
+  astrologerProfile,
   theme: parentTheme,
   onClose,
 }: KuthiResultWorkstationProps) {
@@ -145,19 +152,50 @@ export default function KuthiResultWorkstation({
   const [showEditForm, setShowEditForm] = useState<boolean>(false);
 
   // Form State: Birth Details
-  const [name, setName] = useState<string>(initialData?.name || 'Moirangthem Suraj Singh');
-  const [dobInput, setDobInput] = useState<string>('1986-07-02'); // YYYY-MM-DD
-  const [tobInput, setTobInput] = useState<string>('09:45'); // HH:MM
-  const [pob, setPob] = useState<string>(initialData?.pob || 'Tentha Khunou Maning Leikai');
+  const [name, setName] = useState<string>(initialData?.name || 'Sanatomba Meitei');
+  const [dobInput, setDobInput] = useState<string>('2004-06-28'); // YYYY-MM-DD
+  const [tobInput, setTobInput] = useState<string>('06:00'); // HH:MM
+  const [pob, setPob] = useState<string>(initialData?.pob || 'Imphal, Manipur');
   const [gender, setGender] = useState<'male' | 'female'>(initialData?.gender || 'male');
 
-  // Astrologer & Document Header
-  const [astrologerName, setAstrologerName] = useState<string>('Moirangthem Suraj Singh');
-  const [astrologerTitle, setAstrologerTitle] = useState<string>('Vedic Astro');
-  const [contactNo, setContactNo] = useState<string>('Contact No.6002465337');
-  const [address, setAddress] = useState<string>('Tentha Khunou Maning Leikai');
-  const [refNo, setRefNo] = useState<string>('Ref. No.:- 2021   (20-04-2025)');
-  const [consultDate, setConsultDate] = useState<string>('20-04-2025');
+  // Astrologer & Document Header (defaults to signed in astrologer)
+  const [astrologerName, setAstrologerName] = useState<string>(
+    astrologerProfile?.name || 'Pt. Suraj Sharma'
+  );
+  const [astrologerTitle, setAstrologerTitle] = useState<string>(
+    astrologerProfile?.title || 'Vedic Astro'
+  );
+  const [contactNo, setContactNo] = useState<string>(
+    astrologerProfile?.phone
+      ? (astrologerProfile.phone.startsWith('Contact') ? astrologerProfile.phone : `Contact No. ${astrologerProfile.phone}`)
+      : 'Contact No. +91 98620 12345'
+  );
+  const [address, setAddress] = useState<string>(
+    astrologerProfile?.address || 'Imphal West, Manipur'
+  );
+  const [refNo, setRefNo] = useState<string>('Ref. No.:- 2026   (13-09-2026)');
+  const [consultDate, setConsultDate] = useState<string>('13-09-2026');
+
+  // Load signed in astrologer credentials from localStorage or props
+  React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const savedUserStr = localStorage.getItem('kanglei_user');
+        if (savedUserStr) {
+          const u = JSON.parse(savedUserStr);
+          if (u) {
+            if (u.name) setAstrologerName(u.name);
+            if (u.address) setAddress(u.address);
+            if (u.phone || u.whatsappNo) {
+              const p = u.phone || u.whatsappNo;
+              setContactNo(p.startsWith('Contact') ? p : `Contact No. ${p}`);
+            }
+            if (u.specialty) setAstrologerTitle(u.specialty);
+          }
+        }
+      } catch (e) {}
+    }
+  }, []);
 
   // Calculation Trigger Counter
   const [calcVersion, setCalcVersion] = useState<number>(1);
@@ -639,6 +677,79 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                         isDark
                           ? 'bg-[#0b132b] border-[#3a506b] text-white focus:border-amber-400'
                           : 'bg-[#faf6ee] border-[#e2d5c4] text-slate-900 focus:border-amber-600 shadow-xs'
+                      }`}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Astrologer Header & Seal Credentials (Signed in) */}
+              <div
+                className={`p-4 rounded-2xl border space-y-3 ${
+                  isDark ? 'bg-[#0b132b]/80 border-[#3a506b]' : 'bg-[#faf6ee] border-[#e2d5c4]'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-amber-500 flex items-center gap-1.5">
+                    <Award className="w-4 h-4" />
+                    <span>Astrologer Header Information (Signed-In Astrologer)</span>
+                  </span>
+                  <span className="text-[10px] text-slate-400">Printed on certificate header</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                      Astrologer Name
+                    </label>
+                    <input
+                      type="text"
+                      value={astrologerName}
+                      onChange={(e) => setAstrologerName(e.target.value)}
+                      className={`w-full rounded-xl px-3 py-2 text-xs font-bold border focus:outline-none ${
+                        isDark ? 'bg-[#151f38] border-[#3a506b] text-white' : 'bg-white border-[#e2d5c4] text-slate-900'
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                      Designation / Title
+                    </label>
+                    <input
+                      type="text"
+                      value={astrologerTitle}
+                      onChange={(e) => setAstrologerTitle(e.target.value)}
+                      className={`w-full rounded-xl px-3 py-2 text-xs font-bold border focus:outline-none ${
+                        isDark ? 'bg-[#151f38] border-[#3a506b] text-white' : 'bg-white border-[#e2d5c4] text-slate-900'
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                      Address
+                    </label>
+                    <input
+                      type="text"
+                      value={address}
+                      onChange={(e) => setAddress(e.target.value)}
+                      className={`w-full rounded-xl px-3 py-2 text-xs font-medium border focus:outline-none ${
+                        isDark ? 'bg-[#151f38] border-[#3a506b] text-white' : 'bg-white border-[#e2d5c4] text-slate-900'
+                      }`}
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-400 mb-1">
+                      Contact Number
+                    </label>
+                    <input
+                      type="text"
+                      value={contactNo}
+                      onChange={(e) => setContactNo(e.target.value)}
+                      className={`w-full rounded-xl px-3 py-2 text-xs font-medium border focus:outline-none ${
+                        isDark ? 'bg-[#151f38] border-[#3a506b] text-white' : 'bg-white border-[#e2d5c4] text-slate-900'
                       }`}
                     />
                   </div>
