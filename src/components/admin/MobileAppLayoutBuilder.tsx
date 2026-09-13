@@ -155,36 +155,43 @@ export default function MobileAppLayoutBuilder() {
     },
   });
 
-  // Load saved configuration from localStorage
+  // Load saved configuration from server first, with localStorage fallback
   useEffect(() => {
-    const savedSections = localStorage.getItem('kanglei_mobile_layout_sections');
-    if (savedSections) {
-      try {
-        const parsed = JSON.parse(savedSections);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          // Merge in any newly introduced default sections that weren't in old localStorage
-          const existingTypes = new Set(parsed.map((s: any) => s.type));
-          const missingDefaults = DEFAULT_MOBILE_SECTIONS.filter((s) => !existingTypes.has(s.type));
-          if (missingDefaults.length > 0) {
-            const merged = [...parsed, ...missingDefaults].map((s, idx) => ({ ...s, order: idx + 1 }));
-            setSections(merged);
-            localStorage.setItem('kanglei_mobile_layout_sections', JSON.stringify(merged));
-          } else {
-            setSections(parsed);
+    // 1. Fetch from server persistent storage
+    fetch('/api/mobile-config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          if (Array.isArray(data.sections) && data.sections.length > 0) {
+            setSections(data.sections);
+            localStorage.setItem('kanglei_mobile_layout_sections', JSON.stringify(data.sections));
+          }
+          if (data.config) {
+            setBaseConfig((prev) => ({ ...prev, ...data.config }));
+            localStorage.setItem('kanglei_mobile_customizer_config', JSON.stringify(data.config));
           }
         }
-      } catch (e) {}
-    }
-
-    const savedConfig = localStorage.getItem('kanglei_mobile_customizer_config');
-    if (savedConfig) {
-      try {
-        const parsed = JSON.parse(savedConfig);
-        if (parsed) {
-          setBaseConfig((prev) => ({ ...prev, ...parsed }));
+      })
+      .catch((err) => {
+        console.warn('Could not fetch mobile config from server, checking local:', err);
+        // Fallback to localStorage
+        const savedSections = localStorage.getItem('kanglei_mobile_layout_sections');
+        if (savedSections) {
+          try {
+            const parsed = JSON.parse(savedSections);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setSections(parsed);
+            }
+          } catch (e) {}
         }
-      } catch (e) {}
-    }
+        const savedConfig = localStorage.getItem('kanglei_mobile_customizer_config');
+        if (savedConfig) {
+          try {
+            const parsed = JSON.parse(savedConfig);
+            if (parsed) setBaseConfig((prev) => ({ ...prev, ...parsed }));
+          } catch (e) {}
+        }
+      });
   }, []);
 
   // Reordering functions
@@ -267,8 +274,8 @@ export default function MobileAppLayoutBuilder() {
     setDraggedIdx(null);
   };
 
-  // Save to localStorage and dispatch event
-  const handleSaveAndPublish = () => {
+  // Save to database, disk, and localStorage
+  const handleSaveAndPublish = async () => {
     // Determine primary ad banner data from sections if present
     const primaryAd = sections.find((s) => s.type === 'ad_banner' && s.enabled);
 
@@ -282,8 +289,20 @@ export default function MobileAppLayoutBuilder() {
       sections: sections,
     };
 
+    // 1. Client cache
     localStorage.setItem('kanglei_mobile_layout_sections', JSON.stringify(sections));
     localStorage.setItem('kanglei_mobile_customizer_config', JSON.stringify(updatedConfig));
+
+    // 2. Server persistent storage (Supabase cloud kv_store + disk)
+    try {
+      await fetch('/api/mobile-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: updatedConfig, sections }),
+      });
+    } catch (err) {
+      console.error('Failed to save mobile config to server:', err);
+    }
 
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new Event('kanglei_mobile_config_updated'));
@@ -292,10 +311,19 @@ export default function MobileAppLayoutBuilder() {
     setTimeout(() => setSaveToast(false), 3500);
   };
 
-  const handleResetDefaults = () => {
+  const handleResetDefaults = async () => {
     if (!confirm('Reset mobile dashboard layout to default ordering?')) return;
     setSections(DEFAULT_MOBILE_SECTIONS);
     localStorage.setItem('kanglei_mobile_layout_sections', JSON.stringify(DEFAULT_MOBILE_SECTIONS));
+
+    try {
+      await fetch('/api/mobile-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: baseConfig, sections: DEFAULT_MOBILE_SECTIONS }),
+      });
+    } catch (e) {}
+
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new Event('kanglei_mobile_config_updated'));
   };

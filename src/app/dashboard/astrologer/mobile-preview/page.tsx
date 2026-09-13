@@ -116,13 +116,13 @@ export default function AstrologerMobileSimulatorPage() {
   const [copiedCode, setCopiedCode] = useState<boolean>(false);
   const [saveToast, setSaveToast] = useState<boolean>(false);
 
-  // Load saved configuration on mount if present
+  // Load saved configuration on mount from server persistent store with localStorage fallback
   useEffect(() => {
-    const saved = localStorage.getItem('kanglei_mobile_customizer_config');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (parsed) {
+    fetch('/api/mobile-config')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success && data.config) {
+          const parsed = data.config;
           if (typeof parsed.showAdBanner === 'boolean') setShowAdBanner(parsed.showAdBanner);
           if (parsed.adTitle) setAdTitle(parsed.adTitle);
           if (parsed.adSubtitle) setAdSubtitle(parsed.adSubtitle);
@@ -138,9 +138,34 @@ export default function AstrologerMobileSimulatorPage() {
           if (typeof parsed.isOnline === 'boolean') setIsAstrologerOnline(parsed.isOnline);
           if (parsed.enabledEngines) setEnabledEngines(parsed.enabledEngines);
           if (Array.isArray(parsed.notices)) setNotices(parsed.notices);
+          localStorage.setItem('kanglei_mobile_customizer_config', JSON.stringify(parsed));
         }
-      } catch (e) {}
-    }
+      })
+      .catch(() => {
+        const saved = localStorage.getItem('kanglei_mobile_customizer_config');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            if (parsed) {
+              if (typeof parsed.showAdBanner === 'boolean') setShowAdBanner(parsed.showAdBanner);
+              if (parsed.adTitle) setAdTitle(parsed.adTitle);
+              if (parsed.adSubtitle) setAdSubtitle(parsed.adSubtitle);
+              if (parsed.adBannerUrl) setAdBannerUrl(parsed.adBannerUrl);
+              if (parsed.adTag) setAdTag(parsed.adTag);
+              if (parsed.stationCity) setStationCity(parsed.stationCity);
+              if (parsed.tithiText) setTithiText(parsed.tithiText);
+              if (parsed.nakshatraText) setNakshatraText(parsed.nakshatraText);
+              if (parsed.rahuKaalText) setRahuKaalText(parsed.rahuKaalText);
+              if (typeof parsed.pendingKuthiOrders === 'number') setPendingKuthiOrders(parsed.pendingKuthiOrders);
+              if (typeof parsed.activeLiveCalls === 'number') setActiveLiveCalls(parsed.activeLiveCalls);
+              if (typeof parsed.walletBalance === 'number') setWalletBalance(parsed.walletBalance);
+              if (typeof parsed.isOnline === 'boolean') setIsAstrologerOnline(parsed.isOnline);
+              if (parsed.enabledEngines) setEnabledEngines(parsed.enabledEngines);
+              if (Array.isArray(parsed.notices)) setNotices(parsed.notices);
+            }
+          } catch (e) {}
+        }
+      });
   }, []);
 
   const handleCopyFlutterCode = () => {
@@ -155,13 +180,14 @@ export default function AstrologerMobileSimulatorPage() {
       });
   };
 
-  const handleSaveChanges = () => {
+  // Save changes to localStorage & permanent server database
+  const handleSaveChanges = async () => {
     const configToSave = {
       showAdBanner,
-      adTag,
       adTitle,
       adSubtitle,
       adBannerUrl,
+      adTag,
       stationCity,
       tithiText,
       nakshatraText,
@@ -175,6 +201,15 @@ export default function AstrologerMobileSimulatorPage() {
     };
 
     localStorage.setItem('kanglei_mobile_customizer_config', JSON.stringify(configToSave));
+
+    try {
+      await fetch('/api/mobile-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config: configToSave }),
+      });
+    } catch (e) {}
+
     window.dispatchEvent(new Event('storage'));
     window.dispatchEvent(new Event('kanglei_mobile_config_updated'));
 

@@ -49,7 +49,8 @@ import {
   FileCheck,
   TrendingUp,
   Search,
-  Lock
+  Lock,
+  Wrench,
 } from 'lucide-react';
 import BengaliChart, { BengaliPlanetInfo } from '@/components/charts/BengaliChart';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
@@ -65,6 +66,7 @@ import { calculateDetailedVimshottari } from '@/engine/vedicWorkstationEngine';
 import { calculatePlanetaryPositions } from '@/engine/ephemeris';
 import SakaToBirthWorkstation from '@/components/dashboard/SakaToBirthWorkstation';
 import KuthiResultWorkstation from '@/components/dashboard/KuthiResultWorkstation';
+import { ACTIVE_TOOLS_REGISTRY, ToolDefinition } from '@/config/toolsRegistry';
 
 // ==========================================
 // BENGALI FORMATTING & DICTIONARIES
@@ -77,7 +79,7 @@ function toBengaliDigits(num: number | string): string {
 // ==========================================
 // TYPES & DATA STRUCTURES
 // ==========================================
-type TabType = 'overview' | 'kuthi' | 'live' | 'charts' | 'profile';
+type TabType = 'overview' | 'kuthi' | 'live' | 'tools' | 'charts' | 'profile';
 type KuthiFilter = 'ALL' | 'PENDING' | 'COMPLETED';
 
 interface KuthiOrder {
@@ -233,21 +235,54 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
     }
 
     const loadSavedConfig = () => {
-      const savedMobileConfig = localStorage.getItem('kanglei_mobile_customizer_config');
-      if (savedMobileConfig) {
-        try {
-          const parsed = JSON.parse(savedMobileConfig);
-          if (parsed) {
-            setConfig((prev) => ({ ...prev, ...parsed }));
-            if (typeof parsed.walletBalance === 'number') {
-              setWalletBalance(parsed.walletBalance);
+      // 1. Fetch from server persistent storage (disk + Supabase) so admin changes are never lost across updates/deployments
+      fetch('/api/mobile-config')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.success && data.config) {
+            setConfig((prev) => ({ ...prev, ...data.config }));
+            if (typeof data.config.walletBalance === 'number') {
+              setWalletBalance(data.config.walletBalance);
             }
-            if (typeof parsed.isOnline === 'boolean') {
-              setIsOnline(parsed.isOnline);
+            if (typeof data.config.isOnline === 'boolean') {
+              setIsOnline(data.config.isOnline);
+            }
+            localStorage.setItem('kanglei_mobile_customizer_config', JSON.stringify(data.config));
+          }
+        })
+        .catch(() => {
+          // Fallback to local storage
+          const savedMobileConfig = localStorage.getItem('kanglei_mobile_customizer_config');
+          if (savedMobileConfig) {
+            try {
+              const parsed = JSON.parse(savedMobileConfig);
+              if (parsed) {
+                setConfig((prev) => ({ ...prev, ...parsed }));
+                if (typeof parsed.walletBalance === 'number') setWalletBalance(parsed.walletBalance);
+                if (typeof parsed.isOnline === 'boolean') setIsOnline(parsed.isOnline);
+              }
+            } catch (e) {}
+          }
+        });
+
+      // 2. Fetch allowed tools configured by Admin for this astrologer
+      fetch('/api/astrologers')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.astrologers && Array.isArray(data.astrologers)) {
+            const savedUser = localStorage.getItem('kanglei_user');
+            const parsedUser = savedUser ? JSON.parse(savedUser) : null;
+            const matched = data.astrologers.find(
+              (a: any) =>
+                (parsedUser?.phone && a.phone === parsedUser.phone) ||
+                (parsedUser?.name && a.name?.toLowerCase() === parsedUser.name?.toLowerCase())
+            );
+            if (matched && Array.isArray(matched.allowedTools) && matched.allowedTools.length > 0) {
+              setAllowedToolIds(matched.allowedTools);
             }
           }
-        } catch (e) {}
-      }
+        })
+        .catch(() => {});
     };
 
     loadSavedConfig();
@@ -278,9 +313,41 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
     localStorage.setItem('astro_theme', nextTheme);
   };
 
+  // Tools Tab State
+  const [toolSearchQuery, setToolSearchQuery] = useState<string>('');
+  const [toolCategoryFilter, setToolCategoryFilter] = useState<string>('all');
+  const [allowedToolIds, setAllowedToolIds] = useState<string[]>(ACTIVE_TOOLS_REGISTRY.map((t) => t.id));
+
   // Navigation: 5 distinct app tabs
   const [activeTab, setActiveTab] = useState<TabType>('overview');
   const [isOnline, setIsOnline] = useState<boolean>(true);
+
+  // Filtered tools computed from master registry and admin allowed permissions
+  const filteredTools = useMemo(() => {
+    return ACTIVE_TOOLS_REGISTRY.filter((tool) => {
+      // Check admin allowed tools permission
+      const isAllowed = allowedToolIds.includes(tool.id);
+      if (!isAllowed) return false;
+
+      // Category filter
+      if (toolCategoryFilter !== 'all' && tool.category !== toolCategoryFilter) {
+        return false;
+      }
+
+      // Search query filter
+      if (toolSearchQuery.trim()) {
+        const q = toolSearchQuery.toLowerCase();
+        return (
+          tool.title.toLowerCase().includes(q) ||
+          tool.subtitle.toLowerCase().includes(q) ||
+          tool.description.toLowerCase().includes(q) ||
+          tool.category.toLowerCase().includes(q)
+        );
+      }
+
+      return true;
+    });
+  }, [toolCategoryFilter, toolSearchQuery, allowedToolIds]);
 
   // Kuthi Orders State (NO live call here!)
   const [kuthiOrders, setKuthiOrders] = useState<KuthiOrder[]>(INITIAL_KUTHI_ORDERS);
@@ -1877,7 +1944,158 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
           )}
 
           {/* ------------------------------------------------------------- */}
-          {/* TAB 4: BENGALI BIRTH CHART */}
+          {/* TAB 4: ASTROLOGICAL TOOLS WORKSTATION HUB (Primary Dock 4)    */}
+          {/* ------------------------------------------------------------- */}
+          {activeTab === 'tools' && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="space-y-4"
+            >
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-sm font-serif font-black flex items-center gap-2">
+                    <Wrench className="w-4 h-4 text-[#d97706] dark:text-[#fbbf24]" />
+                    <span>Astrological Tools & Engines</span>
+                  </h2>
+                  <p className={`text-[10px] ${isDark ? 'text-amber-200/70' : 'text-slate-500'}`}>
+                    Professional Vedic, KP & Manipuri Horoscopy Workstations ({filteredTools.length} Available)
+                  </p>
+                </div>
+                <span className="px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/20 text-amber-500 border border-amber-500/30">
+                  Mobile Pro
+                </span>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                <input
+                  type="text"
+                  value={toolSearchQuery}
+                  onChange={(e) => setToolSearchQuery(e.target.value)}
+                  placeholder="Search tools (Kuthi, Saka, Manglik, BNN, Numerology...)"
+                  className={`w-full pl-9 pr-3 py-2 rounded-xl text-xs border focus:outline-none ${
+                    isDark
+                      ? 'bg-[#1c2541] border-[#3a506b] text-white focus:border-amber-400 placeholder-slate-400'
+                      : 'bg-white border-slate-200 text-slate-900 focus:border-amber-500 placeholder-slate-400 shadow-xs'
+                  }`}
+                />
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar py-1">
+                {[
+                  { id: 'all', label: 'All Engines' },
+                  { id: 'astrology', label: '📜 Kuthi & Horoscopy' },
+                  { id: 'dosha', label: '🪐 Doshas & Shanti' },
+                  { id: 'love', label: '💍 Matchmaking' },
+                  { id: 'numerology', label: '🔢 Numerology & Vastu' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setToolCategoryFilter(cat.id)}
+                    className={`px-3 py-1.5 rounded-full text-[10.5px] font-bold whitespace-nowrap border transition-all cursor-pointer ${
+                      toolCategoryFilter === cat.id
+                        ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow-xs scale-102'
+                        : isDark
+                        ? 'bg-[#1c2541] border-[#3a506b] text-slate-300 hover:text-white'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100 shadow-xs'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tools List Cards */}
+              <div className="grid grid-cols-1 gap-2.5">
+                {filteredTools.map((tool) => (
+                  <div
+                    key={tool.id}
+                    onClick={() => {
+                      if (tool.id === 'kuthi-result-sheets') setActiveToolModal('kuthi-result-sheets');
+                      else if (tool.id === 'saka-to-birth') setActiveToolModal('saka-to-birth');
+                      else if (tool.id === 'vedic-workstation') setActiveToolModal('vedic-workstation');
+                      else if (tool.id === 'bnn-workstation') setActiveToolModal('bnn-workstation');
+                      else if (tool.id === 'numerology-workstation' || tool.id === 'vedic-numerology') setActiveToolModal('vedic-numerology');
+                      else if (tool.id === 'vastu-workstation') setActiveToolModal('vastu-workstation');
+                      else if (tool.id === 'shani-sade-sati') setActiveToolModal('sadesati');
+                      else if (tool.id === 'mangalik-dosh') setActiveToolModal('manglik');
+                      else if (tool.id === 'kaal-sarp-dosh') setActiveToolModal('kaalsarp');
+                      else if (tool.id === 'match-making') setActiveToolModal('matchmaking');
+                      else if (tool.id === 'astrology-yoga') setActiveToolModal('yogas');
+                      else if (tool.id === 'dasha-yengpham') setActiveToolModal('dasha');
+                      else setActiveToolModal(tool.id);
+                      setMobileToolResult(null);
+                    }}
+                    className={`p-3.5 rounded-2xl border transition-all active:scale-[0.99] cursor-pointer shadow-xs flex items-center justify-between gap-3 ${
+                      isDark
+                        ? 'bg-[#1c2541]/90 hover:bg-[#1c2541] border-[#3a506b]/70 hover:border-amber-500/50'
+                        : 'bg-white hover:bg-amber-50/50 border-slate-200 hover:border-amber-300'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3 min-w-0">
+                      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border text-lg ${
+                        tool.id === 'kuthi-result-sheets' || tool.id === 'saka-to-birth'
+                          ? 'bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border-amber-500/40 text-amber-500'
+                          : tool.category === 'dosha'
+                          ? 'bg-gradient-to-tr from-rose-600/20 to-orange-500/20 border-rose-500/30 text-rose-500'
+                          : tool.category === 'love'
+                          ? 'bg-gradient-to-tr from-pink-600/20 to-purple-500/20 border-pink-500/30 text-pink-500'
+                          : 'bg-gradient-to-tr from-sky-600/20 to-indigo-500/20 border-sky-500/30 text-sky-500'
+                      }`}>
+                        {tool.id === 'kuthi-result-sheets' && '🪶'}
+                        {tool.id === 'saka-to-birth' && '📜'}
+                        {tool.id === 'vedic-workstation' && '🧭'}
+                        {tool.id === 'bnn-workstation' && '✨'}
+                        {tool.id === 'numerology-workstation' && '🔢'}
+                        {tool.id === 'vastu-workstation' && '🏛️'}
+                        {tool.id === 'shani-sade-sati' && '🪐'}
+                        {tool.id === 'mangalik-dosh' && '🔥'}
+                        {tool.id === 'kaal-sarp-dosh' && '🐍'}
+                        {tool.id === 'nga-eeshing' && '🐟'}
+                        {tool.id === 'match-making' && '💍'}
+                        {tool.id === 'astrology-yoga' && '🌟'}
+                        {tool.id === 'yumsharol' && '🏡'}
+                        {tool.id === 'kuthi-generator' && '📊'}
+                        {tool.id === 'dasha-yengpham' && '⏳'}
+                      </div>
+                      <div className="min-w-0 space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <h4 className="font-bold text-xs truncate leading-tight text-slate-900 dark:text-white">
+                            {tool.title}
+                          </h4>
+                          {(tool.id === 'kuthi-result-sheets' || tool.id === 'saka-to-birth') && (
+                            <span className="px-1.5 py-0.2 rounded text-[8.5px] font-black uppercase bg-amber-500 text-slate-950 shrink-0">
+                              NEW
+                            </span>
+                          )}
+                        </div>
+                        <p className={`text-[10px] line-clamp-2 leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-600'}`}>
+                          {tool.subtitle || tool.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="shrink-0 flex items-center gap-1">
+                      <span className="text-[10px] font-bold text-amber-500 hidden sm:inline">Launch</span>
+                      <div className={`w-7 h-7 rounded-xl flex items-center justify-center border ${
+                        isDark ? 'bg-[#0b132b] border-[#3a506b] text-amber-400' : 'bg-amber-50 border-amber-200 text-amber-700'
+                      }`}>
+                        <ArrowUpRight className="w-3.5 h-3.5" />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* ORDER BENGALI CHART INSPECTION (Opened from Kuthi Hub orders) */}
           {/* ------------------------------------------------------------- */}
           {activeTab === 'charts' && (
             <motion.div
@@ -2206,19 +2424,19 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               <span className="absolute top-1.5 right-4 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             </button>
 
-            {/* Dock 4: Bengali Chart */}
+            {/* Dock 4: Tools (Replacing Bengali Chart per user request) */}
             <button
-              onClick={() => setActiveTab('charts')}
+              onClick={() => setActiveTab('tools')}
               className={`flex-1 py-1.5 rounded-full flex flex-col items-center gap-0.5 transition-all active:scale-90 cursor-pointer ${
-                activeTab === 'charts'
+                activeTab === 'tools'
                   ? isDark 
                     ? 'text-amber-400 bg-amber-500/15 font-bold shadow-xs border border-amber-500/30' 
                     : 'text-[#b45309] bg-amber-50 font-extrabold border border-amber-300 shadow-xs'
                   : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-600 hover:text-[#b45309]'
               }`}
             >
-              <Compass className="w-4 h-4" />
-              <span className="text-[8.5px] font-extrabold tracking-tight">Bengali Chart</span>
+              <Wrench className="w-4 h-4" />
+              <span className="text-[8.5px] font-extrabold tracking-tight">Tools</span>
             </button>
 
             {/* Dock 5: Profile */}
