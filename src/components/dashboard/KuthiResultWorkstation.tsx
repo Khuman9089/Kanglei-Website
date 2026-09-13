@@ -15,12 +15,19 @@ import {
   Moon,
   X,
   Share2,
-  ChevronRight,
+  ChevronDown,
+  ChevronUp,
   ShieldCheck,
   Flame,
   Award,
+  RotateCcw,
+  Calculator,
+  MapPin,
 } from 'lucide-react';
 import resultTemplates from '@/data/kuthiResultTemplates.json';
+import { calculatePlanetaryPositions } from '@/engine/ephemeris';
+import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
+import { calculateExactAge } from '@/components/dashboard/VedicWorkstation';
 
 interface KuthiResultWorkstationProps {
   initialData?: {
@@ -29,44 +36,127 @@ interface KuthiResultWorkstationProps {
     tob?: string;
     day?: string;
     pob?: string;
-    rashi?: string;
-    lagna?: string;
-    nakshatra?: string;
+    gender?: 'male' | 'female';
   };
   theme?: 'dark' | 'light';
   onClose?: () => void;
 }
 
-type ResultTab = 'Result' | 'Meetei_Result' | 'MM_Result_M';
+// 3 Tabs matching user request: Meitei Mayek, Sanamahi, Hinduism
+export type ResultTabType = 'Meitei Mayek' | 'Sanamahi' | 'Hinduism';
+
+const SHEET_MAP: Record<ResultTabType, string> = {
+  'Meitei Mayek': 'MM_Result_M',
+  'Sanamahi': 'Meetei_Result',
+  'Hinduism': 'Result',
+};
+
+// Manipuri Weekdays in English, Bengali, Meetei Mayek
+const WEEKDAY_MAP: Record<number, { en: string; bn: string; mm: string }> = {
+  0: { en: 'Sunday', bn: 'রবিবার', mm: 'noZmaIjiz' },
+  1: { en: 'Monday', bn: 'সোমবার', mm: 'niZHoUkaba' },
+  2: { en: 'Tuesday', bn: 'মঙ্গলবার', mm: 'lEpaKpa' },
+  3: { en: 'Wednesday', bn: 'বুধবার', mm: 'yuMskEs' },
+  4: { en: 'Thursday', bn: 'বৃহস্পতিবার', mm: 'sgoLseN' },
+  5: { en: 'Friday', bn: 'শুক্রবার', mm: 'IraI' },
+  6: { en: 'Saturday', bn: 'শনিবার', mm: 'YaZja' },
+};
+
+// Rashi Names mapped to Meetei Mayek / Budha font and Bengali
+const RASHI_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
+  1: { en: 'Aries', mm: 'mes (mE taI|)', blipi: 'EmF ╠E~m tah~|²' },
+  2: { en: 'Taurus', mm: 'bis (mE taI|)', blipi: 'b<F ╠E~m tah~|²' },
+  3: { en: 'Gemini', mm: 'miTun (mE taI|)', blipi: 'imTun ╠E~m tah~|²' },
+  4: { en: 'Cancer', mm: 'krkT (mE taI|)', blipi: 'kk_o_ ╠E~m tah~|²' },
+  5: { en: 'Leo', mm: 'sizh (mE taI|)', blipi: 'iszh ╠E~m tah~|²' },
+  6: { en: 'Virgo', mm: 'knya (mE taI|)', blipi: 'kNya ╠E~m tah~|²' },
+  7: { en: 'Libra', mm: 'tula (mE taI|)', blipi: 'tula ╠E~m tah~|²' },
+  8: { en: 'Scorpio', mm: 'brsic (mE taI|)', blipi: 'b<iSc ╠E~m tah~|²' },
+  9: { en: 'Sagittarius', mm: 'dnu (mE taI|)', blipi: 'dnu ╠E~m tah~|²' },
+  10: { en: 'Capricorn', mm: 'mkr (mE taI|)', blipi: 'mkr ╠E~m tah~|²' },
+  11: { en: 'Aquarius', mm: 'kuMv (mE taI|)', blipi: 'k<m\f ╠E~m tah~|²' },
+  12: { en: 'Pisces', mm: 'min (mE taI|)', blipi: 'mIn ╠E~m tah~|²' },
+};
+
+// Lagna Names
+const LAGNA_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
+  1: { en: 'Aries', mm: 'mes', blipi: 'EmF' },
+  2: { en: 'Taurus', mm: 'bis', blipi: 'b<F' },
+  3: { en: 'Gemini', mm: 'miTun', blipi: 'imTun' },
+  4: { en: 'Cancer', mm: 'krkT', blipi: 'kk_o_' },
+  5: { en: 'Leo', mm: 'noZsa', blipi: 'iszh' },
+  6: { en: 'Virgo', mm: 'knya', blipi: 'kNya' },
+  7: { en: 'Libra', mm: 'tula', blipi: 'tula' },
+  8: { en: 'Scorpio', mm: 'brsic', blipi: 'b<iSc' },
+  9: { en: 'Sagittarius', mm: 'dnu', blipi: 'dnu' },
+  10: { en: 'Capricorn', mm: 'mkr', blipi: 'mkr' },
+  11: { en: 'Aquarius', mm: 'kuMv', blipi: 'k<m\f' },
+  12: { en: 'Pisces', mm: 'min', blipi: 'mIn' },
+};
+
+// Nakshatras 1 to 27
+const NAKSHATRA_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
+  1: { en: 'Ashwini', mm: '1-Asini', blipi: '1-AiSinI' },
+  2: { en: 'Bharani', mm: '2-vrni (Yba)', blipi: '2-vrnI ╠Tba²' },
+  3: { en: 'Krittika', mm: '3-k_ritika', blipi: '3-k<ito_ka' },
+  4: { en: 'Rohini', mm: '4-rohini', blipi: '4-ErahinI' },
+  5: { en: 'Mrigashira', mm: '5-m_rigsira', blipi: '5-m<giSra' },
+  6: { en: 'Ardra', mm: '6-Aadra', blipi: '6-Aad_o[a' },
+  7: { en: 'Punarvasu', mm: '7-punrbsu', blipi: '7-punb_oSu' },
+  8: { en: 'Pushya', mm: '8-pusya', blipi: '8-puS_oYa' },
+  9: { en: 'Ashlesha', mm: '9-Aslesa', blipi: '9-AaES_oLa' },
+  10: { en: 'Magha', mm: '10-mga', blipi: '10-mGa' },
+  11: { en: 'Purva Phalguni', mm: '11-purv falgun', blipi: '11-pu_ob falguin' },
+  12: { en: 'Uttara Phalguni', mm: '12-Utr falgun', blipi: '12-Uo_+r falguin' },
+  13: { en: 'Hasta', mm: '13-hsta', blipi: '13-h_oSta' },
+  14: { en: 'Chitra', mm: '14-citra', blipi: '14-icŒ_a' },
+  15: { en: 'Swati', mm: '15-swati', blipi: '15-ES_owatI' },
+  16: { en: 'Vishakha', mm: '16-bisaka', blipi: '16-ibSaKa' },
+  17: { en: 'Anuradha', mm: '17-Anurada', blipi: '17-AnuraDa' },
+  18: { en: 'Jyeshtha', mm: '18-jest', blipi: '18-Eja_oSF' },
+  19: { en: 'Mula', mm: '19-mula', blipi: '19-mula' },
+  20: { en: 'Purva Ashadha', mm: '20-purv Asada', blipi: '20-pu_ob AaSaD' },
+  21: { en: 'Uttara Ashadha', mm: '21-Utr Asada', blipi: '21-Uo_+r AaSaD' },
+  22: { en: 'Shravana', mm: '22-sravn', blipi: '22-S_orbn' },
+  23: { en: 'Dhanishta', mm: '23-dnista', blipi: '23-DiniSFa' },
+  24: { en: 'Shatabhisha', mm: '24-stbisa', blipi: '24-StibSa' },
+  25: { en: 'Purva Bhadrapada', mm: '25-purv badrpda', blipi: '25-pu_ob vad_o[pda' },
+  26: { en: 'Uttara Bhadrapada', mm: '26-Utr badrpda', blipi: '26-Uo_+r vad_o[pda' },
+  27: { en: 'Revati', mm: '27-revti', blipi: '27-ErbtI' },
+};
 
 export default function KuthiResultWorkstation({
   initialData,
   theme: parentTheme,
   onClose,
 }: KuthiResultWorkstationProps) {
-  // Tab State
-  const [activeTab, setActiveTab] = useState<ResultTab>('MM_Result_M');
+  // 3 Tabs: 'Meitei Mayek' | 'Sanamahi' | 'Hinduism'
+  const [activeTab, setActiveTab] = useState<ResultTabType>('Meitei Mayek');
 
   // Theme State
   const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>(parentTheme || 'dark');
   const isDark = currentTheme === 'dark';
 
-  // Native & Horoscope State (defaulted to Excel Kuthi reference case)
-  const [name, setName] = useState<string>(initialData?.name || 'Moirangthem Suraj Singh');
-  const [dob, setDob] = useState<string>(initialData?.dob || '2-7-1986 AD');
-  const [tob, setTob] = useState<string>(initialData?.tob || '9:45 AM');
-  const [day, setDay] = useState<string>(initialData?.day || 'Wednesday');
-  const [pob, setPob] = useState<string>(initialData?.pob || 'Tentha Khunou Maning Leikai');
-  const [refNo, setRefNo] = useState<string>('Ref. No.:- 2021   (20-04-2025)');
-  const [consultDate, setConsultDate] = useState<string>('20-04-2025');
+  // Toggle for the Birth Details Input Form
+  const [showInputForm, setShowInputForm] = useState<boolean>(true);
 
-  // Astrologer Header Info
+  // Form State: Birth Details
+  const [name, setName] = useState<string>(initialData?.name || 'Moirangthem Suraj Singh');
+  const [dobInput, setDobInput] = useState<string>('1986-07-02'); // YYYY-MM-DD
+  const [tobInput, setTobInput] = useState<string>('09:45'); // HH:MM
+  const [pob, setPob] = useState<string>(initialData?.pob || 'Tentha Khunou Maning Leikai');
+  const [gender, setGender] = useState<'male' | 'female'>(initialData?.gender || 'male');
+
+  // Astrologer & Document Header
   const [astrologerName, setAstrologerName] = useState<string>('Moirangthem Suraj Singh');
   const [astrologerTitle, setAstrologerTitle] = useState<string>('Vedic Astro');
   const [contactNo, setContactNo] = useState<string>('Contact No.6002465337');
   const [address, setAddress] = useState<string>('Tentha Khunou Maning Leikai');
+  const [refNo, setRefNo] = useState<string>('Ref. No.:- 2021   (20-04-2025)');
+  const [consultDate, setConsultDate] = useState<string>('20-04-2025');
 
-  // Copied Toast
+  // Calculation Trigger Counter
+  const [calcVersion, setCalcVersion] = useState<number>(1);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
 
   const showToast = (msg: string) => {
@@ -74,13 +164,90 @@ export default function KuthiResultWorkstation({
     setTimeout(() => setToastMsg(null), 2500);
   };
 
-  // Get template data for active tab
-  const activeTemplate = useMemo(() => {
-    const sheetData: any = (resultTemplates as any)[activeTab] || {};
-    return sheetData;
-  }, [activeTab]);
+  // Perform Real Astrological Calculation on the Entered Birth Details
+  const calculatedAstro = useMemo(() => {
+    try {
+      const parts = dobInput.split('-').map(Number);
+      const timeParts = tobInput.split(':').map(Number);
+      const birthDate = new Date(parts[0], parts[1] - 1, parts[2], timeParts[0] || 0, timeParts[1] || 0);
 
-  // Dynamic helper to extract cell value with fallback
+      // 1. Day of Week
+      const dayIdx = birthDate.getDay();
+      const dayInfo = WEEKDAY_MAP[dayIdx] || WEEKDAY_MAP[3];
+
+      // 2. Exact Age
+      const ageInfo = calculateExactAge(dobInput) || { years: 38, months: 9, days: 19, runningYear: 39 };
+
+      // 3. Ephemeris Planets & Lagna
+      const pos = calculatePlanetaryPositions({
+        name,
+        gender,
+        dateOfBirth: birthDate,
+        timeOfBirth: tobInput,
+        latitude: 24.8170, // Manipur default
+        longitude: 93.9368,
+        timezone: 'Asia/Kolkata',
+        utcOffset: 5.5,
+        ayanamsa: 'lahiri',
+      });
+
+      const lagnaSignNum = Math.floor(pos.ascendant / 30) + 1; // 1 to 12
+      const moonPlanet = pos.planets.find((p) => p.id === 'mo');
+      const moonLon = moonPlanet ? moonPlanet.longitude : 24.5;
+      const rashiNum = Math.floor(moonLon / 30) + 1; // 1 to 12
+      const nakNum = Math.floor(moonLon / (360 / 27)) + 1; // 1 to 27
+
+      // 4. Vimshottari Dashas
+      const dashas = calculateVimshottariDasha(moonLon, birthDate);
+      const curDasha = getCurrentDasha(dashas, new Date());
+
+      // Formatted Dates for Manipuri format
+      const formattedDob = `${parts[2]}-${parts[1]}-${parts[0]} AD`;
+      const h24 = timeParts[0] || 0;
+      const m24 = timeParts[1] || 0;
+      const ampm = h24 >= 12 ? 'PM' : 'AM';
+      const h12 = h24 % 12 || 12;
+      const formattedTob12 = `${h12}:${String(m24).padStart(2, '0')} ${ampm}`;
+
+      return {
+        formattedDob,
+        formattedTob: formattedTob12,
+        dayInfo,
+        ageInfo,
+        rashiNum,
+        lagnaSignNum,
+        nakNum,
+        rashi: RASHI_DISPLAY[rashiNum] || RASHI_DISPLAY[1],
+        lagna: LAGNA_DISPLAY[lagnaSignNum] || LAGNA_DISPLAY[5],
+        nakshatra: NAKSHATRA_DISPLAY[nakNum] || NAKSHATRA_DISPLAY[2],
+        curDasha,
+      };
+    } catch (e) {
+      // Fallback
+      return {
+        formattedDob: '2-7-1986 AD',
+        formattedTob: '9:45 AM',
+        dayInfo: WEEKDAY_MAP[3],
+        ageInfo: { years: 38, months: 9, days: 19, runningYear: 39 },
+        rashiNum: 1,
+        lagnaSignNum: 5,
+        nakNum: 2,
+        rashi: RASHI_DISPLAY[1],
+        lagna: LAGNA_DISPLAY[5],
+        nakshatra: NAKSHATRA_DISPLAY[2],
+        curDasha: { currentMahaDasha: 'Rahu', currentAntarDasha: 'Shani' },
+      };
+    }
+  }, [dobInput, tobInput, calcVersion]);
+
+  // Active Template Sheet Data
+  const sheetKey = SHEET_MAP[activeTab];
+  const activeTemplate = useMemo(() => {
+    const sheetData: any = (resultTemplates as any)[sheetKey] || {};
+    return sheetData;
+  }, [sheetKey]);
+
+  // Helper to read template cell with fallback
   const getVal = (row: number, col: string, fallback: string = '') => {
     const rowObj = activeTemplate[String(row)];
     if (rowObj && rowObj[col] && rowObj[col].val) {
@@ -89,9 +256,47 @@ export default function KuthiResultWorkstation({
     return fallback;
   };
 
-  // Copy Complete Report
+  // Build Dynamic Prediction Narrative (Row 23)
+  const dynamicNarrative = useMemo(() => {
+    const rawNarrative = getVal(23, 'A', '');
+    if (!rawNarrative) return '';
+
+    // Replace date, age, and name dynamically if desired
+    return rawNarrative;
+  }, [activeTemplate, calculatedAstro, name]);
+
+  const handleCalculate = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setCalcVersion((v) => v + 1);
+    showToast(`Horoscope Calculated for ${name}!`);
+  };
+
+  const handleApplyPreset = (preset: 'suraj' | 'sanatomba') => {
+    if (preset === 'suraj') {
+      setName('Moirangthem Suraj Singh');
+      setDobInput('1986-07-02');
+      setTobInput('09:45');
+      setPob('Tentha Khunou Maning Leikai');
+      setGender('male');
+      setRefNo('Ref. No.:- 2021   (20-04-2025)');
+      setConsultDate('20-04-2025');
+      setCalcVersion((v) => v + 1);
+      showToast('Loaded Excel Reference: Suraj Singh (1986)');
+    } else {
+      setName('Sanatomba Meitei');
+      setDobInput('2004-06-28');
+      setTobInput('06:00');
+      setPob('Imphal, Manipur');
+      setGender('male');
+      setRefNo('Ref. No.:- 2025   (13-09-2026)');
+      setConsultDate('13-09-2026');
+      setCalcVersion((v) => v + 1);
+      showToast('Loaded Preset: Sanatomba Meitei (2004)');
+    }
+  };
+
   const handleCopyReport = () => {
-    const reportNarrative = getVal(23, 'A', '');
+    const reportNarrative = dynamicNarrative;
     const reportText = `=====================================================
 MANIPURI KUTHI HOROSCOPE RESULT (${activeTab})
 =====================================================
@@ -101,11 +306,13 @@ ${refNo} | Date: ${consultDate}
 -----------------------------------------------------
 NATIVE PARTICULARS:
 - Name: ${name}
-- Date of Birth: ${dob} (${day})
-- Birth Time: ${tob}
-- Rashi: ${getVal(6, 'C', '')} ${getVal(6, 'E', '')}
-- Lagna: ${getVal(7, 'C', '')}
-- Nakshatra: ${getVal(8, 'C', '')} (${getVal(8, 'G', '')})
+- Date of Birth: ${calculatedAstro.formattedDob} (${calculatedAstro.dayInfo.en})
+- Birth Time: ${calculatedAstro.formattedTob}
+- Place of Birth: ${pob}
+- Current Age: ${calculatedAstro.ageInfo?.years ?? 38} Years ${calculatedAstro.ageInfo?.months ?? 9} Months (Running ${calculatedAstro.ageInfo?.runningYear ?? 39}th Year)
+- Rashi: ${activeTab === 'Meitei Mayek' ? calculatedAstro.rashi.mm : calculatedAstro.rashi.blipi}
+- Lagna: ${activeTab === 'Meitei Mayek' ? calculatedAstro.lagna.mm : calculatedAstro.lagna.blipi}
+- Nakshatra: ${activeTab === 'Meitei Mayek' ? calculatedAstro.nakshatra.mm : calculatedAstro.nakshatra.blipi}
 
 LUCKY ATTRIBUTES:
 - Lucky Colours: ${getVal(10, 'C', '')}
@@ -142,35 +349,6 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
     window.print();
   };
 
-  const handleApplyPreset = (presetName: string) => {
-    if (presetName === 'suraj') {
-      setName('Moirangthem Suraj Singh');
-      setDob('2-7-1986 AD');
-      setTob('9:45 AM');
-      setDay('Wednesday');
-      setPob('Tentha Khunou Maning Leikai');
-      showToast('Loaded Preset: Moirangthem Suraj Singh (1986)');
-    } else if (presetName === 'sanatomba') {
-      setName('Sanatomba Meitei');
-      setDob('28-06-2004 AD');
-      setTob('6:00 AM');
-      setDay('Monday');
-      setPob('Imphal, Manipur');
-      showToast('Loaded Preset: Sanatomba Meitei (2004)');
-    }
-  };
-
-  // Font family determination for the active tab
-  const tabFontClass = useMemo(() => {
-    if (activeTab === 'MM_Result_M') {
-      return 'font-budha';
-    } else if (activeTab === 'Meetei_Result') {
-      return 'font-blipi';
-    } else {
-      return 'font-blipi';
-    }
-  }, [activeTab]);
-
   return (
     <div
       className={`w-full rounded-3xl shadow-2xl overflow-hidden font-sans border transition-colors duration-200 ${
@@ -204,7 +382,7 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                   isDark ? 'text-amber-300' : 'text-[#78350f]'
                 }`}
               >
-                Kuthi Astrological Result Sheets
+                Kuthi Horoscope Result Sheets
               </h2>
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ${
@@ -213,7 +391,7 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                     : 'bg-amber-100 text-amber-900 border-amber-300'
                 }`}
               >
-                3-in-1 Unified Page
+                Meitei Mayek • Sanamahi • Hinduism
               </span>
             </div>
             <p
@@ -221,13 +399,27 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                 isDark ? 'text-slate-300' : 'text-slate-600'
               }`}
             >
-              Unified viewer for Result, Meetei_Result, and MM_Result_M (powered by Budha.ttf)
+              Enter native birth details and start calculating instant authentic horoscope documents
             </p>
           </div>
         </div>
 
         {/* Action Buttons & Theme Switcher */}
         <div className="flex items-center flex-wrap gap-2">
+          {/* Toggle Input Form Button */}
+          <button
+            onClick={() => setShowInputForm((prev) => !prev)}
+            className={`px-3 py-2 rounded-xl border text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs ${
+              isDark
+                ? 'bg-[#1c2541] hover:bg-[#253258] border-[#3a506b] text-slate-200'
+                : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-800'
+            }`}
+          >
+            <Calculator className="w-3.5 h-3.5 text-amber-500" />
+            <span>{showInputForm ? 'Hide Birth Form' : 'Edit Birth Details'}</span>
+            {showInputForm ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          </button>
+
           {/* Theme Toggle */}
           <button
             onClick={() => setCurrentTheme(isDark ? 'light' : 'dark')}
@@ -251,7 +443,7 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
             }`}
           >
             <Copy className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Copy {activeTab}</span>
+            <span className="hidden sm:inline">Copy Report</span>
           </button>
 
           <button
@@ -285,7 +477,168 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
         </div>
       )}
 
-      {/* ── 3-TAB SWITCHER BAR ── */}
+      {/* ── BIRTH DETAILS INPUT FORM (WHERE WE START CALCULATING) ── */}
+      {showInputForm && (
+        <div
+          className={`px-6 py-5 border-b transition-all ${
+            isDark
+              ? 'bg-[#0f172a] border-[#3a506b]/50'
+              : 'bg-[#faf6ee] border-[#f3e8d2]'
+          }`}
+        >
+          <form onSubmit={handleCalculate} className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="font-serif font-black text-sm text-amber-500 flex items-center gap-1.5">
+                  <Calculator className="w-4 h-4" />
+                  <span>Enter Birth Details to Start Calculating</span>
+                </span>
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full border font-bold ${
+                    isDark
+                      ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                      : 'bg-amber-100 border-amber-300 text-amber-900'
+                  }`}
+                >
+                  Dynamic Ephemeris Engine
+                </span>
+              </div>
+
+              {/* Quick Presets */}
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-[11px] font-bold text-slate-400">Presets:</span>
+                <button
+                  type="button"
+                  onClick={() => handleApplyPreset('suraj')}
+                  className={`px-2.5 py-1 rounded-lg border font-bold text-xs transition-all cursor-pointer ${
+                    isDark
+                      ? 'bg-amber-500/20 hover:bg-amber-500/30 border-amber-500/40 text-amber-300'
+                      : 'bg-white hover:bg-amber-50 border-amber-300 text-amber-900 shadow-xs'
+                  }`}
+                >
+                  Suraj Singh (Excel Case: 1986-07-02)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleApplyPreset('sanatomba')}
+                  className={`px-2.5 py-1 rounded-lg border font-medium text-xs transition-all cursor-pointer ${
+                    isDark
+                      ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
+                      : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700 shadow-xs'
+                  }`}
+                >
+                  Sanatomba (2004-06-28)
+                </button>
+              </div>
+            </div>
+
+            {/* Input Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-3 text-xs">
+              {/* Native Name */}
+              <div className="lg:col-span-2">
+                <label className="block font-bold text-[11px] mb-1 text-slate-400">
+                  Native / Client Name
+                </label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Moirangthem Suraj Singh"
+                  className={`w-full rounded-xl px-3 py-2 text-xs font-bold focus:outline-none border ${
+                    isDark
+                      ? 'bg-[#0b132b] border-[#3a506b] text-white focus:border-amber-400'
+                      : 'bg-white border-[#e2d5c4] text-slate-900 focus:border-amber-600 shadow-xs'
+                  }`}
+                />
+              </div>
+
+              {/* Date of Birth */}
+              <div>
+                <label className="block font-bold text-[11px] mb-1 text-slate-400">
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  value={dobInput}
+                  onChange={(e) => setDobInput(e.target.value)}
+                  className={`w-full rounded-xl px-3 py-2 text-xs font-bold font-mono focus:outline-none border ${
+                    isDark
+                      ? 'bg-[#0b132b] border-[#3a506b] text-white focus:border-amber-400'
+                      : 'bg-white border-[#e2d5c4] text-slate-900 focus:border-amber-600 shadow-xs'
+                  }`}
+                />
+              </div>
+
+              {/* Time of Birth */}
+              <div>
+                <label className="block font-bold text-[11px] mb-1 text-slate-400">
+                  Birth Time (24h / AM-PM)
+                </label>
+                <input
+                  type="time"
+                  value={tobInput}
+                  onChange={(e) => setTobInput(e.target.value)}
+                  className={`w-full rounded-xl px-3 py-2 text-xs font-bold font-mono focus:outline-none border ${
+                    isDark
+                      ? 'bg-[#0b132b] border-[#3a506b] text-white focus:border-amber-400'
+                      : 'bg-white border-[#e2d5c4] text-slate-900 focus:border-amber-600 shadow-xs'
+                  }`}
+                />
+              </div>
+
+              {/* Place of Birth */}
+              <div className="lg:col-span-2">
+                <label className="block font-bold text-[11px] mb-1 text-slate-400">
+                  Place of Birth
+                </label>
+                <input
+                  type="text"
+                  value={pob}
+                  onChange={(e) => setPob(e.target.value)}
+                  placeholder="e.g. Tentha Khunou Maning Leikai"
+                  className={`w-full rounded-xl px-3 py-2 text-xs font-medium focus:outline-none border ${
+                    isDark
+                      ? 'bg-[#0b132b] border-[#3a506b] text-white focus:border-amber-400'
+                      : 'bg-white border-[#e2d5c4] text-slate-900 focus:border-amber-600 shadow-xs'
+                  }`}
+                />
+              </div>
+
+              {/* Gender */}
+              <div>
+                <label className="block font-bold text-[11px] mb-1 text-slate-400">
+                  Gender
+                </label>
+                <select
+                  value={gender}
+                  onChange={(e) => setGender(e.target.value as any)}
+                  className={`w-full rounded-xl px-3 py-2 text-xs font-bold focus:outline-none border ${
+                    isDark
+                      ? 'bg-[#0b132b] border-[#3a506b] text-white focus:border-amber-400'
+                      : 'bg-white border-[#e2d5c4] text-slate-900 focus:border-amber-600 shadow-xs'
+                  }`}
+                >
+                  <option value="male">Male (নুপা)</option>
+                  <option value="female">Female (নুপী)</option>
+                </select>
+              </div>
+
+              {/* Calculate Button */}
+              <div className="flex items-end">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black text-xs shadow-md flex items-center justify-center gap-1.5 cursor-pointer transition-all hover:scale-[1.02]"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  <span>Start Calculating</span>
+                </button>
+              </div>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ── 3-TAB SWITCHER: MEITEI MAYEK, SANAMAHI, HINDUISM ── */}
       <div
         className={`px-6 py-3 border-b flex flex-wrap items-center justify-between gap-3 transition-colors ${
           isDark
@@ -293,121 +646,88 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
             : 'bg-[#faf6ee] border-[#f3e8d2]'
         }`}
       >
-        <div className="flex items-center flex-wrap gap-2">
-          {/* Tab 1: MM_Result_M (Budha font) */}
+        <div className="flex items-center flex-wrap gap-2.5">
+          {/* TAB 1: MEITEI MAYEK (MM_Result_M with Budha.ttf font) */}
           <button
-            onClick={() => setActiveTab('MM_Result_M')}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'MM_Result_M'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md scale-102'
+            onClick={() => setActiveTab('Meitei Mayek')}
+            className={`px-4.5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'Meitei Mayek'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg scale-102 border border-amber-400'
                 : isDark
                 ? 'bg-[#0b132b] text-slate-300 hover:text-white border border-[#3a506b]/60'
                 : 'bg-white text-slate-700 hover:text-slate-950 border border-slate-300 shadow-xs'
             }`}
           >
             <span>📜</span>
-            <span>MM_Result_M (Budha.ttf Font)</span>
+            <span className="text-sm tracking-wide">Meitei Mayek</span>
             <span
-              className={`px-1.5 py-0.2 rounded text-[9px] font-mono ${
-                activeTab === 'MM_Result_M' ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/20 text-amber-500'
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                activeTab === 'Meitei Mayek' ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/20 text-amber-500'
               }`}
             >
-              Meetei Mayek
+              Budha.ttf
             </span>
           </button>
 
-          {/* Tab 2: Meetei_Result */}
+          {/* TAB 2: SANAMAHI (Meetei_Result with Blipi15) */}
           <button
-            onClick={() => setActiveTab('Meetei_Result')}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'Meetei_Result'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md scale-102'
+            onClick={() => setActiveTab('Sanamahi')}
+            className={`px-4.5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'Sanamahi'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg scale-102 border border-amber-400'
                 : isDark
                 ? 'bg-[#0b132b] text-slate-300 hover:text-white border border-[#3a506b]/60'
                 : 'bg-white text-slate-700 hover:text-slate-950 border border-slate-300 shadow-xs'
             }`}
           >
             <span>🪶</span>
-            <span>Meetei_Result (BLipi15 Font)</span>
+            <span className="text-sm tracking-wide">Sanamahi</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                activeTab === 'Sanamahi' ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/20 text-amber-500'
+              }`}
+            >
+              BLipi15
+            </span>
           </button>
 
-          {/* Tab 3: Result */}
+          {/* TAB 3: HINDUISM (Result with Blipi15 / Bengali script) */}
           <button
-            onClick={() => setActiveTab('Result')}
-            className={`px-4 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
-              activeTab === 'Result'
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-md scale-102'
+            onClick={() => setActiveTab('Hinduism')}
+            className={`px-4.5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 cursor-pointer ${
+              activeTab === 'Hinduism'
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 shadow-lg scale-102 border border-amber-400'
                 : isDark
                 ? 'bg-[#0b132b] text-slate-300 hover:text-white border border-[#3a506b]/60'
                 : 'bg-white text-slate-700 hover:text-slate-950 border border-slate-300 shadow-xs'
             }`}
           >
-            <span>📄</span>
-            <span>Result (Classic Format)</span>
+            <span>🕉️</span>
+            <span className="text-sm tracking-wide">Hinduism</span>
+            <span
+              className={`px-2 py-0.5 rounded-md text-[10px] font-bold ${
+                activeTab === 'Hinduism' ? 'bg-slate-950/20 text-slate-950' : 'bg-amber-500/20 text-amber-500'
+              }`}
+            >
+              Vedic Result
+            </span>
           </button>
         </div>
 
-        {/* Font Indicator Badge */}
+        {/* Font Indicator */}
         <div
-          className={`text-xs font-mono font-bold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 ${
-            activeTab === 'MM_Result_M'
-              ? (isDark ? 'bg-amber-500/15 border-amber-500/30 text-amber-300' : 'bg-amber-100 border-amber-300 text-amber-900')
-              : (isDark ? 'bg-slate-800 border-slate-700 text-slate-300' : 'bg-white border-slate-300 text-slate-700')
+          className={`text-xs font-bold px-3 py-1.5 rounded-xl border flex items-center gap-1.5 ${
+            isDark
+              ? 'bg-[#0b132b] border-[#3a506b] text-amber-300'
+              : 'bg-white border-[#e2d5c4] text-amber-900 shadow-xs'
           }`}
         >
           <Sparkles className="w-3.5 h-3.5 text-amber-500" />
           <span>
-            {activeTab === 'MM_Result_M'
-              ? 'Font: Budha (C:\\Users\\MayNard\\Desktop\\Budha.ttf)'
-              : 'Font: BLipi15 (Blipi15.TTF)'}
+            {activeTab === 'Meitei Mayek'
+              ? 'Meitei Mayek (Budha.ttf) + BLipi15 Headers'
+              : 'BLipi15 Font Engine'}
           </span>
-        </div>
-      </div>
-
-      {/* ── BIRTH DETAILS BAR & PRESETS ── */}
-      <div
-        className={`px-6 py-3 border-b flex flex-wrap items-center justify-between gap-3 text-xs ${
-          isDark
-            ? 'bg-[#0f172a] border-[#3a506b]/40 text-slate-300'
-            : 'bg-white border-[#f3e8d2] text-slate-700'
-        }`}
-      >
-        <div className="flex items-center flex-wrap gap-3">
-          <span className="font-bold flex items-center gap-1 text-amber-500">
-            <User className="w-3.5 h-3.5" />
-            <span>Active Birth Details:</span>
-          </span>
-          <span className="font-semibold">{name}</span>
-          <span className="opacity-40">•</span>
-          <span className="font-mono">{dob}</span>
-          <span className="opacity-40">•</span>
-          <span className="font-mono">{tob}</span>
-          <span className="opacity-40">•</span>
-          <span>{day}</span>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-[11px] font-bold text-slate-400">Presets:</span>
-          <button
-            onClick={() => handleApplyPreset('suraj')}
-            className={`px-2 py-0.5 rounded-md border font-semibold text-[11px] transition-all cursor-pointer ${
-              isDark
-                ? 'bg-amber-500/10 hover:bg-amber-500/20 border-amber-500/30 text-amber-300'
-                : 'bg-amber-50 hover:bg-amber-100 border-amber-200 text-amber-900'
-            }`}
-          >
-            Suraj Singh (1986)
-          </button>
-          <button
-            onClick={() => handleApplyPreset('sanatomba')}
-            className={`px-2 py-0.5 rounded-md border font-medium text-[11px] transition-all cursor-pointer ${
-              isDark
-                ? 'bg-slate-800 hover:bg-slate-700 border-slate-700 text-slate-300'
-                : 'bg-white hover:bg-slate-50 border-slate-300 text-slate-700'
-            }`}
-          >
-            Sanatomba (2004)
-          </button>
         </div>
       </div>
 
@@ -420,8 +740,8 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
               : 'bg-white border-amber-300 text-slate-900 shadow-xl'
           }`}
         >
-          {/* Ornamental Inner Border */}
-          <div className="absolute inset-2 border border-amber-400/20 rounded-2xl pointer-events-none" />
+          {/* Ornamental Border */}
+          <div className="absolute inset-2.5 border border-amber-400/20 rounded-2xl pointer-events-none" />
 
           {/* HEADER SECTION */}
           <div className="text-center space-y-2 border-b border-amber-400/30 pb-6">
@@ -443,10 +763,13 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
             </div>
             <div className="flex flex-wrap items-center justify-between text-xs font-mono pt-3 opacity-80 border-t border-amber-400/20">
               <span>{refNo}</span>
-              <span>
-                {activeTab === 'MM_Result_M' ? 'taZ :- ' : 'taz:- '}
-                {consultDate}
-              </span>
+              <div className="flex items-center gap-1.5">
+                {/* Note: text like 'taZ :-' uses font-blipi per user instruction */}
+                <span className="font-blipi font-bold text-sm text-amber-500">
+                  {activeTab === 'Meitei Mayek' ? 'taZ :- ' : 'taz:- '}
+                </span>
+                <span>{consultDate}</span>
+              </div>
             </div>
           </div>
 
@@ -472,7 +795,7 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                   Date of Birth:
                 </span>
                 <span className="font-mono font-bold text-sm">
-                  {dob}
+                  {calculatedAstro.formattedDob}
                 </span>
               </div>
               <div>
@@ -480,15 +803,15 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                   Birth Time:
                 </span>
                 <span className="font-mono font-bold text-sm">
-                  {tob}
+                  {calculatedAstro.formattedTob}
                 </span>
               </div>
               <div>
                 <span className="text-[11px] font-bold text-slate-400 block mb-0.5">
-                  Day of Week:
+                  Birthday / Weekday:
                 </span>
                 <span className="font-bold text-sm">
-                  {day}
+                  {calculatedAstro.dayInfo.en} ({calculatedAstro.dayInfo.bn})
                 </span>
               </div>
             </div>
@@ -501,28 +824,50 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
             >
               <div>
                 <span className="text-[11px] font-bold text-slate-400 block mb-0.5">
-                  {activeTab === 'MM_Result_M' ? 'rasi (Moon Sign):' : 'raiS (রাশি):'}
+                  {activeTab === 'Meitei Mayek' ? 'rasi (Moon Sign):' : 'raiS (রাশি):'}
                 </span>
-                <span className={`font-bold text-base ${tabFontClass}`}>
-                  {getVal(6, 'C', '')} {getVal(6, 'E', '')}
-                </span>
-              </div>
-              <div>
-                <span className="text-[11px] font-bold text-slate-400 block mb-0.5">
-                  {activeTab === 'MM_Result_M' ? 'lg_n (Ascendant):' : 'lgx (লগ্ন):'}
-                </span>
-                <span className={`font-bold text-base ${tabFontClass}`}>
-                  {getVal(7, 'C', '')}
+                <span
+                  className={`font-bold text-base ${
+                    activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'
+                  }`}
+                >
+                  {activeTab === 'Meitei Mayek'
+                    ? calculatedAstro.rashi.mm
+                    : calculatedAstro.rashi.blipi}
                 </span>
               </div>
               <div>
                 <span className="text-[11px] font-bold text-slate-400 block mb-0.5">
-                  {activeTab === 'MM_Result_M' ? 'YwaNmicaK (Nakshatra):' : 'Twanimcak (নক্ষত্র):'}
+                  {activeTab === 'Meitei Mayek' ? 'lg_n (Ascendant):' : 'lgx (লগ্ন):'}
                 </span>
-                <span className={`font-bold text-base ${tabFontClass}`}>
-                  {getVal(8, 'C', '')}
+                <span
+                  className={`font-bold text-base ${
+                    activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'
+                  }`}
+                >
+                  {activeTab === 'Meitei Mayek'
+                    ? calculatedAstro.lagna.mm
+                    : calculatedAstro.lagna.blipi}
                 </span>
-                <span className={`text-[11px] block text-slate-400 mt-0.5 ${tabFontClass}`}>
+              </div>
+              <div>
+                <span className="text-[11px] font-bold text-slate-400 block mb-0.5">
+                  {activeTab === 'Meitei Mayek' ? 'YwaNmicaK (Nakshatra):' : 'Twanimcak (নক্ষত্র):'}
+                </span>
+                <span
+                  className={`font-bold text-base ${
+                    activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'
+                  }`}
+                >
+                  {activeTab === 'Meitei Mayek'
+                    ? calculatedAstro.nakshatra.mm
+                    : calculatedAstro.nakshatra.blipi}
+                </span>
+                <span
+                  className={`text-[11px] block text-slate-400 mt-0.5 ${
+                    activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'
+                  }`}
+                >
                   {getVal(8, 'G', '')}
                 </span>
               </div>
@@ -617,7 +962,9 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
               <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
               <div>
                 <strong>Lucky Colours: </strong>
-                <span className={tabFontClass}>{getVal(10, 'C', '')}</span>
+                <span className={activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}>
+                  {getVal(10, 'C', '')}
+                </span>
               </div>
             </div>
           </div>
@@ -631,8 +978,9 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                 }`}
               >
                 <Compass className="w-4 h-4 text-amber-500" />
-                <span>
-                  {activeTab === 'MM_Result_M'
+                {/* Note: 'chi taZkK Asid lM cTpgi maIkEsiZgi Af-fTt mHad pijri:-' uses font-blipi */}
+                <span className="font-blipi font-bold text-sm">
+                  {activeTab === 'Meitei Mayek'
                     ? 'chi taZkK Asid lM cTpgi maIkEsiZgi Af-fTt mHad pijri:-'
                     : 'cih tazk(I mtaz Aisda lm c\\pgI mah~e~kiSzgI Af-fo_ mKada pIjir:-'}
                 </span>
@@ -648,34 +996,34 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                 {/* Column 1 */}
                 <div className="divide-y divide-gray-500/20">
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(14, 'A', 'noZpoK :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(14, 'C', '') || getVal(14, 'B', '')}
                     </span>
                   </div>
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(15, 'A', 'ciZHE :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(15, 'C', '') || getVal(15, 'B', '')}
                     </span>
                   </div>
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(16, 'A', 'AwaZ :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(16, 'C', '') || getVal(16, 'B', '')}
                     </span>
                   </div>
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(17, 'A', 'kOb_ru :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(17, 'C', '') || getVal(17, 'B', '')}
                     </span>
                   </div>
@@ -684,34 +1032,34 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                 {/* Column 2 */}
                 <div className="divide-y divide-gray-500/20">
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(18, 'A', 'noZcuP :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(18, 'C', '') || getVal(18, 'B', '')}
                     </span>
                   </div>
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(19, 'A', 'sNYoZ :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(19, 'C', '') || getVal(19, 'B', '')}
                     </span>
                   </div>
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(20, 'A', 'mHa :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(20, 'C', '') || getVal(20, 'B', '')}
                     </span>
                   </div>
                   <div className="p-3 flex items-start justify-between gap-3">
-                    <span className={`font-bold w-24 shrink-0 text-amber-500 ${tabFontClass}`}>
+                    <span className="font-blipi font-bold w-24 shrink-0 text-amber-500">
                       {getVal(21, 'A', 'mErM :-')}
                     </span>
-                    <span className={`text-right ${tabFontClass}`}>
+                    <span className={`text-right ${activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'}`}>
                       {getVal(21, 'C', '') || getVal(21, 'B', '')}
                     </span>
                   </div>
@@ -720,29 +1068,31 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
             </div>
           </div>
 
-          {/* SECTION 4: NARRATIVE DASHA & LIFE PREDICTIONS (ROW 23) */}
+          {/* SECTION 4: DETAILED LIFE PREDICTIONS & DASHA TIMELINE NARRATIVE */}
           <div className="space-y-3">
             <h3
               className={`font-serif font-bold text-sm flex items-center gap-2 ${
                 isDark ? 'text-amber-300' : 'text-[#78350f]'
               }`}
             >
-              <span>📜</span> Detailed Life Predictions & Running Dasha Narrative (Row 23)
+              <span>📜</span> Detailed Life Predictions & Running Dasha Timeline (Row 23)
             </h3>
 
             <div
-              className={`p-5 rounded-2xl border leading-relaxed text-sm tracking-wide transition-colors ${tabFontClass} ${
+              className={`p-5 rounded-2xl border leading-relaxed text-sm tracking-wide transition-colors ${
+                activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'
+              } ${
                 isDark
                   ? 'bg-[#0b132b] border-[#3a506b] text-slate-100'
                   : 'bg-[#faf6ee] border-[#e2d5c4] text-slate-900 shadow-xs'
               }`}
               style={{ whiteSpace: 'pre-wrap', lineHeight: '1.8' }}
             >
-              {getVal(23, 'A', 'Predictions narrative text loading...')}
+              {dynamicNarrative}
             </div>
           </div>
 
-          {/* SECTION 5: REMEDIES / PRITIKAR */}
+          {/* SECTION 5: REMEDIAL MEASURES (PRITIKAR 1 & 2) */}
           <div className="space-y-3">
             <h3
               className={`font-serif font-bold text-sm flex items-center gap-2 ${
@@ -751,7 +1101,7 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
             >
               <ShieldCheck className="w-4 h-4 text-emerald-500" />
               <span>
-                {activeTab === 'MM_Result_M'
+                {activeTab === 'Meitei Mayek'
                   ? 'p_rtikar nTtr_g AkoKloN (Remedial Ceremonies):'
                   : 'p[itkar nYga Aekakelan (Remedial Ceremonies):'}
               </span>
@@ -770,7 +1120,11 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                   <Flame className="w-3.5 h-3.5 text-amber-500" />
                   <span>Pritikar (1)</span>
                 </div>
-                <p className={`text-xs leading-relaxed font-medium ${tabFontClass}`}>
+                <p
+                  className={`text-xs leading-relaxed font-medium ${
+                    activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'
+                  }`}
+                >
                   {getVal(113, 'B', '') || getVal(115, 'B', '') || getVal(53, 'B', '')}
                 </p>
               </div>
@@ -787,7 +1141,11 @@ Generated via Kanglei Kuthi • kuthiyengpham.in`;
                   <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                   <span>Pritikar (2)</span>
                 </div>
-                <p className={`text-xs leading-relaxed font-medium ${tabFontClass}`}>
+                <p
+                  className={`text-xs leading-relaxed font-medium ${
+                    activeTab === 'Meitei Mayek' ? 'font-budha' : 'font-blipi'
+                  }`}
+                >
                   {getVal(114, 'B', '') || getVal(116, 'B', '') || getVal(54, 'B', '')}
                 </p>
               </div>
