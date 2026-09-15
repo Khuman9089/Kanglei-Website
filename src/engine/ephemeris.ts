@@ -242,3 +242,89 @@ function createDefaultPlanet(p: { id: string; name: string }, longitude: number)
     houseNumber: 1,
   };
 }
+
+/**
+ * Calculates exact Sidereal Moon Longitude at a given UTC Date.
+ */
+export function getExactMoonSiderealLongitude(utcDate: Date): number {
+  const astroTime = new Astronomy.AstroTime(utcDate);
+  const jd = astroTime.ut + 2451545.0;
+  const ayanamsa = getAyanamsa(jd);
+  const vec = Astronomy.GeoVector(Astronomy.Body.Moon, astroTime, true);
+  const ecl = Astronomy.Ecliptic(vec);
+  return (ecl.elon - ayanamsa + 360.0) % 360.0;
+}
+
+export interface MoonRashiTransitResult {
+  sunriseRashiIdx: number;
+  hasTransit: boolean;
+  nextRashiIdx: number;
+  transitHoursFromSunrise: number;
+  transitClockDec: number;
+}
+
+/**
+ * Calculates Moon Rashi at sunrise and exact transit to next Rashi if it occurs before next sunrise.
+ */
+export function calculateMoonRashiTransit(
+  targetDateStr: string,
+  sunriseDec: number,
+  nextSunriseDec: number,
+  tzOffset: number = 5.5
+): MoonRashiTransitResult {
+  const [y, m, d] = targetDateStr.split('-').map(Number);
+  const sunriseMinutes = sunriseDec * 60;
+  const sunriseUtcMinutes = Math.round(sunriseMinutes - tzOffset * 60);
+  const sunriseUtcDate = new Date(Date.UTC(y, m - 1, d, 0, sunriseUtcMinutes, 0));
+
+  const moonLong0 = getExactMoonSiderealLongitude(sunriseUtcDate);
+  const curRashiIdx = Math.floor(moonLong0 / 30.0) % 12;
+  const nextRashiIdx = (curRashiIdx + 1) % 12;
+
+  // Day span from today's sunrise to tomorrow's sunrise
+  const daySpanHours = nextSunriseDec >= sunriseDec ? (nextSunriseDec + 24.0 - sunriseDec) : 24.0;
+  const nextSunriseUtcDate = new Date(sunriseUtcDate.getTime() + Math.round(daySpanHours * 3600 * 1000));
+  const moonLong1 = getExactMoonSiderealLongitude(nextSunriseUtcDate);
+
+  const degMoved = (moonLong1 - moonLong0 + 360.0) % 360.0;
+  const remDeg = 30.0 - (moonLong0 % 30.0);
+
+  if (remDeg < degMoved) {
+    let lowMs = 0;
+    let highMs = daySpanHours * 3600 * 1000;
+    const targetLong = (curRashiIdx + 1) * 30.0;
+
+    for (let iter = 0; iter < 28; iter++) {
+      const midMs = (lowMs + highMs) / 2;
+      const tMid = new Date(sunriseUtcDate.getTime() + midMs);
+      const longMid = getExactMoonSiderealLongitude(tMid);
+      let diff = longMid - targetLong;
+      if (diff < -180) diff += 360;
+      if (diff > 180) diff -= 360;
+      if (diff >= 0) {
+        highMs = midMs;
+      } else {
+        lowMs = midMs;
+      }
+    }
+
+    const transitHoursFromSunrise = lowMs / 3600000;
+    const transitClockDec = (sunriseDec + transitHoursFromSunrise) % 24;
+
+    return {
+      sunriseRashiIdx: curRashiIdx,
+      hasTransit: true,
+      nextRashiIdx,
+      transitHoursFromSunrise,
+      transitClockDec
+    };
+  }
+
+  return {
+    sunriseRashiIdx: curRashiIdx,
+    hasTransit: false,
+    nextRashiIdx,
+    transitHoursFromSunrise: 0,
+    transitClockDec: 0
+  };
+}

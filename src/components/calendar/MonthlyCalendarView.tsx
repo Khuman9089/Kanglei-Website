@@ -532,8 +532,8 @@ export default function MonthlyCalendarView() {
 
                     </div>
 
-                    {/* BOTTOM: MANIPURI LUNAR MONTH & TITHI (In Red if Sunday/Holiday) */}
-                    <div className="pt-0.5 border-t border-[#c5dceb] flex items-center justify-between px-0.5 text-[9px] sm:text-[10.5px] md:text-xs leading-tight">
+                    {/* BOTTOM: MANIPURI LUNAR MONTH & TITHI & NAKSHATRA NUMBER (In Red if Sunday/Holiday) */}
+                    <div className="pt-0.5 border-t border-[#c5dceb] flex items-center justify-between px-0.5 text-[9px] sm:text-[10.5px] md:text-xs leading-tight gap-1">
                       <span
                         className={`font-serif font-bold truncate ${
                           isHoliday ? 'text-red-600' : 'text-gray-800'
@@ -545,13 +545,27 @@ export default function MonthlyCalendarView() {
                           : dayItem.tithiDisplayBengali}
                       </span>
 
-                      {/* Small Tithi Ending Time */}
-                      <span
-                        className="text-[8px] sm:text-[9px] font-mono text-gray-500 font-semibold tracking-tight hidden sm:inline"
-                        title={`Tithi Ending: ${dayItem.tithiEndingStandard} (${dayItem.tithiEndingTime})`}
-                      >
-                        {dayItem.tithiEndingTime}
-                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {/* Nakshatra Number Badge */}
+                        {dayItem.nakshatraDisplayNumBengali && (
+                          <span
+                            className="text-[7.5px] sm:text-[9px] font-serif font-bold text-amber-950 bg-amber-100/90 px-1 py-0.5 rounded border border-amber-300/80 leading-none"
+                            title={`Nakshatra: ${scriptMode === 'meetei' ? dayItem.nakshatraDisplayMeetei : dayItem.nakshatraDisplayBengali}`}
+                          >
+                            {scriptMode === 'meetei'
+                              ? `ꯅ:${dayItem.nakshatraDisplayNumMeetei}`
+                              : `ন:${dayItem.nakshatraDisplayNumBengali}`}
+                          </span>
+                        )}
+
+                        {/* Small Tithi Ending Time */}
+                        <span
+                          className="text-[8px] sm:text-[9px] font-mono text-gray-500 font-semibold tracking-tight hidden sm:inline"
+                          title={`Tithi Ending: ${dayItem.tithiEndingStandard} (${dayItem.tithiEndingTime})`}
+                        >
+                          {dayItem.tithiEndingTime}
+                        </span>
+                      </div>
                     </div>
 
                   </div>
@@ -592,7 +606,7 @@ export default function MonthlyCalendarView() {
                 )}
               </div>
               <p className="text-xs text-gray-500 font-serif mt-0.5">
-                {scriptMode === 'meetei' ? activeDay.tithiDisplayMeetei : activeDay.tithiDisplayBengali} • Soura {activeDay.souraDate} {activeDay.solarMonth.bengali}, Saka {activeDay.sakaYear}
+                {scriptMode === 'meetei' ? activeDay.tithiDisplayMeetei : activeDay.tithiDisplayBengali} • {scriptMode === 'meetei' ? `ꯅ:${activeDay.nakshatraDisplayNumMeetei} (${activeDay.nakshatraDisplayMeetei})` : `ন:${activeDay.nakshatraDisplayNumBengali} (${activeDay.nakshatraDisplayBengali})`} • Soura {activeDay.souraDate} {activeDay.solarMonth.bengali}, Saka {activeDay.sakaYear}
               </p>
               {activeDay.festival && (
                 <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-red-50 border border-red-200">
@@ -874,7 +888,7 @@ export default function MonthlyCalendarView() {
                   )}
                 </div>
                 <p className="text-xs text-gray-500 font-serif mt-0.5">
-                  {scriptMode === 'meetei' ? modalDay.tithiDisplayMeetei : modalDay.tithiDisplayBengali} • Soura {modalDay.souraDate} {modalDay.solarMonth.bengali}, Saka {modalDay.sakaYear}
+                  {scriptMode === 'meetei' ? modalDay.tithiDisplayMeetei : modalDay.tithiDisplayBengali} • {scriptMode === 'meetei' ? `ꯅ:${modalDay.nakshatraDisplayNumMeetei} (${modalDay.nakshatraDisplayMeetei})` : `ন:${modalDay.nakshatraDisplayNumBengali} (${modalDay.nakshatraDisplayBengali})`} • Soura {modalDay.souraDate} {modalDay.solarMonth.bengali}, Saka {modalDay.sakaYear}
                 </p>
                 {modalDay.festival && (
                   <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-red-50 border border-red-200">
@@ -923,9 +937,9 @@ export default function MonthlyCalendarView() {
               </div>
 
               <div className="flex justify-between py-1.5 border-b border-gray-100">
-                <span className="text-gray-500">Nakshatra:</span>
+                <span className="text-gray-500">Nakshatra (নক্ষত্র):</span>
                 <span className="font-bold text-gray-900">
-                  {modalDay.panchang.fiveAngas.nakshatra.name} (Pada {modalDay.panchang.fiveAngas.nakshatra.pada})
+                  {scriptMode === 'meetei' ? `ꯅ:${modalDay.nakshatraDisplayNumMeetei} - ${modalDay.nakshatraDisplayMeetei}` : `ন:${modalDay.nakshatraDisplayNumBengali} - ${modalDay.nakshatraDisplayBengali}`} (Pada {modalDay.panchang.fiveAngas.nakshatra.pada})
                 </span>
               </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   FileText,
   Printer,
@@ -145,8 +145,14 @@ export default function KuthiResultWorkstation({
   const [activeTab, setActiveTab] = useState<ResultTabType>('Meitei Mayek');
 
   // Theme State
-  const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>(parentTheme || 'dark');
+  const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>(parentTheme || 'light');
   const isDark = currentTheme === 'dark';
+
+  useEffect(() => {
+    if (parentTheme) {
+      setCurrentTheme(parentTheme);
+    }
+  }, [parentTheme]);
 
   // Toggle for the Birth Details Input Form (when viewing results)
   const [showEditForm, setShowEditForm] = useState<boolean>(false);

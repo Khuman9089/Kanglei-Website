@@ -3,12 +3,14 @@
 import React, { useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent } from '../ui/Card';
 import { Input } from '../ui/Input';
-import { Button } from '../ui/Button';
-import { Sparkles, ChevronRight } from 'lucide-react';
+import { Sparkles, ChevronRight, Mail, Phone, User, Calendar, Clock } from 'lucide-react';
+import ManipurLocationInput, { LocationSelection } from './ManipurLocationInput';
 
 interface BirthDetailsFormProps {
   onSubmit?: (data: {
     name: string;
+    email?: string;
+    phone?: string;
     gender: string;
     dateOfBirth: string;
     timeOfBirth: string;
@@ -24,10 +26,12 @@ interface BirthDetailsFormProps {
 export function BirthDetailsForm({ onSubmit, isLoading = false }: BirthDetailsFormProps) {
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
+    phone: '',
     gender: 'Male',
     dateOfBirth: '',
     timeOfBirth: '',
-    placeName: 'Imphal, Manipur',
+    placeName: '',
     latitude: 24.8170,
     longitude: 93.9368,
     utcOffset: 5.5,
@@ -47,6 +51,15 @@ export function BirthDetailsForm({ onSubmit, isLoading = false }: BirthDetailsFo
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleLocationSelect = (loc: LocationSelection) => {
+    setFormData(prev => ({
+      ...prev,
+      placeName: loc.placeName,
+      latitude: loc.latitude,
+      longitude: loc.longitude
+    }));
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (onSubmit) {
@@ -63,10 +76,10 @@ export function BirthDetailsForm({ onSubmit, isLoading = false }: BirthDetailsFo
           </div>
           <div>
             <CardTitle className="text-2xl sm:text-3xl font-serif font-extrabold text-[#0f172a]">
-              Enter Birth Details for Free Kuthi
+              Enter Birth Details for Free Kundli Report
             </CardTitle>
             <p className="text-xs sm:text-sm text-gray-600 font-medium">
-              Accurate birth date, time, and location are used for precise Lahiri Ayanamsa calculations.
+              Accurate birth date, time, and hospital/birth place are used for precise Lahiri Ayanamsa planetary calculations.
             </p>
           </div>
         </div>
@@ -81,9 +94,9 @@ export function BirthDetailsForm({ onSubmit, isLoading = false }: BirthDetailsFo
               required 
               value={formData.name}
               onChange={handleInputChange}
-              placeholder="e.g. Sanatomba Meitei" 
+              placeholder="Full Name (e.g. Sanatomba Singh)" 
             />
-            
+
             <div className="w-full">
               <label className="mb-1.5 block text-sm font-extrabold text-[#0f172a]">Gender</label>
               <div className="flex space-x-6 h-11 items-center px-4 bg-[#fefcf6] rounded-xl border border-[#fde68a]">
@@ -103,6 +116,26 @@ export function BirthDetailsForm({ onSubmit, isLoading = false }: BirthDetailsFo
               </div>
             </div>
 
+            {/* Email Input */}
+            <Input 
+              type="email"
+              label="Email Address" 
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              placeholder="abc@gmail.com" 
+            />
+
+            {/* Mobile / Phone Input */}
+            <Input 
+              type="tel"
+              label="Mobile Number" 
+              name="phone"
+              value={formData.phone}
+              onChange={handleInputChange}
+              placeholder="+91 98765 43210" 
+            />
+
             <Input 
               type="date" 
               label="Date of Birth" 
@@ -120,39 +153,22 @@ export function BirthDetailsForm({ onSubmit, isLoading = false }: BirthDetailsFo
               value={formData.timeOfBirth}
               onChange={handleInputChange}
             />
-            
-            <Input 
-              label="Place of Birth" 
-              name="placeName"
-              required 
-              value={formData.placeName}
-              onChange={handleInputChange}
-              placeholder="City, State, Country" 
-            />
-            
-            <div className="grid grid-cols-2 gap-4">
-              <Input 
-                type="number" 
-                step="any"
-                label="Latitude (°N)" 
-                name="latitude"
-                required 
-                value={formData.latitude}
-                onChange={handleInputChange}
-                placeholder="e.g. 24.8170" 
-              />
-              <Input 
-                type="number" 
-                step="any"
-                label="Longitude (°E)" 
-                name="longitude"
-                required 
-                value={formData.longitude}
-                onChange={handleInputChange}
-                placeholder="e.g. 93.9368" 
-              />
-            </div>
+          </div>
 
+          {/* Location & Hospital Selector with Auto GPS Fetch */}
+          <div className="pt-2 border-t border-gray-100">
+            <ManipurLocationInput
+              value={formData.placeName}
+              latitude={formData.latitude}
+              longitude={formData.longitude}
+              onChange={handleLocationSelect}
+              required
+              label="Birth Place / Hospital Name (Manipur)"
+              placeholder="Search birth hospital or town (e.g. RIMS, JNIMS, Shija Hospital, Imphal)"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-2">
             <Input 
               type="number" 
               step="0.5"
@@ -183,9 +199,9 @@ export function BirthDetailsForm({ onSubmit, isLoading = false }: BirthDetailsFo
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-9 py-4 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-base shadow-md hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50"
+              className="w-full md:w-auto inline-flex items-center justify-center gap-2 px-9 py-4 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-base shadow-md hover:shadow-xl hover:scale-[1.02] transition-all disabled:opacity-50 cursor-pointer"
             >
-              <span>{isLoading ? 'Calculating Kuthi...' : 'Generate Free Kuthi'}</span>
+              <span>{isLoading ? 'Calculating Kundli Report...' : 'Generate Free Kundli Report'}</span>
               <ChevronRight className="w-5 h-5" />
             </button>
           </div>

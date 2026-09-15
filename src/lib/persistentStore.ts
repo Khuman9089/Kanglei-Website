@@ -130,7 +130,7 @@ export async function writePersistentDataAsync<T>(key: string, data: T): Promise
   memoryCache.set(key, data);
 
   // 2. Write to local disk file
-  writePersistentDataLocal(key, data);
+  const localSaved = writePersistentDataLocal(key, data);
 
   // 3. Write to Supabase cloud database for zero-loss deployment resilience
   try {
@@ -139,10 +139,12 @@ export async function writePersistentDataAsync<T>(key: string, data: T): Promise
       .upsert({ key, value: data, updated_at: new Date().toISOString() }, { onConflict: 'key' });
 
     if (error) {
-      throw new Error(`Supabase kv_store upsert failed for key "${key}": ${error.message}`);
+      console.warn(`[persistentStore] Cloud kv_store warning for "${key}":`, error.message);
+      return localSaved;
     }
-  } catch (cloudErr) {
-    throw new Error(`Cloud save failed for key "${key}": ${cloudErr}`);
+  } catch (cloudErr: any) {
+    console.warn(`[persistentStore] Cloud sync caught error for "${key}":`, cloudErr?.message || cloudErr);
+    return localSaved;
   }
 
   return true;
@@ -178,3 +180,21 @@ function writePersistentDataLocal<T>(key: string, data: T): boolean {
     return false;
   }
 }
+
+/**
+ * Check Supabase kv_store cloud database health and key count
+ */
+export async function checkCloudDbStatus(): Promise<{ connected: boolean; count: number; error?: string }> {
+  try {
+    const { count, error } = await supabase
+      .from('kv_store')
+      .select('key', { count: 'exact', head: true });
+    if (error) {
+      return { connected: false, count: 0, error: error.message };
+    }
+    return { connected: true, count: count || 0 };
+  } catch (err: any) {
+    return { connected: false, count: 0, error: err?.message || String(err) };
+  }
+}
+

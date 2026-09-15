@@ -6,16 +6,17 @@ import {
   Search, Bell, Plus, CheckCircle2, XCircle, ArrowUpRight, 
   ArrowDownRight, MessageSquare, ExternalLink, ShieldCheck, Lock,
   TrendingUp, BarChart2, Calendar, Clock, LogOut, Check, ChevronDown, Menu,
-  DollarSign, Filter, Share2, UserCheck, Award, Eye, Download, Copy, X, Sparkles, Save, Tag,
+  DollarSign, Filter, Share2, UserCheck, Award, Eye, EyeOff, Download, Copy, X, Sparkles, Save, Tag,
   BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon,
   Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift, ArrowLeft, ArrowRight,
-  CreditCard, Building2, MapPin, RotateCcw
+  CreditCard, Building2, MapPin, RotateCcw, Smartphone
 } from 'lucide-react';
 import Link from 'next/link';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
 import ServiceCouponsManager from '@/components/admin/ServiceCouponsManager';
 import BloggerPostComposer from '@/components/admin/BloggerPostComposer';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
+import MobileAppLayoutBuilder from '@/components/admin/MobileAppLayoutBuilder';
 
 interface Astrologer {
   id: string;
@@ -506,7 +507,7 @@ export default function AdminDashboardPage() {
     setIsAuthenticated(false);
   };
 
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'consultations' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_returns' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'add_astro' | 'astro_profile' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'service_coupons' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'kuthi' | 'consultations' | 'blog' | 'shop' | 'shop_orders' | 'shop_products' | 'shop_astro_products' | 'shop_returns' | 'shop_delivery' | 'shop_coupons' | 'shop_sliders' | 'announcements' | 'astrologers' | 'add_astro' | 'astro_profile' | 'astro_payouts' | 'astro_assign_list' | 'astro_website' | 'astro_services' | 'astro_rates' | 'service_coupons' | 'upi' | 'clients' | 'banner' | 'ticker' | 'reviews' | 'navbar' | 'settings' | 'mobile_builder'>('dashboard');
 
   const [selectedAstrologer, setSelectedAstrologer] = useState<Astrologer | null>(null);
   const [showPasswordUpdateModal, setShowPasswordUpdateModal] = useState(false);
@@ -1605,6 +1606,7 @@ export default function AdminDashboardPage() {
     title: "Talk to Manipur's",
     highlightText: "Top Rated",
     subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
+    showSectionOnHome: false, // Default hidden on homepage as requested
     showRateOnHome: true,
     actionButtonType: 'both' as 'both' | 'chat_only' | 'call_only',
     rateMode: 'fixed' as 'fixed' | 'per_minute' | 'both' | 'none',
@@ -3582,13 +3584,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
   if (!isAuthenticated) {
     return (
       <div className={`min-h-screen flex items-center justify-center p-4 font-sans transition-colors ${
-        theme === 'dark' ? 'bg-[#0b132b] text-white' : 'bg-[#faf8f5] text-slate-900'
+        theme === 'dark' ? 'bg-slate-950 text-white' : 'bg-slate-50 text-slate-900'
       }`}>
-        <div className="w-full max-w-md bg-white dark:bg-[#1c2541] rounded-3xl border border-amber-300 dark:border-[#3a506b] shadow-2xl p-8 space-y-6 relative overflow-hidden">
+        <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-3xl border border-amber-300 dark:border-slate-800 shadow-2xl p-8 space-y-6 relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
           
           <div className="text-center space-y-3">
-            <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-[#0b132b] border border-amber-300 dark:border-[#fbbf24]/40 text-[#d97706] flex items-center justify-center mx-auto shadow-md">
+            <div className="w-16 h-16 rounded-2xl bg-amber-100 dark:bg-slate-950 border border-amber-300 dark:border-[#fbbf24]/40 text-[#d97706] flex items-center justify-center mx-auto shadow-md">
               <Lock className="w-8 h-8 text-[#d97706]" />
             </div>
             <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 dark:bg-amber-500/20 dark:text-amber-300 text-[11px] font-extrabold uppercase tracking-wider inline-block">
@@ -3620,7 +3622,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 placeholder="Enter admin password (e.g. admin123)"
                 value={adminPasswordInput}
                 onChange={(e) => setAdminPasswordInput(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-slate-300 dark:border-[#3a506b] bg-slate-50 dark:bg-[#0b132b] text-slate-900 dark:text-white font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none"
+                className="w-full h-12 px-4 rounded-xl border border-slate-300 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none"
               />
             </div>
 
@@ -3639,170 +3641,366 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
   return (
     <div className={`min-h-screen flex font-sans antialiased transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-[#0b132b] text-[#faf8f4]' : 'bg-[#fffdfa] text-[#0f172a]'
+      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
     }`}>
       
       {/* ─────────────────────────────────────────────────────────────
-         1. ROYAL VEDIC LEFT SIDEBAR DRAWER (Midnight Navy & Gold Theme)
+         1. MODERN HIGH-PERFORMANCE ADMIN SIDEBAR DRAWER
          ───────────────────────────────────────────────────────────── */}
       <aside className={`w-64 border-r flex flex-col justify-between shrink-0 hidden md:flex min-h-screen transition-colors duration-300 ${
-        theme === 'dark' ? 'bg-[#0f172a] border-[#1e293b]' : 'bg-white border-[#f3e8d2] shadow-md'
+        theme === 'dark' ? 'bg-slate-900/95 border-slate-800' : 'bg-white border-slate-200/90 shadow-xs'
       }`}>
-        <div>
+        <div className="overflow-y-auto max-h-[calc(100vh-80px)] scrollbar-thin">
           {/* App Brand Header */}
-          <div className={`h-16 px-6 border-b flex items-center justify-between ${
-            theme === 'dark' ? 'border-[#1e293b]' : 'border-[#f3e8d2]'
+          <div className={`h-16 px-5 border-b flex items-center justify-between sticky top-0 z-10 ${
+            theme === 'dark' ? 'bg-slate-900/95 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center shadow-md">
-                <Moon className="w-5 h-5 fill-[#fbbf24] text-[#fbbf24]" />
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-500 text-white flex items-center justify-center shadow-md">
+                <Moon className="w-5 h-5 fill-amber-300 text-amber-300" />
               </div>
               <div>
-                <span className={`font-serif text-lg font-bold block leading-tight ${
-                  theme === 'dark' ? 'text-white' : 'text-[#0f172a]'
+                <span className={`font-serif text-base font-bold block leading-tight ${
+                  theme === 'dark' ? 'text-white' : 'text-slate-900'
                 }`}>
-                  KuthiYengpham
+                  KangleiAstro
                 </span>
-                <span className="text-[10px] text-[#d97706] font-extrabold uppercase tracking-wider block">
-                  by KangleiAstro • Admin Portal
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-wider block">
+                  Central Admin Portal
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Navigation Links (Categorized for Easy Navigation) */}
-          <div className="p-4 space-y-6">
+          {/* Navigation Links (Strictly Categorized into 6 Logical Sections) */}
+          <div className="p-3.5 space-y-5">
             
-            {/* Category 1: DASHBOARD */}
+            {/* ──────────────── CATEGORY 1: CORE OPERATIONS & ANALYTICS ──────────────── */}
             <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'
+              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
+                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
               }`}>
-                Dashboard
+                Core Operations
               </span>
               <div className="space-y-1">
-                {/* 1. Overview & Analytics */}
+                {/* Overview & Analytics */}
                 <button
                   onClick={() => setActiveTab('dashboard')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'dashboard'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <LayoutDashboard className="w-4 h-4 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Overview & Analytics</span>
-                </button>
-
-                {/* 2. Kuthi Orders Hub */}
-                <button
-                  onClick={() => setActiveTab('kuthi')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'kuthi'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
-                  }`}
-                >
-                  <FileText className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Kuthi Orders Hub</span>
-                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f] text-[10px] font-extrabold border border-[#fde68a]">
-                    {orders.filter(o => o.status !== 'COMPLETED').length}
+                  <div className="flex items-center gap-2.5">
+                    <LayoutDashboard className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Overview & Stats</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                    activeTab === 'dashboard' ? 'bg-white/20 text-white' : theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'
+                  }`}>
+                    Live
                   </span>
                 </button>
 
-                {/* 3. Live Consultations Hub */}
+                {/* Kuthi Orders Hub */}
                 <button
-                  onClick={() => setActiveTab('consultations')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'consultations'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  onClick={() => setActiveTab('kuthi')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'kuthi'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <MessageCircle className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Live Consultations</span>
-                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f] text-[10px] font-extrabold border border-[#fde68a]">
-                    {consultationSessions.filter(s => s.paymentStatus === 'PENDING_VERIFICATION').length}
+                  <div className="flex items-center gap-2.5">
+                    <FileText className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Kuthi Orders Hub</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'kuthi'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    {orders.filter(o => o.status !== 'COMPLETED').length} Pending
+                  </span>
+                </button>
+
+                {/* Live Consultations Hub */}
+                <button
+                  onClick={() => setActiveTab('consultations')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'consultations'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Live Consultations</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'consultations'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                  }`}>
+                    {consultationSessions.filter(s => s.paymentStatus === 'PENDING_VERIFICATION').length} Queue
+                  </span>
+                </button>
+
+                {/* Client Directory */}
+                <button
+                  onClick={() => setActiveTab('clients')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'clients'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Users className="w-4 h-4 text-sky-500 shrink-0" />
+                    <span>Client Directory</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'clients'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
+                  }`}>
+                    {clientBase.length} Users
                   </span>
                 </button>
               </div>
             </div>
 
-            {/* Category: WEBSITE CMS & SERVICES */}
-            <div className="pt-2">
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'
+            {/* ──────────────── CATEGORY 2: MOBILE APP & BUILDER ──────────────── */}
+            <div>
+              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
+                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
               }`}>
-                Website CMS & Services
+                Mobile Experience
               </span>
-              <div className="space-y-1 pl-1 border-l-2 border-[#d97706]/40 ml-2">
-                {/* 1. Website Astrologers */}
+              <div className="space-y-1">
                 <button
-                  onClick={() => setActiveTab('astro_website')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_website'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  onClick={() => setActiveTab('mobile_builder')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'mobile_builder'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Sparkles className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Website Astrologers</span>
+                  <div className="flex items-center gap-2.5">
+                    <Smartphone className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Mobile Version Builder</span>
+                  </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                    activeTab === 'mobile_builder'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40'
                   }`}>
-                    CMS Display
+                    Pro Studio
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* ──────────────── CATEGORY 3: GURU & ASTROLOGER MANAGEMENT ──────────────── */}
+            <div>
+              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
+                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
+              }`}>
+                Astrologers & Team
+              </span>
+              <div className="space-y-1">
+                {/* All Astrologers */}
+                <button
+                  onClick={() => setActiveTab('astrologers')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'astrologers'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Award className="w-4 h-4 text-purple-500 shrink-0" />
+                    <span>All Astrologers</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'astrologers'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'bg-purple-50 text-purple-800 border-purple-200'
+                  }`}>
+                    {astrologers.length} Gurus
                   </span>
                 </button>
 
-                {/* 2. Website Services */}
+                {/* Assign List */}
+                <button
+                  onClick={() => setActiveTab('astro_assign_list')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'astro_assign_list'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <UserCheck className="w-4 h-4 text-sky-500 shrink-0" />
+                    <span>Assign Orders</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'astro_assign_list'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
+                  }`}>
+                    {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length} Assigned
+                  </span>
+                </button>
+
+                {/* Payout Request */}
+                <button
+                  onClick={() => setActiveTab('astro_payouts')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'astro_payouts'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <DollarSign className="w-4 h-4 text-green-500 shrink-0" />
+                    <span>Payout Requests</span>
+                  </div>
+                  {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length > 0 ? (
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
+                      ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
+                    </span>
+                  ) : (
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                      activeTab === 'astro_payouts'
+                        ? 'bg-white/20 text-white border-white/30'
+                        : theme === 'dark' ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-green-50 text-green-800 border-green-200'
+                    }`}>
+                      Settled
+                    </span>
+                  )}
+                </button>
+
+                {/* Add Astrologer */}
+                <button
+                  onClick={() => {
+                    setEditingAstroId(null);
+                    setNewAstroForm(DEFAULT_ASTRO_FORM);
+                    setActiveTab('add_astro');
+                  }}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'add_astro'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Plus className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>+ Add Astrologer</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'add_astro'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    New
+                  </span>
+                </button>
+
+                {/* Announcements */}
+                <button
+                  onClick={() => setActiveTab('announcements')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'announcements'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Bell className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Announcements</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'announcements'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    {announcements.length} Posts
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            {/* ──────────────── CATEGORY 4: SERVICES & RATE CARDS ──────────────── */}
+            <div>
+              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
+                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
+              }`}>
+                Services & Pricing
+              </span>
+              <div className="space-y-1">
+                {/* Website Services */}
                 <button
                   onClick={() => setActiveTab('astro_services')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_services' || activeTab === 'astro_rates'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'astro_services'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Tag className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Website Services</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <Tag className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Website Services</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'astro_services'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
-                    {services.length} Services
+                    {services.length} Items
                   </span>
                 </button>
 
-                {/* 3. Navbar Navigation Controller */}
+                {/* Service Rate Card Matrix */}
                 <button
-                  onClick={() => setActiveTab('navbar')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'navbar'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                  onClick={() => setActiveTab('astro_rates')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'astro_rates'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Menu className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Navbar Menu Manager</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <TrendingUp className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Rate Card Matrix</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'astro_rates'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
-                    Top Menu
+                    Pricing
                   </span>
                 </button>
 
-                {/* 4. Service Coupons & Promotional Schemes */}
+                {/* Service Coupons & Schemes */}
                 <button
                   onClick={() => setActiveTab('service_coupons')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'service_coupons'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Gift className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Service Coupons & Schemes</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-[#b45309] border border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Service Coupons</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'service_coupons'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     Offers
                   </span>
@@ -3810,232 +4008,174 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
 
-            {/* Category 2: GURU & JYOTISH SECTION */}
-            <div className="pt-2">
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'
+            {/* ──────────────── CATEGORY 5: E-STORE & INVENTORY ──────────────── */}
+            <div>
+              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
+                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
               }`}>
-                Guru & Jyotish Section
+                E-Store & Inventory
               </span>
-              <div className="space-y-1 pl-1 border-l-2 border-[#d97706]/40 ml-2">
-                {/* 1. All Jyotishs */}
-                <button
-                  onClick={() => setActiveTab('astrologers')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astrologers'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
-                  }`}
-                >
-                  <Award className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">All Jyotishs</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
-                  }`}>
-                    {astrologers.length} Gurus
-                  </span>
-                </button>
-
-                {/* 2. Payout Request */}
-                <button
-                  onClick={() => setActiveTab('astro_payouts')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_payouts'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
-                  }`}
-                >
-                  <DollarSign className="w-4 h-4 text-green-600 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Payout Request</span>
-                  {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length > 0 ? (
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
-                      ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
-                    </span>
-                  ) : (
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-extrabold border border-green-200">
-                      Settled
-                    </span>
-                  )}
-                </button>
-
-                {/* 3. Assign List */}
-                <button
-                  onClick={() => setActiveTab('astro_assign_list')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_assign_list'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-[#0f172a] hover:bg-[#fef3c7] hover:text-[#b45309] font-bold'
-                  }`}
-                >
-                  <UserCheck className="w-4 h-4 text-sky-600 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Assign List</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-800 border-sky-200'
-                  }`}>
-                    {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length} Assigned
-                  </span>
-                </button>
-
-                {/* 4. Add Jyotish */}
-                <button
-                  onClick={() => {
-                    setEditingAstroId(null);
-                    setNewAstroForm(DEFAULT_ASTRO_FORM);
-                    setActiveTab('add_astro');
-                  }}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    activeTab === 'add_astro'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : 'bg-[#fef3c7] text-[#b45309] hover:bg-[#fde68a] border border-[#fde68a]'
-                  }`}
-                >
-                  <Plus className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">+ Add Jyotish</span>
-                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-white text-[#d97706] text-[10px] font-extrabold border border-[#fde68a]">
-                    New Guru
-                  </span>
-                </button>
-              </div>
-            </div>
-
-            {/* Category: E-STORE OPERATIONS */}
-            <div className="pt-2">
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
-              }`}>
-                🛒 E-Store Operations
-              </span>
-              <div className="space-y-1 pl-1 border-l-2 border-[#d97706]/40 ml-2">
-                {/* 1. All Orders & Status */}
+              <div className="space-y-1">
+                {/* Store Orders & UTR */}
                 <button
                   onClick={() => setActiveTab('shop_orders')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'shop_orders' || activeTab === 'shop'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <ShoppingBag className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">E-Store Orders & UTR</span>
-                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-green-500/20 text-green-700 text-[10px] font-extrabold border border-green-500/30">
-                    {shopOrders.length}
+                  <div className="flex items-center gap-2.5">
+                    <ShoppingBag className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Store Orders & UTR</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'shop_orders' || activeTab === 'shop'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-green-50 text-green-800 border-green-200'
+                  }`}>
+                    {shopOrders.length} Orders
                   </span>
                 </button>
 
-                {/* 2. Add / Edit Products */}
+                {/* Add & Edit Products */}
                 <button
                   onClick={() => setActiveTab('shop_products')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'shop_products'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Package className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Add & Edit Products</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <Package className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Products Catalog</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'shop_products'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {shopProducts.length} Items
                   </span>
                 </button>
 
-                {/* 3. Astrologer Vendor Products & Verification */}
+                {/* Astrologer Products */}
                 <button
                   onClick={() => setActiveTab('shop_astro_products')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'shop_astro_products'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Award className="w-4 h-4 text-purple-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Astrologer Products</span>
+                  <div className="flex items-center gap-2.5">
+                    <Award className="w-4 h-4 text-purple-500 shrink-0" />
+                    <span>Vendor Products</span>
+                  </div>
                   {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER' && p.status === 'PENDING_APPROVAL').length > 0 ? (
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-slate-900 text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
                       {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER' && p.status === 'PENDING_APPROVAL').length} Pending
                     </span>
                   ) : (
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                      theme === 'dark' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-purple-100 text-purple-900 border-purple-300'
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                      activeTab === 'shop_astro_products'
+                        ? 'bg-white/20 text-white border-white/30'
+                        : theme === 'dark' ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'bg-purple-50 text-purple-800 border-purple-200'
                     }`}>
                       {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER').length} Vendor
                     </span>
                   )}
                 </button>
 
-                {/* 4. Assign Delivery & Courier Logistics */}
+                {/* Assign Delivery Logistics */}
                 <button
                   onClick={() => setActiveTab('shop_delivery')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'shop_delivery'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Truck className="w-4 h-4 text-sky-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Assign Delivery</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
+                  <div className="flex items-center gap-2.5">
+                    <Truck className="w-4 h-4 text-sky-500 shrink-0" />
+                    <span>Assign Delivery</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'shop_delivery'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
                   }`}>
-                    Courier
+                    Logistics
                   </span>
                 </button>
 
-                {/* 5. Promo Coupons & Discounts */}
+                {/* Promo Coupons */}
                 <button
                   onClick={() => setActiveTab('shop_coupons')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'shop_coupons'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Promo Coupons</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30' : 'bg-emerald-100 text-emerald-900 border-emerald-300'
+                  <div className="flex items-center gap-2.5">
+                    <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <span>Store Coupons</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'shop_coupons'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                   }`}>
                     {shopCoupons.length} Vouchers
                   </span>
                 </button>
 
-                {/* 6. Product Sliders CMS */}
+                {/* Shop Hero Sliders */}
                 <button
                   onClick={() => setActiveTab('shop_sliders')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'shop_sliders'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <ImageIcon className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Shop Sliders CMS</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <ImageIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Shop Hero Sliders</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'shop_sliders'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {shopSliders.length} Banners
                   </span>
                 </button>
 
-                {/* 7. Returns & Replacements */}
+                {/* Returns & Replacements */}
                 <button
                   onClick={() => setActiveTab('shop_returns')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'shop_returns'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <RotateCcw className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Returns & Replacements</span>
+                  <div className="flex items-center gap-2.5">
+                    <RotateCcw className="w-4 h-4 text-rose-500 shrink-0" />
+                    <span>Returns & Refunds</span>
+                  </div>
                   {returnRequests.filter((r) => r.status === 'PENDING').length > 0 ? (
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold animate-pulse">
                       {returnRequests.filter((r) => r.status === 'PENDING').length} New
                     </span>
                   ) : (
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                      theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                      activeTab === 'shop_returns'
+                        ? 'bg-white/20 text-white border-white/30'
+                        : theme === 'dark' ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200'
                     }`}>
                       {returnRequests.length}
                     </span>
@@ -4044,177 +4184,170 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
 
-            {/* Category: ASTROLOGER ANNOUNCEMENTS & ADS */}
+            {/* ──────────────── CATEGORY 6: WEBSITE CMS, MEDIA & SYSTEM ──────────────── */}
             <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
+              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
+                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
               }`}>
-                Announcements & Ads
-              </span>
-              <button
-                onClick={() => setActiveTab('announcements')}
-                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                  activeTab === 'announcements'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
-                }`}
-              >
-                <Bell className="w-4 h-4 text-[#d97706] shrink-0" />
-                <span className="flex-1 text-center font-bold px-2 leading-tight">Astrologer Announcements</span>
-                <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                  theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
-                }`}>
-                  {announcements.length} Ads
-                </span>
-              </button>
-            </div>
-
-            {/* Category: MANAGEMENT & SETTINGS */}
-            <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
-              }`}>
-                Management & Settings
+                Website CMS & System
               </span>
               <div className="space-y-1">
-                {/* Service Rate Card Matrix */}
+                {/* Navbar Menu Manager */}
                 <button
-                  onClick={() => setActiveTab('astro_rates')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'astro_rates'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  onClick={() => setActiveTab('navbar')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'navbar'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Tag className="w-4 h-4 text-amber-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Service Rate Card Matrix</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <Menu className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Navbar Menu Manager</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'navbar'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
-                    {services.length} Rates
+                    Top Menu
                   </span>
                 </button>
-              </div>
-            </div>
 
-            {/* Category 3: CONTENT & MEDIA */}
-            <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
-              }`}>
-                Content & Media
-              </span>
-              <div className="space-y-1">
+                {/* Website Astrologers Display */}
+                <button
+                  onClick={() => setActiveTab('astro_website')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'astro_website'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Website Astrologers</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'astro_website'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
+                  }`}>
+                    CMS Display
+                  </span>
+                </button>
+
+                {/* Blog & Articles CMS */}
                 <button
                   onClick={() => setActiveTab('blog')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'blog'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <BookOpen className="w-4 h-4 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Blog & Articles CMS</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <BookOpen className="w-4 h-4 text-sky-500 shrink-0" />
+                    <span>Blog & Articles CMS</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'blog'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
                   }`}>
-                    {blogPosts.length}
+                    {blogPosts.length} Posts
                   </span>
                 </button>
 
+                {/* Client Reviews CMS */}
                 <button
                   onClick={() => setActiveTab('reviews')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'reviews'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Star className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Client Reviews CMS</span>
+                  <div className="flex items-center gap-2.5">
+                    <Star className="w-4 h-4 text-amber-500 fill-amber-500 shrink-0" />
+                    <span>Client Reviews CMS</span>
+                  </div>
                   {reviews.filter((r) => r.status === 'PENDING').length > 0 ? (
                     <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
                       {reviews.filter((r) => r.status === 'PENDING').length} New
                     </span>
                   ) : (
-                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                      theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                    <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                      activeTab === 'reviews'
+                        ? 'bg-white/20 text-white border-white/30'
+                        : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                     }`}>
                       {reviews.length}
                     </span>
                   )}
                 </button>
 
+                {/* Top 970x90 Ad Banner CMS */}
                 <button
                   onClick={() => setActiveTab('banner')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'banner'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Megaphone className="w-4 h-4 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">970x90 Ad Banner CMS</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${bannerAd.active ? 'bg-green-500/20 text-green-700 border-green-500/30' : 'bg-gray-200 text-gray-700 border-gray-300'}`}>
+                  <div className="flex items-center gap-2.5">
+                    <Megaphone className="w-4 h-4 text-purple-500 shrink-0" />
+                    <span>Top Ad Banner (970x90)</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    bannerAd.active
+                      ? 'bg-green-500/20 text-green-700 dark:text-green-300 border-green-500/30'
+                      : 'bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-300 dark:border-slate-700'
+                  }`}>
                     {bannerAd.active ? 'LIVE' : 'OFF'}
                   </span>
                 </button>
 
+                {/* Live Activity Ticker CMS */}
                 <button
                   onClick={() => setActiveTab('ticker')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                     activeTab === 'ticker'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Sparkles className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Live Activity Ticker CMS</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  <div className="flex items-center gap-2.5">
+                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Activity Ticker CMS</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'ticker'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {tickerSettings.speedSeconds}s
                   </span>
                 </button>
-              </div>
-            </div>
 
-            {/* Category 4: MANAGEMENT & SETTINGS */}
-            <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-3 mb-2 font-extrabold ${
-                theme === 'dark' ? 'text-[#e0a96d]' : 'text-amber-800'
-              }`}>
-                Management & Settings
-              </span>
-              <div className="space-y-1">
+                {/* Consolidated Site Settings, UPI & Security */}
                 <button
-                  onClick={() => setActiveTab('clients')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'clients'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  onClick={() => setActiveTab('settings')}
+                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                    activeTab === 'settings' || activeTab === 'upi'
+                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
+                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
                   }`}
                 >
-                  <Users className="w-4 h-4 text-sky-500 shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Client Directory</span>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
-                    theme === 'dark' ? 'bg-sky-500/20 text-sky-300 border-sky-500/30' : 'bg-sky-100 text-sky-900 border-sky-300'
+                  <div className="flex items-center gap-2.5">
+                    <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+                    <span>Security, UPI & Settings</span>
+                  </div>
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
+                    activeTab === 'settings' || activeTab === 'upi'
+                      ? 'bg-white/20 text-white border-white/30'
+                      : theme === 'dark' ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200'
                   }`}>
-                    {clientBase.length} Users
-                  </span>
-                </button>
-
-                <button
-                  onClick={() => setActiveTab('upi')}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === 'upi' || activeTab === 'settings'
-                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
-                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
-                  }`}
-                >
-                  <QrCode className="w-4 h-4 text-[#d97706] shrink-0" />
-                  <span className="flex-1 text-center font-bold px-2 leading-tight">Header Support & UPI QR</span>
-                  <span className="shrink-0 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold border border-emerald-300">
                     Live Config
                   </span>
                 </button>
@@ -4224,21 +4357,24 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           </div>
         </div>
 
-        {/* Bottom Profile Card */}
-        <div className="p-4 border-t border-[#fde68a]">
-          <div className="flex items-center justify-between p-3 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-[#d97706] text-white font-bold text-xs flex items-center justify-center shadow-xs">
+        {/* Bottom Profile & Cloud DB Health Footer */}
+        <div className={`p-3 border-t ${theme === 'dark' ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-slate-50/70'}`}>
+          <div className="flex items-center justify-between p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xs">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-600 to-amber-500 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
                 ADM
               </div>
-              <div className="overflow-hidden">
-                <span className="font-bold text-xs text-[#0f172a] block truncate">Central Admin</span>
-                <span className="text-[10px] text-gray-500 block truncate">admin@kangleiastro.com</span>
+              <div className="overflow-hidden min-w-0">
+                <span className="font-bold text-xs text-slate-900 dark:text-slate-100 block truncate">Central Admin</span>
+                <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
+                  Cloud DB Synced
+                </span>
               </div>
             </div>
             <button
               onClick={handleAdminLogout}
-              className="text-gray-400 hover:text-red-600 transition-colors p-1.5 cursor-pointer"
+              className="text-slate-400 hover:text-rose-600 transition-colors p-1.5 cursor-pointer rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
               title="Lock Admin Panel & Log Out"
             >
               <LogOut className="w-4 h-4" />
@@ -4253,12 +4389,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       <div className="flex-1 flex flex-col min-w-0 overflow-x-hidden">
         
         {/* Top Control Header Bar */}
-        <header className={`h-16 border-b px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300 shadow-md ${
-          theme === 'dark' ? 'bg-[#0f172a] border-[#1e293b]' : 'bg-white/95 backdrop-blur-md border-[#f3e8d2]'
+        <header className={`h-16 border-b px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300 ${
+          theme === 'dark' ? 'bg-slate-900/90 border-slate-800 backdrop-blur-md' : 'bg-white/95 border-slate-200/90 backdrop-blur-md shadow-xs'
         }`}>
           <div className="flex items-center gap-4">
             <div className="relative w-64 md:w-80">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               <input
                 type="text"
                 placeholder="Search orders, astrologers, UTR..."
@@ -4266,247 +4402,104 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className={`w-full pl-10 pr-4 py-2 rounded-xl border text-xs font-medium focus:outline-none transition-all ${
                   theme === 'dark'
-                    ? 'bg-[#1c2541] border-[#3a506b] text-white placeholder-gray-400 focus:border-[#d97706]'
-                    : 'bg-[#fefcf6] border-[#fde68a] text-[#0f172a] placeholder-gray-400 focus:border-[#d97706]'
+                    ? 'bg-slate-950 border-slate-800 text-white placeholder-slate-500 focus:border-amber-500'
+                    : 'bg-slate-50 border-slate-200 text-slate-900 placeholder-slate-400 focus:border-amber-600'
                 }`}
               />
             </div>
+
+            {/* Cloud Database Zero-Loss Resilience Pill */}
+            <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 border border-emerald-500/25">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span>Supabase Cloud DB: Active & Synced</span>
+            </div>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
             {/* Theme Selector Toggle Option (Light / Dark) */}
             <button
               onClick={toggleTheme}
-              className={`px-3.5 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
                 theme === 'dark'
-                  ? 'bg-[#1c2541] text-[#fbbf24] border-[#3a506b] hover:border-[#fbbf24]'
-                  : 'bg-slate-100 text-slate-800 border-amber-300 hover:border-amber-500 shadow-xs'
+                  ? 'bg-slate-950 text-amber-400 border-slate-800 hover:border-amber-400/50'
+                  : 'bg-slate-100 text-slate-700 border-slate-200 hover:border-slate-300 shadow-2xs'
               }`}
               title="Switch Light / Dark Theme"
             >
               {theme === 'dark' ? (
                 <>
-                  <Sun className="w-4 h-4 text-amber-400 fill-amber-400" />
-                  <span className="hidden sm:inline font-mono">Light Mode</span>
+                  <Sun className="w-3.5 h-3.5 text-amber-400 fill-amber-400" />
+                  <span className="hidden sm:inline font-mono text-[11px]">Light Mode</span>
                 </>
               ) : (
                 <>
-                  <Moon className="w-4 h-4 text-slate-700 fill-slate-700" />
-                  <span className="hidden sm:inline font-mono">Dark Mode</span>
+                  <Moon className="w-3.5 h-3.5 text-slate-600 fill-slate-600" />
+                  <span className="hidden sm:inline font-mono text-[11px]">Dark Mode</span>
                 </>
               )}
             </button>
 
+            {/* Direct Mobile Builder Quick Button */}
+            <button
+              onClick={() => setActiveTab('mobile_builder')}
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                activeTab === 'mobile_builder'
+                  ? 'bg-amber-600 text-white border-amber-600 shadow-xs'
+                  : theme === 'dark' ? 'bg-slate-800/80 text-slate-200 border-slate-700 hover:bg-slate-700' : 'bg-slate-100 text-slate-800 border-slate-200 hover:bg-slate-200'
+              }`}
+              title="Open Mobile Version Builder"
+            >
+              <Smartphone className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline">Mobile Builder</span>
+            </button>
+
             <button
               onClick={() => setActiveTab('kuthi')}
-              className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-bold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-md"
+              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-sm cursor-pointer"
             >
-              <Plus className="w-4 h-4" />
-              <span>Assign New Kuthi</span>
+              <Plus className="w-3.5 h-3.5" />
+              <span>Assign Kuthi</span>
             </button>
           </div>
         </header>
 
-        {/* Top Horizontal Category Navigation Bar (3-Section Alignment) */}
-        <div className={`px-6 py-2.5 border-b sticky top-16 z-20 transition-colors duration-300 ${
-          theme === 'dark' ? 'bg-[#0f172a]/95 border-[#1e293b] backdrop-blur-md' : 'bg-[#fefcf6]/95 border-[#fde68a] backdrop-blur-md shadow-xs'
+        {/* Secondary Quick Navigation Strip */}
+        <div className={`px-6 py-2.5 border-b flex items-center gap-2 overflow-x-auto text-xs font-semibold no-scrollbar transition-colors ${
+          theme === 'dark' ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200'
         }`}>
-          <div className="flex items-center justify-between gap-4 overflow-x-auto scrollbar-none py-0.5">
-            
-            {/* 1. LEFT ALIGNED: Core Operations */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <span className="text-[10px] font-black uppercase tracking-wider text-[#b45309] mr-1 hidden lg:inline">Operations:</span>
-              
+          <span className={`text-[11px] uppercase tracking-wider font-bold shrink-0 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
+            Quick Access:
+          </span>
+          <div className="flex items-center gap-1.5 shrink-0">
+            {[
+              { id: 'dashboard', label: 'Dashboard' },
+              { id: 'mobile_builder', label: 'Mobile Builder', highlight: true },
+              { id: 'live_calls', label: 'Live Calls' },
+              { id: 'kuthi', label: 'Kuthi Hub' },
+              { id: 'astrologers', label: 'Astrologers' },
+              { id: 'payouts', label: 'Payouts' },
+              { id: 'products', label: 'Store Products' },
+              { id: 'orders', label: 'Shop Orders' },
+              { id: 'services', label: 'Services' },
+              { id: 'banner', label: 'CMS Banners' },
+              { id: 'settings', label: 'Settings & UPI' },
+              { id: 'audit_logs', label: 'Audit Logs' },
+            ].map(tab => (
               <button
-                onClick={() => setActiveTab('dashboard')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'dashboard'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+                  activeTab === tab.id
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : tab.highlight
+                    ? theme === 'dark' ? 'bg-amber-950/40 text-amber-400 border border-amber-800/40 hover:bg-amber-900/40' : 'bg-amber-50 text-amber-800 border border-amber-200 hover:bg-amber-100'
+                    : theme === 'dark' ? 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
                 }`}
               >
-                <LayoutDashboard className="w-3.5 h-3.5" />
-                <span>Dashboard</span>
+                {tab.highlight && <Smartphone className="w-3 h-3 text-amber-400" />}
+                {tab.label}
               </button>
-
-              <button
-                onClick={() => setActiveTab('kuthi')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'kuthi'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <FileText className="w-3.5 h-3.5 text-[#d97706]" />
-                <span>Kuthi Orders</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('consultations')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'consultations'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Phone className="w-3.5 h-3.5 text-[#d97706]" />
-                <span>Live Consultations</span>
-                {consultationSessions.filter(s => s.paymentStatus === 'PENDING_VERIFICATION').length > 0 && (
-                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping" />
-                )}
-              </button>
-
-              <button
-                onClick={() => setActiveTab('shop_orders')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'shop_orders' || activeTab === 'shop'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <ShoppingBag className="w-3.5 h-3.5 text-[#d97706]" />
-                <span>E-Store Orders</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('shop_products')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'shop_products'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Package className="w-3.5 h-3.5 text-[#d97706]" />
-                <span>Products</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('shop_coupons')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'shop_coupons'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Tag className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Coupons</span>
-              </button>
-            </div>
-
-            {/* 2. CENTER ALIGNED: Content & Astrologers */}
-            <div className="flex items-center justify-center gap-1.5 mx-auto shrink-0 border-x border-[#fde68a]/50 px-4">
-              <button
-                onClick={() => setActiveTab('astrologers')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'astrologers'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Award className="w-3.5 h-3.5 text-purple-400" />
-                <span>Astrologers</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('astro_payouts')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'astro_payouts'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <DollarSign className="w-3.5 h-3.5 text-green-500" />
-                <span>Payouts</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('astro_services')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'astro_services' || activeTab === 'astro_rates'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Tag className="w-3.5 h-3.5 text-amber-500" />
-                <span>Services</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('blog')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'blog'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <BookOpen className="w-3.5 h-3.5 text-sky-400" />
-                <span>Blog</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('announcements')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'announcements'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Bell className="w-3.5 h-3.5 text-amber-500" />
-                <span>Announcements</span>
-              </button>
-            </div>
-
-            {/* 3. RIGHT ALIGNED: Admin Tools & Controls */}
-            <div className="flex items-center gap-1.5 shrink-0">
-              <button
-                onClick={() => setActiveTab('shop_delivery')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'shop_delivery'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Truck className="w-3.5 h-3.5 text-sky-500" />
-                <span>Logistics</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('clients')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'clients'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Users className="w-3.5 h-3.5 text-indigo-400" />
-                <span>Clients</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('navbar')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'navbar'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <Menu className="w-3.5 h-3.5 text-[#d97706]" />
-                <span>Navbar Manager</span>
-              </button>
-
-              <button
-                onClick={() => setActiveTab('upi')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  activeTab === 'upi' || activeTab === 'settings'
-                    ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-sm'
-                    : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-gray-700 hover:bg-[#fef3c7] hover:text-[#b45309]'
-                }`}
-              >
-                <QrCode className="w-3.5 h-3.5 text-[#d97706]" />
-                <span>Header & UPI Config</span>
-              </button>
-            </div>
-
+            ))}
           </div>
         </div>
 
@@ -4528,7 +4521,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Gross Revenue</span>
@@ -4536,40 +4529,40 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       {orders.length > 0 ? `${orders.filter(o => o.status === 'COMPLETED').length} Completed` : '₹0'}
                     </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
+                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     ₹{orders.reduce((sum, o) => sum + (Number(o.amount) || 0), 0).toLocaleString()}
                   </span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Total Kuthi Yengba Collections</span>
                 </div>
 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Active Astrologers</span>
-                    <span className="text-[11px] font-bold text-[#b45309] bg-[#fef3c7] px-2 py-0.5 rounded-full border border-[#fde68a]">
+                    <span className="text-[11px] font-bold text-[#b45309] bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-slate-200">
                       {astrologers.length} Empaneled
                     </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>{astrologers.length} Gurus</span>
+                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{astrologers.length} Gurus</span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Ready for Kuthi Assignments</span>
                 </div>
 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Pending Kuthi Orders</span>
-                    <span className="text-[11px] font-bold text-[#b45309] bg-[#fef3c7] px-2 py-0.5 rounded-full border border-[#fde68a]">Action Needed</span>
+                    <span className="text-[11px] font-bold text-[#b45309] bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-slate-200">Action Needed</span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
+                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     {orders.filter(o => o.status !== 'COMPLETED').length} Orders
                   </span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Awaiting Astrologer / Client Dispatch</span>
                 </div>
 
                 <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a] shadow-md'
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
                     <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Astrologer Payouts</span>
@@ -4577,7 +4570,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       {orders.filter(o => o.status === 'COMPLETED').length} Settled
                     </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
+                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     ₹{orders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + ((o as any).payoutFee || (Number(o.amount) ? Math.round(Number(o.amount) * 0.6) : 0)), 0).toLocaleString()}
                   </span>
                   <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Pending Astrologer Payout Pool</span>
@@ -4591,26 +4584,26 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 2: KUTHI ORDERS & MULTI-ASTROLOGER ROUTING HUB */}
           {(activeTab === 'dashboard' || activeTab === 'kuthi') && (
             <div className={`rounded-2xl border shadow-xl overflow-hidden transition-colors ${
-              theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'
+              theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
             }`}>
               <div className={`p-6 border-b flex flex-wrap items-center justify-between gap-4 transition-colors ${
-                theme === 'dark' ? 'bg-[#141d36] border-[#3a506b]/40 text-white' : 'bg-[#fefcf6] border-[#fde68a] text-[#0f172a]'
+                theme === 'dark' ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
               }`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
+                  <h3 className={`font-serif font-bold text-xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
                   <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Assign orders to astrologers via WhatsApp & deliver finished reports back to clients</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="px-3.5 py-1.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-extrabold border border-[#fde68a]">
+                  <span className="px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-extrabold border border-slate-200">
                     {filteredOrders.length} Total Orders
                   </span>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase tracking-wider border-b border-[#fde68a]">
+                <table className="w-full text-left text-xs font-sans text-slate-900">
+                  <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-serif font-bold uppercase tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="px-4 py-3.5">Order Ref</th>
                       <th className="px-4 py-3.5">Client & Details</th>
@@ -4622,7 +4615,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       <th className="px-4 py-3.5 text-right">Step 4: Payout & Settlement</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#fde68a]">
+                  <tbody className="divide-y divide-slate-200">
                     {filteredOrders.map((o) => {
                       const assignedAstro = astrologers.find(a => a.id === o.assignedAstrologerId);
                       const isCompleted = o.status === 'COMPLETED' || o.walletCredited;
@@ -4635,7 +4628,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       const netPayout = o.astrologerPayoutFee || matchingService?.astroPayoutFee || calculatedNet;
 
                       return (
-                        <tr key={o.id} className="hover:bg-[#fefcf6] transition-colors">
+                        <tr key={o.id} className="hover:bg-white transition-colors">
                           <td className="px-4 py-4 space-y-1.5">
                             <div className="font-mono font-bold text-[#b45309] text-sm">{o.orderRef}</div>
                             {o.category === 'generated_kuthi' && (
@@ -4673,11 +4666,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               </button>
                             )}
                           </td>
-                          <td className="px-4 py-4 font-bold text-[#0f172a]">{o.clientName} ({o.sex})</td>
+                          <td className="px-4 py-4 font-bold text-slate-900">{o.clientName} ({o.sex})</td>
                           <td className="px-4 py-4">
                             <button
                               onClick={() => setInspectingOrder(o)}
-                              className="group p-2.5 rounded-xl bg-[#fefcf6] hover:bg-[#fef3c7] border border-[#fde68a] text-left w-full cursor-pointer transition-colors"
+                              className="group p-2.5 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 text-left w-full cursor-pointer transition-colors"
                             >
                               <span className="font-bold text-[#b45309] text-xs flex items-center gap-1.5">
                                 <Eye className="w-3.5 h-3.5 text-[#d97706]" />
@@ -4695,7 +4688,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <select
                               value={o.assignedAstrologerId || ''}
                               onChange={(e) => handleAssignAstrologer(o.id, e.target.value)}
-                              className="w-full py-1.5 px-2 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                              className="w-full py-1.5 px-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-slate-900 focus:border-[#d97706] focus:outline-none"
                             >
                               <option value="">-- Assign Astrologer --</option>
                               {astrologers.map((astro) => (
@@ -4781,12 +4774,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 2B: LIVE CONSULTATIONS (CHAT & CALL ORDERS & SHIFT MANAGEMENT) */}
           {activeTab === 'consultations' && (
-            <div className={`rounded-2xl border shadow-xl overflow-hidden space-y-6 p-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
-              <div className={`flex flex-wrap items-center justify-between gap-4 pb-4 border-b ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
+            <div className={`rounded-2xl border shadow-xl overflow-hidden space-y-6 p-6 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className={`flex flex-wrap items-center justify-between gap-4 pb-4 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     <span>Live Chat & Call Consultations</span>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-mono font-bold">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-mono font-bold">
                       {consultationSessions.length} Total
                     </span>
                   </h3>
@@ -4796,7 +4789,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* Admin Platform Fee Setting Bar */}
-                <div className="flex items-center gap-3 bg-[#faf8f5] px-4 py-2.5 rounded-2xl border border-[#f3e8d2]">
+                <div className="flex items-center gap-3 bg-slate-50 px-4 py-2.5 rounded-2xl border border-slate-200">
                   <div className="text-right">
                     <label className="block text-[11px] font-extrabold text-gray-800">
                       Platform Fee Commission (%)
@@ -4831,25 +4824,25 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* Status Summary Pills */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
-                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <div className="text-[11px] font-bold text-gray-500 uppercase">Pending Payment</div>
                   <div className="text-2xl font-extrabold font-mono text-amber-600 mt-1">
                     {consultationSessions.filter((s) => s.paymentStatus === 'PENDING_VERIFICATION').length}
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <div className="text-[11px] font-bold text-gray-500 uppercase">Verified / Confirmed</div>
                   <div className="text-2xl font-extrabold font-mono text-emerald-600 mt-1">
                     {consultationSessions.filter((s) => s.paymentStatus === 'VERIFIED' && s.status !== 'COMPLETED').length}
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <div className="text-[11px] font-bold text-gray-500 uppercase">Completed Sessions</div>
                   <div className="text-2xl font-extrabold font-mono text-blue-600 mt-1">
                     {consultationSessions.filter((s) => s.status === 'COMPLETED').length}
                   </div>
                 </div>
-                <div className="p-4 rounded-2xl bg-[#faf8f5] border border-[#f3e8d2]">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200">
                   <div className="text-[11px] font-bold text-gray-500 uppercase">Total Revenue</div>
                   <div className="text-2xl font-extrabold font-mono text-gray-900 mt-1">
                     ₹{consultationSessions.reduce((acc, s) => acc + (Number(s.totalFee) || 0), 0)}
@@ -4858,9 +4851,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* Consultation Bookings Table */}
-              <div className="overflow-x-auto border border-[#f3e8d2] rounded-2xl shadow-xs">
-                <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase tracking-wider border-b border-[#fde68a]">
+              <div className="overflow-x-auto border border-slate-200 rounded-2xl shadow-xs">
+                <table className="w-full text-left text-xs font-sans text-slate-900">
+                  <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-serif font-bold uppercase tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="px-5 py-3.5">Order Ref & Mode</th>
                       <th className="px-5 py-3.5">Client (OTP Verified)</th>
@@ -4892,7 +4885,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       const astroWaMsg = `🙏 Guru-ji ${s.astrologerName}! Consultation order confirmed with client ${s.clientName} for ${s.scheduledDate} (${s.shift || 'Morning'} shift). Directly open your astrologer room: ${origin}${astroLink}`;
 
                       return (
-                        <tr key={s.id} className="hover:bg-[#fefcf6] transition-colors">
+                        <tr key={s.id} className="hover:bg-white transition-colors">
                           <td className="px-5 py-4">
                             <div className="font-mono font-bold text-gray-900">{s.orderRef || s.id}</div>
                             <div className="flex items-center gap-1 mt-1">
@@ -5016,7 +5009,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 <button
                                   type="button"
                                   onClick={() => handleAdminSendConsultationLink(s, baseLink)}
-                                  className="px-2.5 py-1 rounded-lg bg-[#0b132b] hover:bg-[#1c2541] text-[#fbbf24] font-bold text-[10px] shadow-xs cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg bg-slate-950 hover:bg-slate-900 text-[#fbbf24] font-bold text-[10px] shadow-xs cursor-pointer"
                                   title="Save and dispatch link to client & astrologer"
                                 >
                                   Save Link
@@ -5104,9 +5097,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 3: BLOG CMS */}
           {activeTab === 'blog' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-sm">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                 <div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">Vedic Astrology Blog & Content Management</h3>
+                  <h3 className="font-serif font-bold text-2xl text-slate-900">Vedic Astrology Blog & Content Management</h3>
                   <p className="text-xs text-gray-500">Write, edit, publish, and delete blog articles live on `/blog`</p>
                 </div>
                 <button
@@ -5146,20 +5139,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               )}
 
               {/* BLOG ARTICLES CATALOG TABLE */}
-              <div className="bg-white rounded-3xl border border-[#f3e8d2] overflow-hidden shadow-md">
-                <div className="p-4 sm:p-6 bg-[#fffdfa] border-b border-[#fde68a] flex flex-wrap items-center justify-between gap-3">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-md">
+                <div className="p-4 sm:p-6 bg-white border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <h4 className="font-serif font-bold text-lg text-[#0f172a]">All Published & Draft Articles</h4>
+                    <h4 className="font-serif font-bold text-lg text-slate-900">All Published & Draft Articles</h4>
                     <p className="text-xs text-gray-500">Manage editorial articles, open in Blogger composer, or preview live</p>
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-extrabold text-xs border border-[#fde68a]">
+                  <span className="px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] font-extrabold text-xs border border-slate-200">
                     {blogPosts.length} Total Articles
                   </span>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                    <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase border-b border-[#fde68a]">
+                  <table className="w-full text-left text-xs font-sans text-slate-900">
+                    <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-serif font-bold uppercase border-b border-slate-200">
                       <tr>
                         <th className="px-6 py-3.5">Article</th>
                         <th className="px-6 py-3.5">Category</th>
@@ -5169,13 +5162,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="px-6 py-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#fde68a]">
+                    <tbody className="divide-y divide-slate-200">
                       {blogPosts.map((post) => (
-                        <tr key={post.id} className="hover:bg-[#fefcf6] transition-colors">
+                        <tr key={post.id} className="hover:bg-white transition-colors">
                           {/* Article Title & Thumbnail */}
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-3">
-                              <div className="w-14 h-10 rounded-xl overflow-hidden bg-gray-100 border border-[#fde68a] shrink-0">
+                              <div className="w-14 h-10 rounded-xl overflow-hidden bg-gray-100 border border-slate-200 shrink-0">
                                 <img
                                   src={post.coverImage || 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=1200&auto=format&fit=crop'}
                                   alt={post.title}
@@ -5183,7 +5176,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 />
                               </div>
                               <div className="max-w-xs sm:max-w-sm">
-                                <span className="font-serif font-bold text-sm text-[#0f172a] line-clamp-1 block">
+                                <span className="font-serif font-bold text-sm text-slate-900 line-clamp-1 block">
                                   {post.title}
                                 </span>
                                 <span className="text-[11px] font-mono text-gray-400 block truncate">
@@ -5195,7 +5188,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                           {/* Category */}
                           <td className="px-6 py-4">
-                            <span className="px-2.5 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-bold text-[10px] uppercase tracking-wider border border-[#fde68a]">
+                            <span className="px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] font-bold text-[10px] uppercase tracking-wider border border-slate-200">
                               {post.category}
                             </span>
                           </td>
@@ -5210,7 +5203,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                   className="w-6 h-6 rounded-full object-cover border"
                                 />
                               )}
-                              <span className="font-bold text-[#0f172a]">{post.author}</span>
+                              <span className="font-bold text-slate-900">{post.author}</span>
                             </div>
                           </td>
 
@@ -5273,13 +5266,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 4A: E-STORE CLIENT ORDERS HUB */}
           {(activeTab === 'shop_orders' || activeTab === 'shop') && (
             <div className="space-y-6">
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-slate-200">
                     <ShoppingBag className="w-3.5 h-3.5 text-[#d97706]" />
                     E-Store Orders & Payment Verification
                   </div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     Client Shipping Orders & UTR Ledger
                   </h3>
                   <p className="text-xs text-gray-500">
@@ -5289,7 +5282,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                 <button
                   onClick={() => setActiveTab('shop_delivery')}
-                  className="px-5 py-2.5 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] border border-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-[#fde68a] border border-slate-200 text-[#b45309] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
                 >
                   <Truck className="w-4 h-4 text-[#d97706]" />
                   <span>Go to Courier Delivery Hub →</span>
@@ -5298,7 +5291,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* Stats Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-[#fde68a] space-y-1 shadow-xs">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1 shadow-xs">
                   <span className="text-xs text-gray-500 font-bold block uppercase">Total Orders</span>
                   <span className="text-2xl font-serif font-extrabold text-[#b45309]">{shopOrders.length}</span>
                 </div>
@@ -5323,8 +5316,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* CLIENT STORE ORDERS TABLE */}
-              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
-                <div className="p-5 border-b border-[#fde68a] bg-[#fefcf6] flex flex-wrap justify-between items-center gap-3">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl">
+                <div className="p-5 border-b border-slate-200 bg-white flex flex-wrap justify-between items-center gap-3">
                   <div>
                     <h4 className="font-serif font-bold text-lg text-[#b45309]">E-Store Orders Directory ({shopOrders.length})</h4>
                     <p className="text-xs text-gray-500">Review buyer information and click "Assign Delivery" to generate tracking</p>
@@ -5332,8 +5325,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                    <thead className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold border-b border-[#fde68a]">
+                  <table className="w-full text-left text-xs font-sans text-slate-900">
+                    <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 uppercase tracking-wider font-extrabold border-b border-slate-200">
                       <tr>
                         <th className="p-4">Order Ref & Date</th>
                         <th className="p-4">Buyer Details</th>
@@ -5344,7 +5337,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#fde68a]">
+                    <tbody className="divide-y divide-slate-200">
                       {shopOrders.length === 0 ? (
                         <tr>
                           <td colSpan={7} className="p-8 text-center text-gray-400 font-medium">
@@ -5353,13 +5346,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         </tr>
                       ) : (
                         shopOrders.map((ord) => (
-                          <tr key={ord.id} className="hover:bg-[#fefcf6] transition-colors">
+                          <tr key={ord.id} className="hover:bg-white transition-colors">
                             <td className="p-4">
                               <div className="font-mono font-extrabold text-[#b45309] text-xs">{ord.orderRef}</div>
                               <div className="text-gray-500 text-[10px]">{ord.orderedAt}</div>
                             </td>
                             <td className="p-4">
-                              <div className="font-extrabold text-[#0f172a]">{ord.buyerName}</div>
+                              <div className="font-extrabold text-slate-900">{ord.buyerName}</div>
                               <div className="text-[#b45309] font-mono text-[11px]">{ord.whatsappNo || ord.mobile}</div>
                             </td>
                             <td className="p-4 max-w-xs text-gray-700">
@@ -5480,13 +5473,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {activeTab === 'shop_products' && (
             <div className="space-y-6">
               {/* PLATFORM COMMISSION SETTINGS CARD */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] flex flex-wrap items-center justify-between gap-4 shadow-md">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 flex flex-wrap items-center justify-between gap-4 shadow-md">
                 <div className="space-y-1 max-w-xl">
-                  <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#fef3c7] text-[#b45309] text-[10px] font-extrabold uppercase border border-[#fde68a]">
+                  <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-[10px] font-extrabold uppercase border border-slate-200">
                     <DollarSign className="w-3 h-3 text-[#d97706]" />
                     Astrologer Marketplace Commission Rate
                   </div>
-                  <h4 className="font-serif font-bold text-lg text-[#0f172a]">Platform Commission Settings</h4>
+                  <h4 className="font-serif font-bold text-lg text-slate-900">Platform Commission Settings</h4>
                   <p className="text-xs text-gray-500">
                     Set the default commission % deducted by Admin on products sold by empaneled astrologers. (Currently set to <strong className="text-[#b45309] font-mono">{commissionSettings.defaultCommissionPct}%</strong>).
                   </p>
@@ -5500,7 +5493,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       max={100}
                       value={editingCommissionPct}
                       onChange={(e) => setEditingCommissionPct(Number(e.target.value))}
-                      className="w-24 h-10 px-3 pr-7 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-bold text-sm text-center"
+                      className="w-24 h-10 px-3 pr-7 rounded-xl border border-gray-300 bg-white text-[#b45309] font-mono font-bold text-sm text-center"
                     />
                     <span className="absolute right-3 top-2.5 font-bold text-gray-400 text-xs">%</span>
                   </div>
@@ -5520,7 +5513,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <div>
                       <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
                         <span>⏳ Pending Astrologer Product Submissions</span>
-                        <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-[#78350f] text-xs font-mono font-bold">
+                        <span className="px-2.5 py-0.5 rounded-full bg-amber-200 text-amber-900 dark:text-amber-300 text-xs font-mono font-bold">
                           {shopProducts.filter((p) => p.status === 'PENDING_APPROVAL').length}
                         </span>
                       </h4>
@@ -5529,9 +5522,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse text-xs text-[#0f172a]">
+                    <table className="w-full text-left border-collapse text-xs text-slate-900">
                       <thead>
-                        <tr className="bg-[#fef3c7] border-b border-[#fde68a] text-[#78350f] font-serif uppercase">
+                        <tr className="bg-amber-50 dark:bg-amber-950/40 border-b border-slate-200 text-amber-900 dark:text-amber-300 font-serif uppercase">
                           <th className="p-4">Vendor Astrologer</th>
                           <th className="p-4">Product Title</th>
                           <th className="p-4">Category</th>
@@ -5541,7 +5534,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           <th className="p-4 text-center">Admin Verification</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#fde68a]">
+                      <tbody className="divide-y divide-slate-200">
                         {shopProducts
                           .filter((p) => p.status === 'PENDING_APPROVAL')
                           .map((p) => {
@@ -5549,11 +5542,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             const commAmt = Math.round((p.price * commPct) / 100);
                             const netPayout = p.price - commAmt;
                             return (
-                              <tr key={p.id} className="hover:bg-[#fefcf6]">
+                              <tr key={p.id} className="hover:bg-white">
                                 <td className="p-4 font-bold text-[#b45309]">{p.sellerName || 'Empaneled Astrologer'}</td>
-                                <td className="p-4 font-extrabold text-[#0f172a]">{p.title}</td>
+                                <td className="p-4 font-extrabold text-slate-900">{p.title}</td>
                                 <td className="p-4 text-gray-600">{p.category}</td>
-                                <td className="p-4 font-mono font-bold text-[#0f172a]">₹{p.price.toLocaleString()}</td>
+                                <td className="p-4 font-mono font-bold text-slate-900">₹{p.price.toLocaleString()}</td>
                                 <td className="p-4 font-mono text-[#b45309]">₹{commAmt} ({commPct}%)</td>
                                 <td className="p-4 font-mono font-bold text-emerald-700">₹{netPayout.toLocaleString()}</td>
                                 <td className="p-4 text-center space-x-2">
@@ -5579,13 +5572,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
               )}
 
-              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-3xl border border-[#fde68a] gap-4 shadow-md">
+              <div className="flex flex-wrap justify-between items-center bg-white p-6 rounded-3xl border border-slate-200 gap-4 shadow-md">
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-slate-200">
                     <Package className="w-3.5 h-3.5 text-[#d97706]" />
                     Product Catalog & Stock Management
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#0f172a]">
+                  <h3 className="font-serif font-bold text-2xl text-slate-900">
                     Add, Edit & Update E-Store Products
                   </h3>
                   <p className="text-xs text-gray-500">
@@ -5607,7 +5600,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   <button
                     onClick={handleExportProductsCSV}
-                    className="px-4 py-3 rounded-xl bg-[#0b132b] hover:bg-[#1c2541] text-amber-300 border border-[#d97706] font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-sm"
+                    className="px-4 py-3 rounded-xl bg-slate-950 hover:bg-slate-900 text-amber-300 border border-[#d97706] font-extrabold text-xs flex items-center gap-2 cursor-pointer shadow-sm"
                   >
                     <Download className="w-4 h-4 text-amber-400" />
                     <span>📤 Export CSV</span>
@@ -5615,7 +5608,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   <button
                     onClick={() => setShowCategoryManagerModal(true)}
-                    className="px-4 py-3 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] border border-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
+                    className="px-4 py-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-[#fde68a] border border-slate-200 text-[#b45309] font-bold text-xs flex items-center gap-2 transition-colors cursor-pointer"
                   >
                     <Tag className="w-4 h-4 text-[#d97706]" />
                     <span>Categories ({shopCategories.length})</span>
@@ -5633,8 +5626,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* PRODUCT EDIT FORM MODAL */}
               {editingProduct && (
-                <form onSubmit={handleSaveProduct} className={`p-6 sm:p-8 rounded-3xl border space-y-5 text-xs font-sans shadow-2xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
-                  <div className={`flex justify-between items-center pb-3 border-b ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
+                <form onSubmit={handleSaveProduct} className={`p-6 sm:p-8 rounded-3xl border space-y-5 text-xs font-sans shadow-2xl transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+                  <div className={`flex justify-between items-center pb-3 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                     <h4 className={`font-serif font-bold text-xl ${theme === 'dark' ? 'text-[#fbbf24]' : 'text-[#b45309]'}`}>
                       {editingProduct.id ? 'Edit Product Details' : 'Add New E-Store Product'}
                     </h4>
@@ -5644,7 +5637,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   {/* Gemini AI Copilot & Image Studio Assistant Ribbon */}
-                  <div className={`p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-3 ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-[#fef3c7]/60 border-[#fde68a]'}`}>
+                  <div className={`p-3.5 rounded-2xl border flex flex-wrap items-center justify-between gap-3 ${theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-amber-50 dark:bg-amber-950/40/60 border-slate-200'}`}>
                     <div className="flex items-center gap-2.5">
                       <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center shadow-xs">
                         <Sparkles className="w-4 h-4" />
@@ -5709,7 +5702,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. Natural Ceylon Yellow Sapphire (Pukhraj)"
                         value={editingProduct.title || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, title: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a] focus:border-[#d97706]'} font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-900 focus:border-[#d97706]'} font-bold text-xs"
                       />
                     </div>
                     <div className="sm:col-span-4">
@@ -5733,7 +5726,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="Category name..."
                             value={newCategoryInput}
                             onChange={(e) => setNewCategoryInput(e.target.value)}
-                            className="w-full h-10 px-3 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a] focus:border-[#d97706]'} text-xs font-bold"
+                            className="w-full h-10 px-3 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-900 focus:border-[#d97706]'} text-xs font-bold"
                           />
                           <button
                             type="button"
@@ -5747,7 +5740,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <select
                           value={editingProduct.category || shopCategories[0] || 'Gemstones'}
                           onChange={(e) => setEditingProduct({ ...editingProduct, category: e.target.value })}
-                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-white' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a] focus:border-[#d97706]'} font-bold text-xs"
+                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-white' : 'border-slate-200 bg-white text-slate-900 focus:border-[#d97706]'} font-bold text-xs"
                         >
                           {shopCategories.map((cat) => (
                             <option key={cat} value={cat}>
@@ -5768,7 +5761,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="6999"
                         value={editingProduct.price || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, price: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-[#fbbf24]' : 'border-slate-200 bg-white text-[#b45309]'} font-mono font-bold text-xs"
                       />
                     </div>
                     <div>
@@ -5778,7 +5771,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="8999"
                         value={editingProduct.originalPrice || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, originalPrice: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-gray-300' : 'border-[#fde68a] bg-[#fffdfa] text-gray-600'} font-mono text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-gray-300' : 'border-slate-200 bg-white text-gray-600'} font-mono text-xs"
                       />
                     </div>
                     <div>
@@ -5789,7 +5782,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="10"
                         value={editingProduct.stock ?? 10}
                         onChange={(e) => setEditingProduct({ ...editingProduct, stock: Number(e.target.value) })}
-                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-green-400' : 'border-[#fde68a] bg-[#fffdfa] text-green-700'} font-mono font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-green-400' : 'border-slate-200 bg-white text-green-700'} font-mono font-bold text-xs"
                       />
                     </div>
                     <div>
@@ -5799,13 +5792,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="SKU-GEM-84920"
                         value={editingProduct.sku || ''}
                         onChange={(e) => setEditingProduct({ ...editingProduct, sku: e.target.value })}
-                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-sky-300' : 'border-[#fde68a] bg-[#fffdfa] text-blue-700'} font-mono font-bold text-xs"
+                        className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-sky-300' : 'border-slate-200 bg-white text-blue-700'} font-mono font-bold text-xs"
                       />
                     </div>
                   </div>
 
                   {/* Badge & Image Upload Section with Nano Banana AI Studio */}
-                  <div className="space-y-4 p-4 rounded-2xl ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]/60' : 'bg-[#fefcf6] border-[#fde68a]'}">
+                  <div className="space-y-4 p-4 rounded-2xl ${theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'}">
                     {/* NANO BANANA AI PRODUCT IMAGE GENERATOR TOOLBAR */}
                     <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-orange-500/15 to-amber-500/15 border border-amber-400/40 space-y-3">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -5947,7 +5940,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="Lab Certified 100% Original"
                           value={editingProduct.badge || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, badge: e.target.value })}
-                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-amber-300' : 'border-[#fde68a] bg-white text-amber-800'} font-bold text-xs"
+                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-900 text-amber-300' : 'border-slate-200 bg-white text-amber-800'} font-bold text-xs"
                         />
                       </div>
 
@@ -5964,7 +5957,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-2 border-t border-[#3a506b]/40">
+                    <div className="grid grid-cols-1 sm:grid-cols-12 gap-4 items-center pt-2 border-t border-slate-800">
                       <div className="sm:col-span-8">
                         <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           🌐 Current Product Image (URL / Base64 / Generated)
@@ -5997,7 +5990,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               }
                             }
                           }}
-                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-sky-300' : 'border-[#fde68a] bg-white text-blue-700'} font-mono text-xs"
+                          className="w-full h-10 px-3.5 rounded-xl border ${theme === 'dark' ? 'border-slate-800 bg-slate-900 text-sky-300' : 'border-slate-200 bg-white text-blue-700'} font-mono text-xs"
                         />
                       </div>
 
@@ -6019,7 +6012,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   {/* Pack Options Bundles & Promotional Offers Controls */}
-                  <div className="space-y-3 p-4 rounded-2xl ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]/60' : 'bg-[#fefcf6] border-[#fde68a]'}">
+                  <div className="space-y-3 p-4 rounded-2xl ${theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-200'}">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-black uppercase tracking-wider text-[#fbbf24] flex items-center gap-1.5">
                         <Sparkles className="w-4 h-4 text-[#d97706]" />
@@ -6030,7 +6023,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
                       {/* Pack 1 */}
-                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-[#fde68a] shadow-xs'} space-y-2">
+                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xs'} space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-gray-300 uppercase">Pack of 1 (Single)</span>
                           <span className="text-[9px] font-mono text-gray-400">Default Pack</span>
@@ -6042,7 +6035,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="799"
                             value={editingProduct.packOptions?.[0]?.price ?? editingProduct.price ?? ''}
                             onChange={(e) => updatePackOptionField(0, 'price', e.target.value)}
-                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
+                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-[#fbbf24]' : 'border-slate-200 bg-white text-[#b45309]'} font-mono font-bold text-xs"
                           />
                         </div>
                         <div>
@@ -6052,7 +6045,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Standard"
                             value={editingProduct.packOptions?.[0]?.badge || ''}
                             onChange={(e) => updatePackOptionField(0, 'badge', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-amber-300' : 'border-[#fde68a] bg-[#fffdfa] text-amber-800'} font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-amber-300' : 'border-slate-200 bg-white text-amber-800'} font-bold text-[10px]"
                           />
                         </div>
                         <div>
@@ -6062,13 +6055,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Base Price"
                             value={editingProduct.packOptions?.[0]?.savingsText || ''}
                             onChange={(e) => updatePackOptionField(0, 'savingsText', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-emerald-400' : 'border-[#fde68a] bg-[#fffdfa] text-emerald-700'} font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-emerald-400' : 'border-slate-200 bg-white text-emerald-700'} font-bold text-[10px]"
                           />
                         </div>
                       </div>
 
                       {/* Pack 2 */}
-                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-[#1c2541] border-amber-500/40' : 'bg-amber-50/50 border-amber-300'} space-y-2 ring-1 ring-amber-500/20">
+                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-slate-900 border-amber-500/40' : 'bg-amber-50/50 border-amber-300'} space-y-2 ring-1 ring-amber-500/20">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-amber-300 uppercase">Pack of 2 (Double)</span>
                           <span className="text-[9px] font-extrabold bg-amber-400/20 text-amber-300 px-1.5 py-0.5 rounded">POPULAR</span>
@@ -6080,7 +6073,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="1199"
                             value={editingProduct.packOptions?.[1]?.price ?? (editingProduct.price ? Math.round(editingProduct.price * 1.5) : '')}
                             onChange={(e) => updatePackOptionField(1, 'price', e.target.value)}
-                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
+                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-[#fbbf24]' : 'border-slate-200 bg-white text-[#b45309]'} font-mono font-bold text-xs"
                           />
                         </div>
                         <div>
@@ -6090,7 +6083,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="Most Popular"
                             value={editingProduct.packOptions?.[1]?.badge ?? 'Most Popular'}
                             onChange={(e) => updatePackOptionField(1, 'badge', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-amber-300' : 'border-[#fde68a] bg-[#fffdfa] text-amber-800'} font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-amber-300' : 'border-slate-200 bg-white text-amber-800'} font-bold text-[10px]"
                           />
                         </div>
                         <div>
@@ -6100,13 +6093,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Extra ₹400 Off"
                             value={editingProduct.packOptions?.[1]?.savingsText ?? 'Extra ₹400 Off'}
                             onChange={(e) => updatePackOptionField(1, 'savingsText', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-emerald-400' : 'border-[#fde68a] bg-[#fffdfa] text-emerald-700'} font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-emerald-400' : 'border-slate-200 bg-white text-emerald-700'} font-bold text-[10px]"
                           />
                         </div>
                       </div>
 
                       {/* Pack 3 */}
-                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-[#fde68a] shadow-xs'} space-y-2">
+                      <div className="p-3 rounded-xl ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200 shadow-xs'} space-y-2">
                         <div className="flex items-center justify-between">
                           <span className="text-[10px] font-bold text-sky-300 uppercase">Pack of 3 (Family / Bulk)</span>
                           <span className="text-[9px] font-mono text-gray-400">Best Value</span>
@@ -6118,7 +6111,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="1599"
                             value={editingProduct.packOptions?.[2]?.price ?? (editingProduct.price ? Math.round(editingProduct.price * 2.0) : '')}
                             onChange={(e) => updatePackOptionField(2, 'price', e.target.value)}
-                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-[#fbbf24]' : 'border-[#fde68a] bg-[#fffdfa] text-[#b45309]'} font-mono font-bold text-xs"
+                            className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-[#fbbf24]' : 'border-slate-200 bg-white text-[#b45309]'} font-mono font-bold text-xs"
                           />
                         </div>
                         <div>
@@ -6128,7 +6121,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Best Value"
                             value={editingProduct.packOptions?.[2]?.badge || ''}
                             onChange={(e) => updatePackOptionField(2, 'badge', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-amber-300' : 'border-[#fde68a] bg-[#fffdfa] text-amber-800'} font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-amber-300' : 'border-slate-200 bg-white text-amber-800'} font-bold text-[10px]"
                           />
                         </div>
                         <div>
@@ -6138,14 +6131,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Extra ₹800 Off"
                             value={editingProduct.packOptions?.[2]?.savingsText ?? 'Extra ₹800 Off'}
                             onChange={(e) => updatePackOptionField(2, 'savingsText', e.target.value)}
-                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-emerald-400' : 'border-[#fde68a] bg-[#fffdfa] text-emerald-700'} font-bold text-[10px]"
+                            className="w-full h-7 px-2 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-emerald-400' : 'border-slate-200 bg-white text-emerald-700'} font-bold text-[10px]"
                           />
                         </div>
                       </div>
                     </div>
 
                     {/* Special Offer Title & Timer Settings */}
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-[#3a506b]/40">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-800">
                       <div>
                         <label className="block text-[10px] font-bold uppercase tracking-wider ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'} mb-1">
                           Special Offer Title
@@ -6155,7 +6148,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="Vaikasi Visakam Special Offer"
                           value={editingProduct.specialOfferTitle || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, specialOfferTitle: e.target.value })}
-                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-white' : 'border-[#fde68a] bg-white text-[#0f172a]'} font-bold text-xs"
+                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-900 text-white' : 'border-slate-200 bg-white text-slate-900'} font-bold text-xs"
                         />
                       </div>
                       <div>
@@ -6167,7 +6160,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="Save ₹500"
                           value={editingProduct.specialOfferDiscount || ''}
                           onChange={(e) => setEditingProduct({ ...editingProduct, specialOfferDiscount: e.target.value })}
-                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-emerald-400' : 'border-[#fde68a] bg-white text-emerald-700'} font-bold text-xs"
+                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-900 text-emerald-400' : 'border-slate-200 bg-white text-emerald-700'} font-bold text-xs"
                         />
                       </div>
                       <div>
@@ -6181,7 +6174,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="16"
                           value={editingProduct.offerEndsInHours ?? 16}
                           onChange={(e) => setEditingProduct({ ...editingProduct, offerEndsInHours: Number(e.target.value) })}
-                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-[#3a506b] bg-[#1c2541] text-red-400' : 'border-[#fde68a] bg-white text-red-600'} font-mono font-bold text-xs"
+                          className="w-full h-8 px-2.5 rounded-lg border ${theme === 'dark' ? 'border-slate-800 bg-slate-900 text-red-400' : 'border-slate-200 bg-white text-red-600'} font-mono font-bold text-xs"
                         />
                       </div>
                     </div>
@@ -6195,27 +6188,27 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="Detailed description of the product..."
                       value={editingProduct.description || ''}
                       onChange={(e) => setEditingProduct({ ...editingProduct, description: e.target.value })}
-                      className={`w-full p-3 rounded-xl border text-xs transition-colors ${theme === 'dark' ? 'border-[#3a506b] bg-[#0b132b] text-gray-200' : 'border-[#fde68a] bg-[#fffdfa] text-[#0f172a]'}`}
+                      className={`w-full p-3 rounded-xl border text-xs transition-colors ${theme === 'dark' ? 'border-slate-800 bg-slate-950 text-gray-200' : 'border-slate-200 bg-white text-slate-900'}`}
                     />
                   </div>
 
-                  <div className={`flex justify-end gap-3 pt-2 border-t ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
-                    <button type="button" onClick={() => setEditingProduct(null)} className={`px-5 py-2.5 rounded-xl text-xs font-bold border transition-colors ${theme === 'dark' ? 'bg-[#0b132b] text-gray-300 border-[#3a506b] hover:bg-[#15203b]' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}>Cancel</button>
+                  <div className={`flex justify-end gap-3 pt-2 border-t ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
+                    <button type="button" onClick={() => setEditingProduct(null)} className={`px-5 py-2.5 rounded-xl text-xs font-bold border transition-colors ${theme === 'dark' ? 'bg-slate-950 text-gray-300 border-slate-800 hover:bg-[#15203b]' : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'}`}>Cancel</button>
                     <button type="submit" className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md">Save Product Live →</button>
                   </div>
                 </form>
               )}
 
               {/* PRODUCT INVENTORY CATALOG TABLE */}
-              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
-                <div className="p-5 border-b border-[#fde68a] bg-[#fefcf6] flex justify-between items-center">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl">
+                <div className="p-5 border-b border-slate-200 bg-white flex justify-between items-center">
                   <h4 className="font-serif font-bold text-lg text-[#b45309]">E-Store Product Catalog ({shopProducts.length} Items)</h4>
                   <span className="text-xs text-gray-500">Click edit to update price, stock, or description</span>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                    <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase border-b border-[#fde68a]">
+                  <table className="w-full text-left text-xs font-sans text-slate-900">
+                    <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-serif font-bold uppercase border-b border-slate-200">
                       <tr>
                         <th className="px-6 py-3.5">Product Title</th>
                         <th className="px-6 py-3.5">Category</th>
@@ -6226,14 +6219,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="px-6 py-3.5 text-right">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#fde68a]">
+                    <tbody className="divide-y divide-slate-200">
                       {shopProducts.map((prod) => (
-                        <tr key={prod.id} className="hover:bg-[#fefcf6]">
+                        <tr key={prod.id} className="hover:bg-white">
                           <td className="px-6 py-4">
-                            <div className="font-bold text-[#0f172a] text-sm flex items-center gap-2">
+                            <div className="font-bold text-slate-900 text-sm flex items-center gap-2">
                               <span>{prod.title}</span>
                               {prod.sku && (
-                                <span className="px-2 py-0.5 rounded bg-[#fef3c7] text-[#b45309] font-mono text-[10px] font-extrabold border border-[#fde68a] shrink-0">
+                                <span className="px-2 py-0.5 rounded bg-amber-50 dark:bg-amber-950/40 text-[#b45309] font-mono text-[10px] font-extrabold border border-slate-200 shrink-0">
                                   {prod.sku}
                                 </span>
                               )}
@@ -6252,7 +6245,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               onClick={() => handleToggleProductFeatured(prod.id)}
                               className={`px-3 py-1 rounded-xl text-[10px] font-extrabold border transition-all cursor-pointer ${
                                 prod.isFeatured
-                                  ? 'bg-[#fef3c7] text-[#b45309] border-[#fde68a] shadow-xs'
+                                  ? 'bg-amber-50 dark:bg-amber-950/40 text-[#b45309] border-slate-200 shadow-xs'
                                   : 'bg-white text-gray-500 border-gray-300 hover:text-gray-800'
                               }`}
                             >
@@ -6260,7 +6253,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             </button>
                           </td>
                           <td className="px-6 py-4 text-right space-x-2">
-                            <button onClick={() => openEditProductModal(prod)} className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#b45309] border border-[#fde68a] text-[10px] font-bold cursor-pointer">Edit</button>
+                            <button onClick={() => openEditProductModal(prod)} className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#b45309] border border-slate-200 text-[10px] font-bold cursor-pointer">Edit</button>
                             <button onClick={() => handleDeleteProduct(prod.id)} className="px-3 py-1.5 rounded-xl bg-red-100 text-red-700 border border-red-200 text-[10px] font-bold cursor-pointer">Delete</button>
                           </td>
                         </tr>
@@ -6276,13 +6269,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {activeTab === 'shop_astro_products' && (
             <div className="space-y-6">
               {/* Header Banner */}
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a] shadow-md'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-extrabold uppercase mb-2 border border-purple-500/30">
                     <Award className="w-3.5 h-3.5 text-purple-400" />
                     Astrologer Vendor Submissions & Marketplace Controls
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className="font-serif font-bold text-2xl text-white">
                     Astrologer Vendor Products & Verification Hub
                   </h3>
                   <p className="text-xs text-gray-400">
@@ -6292,7 +6285,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* PLATFORM COMMISSION SETTINGS CARD */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] flex flex-wrap items-center justify-between gap-4 shadow-lg">
+              <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 flex flex-wrap items-center justify-between gap-4 shadow-lg">
                 <div className="space-y-1 max-w-xl">
                   <div className="inline-flex items-center gap-2 px-3 py-0.5 rounded-full bg-[#fbbf24]/20 text-[#fbbf24] text-[10px] font-extrabold uppercase border border-[#fbbf24]/30">
                     <DollarSign className="w-3 h-3" />
@@ -6312,7 +6305,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       max={100}
                       value={editingCommissionPct}
                       onChange={(e) => setEditingCommissionPct(Number(e.target.value))}
-                      className="w-24 h-10 px-3 pr-7 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-sm text-center"
+                      className="w-24 h-10 px-3 pr-7 rounded-xl border border-slate-800 bg-slate-950 text-[#fbbf24] font-mono font-bold text-sm text-center"
                     />
                     <span className="absolute right-3 top-2.5 font-bold text-gray-400 text-xs">%</span>
                   </div>
@@ -6326,7 +6319,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* PENDING ASTROLOGER SUBMISSIONS TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-amber-500/50 shadow-xl overflow-hidden">
+              <div className="bg-slate-900 rounded-3xl border border-amber-500/50 shadow-xl overflow-hidden">
                 <div className="p-6 bg-amber-500/10 border-b border-amber-500/30 flex justify-between items-center">
                   <div>
                     <h4 className="font-serif font-bold text-xl text-[#fbbf24] flex items-center gap-2">
@@ -6342,7 +6335,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase">
+                      <tr className="bg-slate-950 border-b border-slate-800 text-[#fbbf24] font-serif uppercase">
                         <th className="p-4">Vendor Astrologer</th>
                         <th className="p-4">Product Title</th>
                         <th className="p-4">Category</th>
@@ -6367,7 +6360,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             const commAmt = Math.round((p.price * commPct) / 100);
                             const netPayout = p.price - commAmt;
                             return (
-                              <tr key={p.id} className="hover:bg-[#0b132b]/40">
+                              <tr key={p.id} className="hover:bg-slate-950/40">
                                 <td className="p-4 font-bold text-amber-300">{p.sellerName || 'Empaneled Astrologer'}</td>
                                 <td className="p-4 font-extrabold text-white">{p.title}</td>
                                 <td className="p-4 text-gray-300">{p.category}</td>
@@ -6398,8 +6391,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* APPROVED ASTROLOGER PRODUCTS CATALOG TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] overflow-hidden shadow-xl">
-                <div className="p-6 border-b border-[#3a506b] flex justify-between items-center">
+              <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                   <h4 className="font-serif font-bold text-xl text-purple-300">
                     Approved Astrologer Vendor Products ({shopProducts.filter((p) => p.sellerType === 'ASTROLOGER' && p.status === 'APPROVED').length})
                   </h4>
@@ -6409,7 +6402,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase">
+                      <tr className="bg-slate-950 border-b border-slate-800 text-[#fbbf24] font-serif uppercase">
                         <th className="p-4">Vendor Name</th>
                         <th className="p-4">Product Title</th>
                         <th className="p-4">Category</th>
@@ -6436,7 +6429,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             const commAmt = Math.round((p.price * commPct) / 100);
                             const netPayout = p.price - commAmt;
                             return (
-                              <tr key={p.id} className="hover:bg-[#0b132b]/40">
+                              <tr key={p.id} className="hover:bg-slate-950/40">
                                 <td className="p-4 font-bold text-amber-300">{p.sellerName}</td>
                                 <td className="p-4 font-extrabold text-white">{p.title}</td>
                                 <td className="p-4 text-gray-300">{p.category}</td>
@@ -6449,7 +6442,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                       max={100}
                                       defaultValue={commPct}
                                       onBlur={(e) => handleUpdateSingleProductCommission(p.id, Number(e.target.value))}
-                                      className="w-14 h-7 px-2 rounded-lg bg-[#0b132b] border border-[#3a506b] text-[#fbbf24] text-xs font-mono font-bold text-center"
+                                      className="w-14 h-7 px-2 rounded-lg bg-slate-950 border border-slate-800 text-[#fbbf24] text-xs font-mono font-bold text-center"
                                     />
                                     <span className="text-gray-400 font-mono text-[10px]">%</span>
                                   </div>
@@ -6463,7 +6456,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                     className={`px-3 py-1 rounded-xl text-[10px] font-extrabold border transition-all cursor-pointer ${
                                       p.isFeatured
                                         ? 'bg-amber-500/20 text-amber-300 border-amber-500/40 shadow-sm'
-                                        : 'bg-[#0b132b] text-gray-400 border-[#3a506b] hover:text-white'
+                                        : 'bg-slate-950 text-gray-400 border-slate-800 hover:text-white'
                                     }`}
                                   >
                                     {p.isFeatured ? '⭐ Featured' : '+ Feature'}
@@ -6490,13 +6483,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {activeTab === 'shop_coupons' && (
             <div className="space-y-6">
               {/* Header Banner */}
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4 shadow-xl">
+              <div className="flex flex-wrap justify-between items-center bg-slate-900 p-6 rounded-3xl border border-slate-800 gap-4 shadow-xl">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-extrabold uppercase mb-2 border border-emerald-500/30">
                     <Tag className="w-3.5 h-3.5 text-emerald-400" />
                     E-Store Promo Coupons & Discount Vouchers
                   </div>
-                  <h3 className="font-serif font-bold text-2xl text-[#faf8f4]">
+                  <h3 className="font-serif font-bold text-2xl text-white">
                     Promo Coupons Engine & Offer Management
                   </h3>
                   <p className="text-xs text-gray-400">
@@ -6524,19 +6517,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* Stats Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <div className="p-5 rounded-2xl bg-[#1c2541] border border-[#3a506b] space-y-1 shadow-md">
+                <div className="p-5 rounded-2xl bg-slate-900 border border-slate-800 space-y-1 shadow-md">
                   <span className="text-xs text-gray-400 font-bold uppercase block">Total Promo Codes</span>
                   <span className="text-2xl font-black text-[#fbbf24] font-mono">{shopCoupons.length}</span>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[#1c2541] border border-emerald-500/40 space-y-1 shadow-md">
+                <div className="p-5 rounded-2xl bg-slate-900 border border-emerald-500/40 space-y-1 shadow-md">
                   <span className="text-xs text-emerald-400 font-bold uppercase block">Active Vouchers</span>
                   <span className="text-2xl font-black text-emerald-400 font-mono">
                     {shopCoupons.filter((c) => c.active !== false).length}
                   </span>
                 </div>
 
-                <div className="p-5 rounded-2xl bg-[#1c2541] border border-sky-500/40 space-y-1 shadow-md">
+                <div className="p-5 rounded-2xl bg-slate-900 border border-sky-500/40 space-y-1 shadow-md">
                   <span className="text-xs text-sky-400 font-bold uppercase block">Total Times Redeemed</span>
                   <span className="text-2xl font-black text-sky-400 font-mono">
                     {shopCoupons.reduce((sum, c) => sum + (c.usageCount || 0), 0)} Redemptions
@@ -6545,8 +6538,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* COUPONS DIRECTORY TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] overflow-hidden shadow-xl">
-                <div className="p-6 border-b border-[#3a506b] flex justify-between items-center">
+              <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                   <h4 className="font-serif font-bold text-xl text-emerald-300">
                     Active & Available Vouchers ({shopCoupons.length})
                   </h4>
@@ -6556,7 +6549,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase">
+                      <tr className="bg-slate-950 border-b border-slate-800 text-[#fbbf24] font-serif uppercase">
                         <th className="p-4">Coupon Code</th>
                         <th className="p-4">Discount Benefit</th>
                         <th className="p-4">Minimum Order (₹)</th>
@@ -6574,9 +6567,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         </tr>
                       ) : (
                         shopCoupons.map((coupon) => (
-                          <tr key={coupon.id} className="hover:bg-[#0b132b]/40">
+                          <tr key={coupon.id} className="hover:bg-slate-950/40">
                             <td className="p-4">
-                              <code className="px-3 py-1 rounded-xl bg-[#0b132b] border border-[#d97706] text-[#fbbf24] font-mono font-black text-sm tracking-wider">
+                              <code className="px-3 py-1 rounded-xl bg-slate-950 border border-[#d97706] text-[#fbbf24] font-mono font-black text-sm tracking-wider">
                                 {coupon.code}
                               </code>
                             </td>
@@ -6639,7 +6632,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 4E: ANIMATED SHOP HERO SLIDERS CMS */}
           {activeTab === 'shop_sliders' && (
             <div className="space-y-6">
-              <div className="flex flex-wrap justify-between items-center bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] gap-4 shadow-xl">
+              <div className="flex flex-wrap justify-between items-center bg-slate-900 p-6 rounded-3xl border border-slate-800 gap-4 shadow-xl">
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#b45309]/30 text-[#fbbf24] text-xs font-extrabold uppercase mb-2 border border-[#fbbf24]">
                     <ImageIcon className="w-3.5 h-3.5 text-[#fbbf24]" />
@@ -6679,7 +6672,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* SLIDERS LIST GRID */}
               <div className="grid grid-cols-1 gap-6">
                 {shopSliders.length === 0 ? (
-                  <div className="p-12 text-center bg-[#1c2541] rounded-3xl border border-[#3a506b] space-y-3">
+                  <div className="p-12 text-center bg-slate-900 rounded-3xl border border-slate-800 space-y-3">
                     <ImageIcon className="w-12 h-12 text-[#d97706] mx-auto opacity-50" />
                     <h4 className="font-serif font-bold text-xl text-white">No Shop Hero Sliders Found</h4>
                     <p className="text-xs text-gray-400 max-w-md mx-auto">
@@ -6692,14 +6685,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       key={slider.id || idx}
                       className={`relative rounded-3xl border overflow-hidden p-6 sm:p-8 space-y-4 shadow-xl transition-all ${
                         slider.active
-                          ? 'bg-[#1c2541] border-[#d97706]'
-                          : 'bg-[#0b132b] border-[#3a506b] opacity-60'
+                          ? 'bg-slate-900 border-[#d97706]'
+                          : 'bg-slate-950 border-slate-800 opacity-60'
                       }`}
                     >
                       {/* Top Header info */}
-                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#3a506b] pb-4">
+                      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-4">
                         <div className="flex items-center gap-3">
-                          <span className="px-3 py-1 rounded-full bg-[#0b132b] border border-[#d97706] text-[#fbbf24] text-xs font-mono font-black">
+                          <span className="px-3 py-1 rounded-full bg-slate-950 border border-[#d97706] text-[#fbbf24] text-xs font-mono font-black">
                             SLIDE #{slider.displayOrder || (idx + 1)}
                           </span>
                           <span className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
@@ -6778,17 +6771,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
           )}
 
+
+
           {/* TAB 5: DEDICATED ASTROLOGER ANNOUNCEMENTS & PROMO ADS WORKSPACE */}
           {activeTab === 'announcements' && (
             <div className="space-y-6">
               {/* Header Banner */}
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a] shadow-md'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-xl transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 text-xs font-extrabold uppercase mb-2 border border-amber-500/30">
                     <Bell className="w-3.5 h-3.5 text-amber-400" />
                     Astrologer Broadcast Center & Notice Board CMS
                   </div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     Astrologer Announcements, Promo Ads & Notices
                   </h3>
                   <p className="text-xs text-gray-400">
@@ -6806,8 +6801,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* ANNOUNCEMENTS LIST TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] overflow-hidden shadow-xl">
-                <div className="p-6 border-b border-[#3a506b] flex justify-between items-center">
+              <div className="bg-slate-900 rounded-3xl border border-slate-800 overflow-hidden shadow-xl">
+                <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                   <h4 className="font-serif font-bold text-xl text-[#fbbf24]">
                     Active Announcements & Notice Board Items ({announcements.length})
                   </h4>
@@ -6817,7 +6812,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase">
+                      <tr className="bg-slate-950 border-b border-slate-800 text-[#fbbf24] font-serif uppercase">
                         <th className="p-4">Type & Badge</th>
                         <th className="p-4">Announcement Title & Message</th>
                         <th className="p-4">CTA Button</th>
@@ -6835,7 +6830,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         </tr>
                       ) : (
                         announcements.map((ann) => (
-                          <tr key={ann.id} className="hover:bg-[#0b132b]/40">
+                          <tr key={ann.id} className="hover:bg-slate-950/40">
                             <td className="p-4">
                               <span className="px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 text-[10px] font-mono font-bold uppercase border border-amber-500/30">
                                 {ann.badge || ann.type}
@@ -6847,7 +6842,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             </td>
                             <td className="p-4">
                               {ann.actionText ? (
-                                <span className="px-3 py-1 rounded-lg bg-[#0b132b] border border-[#3a506b] text-[#fbbf24] text-[10px] font-bold font-mono">
+                                <span className="px-3 py-1 rounded-lg bg-slate-950 border border-slate-800 text-[#fbbf24] text-[10px] font-bold font-mono">
                                   {ann.actionText} →
                                 </span>
                               ) : (
@@ -6877,13 +6872,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 4C: ASSIGN DELIVERY & COURIER LOGISTICS HUB */}
           {activeTab === 'shop_delivery' && (
             <div className="space-y-6">
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a] shadow-md'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'}`}>
                 <div>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-sky-500/20 text-sky-300 text-xs font-extrabold uppercase mb-2 border border-sky-500/30">
                     <Truck className="w-3.5 h-3.5 text-sky-300" />
                     Delivery Assignment & Shipping Logistics
                   </div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     Assign Delivery Partners & Issuing Tracking AWBs
                   </h3>
                   <p className="text-xs text-gray-400">
@@ -6895,8 +6890,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* Delivery Queue Cards */}
               <div className="space-y-4">
                 {shopOrders.map((ord) => (
-                  <div key={ord.id} className="p-6 rounded-3xl bg-[#1c2541] border border-[#3a506b] space-y-4 shadow-lg font-sans">
-                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#3a506b]/60">
+                  <div key={ord.id} className="p-6 rounded-3xl bg-slate-900 border border-slate-800 space-y-4 shadow-lg font-sans">
+                    <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-slate-800">
                       <div className="flex items-center gap-3">
                         <span className="font-mono font-extrabold text-[#fbbf24] text-base">{ord.orderRef}</span>
                         <span className={`px-3 py-0.5 rounded-full text-xs font-extrabold ${
@@ -6911,7 +6906,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
                       {/* Buyer Details */}
-                      <div className="p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b]/50 space-y-1">
+                      <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/50 space-y-1">
                         <span className="text-[10px] font-bold text-[#e0a96d] uppercase block">Buyer & Shipping Contact</span>
                         <div className="font-bold text-white text-sm">{ord.buyerName}</div>
                         <div className="text-amber-300 font-mono">{ord.whatsappNo || ord.mobile}</div>
@@ -6919,20 +6914,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       </div>
 
                       {/* Items Ordered */}
-                      <div className="p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b]/50 space-y-1">
+                      <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/50 space-y-1">
                         <span className="text-[10px] font-bold text-[#e0a96d] uppercase block">Order Contents</span>
                         {ord.items.map((it, iIdx) => (
                           <div key={iIdx} className="font-bold text-white text-xs">
                             • {it.title} <span className="text-[#fbbf24]">x{it.quantity}</span>
                           </div>
                         ))}
-                        <div className="pt-2 border-t border-[#3a506b]/40 font-mono text-emerald-400 font-extrabold text-sm">
+                        <div className="pt-2 border-t border-slate-800 font-mono text-emerald-400 font-extrabold text-sm">
                           Paid Total: ₹{ord.totalAmount.toLocaleString()} (UTR: {ord.utr})
                         </div>
                       </div>
 
                       {/* Courier & Tracking Assignment */}
-                      <div className="p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b]/50 space-y-2 flex flex-col justify-between">
+                      <div className="p-4 rounded-2xl bg-slate-950 border border-slate-800/50 space-y-2 flex flex-col justify-between">
                         <div>
                           <span className="text-[10px] font-bold text-[#e0a96d] uppercase block mb-1">Assigned Delivery Details</span>
                           {ord.courierPartner ? (
@@ -6985,9 +6980,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* GLOBAL ASSIGN DELIVERY MODAL */}
           {assignDeliveryModalOrder && (
-            <div className="fixed inset-0 z-50 bg-[#0b132b]/80 backdrop-blur-xs flex items-center justify-center p-4">
-              <form onSubmit={handleAssignDelivery} className="bg-[#1c2541] w-full max-w-md rounded-3xl border border-[#3a506b] p-6 space-y-4 text-xs font-sans text-white shadow-2xl">
-                <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
+            <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-xs flex items-center justify-center p-4">
+              <form onSubmit={handleAssignDelivery} className="bg-slate-900 w-full max-w-md rounded-3xl border border-slate-800 p-6 space-y-4 text-xs font-sans text-white shadow-2xl">
+                <div className="flex justify-between items-center pb-3 border-b border-slate-800">
                   <div className="flex items-center gap-2">
                     <Truck className="w-5 h-5 text-[#fbbf24]" />
                     <h4 className="font-serif font-bold text-lg text-white">Assign Delivery Logistics</h4>
@@ -6997,7 +6992,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </button>
                 </div>
 
-                <div className="p-3 rounded-2xl bg-[#0b132b] border border-[#3a506b]/50">
+                <div className="p-3 rounded-2xl bg-slate-950 border border-slate-800/50">
                   <span className="text-[10px] font-bold text-[#e0a96d] uppercase block">Order Reference</span>
                   <div className="font-mono font-extrabold text-[#fbbf24] text-sm">{assignDeliveryModalOrder.orderRef}</div>
                   <div className="text-gray-300 text-xs">{assignDeliveryModalOrder.buyerName} ({assignDeliveryModalOrder.address})</div>
@@ -7010,7 +7005,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <select
                     value={deliveryForm.courierPartner}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, courierPartner: e.target.value })}
-                    className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-bold text-xs"
                   >
                     <option value="BlueDart Express">BlueDart Express</option>
                     <option value="DTDC Express">DTDC Express</option>
@@ -7031,7 +7026,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="e.g. BD-98401928IN"
                     value={deliveryForm.trackingNumber}
                     onChange={(e) => setDeliveryForm({ ...deliveryForm, trackingNumber: e.target.value })}
-                    className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-bold text-xs"
+                    className="w-full h-10 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-[#fbbf24] font-mono font-bold text-xs"
                   />
                 </div>
 
@@ -7045,7 +7040,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="+91 98620 11223"
                       value={deliveryForm.deliveryAgentPhone}
                       onChange={(e) => setDeliveryForm({ ...deliveryForm, deliveryAgentPhone: e.target.value })}
-                      className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs"
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-mono text-xs"
                     />
                   </div>
                   <div>
@@ -7056,7 +7051,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       type="date"
                       value={deliveryForm.expectedDeliveryDate}
                       onChange={(e) => setDeliveryForm({ ...deliveryForm, expectedDeliveryDate: e.target.value })}
-                      className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs"
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-mono text-xs"
                     />
                   </div>
                 </div>
@@ -7065,7 +7060,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <button
                     type="button"
                     onClick={() => setAssignDeliveryModalOrder(null)}
-                    className="px-4 py-2 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs"
+                    className="px-4 py-2 rounded-xl bg-slate-950 text-gray-300 font-bold text-xs"
                   >
                     Cancel
                   </button>
@@ -7083,8 +7078,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* CATEGORY MANAGER MODAL */}
           {showCategoryManagerModal && (
             <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className={`w-full max-w-lg rounded-3xl border p-6 space-y-5 text-xs font-sans shadow-2xl transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
-                <div className={`flex justify-between items-center pb-3 border-b ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
+              <div className={`w-full max-w-lg rounded-3xl border p-6 space-y-5 text-xs font-sans shadow-2xl transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+                <div className={`flex justify-between items-center pb-3 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                   <div className="flex items-center gap-2">
                     <Tag className="w-5 h-5 text-[#fbbf24]" />
                     <h4 className="font-serif font-bold text-xl text-white">E-Store Dynamic Categories Manager</h4>
@@ -7095,7 +7090,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* Create New Category Form */}
-                <form onSubmit={handleAddCategory} className="p-4 rounded-2xl bg-[#0b132b] border border-[#3a506b] space-y-3">
+                <form onSubmit={handleAddCategory} className="p-4 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
                   <span className="text-[10px] font-bold text-[#e0a96d] uppercase block">Add New Product Category</span>
                   <div className="flex gap-2">
                     <input
@@ -7104,7 +7099,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="e.g. Meitei Cultural Artifacts, Feng Shui..."
                       value={newCategoryInput}
                       onChange={(e) => setNewCategoryInput(e.target.value)}
-                      className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#1c2541] text-white font-bold text-xs"
+                      className="w-full h-10 px-3.5 rounded-xl border border-slate-800 bg-slate-900 text-white font-bold text-xs"
                     />
                     <button
                       type="submit"
@@ -7118,9 +7113,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Active Categories List */}
                 <div className="space-y-2">
                   <span className="text-[10px] font-bold text-[#e0a96d] uppercase block">Active E-Store Categories ({shopCategories.length})</span>
-                  <div className="divide-y divide-[#3a506b]/40 rounded-2xl bg-[#0b132b] border border-[#3a506b]/60 overflow-hidden max-h-60 overflow-y-auto">
+                  <div className="divide-y divide-[#3a506b]/40 rounded-2xl bg-slate-950 border border-slate-800 overflow-hidden max-h-60 overflow-y-auto">
                     {shopCategories.map((cat, idx) => (
-                      <div key={idx} className="p-3 flex items-center justify-between hover:bg-[#1c2541]/40">
+                      <div key={idx} className="p-3 flex items-center justify-between hover:bg-slate-900/40">
                         <div className="flex items-center gap-2 font-bold text-white text-xs">
                           <Tag className="w-3.5 h-3.5 text-[#fbbf24]" />
                           <span>{cat}</span>
@@ -7137,11 +7132,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-2 border-t border-[#3a506b]">
+                <div className="flex justify-end pt-2 border-t border-slate-800">
                   <button
                     type="button"
                     onClick={() => setShowCategoryManagerModal(false)}
-                    className="px-6 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 font-bold text-xs border border-[#3a506b]"
+                    className="px-6 py-2.5 rounded-xl bg-slate-950 text-gray-300 font-bold text-xs border border-slate-800"
                   >
                     Close
                   </button>
@@ -7153,13 +7148,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 4D: E-STORE RETURN & REPLACEMENT REQUESTS */}
           {activeTab === 'shop_returns' && (
             <div className="space-y-6">
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-3xl border gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-slate-200">
                     <RotateCcw className="w-3.5 h-3.5 text-[#d97706]" />
                     E-Shop Return & Replacement Management
                   </div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     Customer Return & Replacement Requests ({returnRequests.length})
                   </h3>
                   <p className="text-xs text-gray-500">
@@ -7216,7 +7211,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* RETURNS TABLE */}
-              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl">
                 {returnRequests.length === 0 ? (
                   <div className="p-12 text-center space-y-3">
                     <RotateCcw className="w-12 h-12 text-gray-300 mx-auto" />
@@ -7227,8 +7222,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                      <thead className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold border-b border-[#fde68a]">
+                    <table className="w-full text-left text-xs font-sans text-slate-900">
+                      <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 uppercase tracking-wider font-extrabold border-b border-slate-200">
                         <tr>
                           <th className="p-4">RMA Ref & Date</th>
                           <th className="p-4">Customer Details</th>
@@ -7271,7 +7266,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               <td className="p-4 space-y-0.5">
                                 <span className="font-bold text-gray-900 block">{req.productTitle}</span>
                                 <span className="font-mono text-[11px] text-gray-600 block">
-                                  Order Ref: <strong className="text-[#0f172a]">{req.orderRef}</strong>
+                                  Order Ref: <strong className="text-slate-900">{req.orderRef}</strong>
                                 </span>
                               </td>
 
@@ -7348,7 +7343,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* RETURN INSPECT & ACTIONS MODAL */}
               {selectedReturnForModal && (
                 <div className="fixed inset-0 z-50 bg-[#0f172a]/70 backdrop-blur-xs flex items-center justify-center p-4">
-                  <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#fde68a] p-6 space-y-5 text-xs text-[#0f172a] shadow-2xl max-h-[90vh] overflow-y-auto">
+                  <div className="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 p-6 space-y-5 text-xs text-slate-900 shadow-2xl max-h-[90vh] overflow-y-auto">
                     <div className="flex justify-between items-center border-b border-gray-200 pb-3">
                       <div className="flex items-center gap-2">
                         <div className="w-8 h-8 rounded-xl bg-amber-100 text-[#b45309] flex items-center justify-center font-bold">
@@ -7372,7 +7367,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       </button>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-[#faf8f5] border border-gray-200">
+                    <div className="grid grid-cols-2 gap-3 p-4 rounded-2xl bg-slate-50 border border-gray-200">
                       <div>
                         <span className="text-gray-500 text-[10px] uppercase font-bold block">Product</span>
                         <strong className="text-gray-900 text-xs">{selectedReturnForModal.productTitle}</strong>
@@ -7488,10 +7483,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5A: EMPANELED ASTROLOGER ACCOUNTS & PROFILES */}
           {activeTab === 'astrologers' && (
-            <div className={`rounded-2xl border shadow-xl p-6 space-y-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
-              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-4 ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
+            <div className={`rounded-2xl border shadow-xl p-6 space-y-6 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-4 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Empaneled Astrologer Accounts & Profiles</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Empaneled Astrologer Accounts & Profiles</h3>
                   <p className={`text-xs font-sans font-medium ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Manage registered Astrologers, generate single-use invite links, or edit profiles</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
@@ -7527,7 +7522,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* ONE-TIME ASTROLOGER SIGN-UP LINK GENERATOR MODAL */}
               {showInviteModal && (
                 <div className="fixed inset-0 z-50 bg-[#0f172a]/70 backdrop-blur-xs flex items-center justify-center p-4">
-                  <div className="bg-white w-full max-w-lg rounded-3xl border border-[#fde68a] p-6 sm:p-7 space-y-5 text-xs text-[#0f172a] shadow-2xl">
+                  <div className="bg-white w-full max-w-lg rounded-3xl border border-slate-200 p-6 sm:p-7 space-y-5 text-xs text-slate-900 shadow-2xl">
                     <div className="flex justify-between items-center border-b border-gray-200 pb-3">
                       <div className="flex items-center gap-2">
                         <div className="w-9 h-9 rounded-xl bg-amber-100 text-[#b45309] flex items-center justify-center font-bold">
@@ -7560,7 +7555,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             placeholder="e.g. Acharya Tomba Sharma"
                             value={inviteName}
                             onChange={(e) => setInviteName(e.target.value)}
-                            className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#faf8f5] text-xs font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
+                            className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-slate-50 text-xs font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
                           />
                         </div>
 
@@ -7574,7 +7569,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               placeholder="e.g. 9862012345"
                               value={invitePhone}
                               onChange={(e) => setInvitePhone(e.target.value)}
-                              className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#faf8f5] text-xs font-mono font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
+                              className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-slate-50 text-xs font-mono font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
                             />
                           </div>
                           <div>
@@ -7587,7 +7582,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               max={30}
                               value={inviteExpiryDays}
                               onChange={(e) => setInviteExpiryDays(Number(e.target.value))}
-                              className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#faf8f5] text-xs font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
+                              className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-slate-50 text-xs font-bold text-gray-900 focus:border-[#d97706] focus:outline-none"
                             />
                           </div>
                         </div>
@@ -7621,7 +7616,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           <label className="block font-bold text-gray-800 text-[11px] mb-1">
                             Generated Invitation URL:
                           </label>
-                          <div className="p-3 rounded-xl bg-gray-100 border border-gray-300 font-mono text-[11px] text-[#0f172a] break-all select-all">
+                          <div className="p-3 rounded-xl bg-gray-100 border border-gray-300 font-mono text-[11px] text-slate-900 break-all select-all">
                             {generatedInviteLink}
                           </div>
                         </div>
@@ -7749,12 +7744,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* ASTROLOGER ACCOUNTS MANAGEMENT TABLE */}
               <div className={`rounded-3xl border overflow-hidden shadow-2xl transition-colors ${
-                theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-white border-slate-300 shadow-lg'
+                theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-white border-slate-300 shadow-lg'
               }`}>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-sans">
                     <thead>
-                      <tr className="bg-[#0f172a] text-[#fbbf24] font-serif font-extrabold uppercase tracking-wider text-xs border-b border-[#3a506b]">
+                      <tr className="bg-[#0f172a] text-[#fbbf24] font-serif font-extrabold uppercase tracking-wider text-xs border-b border-slate-800">
                         <th className="p-4">Astrologer Guru & Handle</th>
                         <th className="p-4">Specialty & Location</th>
                         <th className="p-4">Phone & WhatsApp</th>
@@ -7773,7 +7768,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           <tr key={astro.id} className={`transition-colors ${
                             isOnHold 
                               ? (theme === 'dark' ? 'bg-amber-950/50 border-l-4 border-l-amber-500' : 'bg-amber-100/80 border-l-4 border-l-amber-600')
-                              : (theme === 'dark' ? 'hover:bg-[#1c2541] odd:bg-[#0b132b] even:bg-[#0f172a]/60' : 'hover:bg-amber-50/80 odd:bg-white even:bg-slate-50')
+                              : (theme === 'dark' ? 'hover:bg-slate-900 odd:bg-slate-950 even:bg-[#0f172a]/60' : 'hover:bg-amber-50/80 odd:bg-white even:bg-slate-50')
                           }`}>
                             {/* 1. Guru Name & Handle */}
                             <td className="p-4 cursor-pointer" onClick={() => {
@@ -7950,10 +7945,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5B: REGISTER / EDIT EMPANELED ASTROLOGER ACCOUNT & PASSWORD */}
           {activeTab === 'add_astro' && (
-            <div className={`rounded-3xl border shadow-xl p-6 sm:p-8 space-y-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
-              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-4 ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
+            <div className={`rounded-3xl border shadow-xl p-6 sm:p-8 space-y-6 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-4 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     {editingAstroId ? 'Edit Empaneled Jyotish Guru Account' : 'Register New Empaneled Jyotish Guru'}
                   </h3>
                   <p className="text-xs text-gray-500 font-sans font-medium">
@@ -7972,17 +7967,17 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <form onSubmit={(e) => {
                 handleRegisterNewAstro(e);
                 setActiveTab('astrologers');
-              }} className={`p-6 sm:p-8 rounded-3xl space-y-7 font-sans text-xs shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b] text-white' : 'bg-[#fefcf6] border-[#fde68a] text-[#0f172a]'}`}>
+              }} className={`p-6 sm:p-8 rounded-3xl space-y-7 font-sans text-xs shadow-sm transition-colors ${theme === 'dark' ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 
                 {/* SECTION 1: PERSONAL & CONTACT INFORMATION */}
                 <div className="space-y-4">
-                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-slate-800' : 'text-[#b45309] border-slate-200'}`}>
                     <Users className="w-5 h-5 text-[#d97706]" />
                     <span>1. Personal Particulars & Contact Information</span>
                   </h4>
 
                   {/* PROFILE PHOTO / AVATAR UPLOADER */}
-                  <div className={`flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl border shadow-xs transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-[#fde68a]'}`}>
+                  <div className={`flex flex-col sm:flex-row items-center gap-5 p-4 rounded-2xl border shadow-xs transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-slate-200'}`}>
                     <div className="relative shrink-0">
                       <img
                         src={newAstroForm.avatar || 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=300&q=80'}
@@ -7994,7 +7989,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                     <div className="flex-1 space-y-2 text-center sm:text-left">
                       <div>
-                        <h5 className="font-bold text-[#0f172a] text-xs">Jyotish Guru Profile Photo / Avatar</h5>
+                        <h5 className="font-bold text-slate-900 text-xs">Jyotish Guru Profile Photo / Avatar</h5>
                         <p className="text-[11px] text-gray-500">Upload a portrait photo or paste an image URL to display on the portal & website listing</p>
                       </div>
 
@@ -8045,7 +8040,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. Acharya Tombi Sharma"
                         value={newAstroForm.name}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, name: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -8133,15 +8128,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. guru.tombi@kangleiastro.com"
                         value={newAstroForm.email}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, email: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* SECTION 2: SPECIALTY & QUALIFICATIONS */}
-                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
+                <div className="space-y-4 pt-2 border-t border-slate-200">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-slate-800' : 'text-[#b45309] border-slate-200'}`}>
                     <Award className="w-5 h-5 text-[#d97706]" />
                     <span>2. Astrological Specialty & Qualifications</span>
                   </h4>
@@ -8157,7 +8152,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. Kuthi Yengba, Dasha & Vedic Remedies"
                         value={newAstroForm.specialty}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, specialty: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none mb-2"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none mb-2"
                       />
                       
                       {/* Clickable Quick Specialty Tag Badges */}
@@ -8198,8 +8193,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* SECTION 3: FULL RESIDENTIAL & MANIPUR LOCATION ADDRESS */}
-                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
+                <div className="space-y-4 pt-2 border-t border-slate-200">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-slate-800' : 'text-[#b45309] border-slate-200'}`}>
                     <FileText className="w-5 h-5 text-[#d97706]" />
                     <span>3. Residential Address & Location Details</span>
                   </h4>
@@ -8214,7 +8209,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. Uripok Bachaspati Leikai"
                         value={newAstroForm.streetLane}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, streetLane: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-medium text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-medium text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -8228,7 +8223,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. Imphal West"
                         value={newAstroForm.cityDistrict}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, cityDistrict: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -8241,15 +8236,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="795001"
                         value={newAstroForm.pincode}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, pincode: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
                 </div>
 
                 {/* SECTION 4: FINANCIAL PAYOUT & BANK / UPI DETAILS */}
-                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <div className="flex flex-wrap items-center justify-between border-b border-[#fde68a] pb-2 gap-2">
+                <div className="space-y-4 pt-2 border-t border-slate-200">
+                  <div className="flex flex-wrap items-center justify-between border-b border-slate-200 pb-2 gap-2">
                     <h4 className="font-serif font-bold text-lg text-[#b45309] flex items-center gap-2">
                       <DollarSign className="w-5 h-5 text-green-600" />
                       <span>4. Financial Payout & Bank Settlement Details</span>
@@ -8304,7 +8299,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. State Bank of India (SBI)"
                         value={newAstroForm.bankName}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, bankName: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -8317,7 +8312,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. 30847291823"
                         value={newAstroForm.accountNo}
                         onChange={(e) => setNewAstroForm({ ...newAstroForm, accountNo: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -8337,8 +8332,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* SECTION 5: EMPANELMENT PLAN TIER & TOOL ACCESS PERMISSIONS */}
-                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
+                <div className="space-y-4 pt-2 border-t border-slate-200">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-slate-800' : 'text-[#b45309] border-slate-200'}`}>
                     <ShieldCheck className="w-5 h-5 text-[#d97706]" />
                     <span>5. Empanelment Plan Tier & Tool Access Permissions</span>
                   </h4>
@@ -8367,11 +8362,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               onChange={() => setNewAstroForm({ ...newAstroForm, planTier: tier.id as any })}
                               className="text-[#d97706] focus:ring-[#d97706]"
                             />
-                            <span className="font-serif font-bold text-sm text-[#0f172a]">{tier.title}</span>
+                            <span className="font-serif font-bold text-sm text-slate-900">{tier.title}</span>
                           </div>
                           <span className="text-[11px] font-extrabold text-[#b45309] block ml-5">{tier.split}</span>
                         </div>
-                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white border border-[#fde68a] text-amber-900">
+                        <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-white border border-slate-200 text-amber-900">
                           {tier.badge}
                         </span>
                       </label>
@@ -8427,8 +8422,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* SECTION 6: PORTAL ACCESS & ACCOUNT STATUS */}
-                <div className="space-y-4 pt-2 border-t border-[#fde68a]">
-                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-[#3a506b]' : 'text-[#b45309] border-[#fde68a]'}`}>
+                <div className="space-y-4 pt-2 border-t border-slate-200">
+                  <h4 className={`font-serif font-bold text-lg border-b pb-2 flex items-center gap-2 ${theme === 'dark' ? 'text-[#fbbf24] border-slate-800' : 'text-[#b45309] border-slate-200'}`}>
                     <Lock className="w-5 h-5 text-[#d97706]" />
                     <span>6. Portal Login Security & Account Status</span>
                   </h4>
@@ -8445,7 +8440,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="••••••••"
                           value={newAstroForm.password}
                           onChange={(e) => setNewAstroForm({ ...newAstroForm, password: e.target.value })}
-                          className="w-full h-11 pl-3.5 pr-10 rounded-xl border border-gray-300 bg-[#eff6ff] text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                          className="w-full h-11 pl-3.5 pr-10 rounded-xl border border-gray-300 bg-[#eff6ff] text-slate-900 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                         />
                         <button
                           type="button"
@@ -8489,11 +8484,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-[#fde68a]">
+                <div className="flex justify-end gap-3 pt-4 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={() => setActiveTab('astrologers')}
-                    className={`px-6 py-3 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-gray-300 hover:bg-[#15203b]' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                    className={`px-6 py-3 rounded-xl border text-xs font-bold transition-colors cursor-pointer ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-gray-300 hover:bg-[#15203b]' : 'bg-white border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                   >
                     Cancel
                   </button>
@@ -8510,9 +8505,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5C: JYOTISH GURU FULL PROFILE DOSSIER & PASSWORD UPDATE */}
           {activeTab === 'astro_profile' && selectedAstrologer && (
-            <div className="space-y-6 text-[#0f172a] font-sans">
+            <div className="space-y-6 text-slate-900 font-sans">
               {/* TOP NAVIGATION & HEADER */}
-              <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-[#f3e8d2] shadow-xl">
+              <div className="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xl">
                 <div className="flex items-center gap-4">
                   <button
                     type="button"
@@ -8522,7 +8517,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     ← Back to All Jyotishs
                   </button>
                   <div>
-                    <h3 className="font-serif font-bold text-xl text-[#0f172a]">Jyotish Guru Profile Dossier</h3>
+                    <h3 className="font-serif font-bold text-xl text-slate-900">Jyotish Guru Profile Dossier</h3>
                     <p className="text-xs text-gray-500 font-medium">Complete registered credentials, contact information, plan tier & tools permissions</p>
                   </div>
                 </div>
@@ -8571,7 +8566,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* MAIN PROFILE DOSSIER CARD */}
-              <div className="bg-white rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden">
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl overflow-hidden">
                 {/* BANNER HEADER */}
                 <div className="bg-gradient-to-r from-[#0f172a] via-[#1e293b] to-[#0b132b] p-6 sm:p-8 text-white relative">
                   <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
@@ -8618,10 +8613,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* DETAILED INFORMATION GRID */}
-                <div className="p-6 sm:p-8 space-y-8 bg-[#fefcf6]">
+                <div className="p-6 sm:p-8 space-y-8 bg-white">
                   {/* ROW 1: CONTACT & LOCATION DOSSIER */}
                   <div className="space-y-3">
-                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-slate-200 pb-2 flex items-center gap-2">
                       <Users className="w-4 h-4 text-[#d97706]" />
                       <span>Contact & Manipur Location Particulars</span>
                     </h4>
@@ -8659,7 +8654,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   {/* ROW 2: LOGIN CREDENTIALS & PASSWORD UPDATE BOX */}
                   <div className="space-y-3">
-                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-slate-200 pb-2 flex items-center gap-2">
                       <Lock className="w-4 h-4 text-[#d97706]" />
                       <span>Portal Login Credentials & Security Settings</span>
                     </h4>
@@ -8690,7 +8685,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   {/* ROW 3: FINANCIAL PAYOUT & BANK ACCOUNT DETAILS */}
                   <div className="space-y-3">
-                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-slate-200 pb-2 flex items-center gap-2">
                       <DollarSign className="w-4 h-4 text-green-600" />
                       <span>Financial Payout & Bank Settlement Details</span>
                     </h4>
@@ -8721,7 +8716,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                   {/* ROW 4: PLAN TIER & TOOL ACCESS PERMISSIONS */}
                   <div className="space-y-3">
-                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-[#fde68a] pb-2 flex items-center gap-2">
+                    <h4 className="font-serif font-bold text-base text-[#b45309] border-b border-slate-200 pb-2 flex items-center gap-2">
                       <ShieldCheck className="w-4 h-4 text-[#d97706]" />
                       <span>Empanelment Subscription Plan & Tools Access Permissions</span>
                     </h4>
@@ -8729,7 +8724,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                       <div className="p-4 rounded-2xl bg-amber-100/60 border border-amber-300 space-y-1">
                         <span className="text-[10px] font-bold text-amber-900 uppercase tracking-wider block">Empanelment Subscription Plan</span>
-                        <span className="font-serif font-bold text-base text-[#0f172a] block">{selectedAstrologer.planTier || 'ADVANCE'} GURU</span>
+                        <span className="font-serif font-bold text-base text-slate-900 block">{selectedAstrologer.planTier || 'ADVANCE'} GURU</span>
                         <span className="text-[11px] font-extrabold text-[#b45309] block">
                           {selectedAstrologer.planTier === 'PRO' ? '90% Payout Share' : selectedAstrologer.planTier === 'BASIC' ? '70% Payout Share' : '80% Payout Share'}
                         </span>
@@ -8749,7 +8744,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   {/* BOTTOM ACTION BUTTONS BAR */}
-                  <div className="flex flex-wrap justify-between items-center pt-6 border-t border-[#fde68a] gap-4">
+                  <div className="flex flex-wrap justify-between items-center pt-6 border-t border-slate-200 gap-4">
                     <button
                       type="button"
                       onClick={() => setActiveTab('astrologers')}
@@ -8820,11 +8815,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* PASSWORD UPDATE MODAL POPUP */}
           {showPasswordUpdateModal && selectedAstrologer && (
             <div className="fixed inset-0 z-50 bg-[#0f172a]/60 backdrop-blur-xs flex items-center justify-center p-4">
-              <div className="bg-white w-full max-w-md rounded-3xl border border-[#f3e8d2] p-6 space-y-4 text-xs font-sans text-[#0f172a] shadow-2xl relative">
-                <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
+              <div className="bg-white w-full max-w-md rounded-3xl border border-slate-200 p-6 space-y-4 text-xs font-sans text-slate-900 shadow-2xl relative">
+                <div className="flex justify-between items-center pb-3 border-b border-slate-200">
                   <div className="flex items-center gap-2">
                     <Lock className="w-5 h-5 text-blue-600" />
-                    <h4 className="font-serif font-bold text-lg text-[#0f172a]">Update Login Password</h4>
+                    <h4 className="font-serif font-bold text-lg text-slate-900">Update Login Password</h4>
                   </div>
                   <button type="button" onClick={() => setShowPasswordUpdateModal(false)} className="text-gray-400 hover:text-gray-600 p-1 cursor-pointer">
                     <X className="w-5 h-5" />
@@ -8846,12 +8841,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="Enter new password (e.g. guru2026)"
                       value={newPasswordInput}
                       onChange={(e) => setNewPasswordInput(e.target.value)}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#eff6ff] text-[#0f172a] font-mono font-bold text-xs focus:border-blue-600 focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#eff6ff] text-slate-900 font-mono font-bold text-xs focus:border-blue-600 focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={() => setShowPasswordUpdateModal(false)}
@@ -8876,8 +8871,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* TOP RATED ASTROLOGERS SECTION CMS FORM */}
-              <div className={`p-6 rounded-3xl border space-y-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
-                <div className="flex flex-wrap justify-between items-center gap-4 border-b border-[#fde68a] pb-3">
+              <div className={`p-6 rounded-3xl border space-y-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+                <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-200 pb-3">
                   <div>
                     <h3 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-[#d97706]" />
@@ -8897,7 +8892,80 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* HOMEPAGE VISIBILITY STATUS & QUICK TOGGLE BANNER */}
+                <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
+                  astrologerSectionSettings.showSectionOnHome 
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-950' 
+                    : 'bg-amber-50/90 border-amber-300/80 text-amber-950'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 shadow-xs ${
+                      astrologerSectionSettings.showSectionOnHome ? 'bg-emerald-600 text-white' : 'bg-amber-600 text-white'
+                    }`}>
+                      {astrologerSectionSettings.showSectionOnHome ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-bold text-sm">Homepage Section Status</h4>
+                        <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wide border ${
+                          astrologerSectionSettings.showSectionOnHome 
+                            ? 'bg-emerald-100 text-emerald-800 border-emerald-300' 
+                            : 'bg-amber-100 text-amber-900 border-amber-300'
+                        }`}>
+                          {astrologerSectionSettings.showSectionOnHome ? '● Active on Homepage' : '○ Hidden on Homepage'}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-0.5">
+                        {astrologerSectionSettings.showSectionOnHome 
+                          ? 'This section is currently visible to visitors on the homepage.' 
+                          : 'This section is currently HIDDEN on the homepage (convenient when starting with 2 astrologers).'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const updated = { ...astrologerSectionSettings, showSectionOnHome: !astrologerSectionSettings.showSectionOnHome };
+                        setAstrologerSectionSettings(updated);
+                      }}
+                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-2 ${
+                        astrologerSectionSettings.showSectionOnHome
+                          ? 'bg-white text-red-700 border border-red-200 hover:bg-red-50'
+                          : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                      }`}
+                    >
+                      {astrologerSectionSettings.showSectionOnHome ? (
+                        <>
+                          <EyeOff className="w-4 h-4" />
+                          <span>Hide on Homepage</span>
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4" />
+                          <span>Show on Homepage</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
+                      Homepage Display *
+                    </label>
+                    <select
+                      value={astrologerSectionSettings.showSectionOnHome ? 'show' : 'hide'}
+                      onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, showSectionOnHome: e.target.value === 'show' })}
+                      className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
+                    >
+                      <option value="hide">🙈 Hidden on Homepage</option>
+                      <option value="show">👁️ Visible on Homepage</option>
+                    </select>
+                  </div>
+
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Section Title Prefix *
@@ -8906,7 +8974,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       type="text"
                       value={astrologerSectionSettings.title}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, title: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -8918,7 +8986,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       type="text"
                       value={astrologerSectionSettings.highlightText}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, highlightText: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -8930,13 +8998,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       type="text"
                       value={astrologerSectionSettings.subtitleTagline}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, subtitleTagline: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-700 text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-700 text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* Homepage & Astrologers Directory Rate & Action Button Controls */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-[#fde68a]">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-3 border-t border-slate-200">
                   <div>
                     <label className="block text-[10px] font-bold uppercase tracking-wider text-[#b45309] mb-1">
                       Rate Pricing Mode (Home & Astrologers Page) *
@@ -8944,7 +9012,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <select
                       value={astrologerSectionSettings.rateMode || 'fixed'}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, rateMode: e.target.value as any })}
-                      className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
+                      className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
                       <option value="fixed">🏷️ Fixed Rate (e.g. ₹499 Fixed Session)</option>
                       <option value="per_minute">⏱️ Per-Minute Rate (e.g. ₹35/min)</option>
@@ -8963,7 +9031,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       max={10000}
                       value={astrologerSectionSettings.defaultFixedRate || 499}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, defaultFixedRate: Number(e.target.value) })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -8974,7 +9042,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <select
                       value={astrologerSectionSettings.actionButtonType || 'both'}
                       onChange={(e) => setAstrologerSectionSettings({ ...astrologerSectionSettings, actionButtonType: e.target.value as any })}
-                      className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
+                      className="w-full h-11 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none cursor-pointer"
                     >
                       <option value="both">💬 Chat & 📞 Call (Dual Buttons Side-by-Side)</option>
                       <option value="chat_only">💬 Chat Only (Single Full-Width Button)</option>
@@ -8985,8 +9053,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* CATEGORY MENU CMS CONTROLS FOR /astrologers */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 shadow-md">
-                <div className="flex flex-wrap justify-between items-center gap-4 border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-4 shadow-md">
+                <div className="flex flex-wrap justify-between items-center gap-4 border-b border-slate-200 pb-3">
                   <div>
                     <h3 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
                       <Tag className="w-5 h-5 text-[#d97706]" />
@@ -9019,7 +9087,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* Add Category Form & Quick Add Suggestions */}
-                <div className="bg-[#fefcf6] p-4 rounded-2xl border border-[#fde68a] space-y-3">
+                <div className="bg-white p-4 rounded-2xl border border-slate-200 space-y-3">
                   <form onSubmit={handleAddAstroCategory} className="flex flex-col sm:flex-row items-center gap-2">
                     <div className="relative flex-1 w-full">
                       <Tag className="w-4 h-4 text-amber-500 absolute left-3.5 top-3.5" />
@@ -9084,7 +9152,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       return (
                         <div
                           key={`${cat}-${idx}`}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white border border-[#fde68a] shadow-xs text-xs group hover:border-[#d97706] transition-all"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl bg-white border border-slate-200 shadow-xs text-xs group hover:border-[#d97706] transition-all"
                         >
                           {/* Order Buttons */}
                           <div className="flex items-center gap-0.5">
@@ -9120,7 +9188,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                   if (e.key === 'Escape') setEditingCategoryIdx(null);
                                 }}
                                 autoFocus
-                                className="w-24 h-6 px-1.5 rounded border border-[#d97706] text-xs font-bold text-[#0f172a] focus:outline-none"
+                                className="w-24 h-6 px-1.5 rounded border border-[#d97706] text-xs font-bold text-slate-900 focus:outline-none"
                               />
                               <button
                                 type="button"
@@ -9134,7 +9202,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           ) : (
                             <span
                               onClick={() => handleStartEditCategory(idx, cat)}
-                              className="font-bold text-[#0f172a] px-1 cursor-pointer hover:text-[#b45309]"
+                              className="font-bold text-slate-900 px-1 cursor-pointer hover:text-[#b45309]"
                               title="Click to rename"
                             >
                               {cat}
@@ -9175,7 +9243,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   const isFeaturedOnHome = astro.showOnHome !== false;
 
                   return (
-                    <div key={astro.id} className="p-5 rounded-3xl bg-white border border-[#fde68a] space-y-3 font-sans relative flex flex-col justify-between shadow-md">
+                    <div key={astro.id} className="p-5 rounded-3xl bg-white border border-slate-200 space-y-3 font-sans relative flex flex-col justify-between shadow-md">
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div className="flex items-center gap-3">
@@ -9187,7 +9255,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               />
                             </div>
                             <div>
-                              <h4 className="font-bold text-[#0f172a] text-base leading-tight">{astro.name}</h4>
+                              <h4 className="font-bold text-slate-900 text-base leading-tight">{astro.name}</h4>
                               <p className="text-[11px] text-[#b45309] font-mono mt-0.5 font-bold">{astro.badge || 'Verified'}</p>
                             </div>
                           </div>
@@ -9208,9 +9276,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                         <p className="text-xs text-gray-600 line-clamp-2">{astro.specialty || (astro.specialties && astro.specialties.join(' · '))}</p>
 
-                        <div className="pt-3 border-t border-[#fde68a] space-y-2 text-xs">
+                        <div className="pt-3 border-t border-slate-200 space-y-2 text-xs">
                           {/* Rates Control: Fixed Rate & Per Minute Rate */}
-                          <div className="grid grid-cols-2 gap-2 bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a]">
+                          <div className="grid grid-cols-2 gap-2 bg-white p-2.5 rounded-xl border border-slate-200">
                             <div>
                               <span className="text-[10px] text-gray-700 font-bold block mb-1">Fixed Fee (₹):</span>
                               <div className="flex items-center gap-1">
@@ -9243,7 +9311,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           </div>
 
                           {/* Call / Chat Action Mode Control */}
-                          <div className="bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a]">
+                          <div className="bg-white p-2.5 rounded-xl border border-slate-200">
                             <div className="flex items-center justify-between mb-1">
                               <span className="text-[10px] text-gray-700 font-bold">Action Mode (Call / Chat):</span>
                               <span className="text-[9px] text-gray-400">
@@ -9268,7 +9336,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           </div>
 
                           {/* Directory Category Tags for this Astrologer */}
-                          <div className="bg-[#fefcf6] p-2.5 rounded-xl border border-[#fde68a] space-y-1.5">
+                          <div className="bg-white p-2.5 rounded-xl border border-slate-200 space-y-1.5">
                             <div className="flex items-center justify-between">
                               <span className="text-[10px] text-gray-700 font-bold flex items-center gap-1">
                                 <Tag className="w-3 h-3 text-[#d97706]" />
@@ -9305,13 +9373,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <button
                               type="button"
                               onClick={() => handleOpenToolModal(astro)}
-                              className="w-full py-2 px-3 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] border border-[#fde68a] text-[#b45309] font-bold text-xs flex items-center justify-between transition-colors cursor-pointer"
+                              className="w-full py-2 px-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-[#fde68a] border border-slate-200 text-[#b45309] font-bold text-xs flex items-center justify-between transition-colors cursor-pointer"
                             >
                               <div className="flex items-center gap-1.5">
                                 <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
                                 <span>Tool Access Permissions</span>
                               </div>
-                              <span className="px-2 py-0.5 rounded-full bg-white text-[#b45309] text-[10px] font-extrabold border border-[#fde68a]">
+                              <span className="px-2 py-0.5 rounded-full bg-white text-[#b45309] text-[10px] font-extrabold border border-slate-200">
                                 {astro.allowedTools ? astro.allowedTools.length : 19}/19 Allowed
                               </span>
                             </button>
@@ -9327,10 +9395,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5B: ASTROLOGER WALLETS & PAYOUT DISBURSEMENT */}
           {activeTab === 'astro_payouts' && (
-            <div className={`rounded-2xl border shadow-md p-6 space-y-6 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-[#faf8f4]' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
-              <div className={`flex justify-between items-center pb-4 border-b ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
+            <div className={`rounded-2xl border shadow-md p-6 space-y-6 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className={`flex justify-between items-center pb-4 border-b ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-[#faf8f4]' : 'text-[#0f172a]'}`}>Astrologer Wallet Balances & Commission Payouts</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Astrologer Wallet Balances & Commission Payouts</h3>
                   <p className="text-xs text-[#5c7a99] font-sans">Monitor online astrologers, consultation counts, wallet balances, pending payout requests, and process UPI disbursements</p>
                 </div>
               </div>
@@ -9338,7 +9406,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* 4 KPI SUMMARY CARDS */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className={`p-4 rounded-2xl border ${
-                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-amber-50/70 border-amber-200 text-slate-900'
+                  theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-amber-50/70 border-amber-200 text-slate-900'
                 }`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider block text-amber-400">Total Wallet Balance Pending</span>
                   <div className="font-mono font-extrabold text-2xl text-amber-600 dark:text-[#fbbf24] mt-1">
@@ -9348,7 +9416,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 <div className={`p-4 rounded-2xl border ${
-                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-purple-50/70 border-purple-200 text-slate-900'
+                  theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-purple-50/70 border-purple-200 text-slate-900'
                 }`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider block text-purple-300">Payout Requests Submitted</span>
                   <div className="font-mono font-extrabold text-2xl text-purple-600 dark:text-purple-300 mt-1">
@@ -9358,7 +9426,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 <div className={`p-4 rounded-2xl border ${
-                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-emerald-50/70 border-emerald-200 text-slate-900'
+                  theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-emerald-50/70 border-emerald-200 text-slate-900'
                 }`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider block text-green-400">Total Disbursed (Paid Out)</span>
                   <div className="font-mono font-extrabold text-2xl text-green-600 dark:text-green-400 mt-1">
@@ -9368,7 +9436,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 <div className={`p-4 rounded-2xl border ${
-                  theme === 'dark' ? 'bg-[#0b132b] border-[#3a506b]' : 'bg-sky-50/70 border-sky-200 text-slate-900'
+                  theme === 'dark' ? 'bg-slate-950 border-slate-800' : 'bg-sky-50/70 border-sky-200 text-slate-900'
                 }`}>
                   <span className="text-[10px] font-bold uppercase tracking-wider block text-sky-300">Total Gross Astrologer Earnings</span>
                   <div className="font-mono font-extrabold text-2xl text-sky-600 dark:text-sky-300 mt-1">
@@ -9379,11 +9447,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* ASTROLOGERS FINANCIAL PAYOUT TABLE */}
-              <div className="rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl bg-white">
+              <div className="rounded-3xl border border-slate-200 overflow-hidden shadow-xl bg-white">
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-xs font-sans">
                     <thead>
-                      <tr className="bg-[#fef3c7] text-[#78350f] font-serif font-extrabold uppercase tracking-wider text-xs border-b border-[#fde68a]">
+                      <tr className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-serif font-extrabold uppercase tracking-wider text-xs border-b border-slate-200">
                         <th className="p-4">Online Astrologer Guru</th>
                         <th className="p-4">Specialty & Phone</th>
                         <th className="p-4 text-center">Readings Done</th>
@@ -9394,20 +9462,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-right">Admin Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#fde68a] text-[#0f172a]">
+                    <tbody className="divide-y divide-slate-200 text-slate-900">
                       {astrologers.map((astro) => {
                         const grossEarn = astro.totalEarnings || (astro.completedCount * 350 + astro.pendingPayout);
                         const paidOut = astro.totalPaidOut || Math.max(0, grossEarn - astro.pendingPayout);
                         const isRequested = astro.payoutStatus === 'REQUESTED' || astro.pendingPayout > 0;
 
                         return (
-                          <tr key={astro.id} className="transition-colors hover:bg-[#fefcf6] odd:bg-white even:bg-[#fefcf6]">
+                          <tr key={astro.id} className="transition-colors hover:bg-white odd:bg-white even:bg-white">
                             <td className="p-4">
-                              <div className="font-serif font-extrabold text-base text-[#0f172a]">
+                              <div className="font-serif font-extrabold text-base text-slate-900">
                                 {astro.name}
                               </div>
                               <div className="inline-block mt-1">
-                                <span className="text-xs font-mono font-extrabold text-[#b45309] bg-[#fef3c7] border border-[#fde68a] px-2.5 py-0.5 rounded-md shadow-xs">
+                                <span className="text-xs font-mono font-extrabold text-[#b45309] bg-amber-50 dark:bg-amber-950/40 border border-slate-200 px-2.5 py-0.5 rounded-md shadow-xs">
                                   @{astro.username || astro.name.toLowerCase().replace(/[^a-z0-9]/g, '_')}
                                 </span>
                               </div>
@@ -9432,7 +9500,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             </td>
 
                             <td className="p-4 text-center font-mono font-bold">
-                              <span className="px-3 py-1.5 rounded-full bg-[#fef3c7] text-[#b45309] border border-[#fde68a] font-extrabold text-xs shadow-xs">
+                              <span className="px-3 py-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] border border-slate-200 font-extrabold text-xs shadow-xs">
                                 {astro.completedCount} Consultations
                               </span>
                             </td>
@@ -9445,7 +9513,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               ₹{paidOut.toLocaleString()}
                             </td>
 
-                            <td className="p-4 font-mono font-extrabold text-base text-[#b45309] bg-[#fef3c7] px-3 py-2 rounded-xl border border-[#fde68a]">
+                            <td className="p-4 font-mono font-extrabold text-base text-[#b45309] bg-amber-50 dark:bg-amber-950/40 px-3 py-2 rounded-xl border border-slate-200">
                               ₹{astro.pendingPayout.toLocaleString()}
                             </td>
 
@@ -9495,13 +9563,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 5C: ASTROLOGER ASSIGN LIST (DEDICATED VIEW) */}
           {activeTab === 'astro_assign_list' && (
-            <div className={`p-6 sm:p-8 rounded-3xl border shadow-xl space-y-6 text-left font-sans transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
-              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-3 ${theme === 'dark' ? 'border-[#3a506b]/40' : 'border-[#fde68a]'}`}>
+            <div className={`p-6 sm:p-8 rounded-3xl border shadow-xl space-y-6 text-left font-sans transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+              <div className={`flex flex-wrap justify-between items-center pb-4 border-b gap-3 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                 <div>
-                  <span className="px-3.5 py-1 rounded-full bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase tracking-wider border border-[#fde68a] inline-block mb-1">
+                  <span className="px-3.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] font-extrabold text-[10px] uppercase tracking-wider border border-slate-200 inline-block mb-1">
                     Guru & Jyotish Dispatching
                   </span>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Astrologers Assigned Orders List</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Astrologers Assigned Orders List</h3>
                   <p className="text-xs text-gray-500">Track Kuthi, Numit Yengba, and Matching orders assigned to empaneled Gurus</p>
                 </div>
                 <button
@@ -9519,21 +9587,21 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* KPI Stat Pills */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200">
                   <span className="text-[10px] font-bold text-gray-500 uppercase block">Total Assigned Orders</span>
                   <div className="text-2xl font-black text-[#b45309] font-mono mt-1">
                     {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length}
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200">
                   <span className="text-[10px] font-bold text-gray-500 uppercase block">Pending Analysis</span>
                   <div className="text-2xl font-black text-amber-600 font-mono mt-1">
                     {orders.filter(o => (o.assignedAstrologerId || o.status === 'ASSIGNED') && o.status !== 'COMPLETED').length}
                   </div>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a]">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200">
                   <span className="text-[10px] font-bold text-gray-500 uppercase block">Reports Received & Delivered</span>
                   <div className="text-2xl font-black text-green-600 font-mono mt-1">
                     {orders.filter(o => o.status === 'COMPLETED' || o.reportReceivedFromAstro).length}
@@ -9542,9 +9610,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* ASSIGNED ORDERS TABLE */}
-              <div className="rounded-2xl border border-[#fde68a] overflow-hidden shadow-xs">
+              <div className="rounded-2xl border border-slate-200 overflow-hidden shadow-xs">
                 <table className="w-full text-left text-xs font-sans">
-                  <thead className="bg-[#fef3c7] text-[#78350f] font-serif font-bold uppercase tracking-wider border-b border-[#fde68a]">
+                  <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-serif font-bold uppercase tracking-wider border-b border-slate-200">
                     <tr>
                       <th className="p-3.5">Order Ref & Service</th>
                       <th className="p-3.5">Client Particulars</th>
@@ -9553,7 +9621,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       <th className="p-3.5 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#fde68a] bg-white">
+                  <tbody className="divide-y divide-slate-200 bg-white">
                     {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length === 0 ? (
                       <tr>
                         <td colSpan={5} className="p-8 text-center text-gray-400 font-bold">
@@ -9562,13 +9630,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       </tr>
                     ) : (
                       orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').map((o) => (
-                        <tr key={o.id} className="hover:bg-[#fefcf6]">
+                        <tr key={o.id} className="hover:bg-white">
                           <td className="p-3.5">
                             <span className="font-mono font-bold text-[#b45309] block">{o.orderRef}</span>
                             <span className="text-gray-600 font-bold text-[11px]">{o.serviceType}</span>
                           </td>
                           <td className="p-3.5">
-                            <span className="font-bold text-[#0f172a] block">{o.clientName} ({o.sex})</span>
+                            <span className="font-bold text-slate-900 block">{o.clientName} ({o.sex})</span>
                             <span className="text-gray-500 font-mono text-[10px]">{o.whatsappNo}</span>
                           </td>
                           <td className="p-3.5">
@@ -9581,7 +9649,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
                               o.status === 'COMPLETED'
                                 ? 'bg-green-100 text-green-700 border-green-200'
-                                : 'bg-[#fef3c7] text-[#b45309] border-[#fde68a]'
+                                : 'bg-amber-50 dark:bg-amber-950/40 text-[#b45309] border-slate-200'
                             }`}>
                               {o.status === 'COMPLETED' ? '✓ Completed' : '⏳ In Analysis'}
                             </span>
@@ -9611,8 +9679,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* TOP CARD: ADD NEW SERVICE PACKAGE FORM */}
-              <div className={`p-6 rounded-3xl border shadow-md space-y-5 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
-                <div className={`flex flex-wrap items-center justify-between gap-4 border-b pb-4 ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
+              <div className={`p-6 rounded-3xl border shadow-md space-y-5 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+                <div className={`flex flex-wrap items-center justify-between gap-4 border-b pb-4 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center font-bold shadow-md">
                       <Plus className="w-5 h-5" />
@@ -9630,7 +9698,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <button
                     type="button"
                     onClick={() => setShowAddServiceModal(true)}
-                    className="px-5 py-2 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] font-bold text-xs border border-[#fde68a] transition-all cursor-pointer flex items-center gap-1.5"
+                    className="px-5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-[#fde68a] text-[#b45309] font-bold text-xs border border-slate-200 transition-all cursor-pointer flex items-center gap-1.5"
                   >
                     <Plus className="w-4 h-4 text-[#d97706]" />
                     <span>Open Add Modal</span>
@@ -9649,7 +9717,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. Manglik Dasha & Marriage Compatibility Audit"
                         value={newServiceForm.title}
                         onChange={(e) => setNewServiceForm({ ...newServiceForm, title: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -9662,7 +9730,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. POPULAR / SPECIAL"
                         value={newServiceForm.badge}
                         onChange={(e) => setNewServiceForm({ ...newServiceForm, badge: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs uppercase focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-extrabold text-xs uppercase focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -9678,7 +9746,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. ₹1,499"
                         value={newServiceForm.price}
                         onChange={(e) => setNewServiceForm({ ...newServiceForm, price: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-[#b45309] font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -9692,7 +9760,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. 900"
                         value={newServiceForm.astroPayoutFee}
                         onChange={(e) => setNewServiceForm({ ...newServiceForm, astroPayoutFee: parseInt(e.target.value) || 0 })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-700 font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-emerald-700 font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -9707,7 +9775,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="Describe what the client receives in this service package..."
                       value={newServiceForm.description}
                       onChange={(e) => setNewServiceForm({ ...newServiceForm, description: e.target.value })}
-                      className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none font-medium"
+                      className="w-full p-3 rounded-xl border border-gray-300 bg-white text-slate-900 text-xs focus:border-[#d97706] focus:outline-none font-medium"
                     />
                   </div>
 
@@ -9721,7 +9789,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. Book Consultation"
                         value={newServiceForm.cta}
                         onChange={(e) => setNewServiceForm({ ...newServiceForm, cta: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -9734,7 +9802,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. /matching or /booking"
                         value={newServiceForm.link}
                         onChange={(e) => setNewServiceForm({ ...newServiceForm, link: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-blue-700 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -9752,8 +9820,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* BOTTOM CARD: ACTIVE SERVICE CATALOG & RATE MATRIX */}
-              <div className="bg-white rounded-3xl border border-[#fde68a] shadow-md p-6 space-y-6 text-[#0f172a]">
-                <div className="flex justify-between items-center pb-4 border-b border-[#fde68a]">
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-md p-6 space-y-6 text-slate-900">
+                <div className="flex justify-between items-center pb-4 border-b border-slate-200">
                   <div>
                     <h3 className="font-serif font-bold text-2xl text-[#b45309]">Active Service Rate Matrix & Sub-Services ({services.length})</h3>
                     <p className="text-xs text-gray-500 font-sans">Manage service pricing, astrologer payouts, platform commission splits, and specific sub-service options</p>
@@ -9771,7 +9839,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs font-sans">
                     <thead>
-                      <tr className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold text-[10px] border-b border-[#fde68a]">
+                      <tr className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 uppercase tracking-wider font-extrabold text-[10px] border-b border-slate-200">
                         <th className="px-4 py-3.5">Service Title, Icon Logo & Badge</th>
                         <th className="px-4 py-3.5">Client Price (₹)</th>
                         <th className="px-4 py-3.5">Astrologer Fee (₹)</th>
@@ -9781,7 +9849,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="px-4 py-3.5 text-right">Action</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200 text-[#0f172a]">
+                    <tbody className="divide-y divide-gray-200 text-slate-900">
                       {services.map((serv) => {
                         const clientPriceNum = parseInt(serv.price.replace(/[^\d]/g, '')) || 0;
                         const payoutNum = serv.astroPayoutFee || Math.round(clientPriceNum * 0.6);
@@ -9790,7 +9858,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
                         return (
                           <React.Fragment key={serv.id}>
-                            <tr className="hover:bg-[#fefcf6] transition-colors">
+                            <tr className="hover:bg-white transition-colors">
                               {/* Service Title & Badge inputs & Icon Logo Uploader */}
                               <td className="px-4 py-3">
                                 <div className="flex flex-col gap-2">
@@ -9799,24 +9867,24 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                       type="text"
                                       value={serv.title}
                                       onChange={(e) => handleServiceChange(serv.id, 'title', e.target.value)}
-                                      className="w-56 h-9 px-2.5 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                      className="w-56 h-9 px-2.5 rounded-lg border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                                       placeholder="Package Title"
                                     />
                                     <input
                                       type="text"
                                       value={serv.badge}
                                       onChange={(e) => handleServiceChange(serv.id, 'badge', e.target.value)}
-                                      className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fef3c7] text-[#b45309] font-extrabold text-[10px] uppercase text-center focus:border-[#d97706] focus:outline-none"
+                                      className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-amber-50 dark:bg-amber-950/40 text-[#b45309] font-extrabold text-[10px] uppercase text-center focus:border-[#d97706] focus:outline-none"
                                       placeholder="Badge"
                                     />
                                   </div>
 
                                   {/* Icon/Logo Image Upload or URL Input */}
-                                  <div className="flex items-center gap-2 bg-[#fefcf6] p-1.5 rounded-xl border border-gray-300">
+                                  <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-gray-300">
                                     {serv.iconUrl ? (
                                       <img src={serv.iconUrl} alt="Logo" className="w-7 h-7 object-contain rounded bg-white p-0.5 border border-gray-300 shrink-0" />
                                     ) : (
-                                      <div className="w-7 h-7 rounded bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706] text-xs font-bold shrink-0">
+                                      <div className="w-7 h-7 rounded bg-amber-50 dark:bg-amber-950/40 border border-slate-200 flex items-center justify-center text-[#d97706] text-xs font-bold shrink-0">
                                         📷
                                       </div>
                                     )}
@@ -9866,7 +9934,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                   type="text"
                                   value={serv.price}
                                   onChange={(e) => handleServiceChange(serv.id, 'price', e.target.value)}
-                                  className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs font-mono focus:border-[#d97706] focus:outline-none"
+                                  className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-white text-[#b45309] font-extrabold text-xs font-mono focus:border-[#d97706] focus:outline-none"
                                 />
                               </td>
 
@@ -9883,7 +9951,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                         prev.map((s) => (s.id === serv.id ? { ...s, astroPayoutFee: val } : s))
                                       );
                                     }}
-                                    className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-emerald-700 font-extrabold font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                                    className="w-24 h-9 px-2 rounded-lg border border-gray-300 bg-white text-emerald-700 font-extrabold font-mono text-xs focus:border-[#d97706] focus:outline-none"
                                   />
                                 </div>
                               </td>
@@ -9908,7 +9976,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                         prev.map((s) => (s.id === serv.id ? { ...s, astroPayoutFee: newPayout } : s))
                                       );
                                     }}
-                                    className="w-16 h-9 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-green-800 font-extrabold text-center text-xs focus:border-[#d97706] focus:outline-none"
+                                    className="w-16 h-9 px-2 rounded-lg border border-gray-300 bg-white text-green-800 font-extrabold text-center text-xs focus:border-[#d97706] focus:outline-none"
                                   />
                                   <span className="text-xs font-bold text-gray-700">%</span>
                                 </div>
@@ -9921,7 +9989,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                     type="text"
                                     value={serv.cta}
                                     onChange={(e) => handleServiceChange(serv.id, 'cta', e.target.value)}
-                                    className="w-44 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                    className="w-44 h-8 px-2 rounded-lg border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                                     placeholder="Button Text"
                                   />
                                   <select
@@ -9932,7 +10000,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                         prev.map((s) => (s.id === serv.id ? { ...s, pageTarget: val as any, link: val !== 'all' ? val : s.link } : s))
                                       );
                                     }}
-                                    className="w-44 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-[11px] font-bold text-[#b45309] focus:border-[#d97706] focus:outline-none"
+                                    className="w-44 h-8 px-2 rounded-lg border border-gray-300 bg-white text-[11px] font-bold text-[#b45309] focus:border-[#d97706] focus:outline-none"
                                   >
                                     <option value="/manipuri_kuthi_yengba">Page: /manipuri_kuthi_yengba</option>
                                     <option value="/manipuri_kuthi">Page: /manipuri_kuthi</option>
@@ -9958,7 +10026,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             </tr>
 
                             {/* SUB-SERVICES MANAGER INNER ROW */}
-                            <tr key={`${serv.id}-subs`} className="bg-[#fefcf6]">
+                            <tr key={`${serv.id}-subs`} className="bg-white">
                               <td colSpan={7} className="px-6 py-4 border-b border-gray-200">
                                 <div className="space-y-3">
                                   <div className="flex items-center justify-between">
@@ -9981,13 +10049,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                   ) : (
                                     <div className="space-y-2">
                                       {serv.subServices.map((sub) => (
-                                        <div key={sub.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-white border border-[#fde68a] text-xs shadow-xs">
+                                        <div key={sub.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-white border border-slate-200 text-xs shadow-xs">
                                           <div className="flex-1 flex flex-col sm:flex-row items-center gap-3">
                                             <input
                                               type="text"
                                               value={sub.title}
                                               onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'title', e.target.value)}
-                                              className="w-full sm:w-80 h-9 px-3 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                                              className="w-full sm:w-80 h-9 px-3 rounded-lg border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                                               placeholder="Sub-Service Option Title"
                                             />
                                             <div className="flex items-center gap-1.5 shrink-0">
@@ -9996,7 +10064,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                                 type="number"
                                                 value={sub.price}
                                                 onChange={(e) => handleUpdateSubService(serv.id, sub.id, 'price', e.target.value)}
-                                                className="w-24 h-9 px-2.5 rounded-lg border border-gray-300 bg-[#fefcf6] text-[#b45309] font-mono font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
+                                                className="w-24 h-9 px-2.5 rounded-lg border border-gray-300 bg-white text-[#b45309] font-mono font-extrabold text-xs focus:border-[#d97706] focus:outline-none"
                                               />
                                             </div>
                                           </div>
@@ -10029,9 +10097,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB: CLIENT BASE / USER DIRECTORY */}
           {activeTab === 'clients' && (
             <div className="space-y-6">
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     <Users className="w-6 h-6 text-[#d97706]" />
                     <span>Client Base & Customer Directory</span>
                   </h3>
@@ -10050,22 +10118,22 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* KPI STATS ROW */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 text-slate-900 space-y-1 shadow-xs">
                   <span className="text-[10px] font-bold text-[#b45309] uppercase tracking-wider block">Total Registered Clients</span>
                   <div className="font-mono font-extrabold text-2xl text-[#b45309]">{clientBase.length}</div>
                   <span className="text-[10px] text-gray-500 block">Verified user accounts</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 text-slate-900 space-y-1 shadow-xs">
                   <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wider block">Consultations Booked</span>
                   <div className="font-mono font-extrabold text-2xl text-purple-700">{clientBase.reduce((s, c) => s + c.totalOrders, 0)}</div>
                   <span className="text-[10px] text-gray-500 block">Lifetime Kuthi consultations</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 text-slate-900 space-y-1 shadow-xs">
                   <span className="text-[10px] font-bold text-green-700 uppercase tracking-wider block">Total Client Revenue</span>
                   <div className="font-mono font-extrabold text-2xl text-green-700">₹{clientBase.reduce((s, c) => s + c.totalSpent, 0).toLocaleString()}</div>
                   <span className="text-[10px] text-gray-500 block">Consultation fees paid</span>
                 </div>
-                <div className="p-4 rounded-2xl bg-white border border-[#fde68a] text-[#0f172a] space-y-1 shadow-xs">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 text-slate-900 space-y-1 shadow-xs">
                   <span className="text-[10px] font-bold text-sky-700 uppercase tracking-wider block">Saved Birth Kundli Charts</span>
                   <div className="font-mono font-extrabold text-2xl text-sky-700">{clientBase.reduce((s, c) => s + c.savedKundlisCount, 0)}</div>
                   <span className="text-[10px] text-gray-500 block">Calculated & stored charts</span>
@@ -10073,7 +10141,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* SEARCH & FILTER BAR */}
-              <div className="bg-white p-4 rounded-2xl border border-[#f3e8d2] flex flex-wrap gap-4 items-center justify-between shadow-xs">
+              <div className="bg-white p-4 rounded-2xl border border-slate-200 flex flex-wrap gap-4 items-center justify-between shadow-xs">
                 <div className="relative flex-1 min-w-[260px]">
                   <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
                   <input
@@ -10081,15 +10149,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="Search client by name, email, phone, or location..."
                     value={clientSearchTerm}
                     onChange={(e) => setClientSearchTerm(e.target.value)}
-                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none"
+                    className="w-full h-10 pl-10 pr-4 rounded-xl border border-gray-300 bg-white text-slate-900 text-xs focus:border-[#d97706] focus:outline-none"
                   />
                 </div>
               </div>
 
               {/* REGISTER NEW CLIENT FORM MODAL */}
               {showAddClientModal && (
-                <div className="bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] space-y-4 text-xs shadow-md">
-                  <div className="flex justify-between items-center border-b border-[#fde68a] pb-2">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs shadow-md">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-2">
                     <h4 className="font-bold text-[#b45309] text-sm flex items-center gap-2">
                       <Users className="w-4 h-4 text-[#d97706]" />
                       Register & Create Client User Record
@@ -10099,7 +10167,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </button>
                   </div>
 
-                  <form onSubmit={handleRegisterNewClient} className="space-y-3 font-sans text-[#0f172a]">
+                  <form onSubmit={handleRegisterNewClient} className="space-y-3 font-sans text-slate-900">
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                       <div>
                         <label className="block text-[10px] font-bold text-[#b45309] uppercase mb-1">Client Full Name *</label>
@@ -10109,7 +10177,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="Full Name"
                           value={newClientForm.name}
                           onChange={(e) => setNewClientForm({ ...newClientForm, name: e.target.value })}
-                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] font-bold text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs"
                         />
                       </div>
                       <div>
@@ -10139,7 +10207,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <select
                           value={newClientForm.sex}
                           onChange={(e) => setNewClientForm({ ...newClientForm, sex: e.target.value as any })}
-                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-slate-900 text-xs"
                         >
                           <option value="Male">Male</option>
                           <option value="Female">Female</option>
@@ -10153,11 +10221,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           placeholder="City, District, State"
                           value={newClientForm.address}
                           onChange={(e) => setNewClientForm({ ...newClientForm, address: e.target.value })}
-                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-[#0f172a] text-xs"
+                          className="w-full p-2.5 rounded-xl border border-gray-300 bg-white text-slate-900 text-xs"
                         />
                       </div>
                     </div>
-                    <div className="flex justify-end gap-2 pt-2 border-t border-[#fde68a]">
+                    <div className="flex justify-end gap-2 pt-2 border-t border-slate-200">
                       <button type="button" onClick={() => setShowAddClientModal(false)} className="px-4 py-2 rounded-xl bg-white border border-gray-300 text-gray-700 font-bold cursor-pointer">Cancel</button>
                       <button type="submit" className="px-6 py-2 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold cursor-pointer">Save Client Account →</button>
                     </div>
@@ -10168,11 +10236,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
 
               {/* CLIENT BASE TABLE */}
-              <div className="bg-white rounded-3xl border border-[#fde68a] shadow-xl overflow-hidden">
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-xl overflow-hidden">
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse text-xs text-[#0f172a]">
+                  <table className="w-full text-left border-collapse text-xs text-slate-900">
                     <thead>
-                      <tr className="bg-[#fef3c7] border-b border-[#fde68a] text-[#78350f] font-serif uppercase tracking-wider">
+                      <tr className="bg-amber-50 dark:bg-amber-950/40 border-b border-slate-200 text-amber-900 dark:text-amber-300 font-serif uppercase tracking-wider">
                         <th className="p-4">Client Name</th>
                         <th className="p-4">Contact Info (Email & Phone)</th>
                         <th className="p-4">Gender & Location</th>
@@ -10182,7 +10250,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-right">Admin Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#fde68a] text-[#0f172a]">
+                    <tbody className="divide-y divide-slate-200 text-slate-900">
                       {clientBase
                         .filter(
                           (c) =>
@@ -10192,14 +10260,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             c.address.toLowerCase().includes(clientSearchTerm.toLowerCase())
                         )
                         .map((client) => (
-                          <tr key={client.id} className="hover:bg-[#fefcf6] transition-colors">
+                          <tr key={client.id} className="hover:bg-white transition-colors">
                             <td className="p-4">
                               <div className="flex items-center gap-3">
                                 <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-[#b45309] to-[#d97706] text-white font-bold flex items-center justify-center text-sm shadow-xs">
                                   {client.name.charAt(0)}
                                 </div>
                                 <div>
-                                  <div className="font-extrabold text-sm text-[#0f172a]">{client.name}</div>
+                                  <div className="font-extrabold text-sm text-slate-900">{client.name}</div>
                                   <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[9px] font-extrabold border border-emerald-300">
                                     {client.status}
                                   </span>
@@ -10237,7 +10305,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <td className="p-4 text-right">
                               <button
                                 onClick={() => setInspectingClient(client)}
-                                className="px-3 py-1.5 rounded-xl bg-[#0b132b] hover:bg-[#334155] border border-[#3a506b] text-[#fbbf24] font-bold text-xs inline-flex items-center gap-1 transition-colors cursor-pointer"
+                                className="px-3 py-1.5 rounded-xl bg-slate-950 hover:bg-[#334155] border border-slate-800 text-[#fbbf24] font-bold text-xs inline-flex items-center gap-1 transition-colors cursor-pointer"
                               >
                                 <Eye className="w-3.5 h-3.5" />
                                 <span>Inspect Profile</span>
@@ -10255,8 +10323,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* INSPECT CLIENT PROFILE MODAL */}
           {inspectingClient && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-2xl max-w-lg w-full p-6 space-y-4 text-white text-xs">
-                <div className="flex justify-between items-center pb-3 border-b border-[#3a506b]">
+              <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-2xl max-w-lg w-full p-6 space-y-4 text-white text-xs">
+                <div className="flex justify-between items-center pb-3 border-b border-slate-800">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-[#d97706] text-white flex items-center justify-center font-bold text-base">
                       {inspectingClient.name.charAt(0)}
@@ -10272,7 +10340,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 <div className="space-y-3 font-sans">
-                  <div className="grid grid-cols-2 gap-3 bg-[#0b132b] p-3 rounded-xl border border-[#3a506b]">
+                  <div className="grid grid-cols-2 gap-3 bg-slate-950 p-3 rounded-xl border border-slate-800">
                     <div>
                       <span className="text-gray-400 block text-[10px] uppercase font-bold">WhatsApp Contact</span>
                       <span className="font-mono text-green-400 font-bold">{inspectingClient.phone}</span>
@@ -10316,9 +10384,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB 6: SITE SETTINGS & UPI QR CONFIGURATION */}
           {(activeTab === 'settings' || activeTab === 'upi') && (
             <div className="space-y-6">
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>Site Settings & AI Automation Engine</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Site Settings & AI Automation Engine</h3>
                   <p className="text-xs text-gray-500">Manage Google Gemini AI engine, customer helpline info, UPI merchant handles & payment gateways</p>
                 </div>
                 <button
@@ -10332,8 +10400,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* CARD 0: GOOGLE GEMINI AI API CONFIGURATION & AUTOMATION ENGINE */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-5 text-xs text-slate-900 shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-600 via-amber-500 to-orange-500 text-white flex items-center justify-center font-bold shadow-md">
                       <Sparkles className="w-5 h-5" />
@@ -10392,7 +10460,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="AIzaSy..."
                         value={siteSettings.geminiApiKey || ''}
                         onChange={(e) => setSiteSettings({ ...siteSettings, geminiApiKey: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                     <p className="text-[11px] text-gray-500 mt-1">
@@ -10430,7 +10498,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                 </div>
 
-                <div className="flex justify-end pt-2 border-t border-[#fde68a]">
+                <div className="flex justify-end pt-2 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={handleSaveSiteSettings}
@@ -10444,8 +10512,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* CARD 1: TOP BAR CUSTOMER SUPPORT HEADER CMS */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
-                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-5 text-xs text-slate-900 shadow-md">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
                     <Headphones className="w-5 h-5 text-[#d97706]" />
                     <span>Top Support Header Bar CMS</span>
@@ -10458,7 +10526,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Real-time Simulated Top Bar Preview Box */}
                 <div className="space-y-1.5">
                   <span className="font-extrabold text-[10px] text-[#b45309] uppercase tracking-wider block">Real-Time Header Preview (As Visitors See It):</span>
-                  <div className="bg-[#fef3c7] text-[#78350f] p-3 rounded-2xl border border-[#fde68a] flex flex-wrap items-center justify-between text-xs font-medium gap-3">
+                  <div className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 p-3 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between text-xs font-medium gap-3">
                     <div className="flex flex-wrap items-center gap-4">
                       <div className="flex items-center gap-1.5 font-bold">
                         <Headphones className="w-3.5 h-3.5 text-[#b45309]" />
@@ -10491,7 +10559,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         ...siteSettings,
                         headerSettings: { ...siteSettings.headerSettings, supportTiming: e.target.value }
                       })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -10508,7 +10576,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         ...siteSettings,
                         headerSettings: { ...siteSettings.headerSettings, supportEmail: e.target.value }
                       })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-blue-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -10525,15 +10593,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         ...siteSettings,
                         headerSettings: { ...siteSettings.headerSettings, supportPhone: e.target.value }
                       })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-green-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-green-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
                 </div>
               </div>
 
               {/* CARD 2: MERCHANT PAYMENT UPI VPA ID & QR CODE UPLOADER CMS */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-5 text-xs text-slate-900 shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-500 to-orange-600 text-white flex items-center justify-center font-bold shadow-md">
                       <QrCode className="w-5 h-5" />
@@ -10554,7 +10622,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   {/* UPI Gateway Switch */}
-                  <div className="flex items-center gap-3 bg-[#fefcf6] px-4 py-2 rounded-2xl border border-amber-200">
+                  <div className="flex items-center gap-3 bg-white px-4 py-2 rounded-2xl border border-amber-200">
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
                         type="checkbox"
@@ -10590,7 +10658,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             ...siteSettings,
                             upiSettings: { ...siteSettings.upiSettings, upiId: e.target.value }
                           })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-green-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-green-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                         />
                       </div>
 
@@ -10607,7 +10675,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             ...siteSettings,
                             upiSettings: { ...siteSettings.upiSettings, payeeName: e.target.value }
                           })}
-                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                          className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                         />
                       </div>
                     </div>
@@ -10619,7 +10687,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       </label>
                       
                       <div className="flex flex-col sm:flex-row items-center gap-3">
-                        <label className="flex-1 w-full px-4 py-3 border-2 border-dashed border-[#d97706]/40 hover:border-[#d97706] bg-[#fefcf6] rounded-2xl cursor-pointer text-center transition-colors">
+                        <label className="flex-1 w-full px-4 py-3 border-2 border-dashed border-[#d97706]/40 hover:border-[#d97706] bg-white rounded-2xl cursor-pointer text-center transition-colors">
                           <input
                             type="file"
                             accept="image/*"
@@ -10642,7 +10710,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               upiSettings: { ...siteSettings.upiSettings, qrImageUrl: genUrl }
                             });
                           }}
-                          className="shrink-0 px-4 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-extrabold text-xs border border-[#fde68a] transition-all cursor-pointer flex items-center gap-1.5"
+                          className="shrink-0 px-4 py-3 rounded-2xl bg-amber-100 hover:bg-amber-200 text-[#b45309] font-extrabold text-xs border border-slate-200 transition-all cursor-pointer flex items-center gap-1.5"
                         >
                           <Sparkles className="w-4 h-4 text-[#d97706]" />
                           <span>Auto-Generate QR</span>
@@ -10662,7 +10730,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           ...siteSettings,
                           upiSettings: { ...siteSettings.upiSettings, qrImageUrl: e.target.value }
                         })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-600 font-mono text-[11px] focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-600 font-mono text-[11px] focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -10678,13 +10746,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           ...siteSettings,
                           upiSettings: { ...siteSettings.upiSettings, qrNotes: e.target.value }
                         })}
-                        className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
 
                   {/* QR Code Live Preview Card (1 Col) */}
-                  <div className="bg-[#fefcf6] p-5 rounded-3xl border border-[#fde68a] space-y-3 text-center">
+                  <div className="bg-white p-5 rounded-3xl border border-slate-200 space-y-3 text-center">
                     <span className="font-extrabold text-[10px] text-[#b45309] uppercase tracking-wider block">Live Payment QR Preview</span>
                     
                     <div className="w-44 h-44 mx-auto bg-white p-2 border-2 border-[#d97706]/40 rounded-2xl shadow-md flex items-center justify-center overflow-hidden relative">
@@ -10696,7 +10764,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </div>
 
                     <div className="space-y-1 pt-1">
-                      <span className="font-serif font-bold text-sm text-[#0f172a] block">{siteSettings.upiSettings.payeeName || 'KangleiAstro Services'}</span>
+                      <span className="font-serif font-bold text-sm text-slate-900 block">{siteSettings.upiSettings.payeeName || 'KangleiAstro Services'}</span>
                       <span className="font-mono font-bold text-xs text-green-700 bg-green-50 px-2.5 py-1 rounded-lg border border-green-200 block truncate">
                         {siteSettings.upiSettings.upiId || 'kangleiastro@upi'}
                       </span>
@@ -10705,7 +10773,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={handleSaveSiteSettings}
@@ -10719,8 +10787,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* CARD 3: PAYU (PAYUMONEY) PAYMENT GATEWAY CMS */}
-              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-[#fde68a] space-y-6 text-xs text-[#0f172a] shadow-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-4">
+              <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 space-y-6 text-xs text-slate-900 shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold shadow-md">
                       <CreditCard className="w-5 h-5" />
@@ -10739,7 +10807,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   {/* Mode Selector Badge */}
-                  <div className="flex items-center gap-2 bg-[#fefcf6] p-1.5 rounded-2xl border border-amber-200">
+                  <div className="flex items-center gap-2 bg-white p-1.5 rounded-2xl border border-amber-200">
                     <button
                       type="button"
                       onClick={() => setSiteSettings({
@@ -10784,7 +10852,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* Gateway Switch & Quick Presets */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-[#fefcf6] p-4 rounded-2xl border border-amber-100 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 bg-white p-4 rounded-2xl border border-amber-100 items-center">
                   <div className="flex items-center gap-3">
                     <label className="relative inline-flex items-center cursor-pointer">
                       <input
@@ -10852,7 +10920,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             }
                           });
                         }}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                       />
                       <span className="text-[10px] text-gray-400 mt-1 block">Default Test Key: <code className="font-mono text-gray-600">gtKFFx</code></span>
                     </div>
@@ -10876,7 +10944,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             }
                           });
                         }}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                       />
                       <span className="text-[10px] text-gray-400 mt-1 block">Default Test Salt: <code className="font-mono text-gray-600">eCwWELxi</code></span>
                     </div>
@@ -10901,7 +10969,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           }
                         });
                       }}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                     />
                     <div className="flex items-center gap-3 mt-1.5 text-[10px] text-gray-500">
                       <span>Test URL: <button type="button" onClick={() => setSiteSettings({...siteSettings, payuSettings: {...siteSettings.payuSettings, paymentUrl: 'https://test.payu.in/_payment'}})} className="font-mono text-[#b45309] underline">https://test.payu.in/_payment</button></span>
@@ -10922,7 +10990,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={handleSaveSiteSettings}
@@ -10938,8 +11006,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
 
               {/* CARD 4: OFFICIAL CONTACT DETAILS & BRANCH OFFICES CMS */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-5 text-xs text-[#0f172a] shadow-md">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-5 text-xs text-slate-900 shadow-md">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-amber-600 to-amber-800 text-white flex items-center justify-center font-bold shadow-md">
                       <Building2 className="w-5 h-5" />
@@ -10993,7 +11061,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             brandName: e.target.value
                           }
                         })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -11013,7 +11081,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             phone: e.target.value
                           }
                         })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-emerald-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -11033,7 +11101,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             email: e.target.value
                           }
                         })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-blue-700 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -11055,7 +11123,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             address: e.target.value
                           }
                         })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                       <span className="text-[10px] text-gray-400 mt-1 block">
                         Full road & locality name (e.g. Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur)
@@ -11078,7 +11146,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             pincode: e.target.value
                           }
                         })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -11098,13 +11166,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           timing: e.target.value
                         }
                       })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-gray-800 text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-white text-gray-800 text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
                 </div>
 
                 {/* SECTION B: REGIONAL BRANCH OFFICES MANAGER */}
-                <div className="pt-4 border-t border-[#fde68a] space-y-4">
+                <div className="pt-4 border-t border-slate-200 space-y-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
                       <span className="text-xs font-extrabold text-[#b45309] uppercase tracking-wider block">
@@ -11151,7 +11219,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       {siteSettings.contactSettings.branchOffices.map((branch, bIdx) => (
                         <div
                           key={branch.id || bIdx}
-                          className="p-4 rounded-2xl bg-[#fefcf6] border border-gray-200 space-y-3 relative"
+                          className="p-4 rounded-2xl bg-white border border-gray-200 space-y-3 relative"
                         >
                           <div className="flex items-center justify-between border-b border-gray-200 pb-2">
                             <span className="font-bold text-xs text-[#b45309] flex items-center gap-1.5">
@@ -11307,7 +11375,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   )}
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
                   <button
                     type="button"
                     onClick={handleSaveSiteSettings}
@@ -11321,8 +11389,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* ADMIN MASTER PASSWORD UPDATE BOX */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 text-xs text-[#0f172a] shadow-md">
-                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-4 text-xs text-slate-900 shadow-md">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                       <Lock className="w-5 h-5" />
@@ -11352,7 +11420,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="Enter current password"
                         value={adminPasswordInput}
                         onChange={(e) => setAdminPasswordInput(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-10 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                     <div>
@@ -11365,7 +11433,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="Enter new master password"
                         value={adminNewPasswordInput}
                         onChange={(e) => setAdminNewPasswordInput(e.target.value)}
-                        className="w-full h-10 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-10 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-amber-300 font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -11383,9 +11451,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {/* TAB: 970x90 BANNER AD CMS */}
           {activeTab === 'banner' && (
             <div className="space-y-6">
-              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b]/40 text-white' : 'bg-white border-[#f3e8d2] text-[#0f172a]'}`}>
+              <div className={`flex flex-wrap justify-between items-center p-6 rounded-2xl border shadow-sm transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>970 x 90 Leaderboard Ad Space CMS</h3>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>970 x 90 Leaderboard Ad Space CMS</h3>
                   <p className="text-xs text-gray-500">Control website-wide header banner image, title, short description, button text, & target link live</p>
                 </div>
                 <button
@@ -11398,7 +11466,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* LIVE AD PREVIEW CARD */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-3 shadow-md">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-3 shadow-md">
                 <div className="flex items-center justify-between">
                   <span className="font-serif font-bold text-sm text-[#b45309] uppercase tracking-wider flex items-center gap-2">
                     <Megaphone className="w-4 h-4 text-[#d97706]" />
@@ -11410,8 +11478,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* Interactive Simulated Preview Box */}
-                <div className="w-full bg-[#fefcf6] p-4 rounded-2xl border border-[#fde68a] flex items-center justify-center">
-                  <div className="w-full max-w-[970px] min-h-[90px] rounded-2xl bg-gradient-to-r from-[#fef3c7] via-[#fde68a] to-[#fef3c7] border-2 border-[#d97706] shadow-md p-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 relative overflow-hidden text-[#0f172a]">
+                <div className="w-full bg-white p-4 rounded-2xl border border-slate-200 flex items-center justify-center">
+                  <div className="w-full max-w-[970px] min-h-[90px] rounded-2xl bg-gradient-to-r from-[#fef3c7] via-[#fde68a] to-[#fef3c7] border-2 border-[#d97706] shadow-md p-3 flex flex-wrap sm:flex-nowrap items-center justify-between gap-4 relative overflow-hidden text-slate-900">
                     <div className="flex items-center gap-3.5 z-10 overflow-hidden">
                       {bannerAd.imageUrl ? (
                         <div className="w-14 h-14 rounded-xl overflow-hidden shrink-0 border border-[#d97706]/40 bg-white">
@@ -11425,7 +11493,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-2">
                           <span className="px-2 py-0.5 rounded bg-[#d97706] text-white font-black text-[9px] uppercase">ADVERTISEMENT</span>
-                          <h4 className="font-serif font-bold text-[#0f172a] text-base truncate">{bannerAd.title || 'Ad Title Here'}</h4>
+                          <h4 className="font-serif font-bold text-slate-900 text-base truncate">{bannerAd.title || 'Ad Title Here'}</h4>
                         </div>
                         <p className="text-xs text-gray-700 line-clamp-1">{bannerAd.description || 'Short Description copy...'}</p>
                       </div>
@@ -11440,10 +11508,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* EDIT FORM FIELDS */}
-              <form onSubmit={handleSaveBannerAd} className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 text-xs text-[#0f172a] shadow-md">
-                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+              <form onSubmit={handleSaveBannerAd} className="bg-white p-6 rounded-3xl border border-slate-200 space-y-4 text-xs text-slate-900 shadow-md">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <h4 className="font-serif font-bold text-lg text-[#b45309]">Ad Banner Content & Target Configuration</h4>
-                  <label className="inline-flex items-center gap-2 cursor-pointer bg-[#fefcf6] px-4 py-2 rounded-xl border border-[#fde68a]">
+                  <label className="inline-flex items-center gap-2 cursor-pointer bg-white px-4 py-2 rounded-xl border border-slate-200">
                     <input
                       type="checkbox"
                       checked={bannerAd.active}
@@ -11466,7 +11534,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="e.g. Special Manipuri Astrological Offer"
                       value={bannerAd.title}
                       onChange={(e) => setBannerAd({ ...bannerAd, title: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -11478,7 +11546,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <select
                       value={bannerAd.theme}
                       onChange={(e) => setBannerAd({ ...bannerAd, theme: e.target.value as any })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-[#fbbf24] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     >
                       <option value="gold">Vedic Gold & Midnight (Default)</option>
                       <option value="crimson">Crimson Festival Red</option>
@@ -11499,7 +11567,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="e.g. Get 20% OFF Kuthi Matching & Full 36-Gun Ashtakoot Compatibility Reports today!"
                     value={bannerAd.description}
                     onChange={(e) => setBannerAd({ ...bannerAd, description: e.target.value })}
-                    className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none"
+                    className="w-full p-3 rounded-xl border border-slate-800 bg-slate-950 text-gray-200 text-xs focus:border-[#d97706] focus:outline-none"
                   />
                 </div>
 
@@ -11513,7 +11581,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="https://images.unsplash.com/... or /sample_image.jpg"
                     value={bannerAd.imageUrl}
                     onChange={(e) => setBannerAd({ ...bannerAd, imageUrl: e.target.value })}
-                    className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-sky-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                   />
                 </div>
 
@@ -11529,7 +11597,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="e.g. Claim 20% Discount →"
                       value={bannerAd.buttonText}
                       onChange={(e) => setBannerAd({ ...bannerAd, buttonText: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-bold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -11543,12 +11611,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="e.g. /matching, /kundli, or https://wa.me/..."
                       value={bannerAd.buttonLink}
                       onChange={(e) => setBannerAd({ ...bannerAd, buttonLink: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-sky-300 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="flex justify-end gap-3 pt-3 border-t border-[#3a506b]">
+                <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
                   <button
                     type="submit"
                     className="px-8 py-3 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white font-extrabold text-xs shadow-md hover:opacity-95 flex items-center gap-2"
@@ -11566,9 +11634,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* Header Card */}
-              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     <Sparkles className="w-6 h-6 text-[#d97706]" />
                     <span>Live Activity Marquee Ticker CMS</span>
                   </h3>
@@ -11604,13 +11672,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* 1. MARQUEE SPEED CONTROL & PRESETS */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] space-y-4 shadow-md">
-                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 space-y-4 shadow-md">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <div>
                     <h4 className="font-serif font-bold text-lg text-[#b45309]">Marquee Scrolling Speed Control</h4>
                     <p className="text-xs text-gray-500">Higher duration in seconds = slower & smoother text scrolling speed</p>
                   </div>
-                  <span className="font-mono font-extrabold text-base text-[#b45309] bg-[#fef3c7] px-4 py-1.5 rounded-xl border border-[#fde68a]">
+                  <span className="font-mono font-extrabold text-base text-[#b45309] bg-amber-50 dark:bg-amber-950/40 px-4 py-1.5 rounded-xl border border-slate-200">
                     {tickerSettings.speedSeconds} seconds / loop
                   </span>
                 </div>
@@ -11640,7 +11708,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           className={`p-2.5 rounded-xl text-xs font-bold border transition-all ${
                             tickerSettings.speedSeconds === preset.val
                               ? 'bg-[#d97706] border-[#f59e0b] text-white shadow-md'
-                              : 'bg-[#0b132b] border-[#3a506b] text-gray-300 hover:border-[#d97706]'
+                              : 'bg-slate-950 border-slate-800 text-gray-300 hover:border-[#d97706]'
                           }`}
                         >
                           {preset.label}
@@ -11670,7 +11738,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         max={300}
                         value={tickerSettings.speedSeconds}
                         onChange={(e) => setTickerSettings({ ...tickerSettings, speedSeconds: Number(e.target.value) })}
-                        className="w-20 p-2 rounded-xl bg-[#0b132b] border border-[#3a506b] text-amber-300 font-mono font-bold text-center text-xs"
+                        className="w-20 p-2 rounded-xl bg-slate-950 border border-slate-800 text-amber-300 font-mono font-bold text-center text-xs"
                       />
                     </div>
                     <p className="text-[10px] text-gray-400">
@@ -11680,19 +11748,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {/* Live Real-time Speed Preview Box */}
-                <div className="mt-4 pt-4 border-t border-[#3a506b]/60">
+                <div className="mt-4 pt-4 border-t border-slate-800">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-[#fbbf24] block mb-2">
                     Live Real-Time Marquee Speed Preview
                   </span>
-                  <div className="w-full overflow-hidden bg-[#fef3c7] border border-[#fde68a] py-2 px-3 rounded-xl">
+                  <div className="w-full overflow-hidden bg-amber-50 dark:bg-amber-950/40 border border-slate-200 py-2 px-3 rounded-xl">
                     <div
                       className="animate-marquee whitespace-nowrap gap-8 flex items-center"
                       style={{ animationDuration: `${tickerSettings.speedSeconds || 65}s` }}
                     >
                       {tickerSettings.items.map((act, idx) => (
-                        <span key={act.id || idx} className="inline-flex items-center gap-2 text-xs font-semibold text-[#78350f] shrink-0">
+                        <span key={act.id || idx} className="inline-flex items-center gap-2 text-xs font-semibold text-amber-900 dark:text-amber-300 shrink-0">
                           <span className="text-[#d97706] font-bold">✦</span>
-                          <strong className="font-extrabold text-[#0f172a]">{act.name}</strong> from <span className="font-bold text-[#b45309]">{act.place}</span> {act.action}
+                          <strong className="font-extrabold text-slate-900">{act.name}</strong> from <span className="font-bold text-[#b45309]">{act.place}</span> {act.action}
                           <span className="text-[10px] text-[#b45309]/80 font-mono">({act.time})</span>
                         </span>
                       ))}
@@ -11702,7 +11770,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* 2. ADD NEW MANIPUR TICKER ENTRY FORM */}
-              <div className="bg-[#1c2541] p-6 rounded-3xl border border-[#3a506b] space-y-4">
+              <div className="bg-slate-900 p-6 rounded-3xl border border-slate-800 space-y-4">
                 <h4 className="font-serif font-bold text-lg text-[#fbbf24] flex items-center gap-2">
                   <Plus className="w-5 h-5 text-[#d97706]" />
                   Add New Live Activity Ticker Item
@@ -11719,7 +11787,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="e.g. Sanatombi / Tomba"
                       value={newTickerForm.name}
                       onChange={(e) => setNewTickerForm({ ...newTickerForm, name: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -11733,7 +11801,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="e.g. Imphal West, Thoubal, Kakching"
                       value={newTickerForm.place}
                       onChange={(e) => setNewTickerForm({ ...newTickerForm, place: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-semibold text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -11747,7 +11815,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       placeholder="e.g. booked Kuthi Matching report with Pt. Ningthem"
                       value={newTickerForm.action}
                       onChange={(e) => setNewTickerForm({ ...newTickerForm, action: e.target.value })}
-                      className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white text-xs focus:border-[#d97706] focus:outline-none"
+                      className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white text-xs focus:border-[#d97706] focus:outline-none"
                     />
                   </div>
 
@@ -11762,7 +11830,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         placeholder="e.g. 2 min ago, just now"
                         value={newTickerForm.time}
                         onChange={(e) => setNewTickerForm({ ...newTickerForm, time: e.target.value })}
-                        className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                        className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-[#fbbf24] font-mono text-xs focus:border-[#d97706] focus:outline-none"
                       />
                     </div>
 
@@ -11778,8 +11846,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* 3. MANAGE & DELETE EXISTING TICKER ITEMS TABLE */}
-              <div className="bg-[#1c2541] rounded-3xl border border-[#3a506b] shadow-xl overflow-hidden">
-                <div className="p-6 border-b border-[#3a506b] flex justify-between items-center">
+              <div className="bg-slate-900 rounded-3xl border border-slate-800 shadow-xl overflow-hidden">
+                <div className="p-6 border-b border-slate-800 flex justify-between items-center">
                   <div>
                     <h4 className="font-serif font-bold text-lg text-[#fbbf24]">Current Live Ticker Items ({tickerSettings.items.length})</h4>
                     <p className="text-xs text-gray-400">Items scroll sequentially across the homepage marquee ribbon</p>
@@ -11789,7 +11857,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <div className="overflow-x-auto">
                   <table className="w-full text-left border-collapse text-xs">
                     <thead>
-                      <tr className="bg-[#0b132b] border-b border-[#3a506b] text-[#fbbf24] font-serif uppercase tracking-wider">
+                      <tr className="bg-slate-950 border-b border-slate-800 text-[#fbbf24] font-serif uppercase tracking-wider">
                         <th className="p-4">#</th>
                         <th className="p-4">Client Name</th>
                         <th className="p-4">Manipur Location</th>
@@ -11800,7 +11868,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </thead>
                     <tbody className="divide-y divide-[#3a506b]/50">
                       {tickerSettings.items.map((item, idx) => (
-                        <tr key={item.id} className="hover:bg-[#0b132b]/40 transition-colors">
+                        <tr key={item.id} className="hover:bg-slate-950/40 transition-colors">
                           <td className="p-4 font-mono font-bold text-[#fbbf24]">{idx + 1}</td>
                           <td className="p-4 font-extrabold text-white">{item.name}</td>
                           <td className="p-4 text-amber-300 font-bold">{item.place}</td>
@@ -11830,13 +11898,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="space-y-6">
               
               {/* Header Card */}
-              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+              <div className={`p-6 rounded-3xl border flex flex-wrap justify-between items-center gap-4 shadow-md transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#fef3c7] text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-[#fde68a]">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-extrabold uppercase mb-2 border border-slate-200">
                     <Star className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
                     Customer Reviews Moderation Hub
                   </div>
-                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+                  <h3 className={`font-serif font-bold text-2xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
                     Client Reviews & Testimonials CMS
                   </h3>
                   <p className="text-xs text-gray-500">
@@ -11855,7 +11923,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
               {/* Stats Bar */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-[#fde68a] space-y-1 shadow-xs">
+                <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-1 shadow-xs">
                   <span className="text-xs text-gray-500 font-bold block uppercase">Total Reviews</span>
                   <span className="text-2xl font-serif font-extrabold text-[#b45309]">{reviews.length}</span>
                 </div>
@@ -11880,15 +11948,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* Reviews List Table */}
-              <div className="bg-white rounded-3xl border border-[#fde68a] overflow-hidden shadow-xl">
-                <div className="p-5 border-b border-[#fde68a] bg-[#fefcf6] flex justify-between items-center">
+              <div className="bg-white rounded-3xl border border-slate-200 overflow-hidden shadow-xl">
+                <div className="p-5 border-b border-slate-200 bg-white flex justify-between items-center">
                   <h4 className="font-serif font-bold text-lg text-[#b45309]">Submitted Client Reviews</h4>
                   <span className="text-xs text-gray-500">Click Approve to publish live on homepage</span>
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full text-left text-xs font-sans text-[#0f172a]">
-                    <thead className="bg-[#fef3c7] text-[#78350f] uppercase tracking-wider font-extrabold border-b border-[#fde68a]">
+                  <table className="w-full text-left text-xs font-sans text-slate-900">
+                    <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 uppercase tracking-wider font-extrabold border-b border-slate-200">
                       <tr>
                         <th className="p-4">Client & Location</th>
                         <th className="p-4">Rating</th>
@@ -11898,7 +11966,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         <th className="p-4 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#fde68a]">
+                    <tbody className="divide-y divide-slate-200">
                       {reviews.length === 0 ? (
                         <tr>
                           <td colSpan={6} className="p-8 text-center text-gray-400 font-medium">
@@ -11907,9 +11975,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         </tr>
                       ) : (
                         reviews.map((r) => (
-                          <tr key={r.id} className="hover:bg-[#fefcf6] transition-colors">
+                          <tr key={r.id} className="hover:bg-white transition-colors">
                             <td className="p-4">
-                              <div className="font-extrabold text-[#0f172a] text-sm">{r.clientName}</div>
+                              <div className="font-extrabold text-slate-900 text-sm">{r.clientName}</div>
                               <div className="text-gray-500 text-[11px]">{r.location}</div>
                             </td>
                             <td className="p-4">
@@ -11928,7 +11996,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 </span>
                               )}
                               {r.status === 'PENDING' && (
-                                <span className="px-3 py-1 rounded-full bg-amber-100 text-[#78350f] text-[10px] font-extrabold border border-amber-300 animate-pulse">
+                                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-900 dark:text-amber-300 text-[10px] font-extrabold border border-amber-300 animate-pulse">
                                   ⏳ PENDING APPROVAL
                                 </span>
                               )}
@@ -11986,9 +12054,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB: NAVBAR NAVIGATION MENU CONTROLLER */}
           {activeTab === 'navbar' && (
-            <div className={`space-y-6 font-sans ${theme === 'dark' ? 'text-white' : 'text-[#0f172a]'}`}>
+            <div className={`space-y-6 font-sans ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
               {/* TOP HEADER BAR */}
-              <div className={`p-6 rounded-3xl border shadow-md flex flex-wrap items-center justify-between gap-4 transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
+              <div className={`p-6 rounded-3xl border shadow-md flex flex-wrap items-center justify-between gap-4 transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white flex items-center justify-center font-bold shadow-md">
                     <Menu className="w-6 h-6 text-white" />
@@ -12027,7 +12095,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               {/* ACTIVE TOP MENU ITEMS CARDS */}
               <div className="space-y-4">
                 <div className="flex justify-between items-center px-1">
-                  <h4 className="font-serif font-bold text-lg text-[#0f172a] flex items-center gap-2">
+                  <h4 className="font-serif font-bold text-lg text-slate-900 flex items-center gap-2">
                     <Sparkles className="w-5 h-5 text-[#d97706]" />
                     Top-Level Navigation Menu Links ({navConfig.items?.length || 0})
                   </h4>
@@ -12038,13 +12106,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     key={item.id}
                     className={`p-5 rounded-3xl border transition-all ${
                       item.active !== false
-                        ? 'bg-white border-[#fde68a] shadow-sm'
+                        ? 'bg-white border-slate-200 shadow-sm'
                         : 'bg-gray-50 border-gray-200 opacity-60'
                     }`}
                   >
-                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[#fde68a]/50 pb-3 mb-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200/50 pb-3 mb-4">
                       <div className="flex items-center gap-2">
-                        <span className="w-7 h-7 rounded-full bg-[#fef3c7] text-[#b45309] font-black text-xs flex items-center justify-center border border-[#fde68a]">
+                        <span className="w-7 h-7 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[#b45309] font-black text-xs flex items-center justify-center border border-slate-200">
                           {index + 1}
                         </span>
                         <input
@@ -12058,7 +12126,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             }));
                           }}
                           placeholder="Menu Item Title"
-                          className="font-serif font-bold text-base text-[#0f172a] bg-[#fefcf6] px-3 py-1 rounded-xl border border-gray-300 focus:border-[#d97706] focus:outline-none"
+                          className="font-serif font-bold text-base text-slate-900 bg-white px-3 py-1 rounded-xl border border-gray-300 focus:border-[#d97706] focus:outline-none"
                         />
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold uppercase border ${
                           item.type === 'dropdown'
@@ -12127,7 +12195,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               items: prev.items.map((it: any) => (it.id === item.id ? { ...it, type: val, subItems: val === 'dropdown' ? (it.subItems || []) : it.subItems } : it)),
                             }));
                           }}
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-[#0f172a] focus:border-[#d97706] focus:outline-none"
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs font-bold text-slate-900 focus:border-[#d97706] focus:outline-none"
                         >
                           <option value="link">Direct Link (Navigates to URL)</option>
                           <option value="dropdown">Dropdown Sub-Menu (Shows child links)</option>
@@ -12149,7 +12217,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             }));
                           }}
                           placeholder="e.g. /services or /horoscope"
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-mono font-bold text-blue-700 focus:border-[#d97706] focus:outline-none"
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs font-mono font-bold text-blue-700 focus:border-[#d97706] focus:outline-none"
                         />
                       </div>
 
@@ -12168,16 +12236,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             }));
                           }}
                           placeholder="e.g. HOT, FREE, NEW"
-                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs font-bold text-amber-700 uppercase focus:border-[#d97706] focus:outline-none"
+                          className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs font-bold text-amber-700 uppercase focus:border-[#d97706] focus:outline-none"
                         />
                       </div>
                     </div>
 
                     {/* DROPDOWN SUB-ITEMS SECTION */}
                     {item.type === 'dropdown' && (
-                      <div className="mt-4 p-4 rounded-2xl bg-[#fef3c7]/40 border border-[#fde68a] space-y-3">
-                        <div className="flex justify-between items-center pb-2 border-b border-[#fde68a]">
-                          <span className="text-xs font-bold text-[#78350f] uppercase tracking-wider">
+                      <div className="mt-4 p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/40/40 border border-slate-200 space-y-3">
+                        <div className="flex justify-between items-center pb-2 border-b border-slate-200">
+                          <span className="text-xs font-bold text-amber-900 dark:text-amber-300 uppercase tracking-wider">
                             Dropdown Child Sub-Menu Links ({item.subItems?.length || 0})
                           </span>
                           <button
@@ -12199,7 +12267,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             {item.subItems.map((sub: any) => (
                               <div
                                 key={sub.id}
-                                className="p-3 rounded-xl bg-white border border-[#fde68a] grid grid-cols-1 sm:grid-cols-4 gap-2 items-center text-xs"
+                                className="p-3 rounded-xl bg-white border border-slate-200 grid grid-cols-1 sm:grid-cols-4 gap-2 items-center text-xs"
                               >
                                 <div>
                                   <label className="block text-[9px] font-bold text-gray-500 uppercase">Sub-Title</label>
@@ -12221,7 +12289,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                       }));
                                     }}
                                     placeholder="Child Title"
-                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] font-bold text-xs"
+                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-white font-bold text-xs"
                                   />
                                 </div>
 
@@ -12245,7 +12313,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                       }));
                                     }}
                                     placeholder="/manipuri_kuthi_yengba"
-                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] font-mono text-blue-700 text-[11px]"
+                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-white font-mono text-blue-700 text-[11px]"
                                   />
                                 </div>
 
@@ -12269,7 +12337,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                       }));
                                     }}
                                     placeholder="Sub-text description"
-                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-gray-600 text-[11px]"
+                                    className="w-full h-8 px-2 rounded-lg border border-gray-300 bg-white text-gray-600 text-[11px]"
                                   />
                                 </div>
 
@@ -12292,7 +12360,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                       }));
                                     }}
                                     placeholder="Badge"
-                                    className="w-20 h-8 px-2 rounded-lg border border-gray-300 bg-[#fefcf6] text-amber-700 text-[10px] font-bold uppercase text-center"
+                                    className="w-20 h-8 px-2 rounded-lg border border-gray-300 bg-white text-amber-700 text-[10px] font-bold uppercase text-center"
                                   />
 
                                   <button
@@ -12315,16 +12383,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* HEADER ACTION BUTTONS CONTROLLER CARD */}
-              <div className="bg-white p-6 rounded-3xl border border-[#fde68a] shadow-md space-y-4 text-[#0f172a]">
-                <h4 className="font-serif font-bold text-lg text-[#b45309] flex items-center gap-2 border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-md space-y-4 text-slate-900">
+                <h4 className="font-serif font-bold text-lg text-[#b45309] flex items-center gap-2 border-b border-slate-200 pb-3">
                   <Sun className="w-5 h-5 text-[#d97706]" />
                   Header CTA Action Buttons (Top Right Desktop Buttons)
                 </h4>
 
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
                   {/* Button 1: Numit Leppa */}
-                  <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-2">
-                    <label className="flex items-center justify-between font-bold text-[#0f172a]">
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">
+                    <label className="flex items-center justify-between font-bold text-slate-900">
                       <span>Numit Leppa Button</span>
                       <input
                         type="checkbox"
@@ -12359,8 +12427,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   {/* Button 2: Kuthi Yengba */}
-                  <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-2">
-                    <label className="flex items-center justify-between font-bold text-[#0f172a]">
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">
+                    <label className="flex items-center justify-between font-bold text-slate-900">
                       <span>Kuthi Yengba Button</span>
                       <input
                         type="checkbox"
@@ -12395,8 +12463,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </div>
 
                   {/* Button 3: Kuthi Iba */}
-                  <div className="p-4 rounded-2xl bg-[#fefcf6] border border-[#fde68a] space-y-2">
-                    <label className="flex items-center justify-between font-bold text-[#0f172a]">
+                  <div className="p-4 rounded-2xl bg-white border border-slate-200 space-y-2">
+                    <label className="flex items-center justify-between font-bold text-slate-900">
                       <span>Kuthi Iba Button</span>
                       <input
                         type="checkbox"
@@ -12450,6 +12518,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <ServiceCouponsManager theme={theme} />
           )}
 
+          {/* TAB: MOBILE APP LAYOUT & CAROUSEL BUILDER (Customizer Studio) */}
+          {activeTab === 'mobile_builder' && (
+            <div className="space-y-6">
+              <MobileAppLayoutBuilder />
+            </div>
+          )}
+
         </main>
       </div>
 
@@ -12458,10 +12533,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
          ───────────────────────────────────────────────────────────── */}
       {inspectingOrder && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a]">
+          <div className="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden relative text-left font-sans text-slate-900">
             
             {/* Modal Header */}
-            <div className="p-6 bg-[#fef3c7] text-[#0f172a] flex items-center justify-between border-b border-[#fde68a]">
+            <div className="p-6 bg-amber-50 dark:bg-amber-950/40 text-slate-900 flex items-center justify-between border-b border-slate-200">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <FileText className="w-5 h-5" />
@@ -12482,10 +12557,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             <div className="p-6 space-y-6 max-h-[80vh] overflow-y-auto">
               
               {/* Document Preview Box & Download Trigger */}
-              <div className="p-5 rounded-2xl bg-[#fefcf6] border border-[#fde68a] text-[#0f172a] flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="p-5 rounded-2xl bg-white border border-slate-200 text-slate-900 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <span className="font-bold text-xs text-[#b45309] uppercase tracking-wider block">Attached Kuthi File</span>
-                  <strong className="text-sm text-[#0f172a] block mt-0.5">
+                  <strong className="text-sm text-slate-900 block mt-0.5">
                     {inspectingOrder.kuthiAttached ? inspectingOrder.kuthiFileName : 'No Physical Paper Uploaded (Use Birth Details Below)'}
                   </strong>
                 </div>
@@ -12500,18 +12575,18 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <span>Download Kuthi File</span>
                   </a>
                 ) : (
-                  <span className="px-3 py-1.5 rounded-xl bg-amber-100 text-[#78350f] font-bold text-xs border border-amber-300">
+                  <span className="px-3 py-1.5 rounded-xl bg-amber-100 text-amber-900 dark:text-amber-300 font-bold text-xs border border-amber-300">
                     Birth Details Mode
                   </span>
                 )}
               </div>
 
               {/* Complete Client / Couple Details Table */}
-              <div className="bg-[#fefcf6] p-5 rounded-2xl border border-[#fde68a] space-y-4 text-xs">
-                <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+              <div className="bg-white p-5 rounded-2xl border border-slate-200 space-y-4 text-xs">
+                <div className="flex items-center justify-between border-b border-slate-200 pb-3">
                   <div>
                     <span className="text-gray-500 text-[10px] uppercase font-bold block">Client / Couple Name</span>
-                    <strong className="text-[#0f172a] text-base">{inspectingOrder.clientName} ({inspectingOrder.sex})</strong>
+                    <strong className="text-slate-900 text-base">{inspectingOrder.clientName} ({inspectingOrder.sex})</strong>
                   </div>
                   <div className="text-right">
                     <span className="text-gray-500 text-[10px] uppercase font-bold block">WhatsApp Contact</span>
@@ -12528,9 +12603,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         👦 Groom Birth Details
                       </span>
                       <div className="space-y-1 text-gray-700">
-                        <div><span className="text-gray-500 text-[10px]">DOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.dob.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
-                        <div><span className="text-gray-500 text-[10px]">TOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.tob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
-                        <div><span className="text-gray-500 text-[10px]">POB:</span> <strong className="text-[#0f172a]">{inspectingOrder.pob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">DOB:</span> <strong className="text-slate-900">{inspectingOrder.dob.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">TOB:</span> <strong className="text-slate-900">{inspectingOrder.tob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">POB:</span> <strong className="text-slate-900">{inspectingOrder.pob?.split('|')[0]?.replace('Groom:', '').trim()}</strong></div>
                       </div>
                     </div>
 
@@ -12540,50 +12615,50 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                         👧 Bride Birth Details
                       </span>
                       <div className="space-y-1 text-gray-700">
-                        <div><span className="text-gray-500 text-[10px]">DOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.dob.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
-                        <div><span className="text-gray-500 text-[10px]">TOB:</span> <strong className="text-[#0f172a]">{inspectingOrder.tob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
-                        <div><span className="text-gray-500 text-[10px]">POB:</span> <strong className="text-[#0f172a]">{inspectingOrder.pob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">DOB:</span> <strong className="text-slate-900">{inspectingOrder.dob.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">TOB:</span> <strong className="text-slate-900">{inspectingOrder.tob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
+                        <div><span className="text-gray-500 text-[10px]">POB:</span> <strong className="text-slate-900">{inspectingOrder.pob?.split('|')[1]?.replace('Bride:', '').trim()}</strong></div>
                       </div>
                     </div>
                   </div>
                 ) : (
                   /* Standard Single Client / Kuthi Iba Order */
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 bg-white p-4 rounded-xl border border-[#fde68a]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-700 bg-white p-4 rounded-xl border border-slate-200">
                     {inspectingOrder.fatherName && (
                       <div>
                         <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Father's Name (পিতাগী মমিং)</span>
-                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.fatherName}</strong>
+                        <strong className="text-slate-900 text-sm">{inspectingOrder.fatherName}</strong>
                       </div>
                     )}
                     {inspectingOrder.motherName && (
                       <div>
                         <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Mother's Name (ইমাগী মমিং)</span>
-                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.motherName}</strong>
+                        <strong className="text-slate-900 text-sm">{inspectingOrder.motherName}</strong>
                       </div>
                     )}
                     {inspectingOrder.yek && (
                       <div>
                         <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Yek / Salai</span>
-                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.yek}</strong>
+                        <strong className="text-slate-900 text-sm">{inspectingOrder.yek}</strong>
                       </div>
                     )}
                     {inspectingOrder.gotra && (
                       <div>
                         <span className="text-[#b45309] text-[10px] uppercase font-extrabold block">Gotra / Sagei</span>
-                        <strong className="text-[#0f172a] text-sm">{inspectingOrder.gotra}</strong>
+                        <strong className="text-slate-900 text-sm">{inspectingOrder.gotra}</strong>
                       </div>
                     )}
                     <div>
                       <span className="text-gray-500 text-[10px] uppercase font-bold block">Date of Birth</span>
-                      <strong className="text-[#0f172a]">{inspectingOrder.dob || 'See Kuthi Document'}</strong>
+                      <strong className="text-slate-900">{inspectingOrder.dob || 'See Kuthi Document'}</strong>
                     </div>
                     <div>
                       <span className="text-gray-500 text-[10px] uppercase font-bold block">Time of Birth</span>
-                      <strong className="text-[#0f172a]">{inspectingOrder.tob || 'See Kuthi Document'}</strong>
+                      <strong className="text-slate-900">{inspectingOrder.tob || 'See Kuthi Document'}</strong>
                     </div>
                     <div className="sm:col-span-2">
                       <span className="text-gray-500 text-[10px] uppercase font-bold block">Place of Birth</span>
-                      <strong className="text-[#0f172a]">{inspectingOrder.pob || 'See Kuthi Document'}</strong>
+                      <strong className="text-slate-900">{inspectingOrder.pob || 'See Kuthi Document'}</strong>
                     </div>
                     {inspectingOrder.deliveryAddress && (
                       <div className="sm:col-span-2 pt-2 border-t border-gray-200">
@@ -12603,7 +12678,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
 
               {/* Astrologer Uploaded Report Box */}
-              <div className="p-5 rounded-2xl bg-white border border-green-300 text-[#0f172a] space-y-3 shadow-xs">
+              <div className="p-5 rounded-2xl bg-white border border-green-300 text-slate-900 space-y-3 shadow-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-xs text-green-700 uppercase tracking-wider flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-green-600" />
@@ -12615,9 +12690,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 </div>
 
                 {inspectingOrder.reportReceivedFromAstro || inspectingOrder.reportFileName ? (
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#fefcf6] p-3 rounded-xl border border-[#fde68a]">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white p-3 rounded-xl border border-slate-200">
                     <div>
-                      <div className="font-bold text-[#0f172a] text-sm">{inspectingOrder.reportFileName || 'Astrological_Remedies_Report.pdf'}</div>
+                      <div className="font-bold text-slate-900 text-sm">{inspectingOrder.reportFileName || 'Astrological_Remedies_Report.pdf'}</div>
                       {inspectingOrder.reportUploadedBy && (
                         <div className="text-[11px] text-gray-600 mt-0.5">Uploaded by Guru: {inspectingOrder.reportUploadedBy}</div>
                       )}
@@ -12638,7 +12713,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     </a>
                   </div>
                 ) : (
-                  <div className="text-xs text-gray-500 italic bg-[#fefcf6] p-3 rounded-xl border border-[#fde68a]">
+                  <div className="text-xs text-gray-500 italic bg-white p-3 rounded-xl border border-slate-200">
                     ⏳ Report not yet uploaded by assigned astrologer. Astrologer can upload directly from their dashboard.
                   </div>
                 )}
@@ -12648,7 +12723,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               <div className="flex justify-between items-center pt-2">
                 <button
                   onClick={() => handleCopyDetails(inspectingOrder)}
-                  className="px-4 py-2.5 rounded-xl bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 border border-[#fde68a] cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 hover:bg-[#fde68a] text-[#b45309] font-bold text-xs flex items-center gap-2 border border-slate-200 cursor-pointer"
                 >
                   <Copy className="w-4 h-4 text-[#d97706]" />
                   <span>{copiedText ? '✓ Details Copied!' : 'Copy Text Summary'}</span>
@@ -12674,9 +12749,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateNewServicePackage}
-            className="bg-white w-full max-w-xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a] p-6 space-y-4"
+            className="bg-white w-full max-w-xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden relative text-left font-sans text-slate-900 p-6 space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <Plus className="w-5 h-5" />
@@ -12707,7 +12782,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Raj Yoga & Wealth Audit"
                   value={newServiceForm.title}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, title: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
@@ -12720,7 +12795,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="Popular / New"
                   value={newServiceForm.badge}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, badge: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs focus:border-[#d97706] focus:outline-none uppercase"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#b45309] font-extrabold text-xs focus:border-[#d97706] focus:outline-none uppercase"
                 />
               </div>
             </div>
@@ -12737,7 +12812,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="₹1,499"
                   value={newServiceForm.price}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, price: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#b45309] font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
@@ -12751,7 +12826,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="900"
                   value={newServiceForm.astroPayoutFee}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, astroPayoutFee: parseInt(e.target.value) || 0 })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-700 font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-emerald-700 font-extrabold text-sm font-mono focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
@@ -12767,7 +12842,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 placeholder="Full birth chart analysis, gemstone recommendations..."
                 value={newServiceForm.description}
                 onChange={(e) => setNewServiceForm({ ...newServiceForm, description: e.target.value })}
-                className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none"
+                className="w-full p-3 rounded-xl border border-gray-300 bg-white text-slate-900 text-xs focus:border-[#d97706] focus:outline-none"
               />
             </div>
 
@@ -12782,7 +12857,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Book Now"
                   value={newServiceForm.cta}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, cta: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
@@ -12795,16 +12870,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. /kundli or https://wa.me/..."
                   value={newServiceForm.link}
                   onChange={(e) => setNewServiceForm({ ...newServiceForm, link: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-blue-700 font-mono text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setShowAddServiceModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-bold border border-[#fde68a] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-bold border border-slate-200 cursor-pointer"
               >
                 Cancel
               </button>
@@ -12824,9 +12899,9 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleSaveReviewEdit}
-            className="bg-white w-full max-w-xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a] p-6 space-y-4"
+            className="bg-white w-full max-w-xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden relative text-left font-sans text-slate-900 p-6 space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <Edit className="w-5 h-5" />
@@ -12855,7 +12930,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   required
                   value={editingReview.clientName || ''}
                   onChange={(e) => setEditingReview({ ...editingReview, clientName: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
@@ -12868,7 +12943,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   required
                   value={editingReview.location || ''}
                   onChange={(e) => setEditingReview({ ...editingReview, location: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
@@ -12881,7 +12956,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <select
                   value={editingReview.rating || 5}
                   onChange={(e) => setEditingReview({ ...editingReview, rating: Number(e.target.value) })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value={5}>5 Stars (★★★★★)</option>
                   <option value={4}>4 Stars (★★★★☆)</option>
@@ -12898,7 +12973,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <select
                   value={editingReview.status || 'APPROVED'}
                   onChange={(e) => setEditingReview({ ...editingReview, status: e.target.value as any })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-emerald-700 font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-emerald-700 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value="APPROVED">🟢 APPROVED (Live on Home)</option>
                   <option value="PENDING">⏳ PENDING APPROVAL</option>
@@ -12915,7 +12990,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 type="text"
                 value={editingReview.serviceName || ''}
                 onChange={(e) => setEditingReview({ ...editingReview, serviceName: e.target.value })}
-                className="w-full h-10 px-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-amber-300 font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                className="w-full h-10 px-3 rounded-xl border border-slate-800 bg-slate-950 text-amber-300 font-bold text-xs focus:border-[#d97706] focus:outline-none"
               />
             </div>
 
@@ -12928,15 +13003,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 required
                 value={editingReview.comment || ''}
                 onChange={(e) => setEditingReview({ ...editingReview, comment: e.target.value })}
-                className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 text-xs focus:border-[#d97706] focus:outline-none font-medium"
+                className="w-full p-3 rounded-xl border border-slate-800 bg-slate-950 text-gray-200 text-xs focus:border-[#d97706] focus:outline-none font-medium"
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#3a506b]">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-800">
               <button
                 type="button"
                 onClick={() => setEditingReview(null)}
-                className="px-5 py-2.5 rounded-xl bg-[#0b132b] text-gray-300 text-xs font-bold border border-[#3a506b] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-slate-950 text-gray-300 text-xs font-bold border border-slate-800 cursor-pointer"
               >
                 Cancel
               </button>
@@ -12953,12 +13028,12 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
       {/* ADD NEW VERIFIED REVIEW MODAL (Admin Manual Add) */}
       {showAddReviewModal && (
-        <div className="fixed inset-0 z-50 bg-[#0b132b]/85 backdrop-blur-xs flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-xs flex items-center justify-center p-4">
           <form
             onSubmit={handleCreateReviewAdmin}
-            className="bg-[#1c2541] w-full max-w-xl rounded-3xl border border-[#3a506b] shadow-2xl overflow-hidden relative text-left font-sans text-white p-6 space-y-4"
+            className="bg-slate-900 w-full max-w-xl rounded-3xl border border-slate-800 shadow-2xl overflow-hidden relative text-left font-sans text-white p-6 space-y-4"
           >
-            <div className="flex items-center justify-between border-b border-[#3a506b] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
                 <div className="w-9 h-9 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <Plus className="w-5 h-5" />
@@ -12988,7 +13063,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Tombi Meitei"
                   value={newReviewForm.clientName}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, clientName: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
 
@@ -13002,7 +13077,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. Imphal West, Manipur"
                   value={newReviewForm.location}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, location: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 />
               </div>
             </div>
@@ -13015,7 +13090,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <select
                   value={newReviewForm.rating}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, rating: Number(e.target.value) })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value={5}>5 Stars (★★★★★)</option>
                   <option value={4}>4 Stars (★★★★☆)</option>
@@ -13032,7 +13107,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <select
                   value={newReviewForm.serviceName}
                   onChange={(e) => setNewReviewForm({ ...newReviewForm, serviceName: e.target.value })}
-                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
+                  className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#b45309] font-bold text-xs focus:border-[#d97706] focus:outline-none"
                 >
                   <option value="Kuthi Yengba Consultation">Kuthi Yengba Consultation</option>
                   <option value="Kuthi Iba (কুঠি ইবা)">Kuthi Iba (কুঠি ইবা)</option>
@@ -13053,15 +13128,15 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 placeholder="Enter client testimonial text..."
                 value={newReviewForm.comment}
                 onChange={(e) => setNewReviewForm({ ...newReviewForm, comment: e.target.value })}
-                className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs focus:border-[#d97706] focus:outline-none font-medium"
+                className="w-full p-3 rounded-xl border border-gray-300 bg-white text-slate-900 text-xs focus:border-[#d97706] focus:outline-none font-medium"
               />
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setShowAddReviewModal(false)}
-                className="px-5 py-2.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-bold border border-[#fde68a] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-bold border border-slate-200 cursor-pointer"
               >
                 Cancel
               </button>
@@ -13079,8 +13154,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       {/* MANAGE ASTROLOGER TOOL ACCESS PERMISSIONS MODAL */}
       {toolModalAstro && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-2xl rounded-3xl border border-[#fde68a] shadow-2xl overflow-hidden relative text-left font-sans text-[#0f172a] p-6 space-y-5 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b border-[#fde68a] pb-3">
+          <div className="bg-white w-full max-w-2xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden relative text-left font-sans text-slate-900 p-6 space-y-5 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold">
                   <Sparkles className="w-5 h-5" />
@@ -13099,7 +13174,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </button>
             </div>
 
-            <div className="flex justify-between items-center bg-[#fefcf6] p-3 rounded-2xl border border-[#fde68a] text-xs">
+            <div className="flex justify-between items-center bg-white p-3 rounded-2xl border border-slate-200 text-xs">
               <span className="text-gray-700 font-bold">
                 Selected: <strong className="text-[#b45309]">{selectedToolIds.length}</strong> / 19 Tools Allowed
               </span>
@@ -13107,7 +13182,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <button
                   type="button"
                   onClick={() => setSelectedToolIds(ALL_TOOL_ITEMS.map((t) => t.id))}
-                  className="px-3 py-1 rounded-lg bg-[#fef3c7] hover:bg-[#fde68a] text-[#b45309] font-extrabold text-[11px] border border-[#fde68a] cursor-pointer"
+                  className="px-3 py-1 rounded-lg bg-amber-50 dark:bg-amber-950/40 hover:bg-[#fde68a] text-[#b45309] font-extrabold text-[11px] border border-slate-200 cursor-pointer"
                 >
                   Select All 19
                 </button>
@@ -13136,7 +13211,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     }}
                     className={`p-3 rounded-2xl border flex items-center gap-3 cursor-pointer transition-all ${
                       isChecked
-                        ? 'bg-[#fefcf6] border-[#d97706] text-[#0f172a]'
+                        ? 'bg-white border-[#d97706] text-slate-900'
                         : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
                     }`}
                   >
@@ -13152,11 +13227,11 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               })}
             </div>
 
-            <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+            <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
               <button
                 type="button"
                 onClick={() => setToolModalAstro(null)}
-                className="px-5 py-2.5 rounded-xl bg-[#fef3c7] text-[#b45309] text-xs font-bold border border-[#fde68a] cursor-pointer"
+                className="px-5 py-2.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-bold border border-slate-200 cursor-pointer"
               >
                 Cancel
               </button>
@@ -13177,8 +13252,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
          ───────────────────────────────────────────────────────────── */}
       {showAddAnnouncementModal && (
         <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white border border-[#fde68a] rounded-3xl p-6 max-w-lg w-full space-y-4 text-xs font-sans text-[#0f172a] shadow-2xl">
-            <div className="flex justify-between items-center pb-3 border-b border-[#fde68a]">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-lg w-full space-y-4 text-xs font-sans text-slate-900 shadow-2xl">
+            <div className="flex justify-between items-center pb-3 border-b border-slate-200">
               <h4 className="font-serif font-bold text-xl text-[#b45309] flex items-center gap-2">
                 <Bell className="w-5 h-5 text-[#d97706]" />
                 <span>Post Announcement / Promo Ad for Astrologers</span>
@@ -13197,7 +13272,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. 🚀 Mahashivratri Special Bonus Payout Promo!"
                   value={newAnnouncementForm.title}
                   onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, title: e.target.value })}
-                  className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
+                  className="w-full h-10 px-3.5 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs"
                 />
               </div>
 
@@ -13207,7 +13282,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <select
                     value={newAnnouncementForm.type}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, type: e.target.value as any })}
-                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs"
                   >
                     <option value="ANNOUNCEMENT">ANNOUNCEMENT</option>
                     <option value="PROMO_AD">PROMO_AD</option>
@@ -13222,7 +13297,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="SPECIAL PROMO"
                     value={newAnnouncementForm.badge}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, badge: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#b45309] font-extrabold text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-[#b45309] font-extrabold text-xs"
                   />
                 </div>
               </div>
@@ -13235,7 +13310,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="Describe the announcement, promo rules, or policy update..."
                   value={newAnnouncementForm.message}
                   onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, message: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] text-xs"
+                  className="w-full p-3 rounded-xl border border-gray-300 bg-white text-slate-900 text-xs"
                 />
               </div>
 
@@ -13247,7 +13322,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="Check Now"
                     value={newAnnouncementForm.actionText}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, actionText: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-[#0f172a] font-bold text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-slate-900 font-bold text-xs"
                   />
                 </div>
                 <div>
@@ -13257,16 +13332,16 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="/dashboard/astrologer?tab=wallet"
                     value={newAnnouncementForm.actionUrl}
                     onChange={(e) => setNewAnnouncementForm({ ...newAnnouncementForm, actionUrl: e.target.value })}
-                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-[#fefcf6] text-blue-700 font-mono text-xs"
+                    className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-blue-700 font-mono text-xs"
                   />
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-3 border-t border-[#fde68a]">
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-200">
                 <button
                   type="button"
                   onClick={() => setShowAddAnnouncementModal(false)}
-                  className="px-5 py-2 rounded-xl bg-[#fef3c7] text-[#b45309] font-bold text-xs border border-[#fde68a] cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-[#b45309] font-bold text-xs border border-slate-200 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -13287,10 +13362,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
           <form
             onSubmit={handleProcessPayoutSubmit}
-            className="w-full max-w-lg rounded-3xl border border-[#fde68a] shadow-2xl p-6 sm:p-8 space-y-5 text-xs font-sans bg-white text-[#0f172a]"
+            className="w-full max-w-lg rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 space-y-5 text-xs font-sans bg-white text-slate-900"
           >
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[#fde68a] pb-4">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-2xl bg-gradient-to-r from-green-600 to-emerald-600 text-white flex items-center justify-center font-bold shadow-md">
                   <DollarSign className="w-5 h-5" />
@@ -13314,7 +13389,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </div>
 
             {/* Astrologer Info Card */}
-            <div className="p-4 rounded-2xl border space-y-2 bg-[#fefcf6] border-[#fde68a] text-[#0f172a]">
+            <div className="p-4 rounded-2xl border space-y-2 bg-white border-slate-200 text-slate-900">
               <div className="flex justify-between items-center">
                 <span className="text-[10px] uppercase font-bold text-gray-500">Vendor Astrologer</span>
                 <span className="text-xs font-bold text-[#b45309]">{payoutModalAstro.name}</span>
@@ -13323,7 +13398,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <span className="text-[10px] uppercase font-bold text-gray-500">Specialty</span>
                 <span className="text-gray-700">{payoutModalAstro.specialty}</span>
               </div>
-              <div className="flex justify-between items-center border-t border-[#fde68a] pt-2">
+              <div className="flex justify-between items-center border-t border-slate-200 pt-2">
                 <span className="text-[10px] uppercase font-bold text-gray-500">Current Wallet Balance Pending</span>
                 <strong className="font-mono text-base text-green-700 font-extrabold">₹{payoutModalAstro.pendingPayout.toLocaleString()}</strong>
               </div>
@@ -13342,7 +13417,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   max={100000}
                   value={payoutForm.amount}
                   onChange={(e) => setPayoutForm({ ...payoutForm, amount: Number(e.target.value) })}
-                  className="w-full h-11 px-3.5 rounded-xl font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#b45309]"
+                  className="w-full h-11 px-3.5 rounded-xl font-mono font-bold text-sm focus:border-[#d97706] focus:outline-none bg-white border border-gray-300 text-[#b45309]"
                 />
               </div>
 
@@ -13354,7 +13429,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   <select
                     value={payoutForm.paymentMethod}
                     onChange={(e) => setPayoutForm({ ...payoutForm, paymentMethod: e.target.value })}
-                    className="w-full h-11 px-3.5 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#0f172a]"
+                    className="w-full h-11 px-3.5 rounded-xl font-bold text-xs focus:border-[#d97706] focus:outline-none bg-white border border-gray-300 text-slate-900"
                   >
                     <option value="GPay / PhonePe UPI">GPay / PhonePe UPI</option>
                     <option value="Paytm Wallet / UPI">Paytm Wallet / UPI</option>
@@ -13373,7 +13448,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="e.g. UPI-20268940129"
                     value={payoutForm.utr}
                     onChange={(e) => setPayoutForm({ ...payoutForm, utr: e.target.value })}
-                    className="w-full h-11 px-3.5 rounded-xl font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#b45309]"
+                    className="w-full h-11 px-3.5 rounded-xl font-mono font-bold text-xs focus:border-[#d97706] focus:outline-none bg-white border border-gray-300 text-[#b45309]"
                   />
                 </div>
               </div>
@@ -13386,13 +13461,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   type="text"
                   value={payoutForm.notes}
                   onChange={(e) => setPayoutForm({ ...payoutForm, notes: e.target.value })}
-                  className="w-full h-10 px-3.5 rounded-xl text-xs focus:border-[#d97706] focus:outline-none bg-[#fefcf6] border border-gray-300 text-[#0f172a]"
+                  className="w-full h-10 px-3.5 rounded-xl text-xs focus:border-[#d97706] focus:outline-none bg-white border border-gray-300 text-slate-900"
                 />
               </div>
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#fde68a]">
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
               <a
                 href={`https://wa.me/${(payoutModalAstro.whatsappNo || payoutModalAstro.whatsappPhone || payoutModalAstro.phone || '').replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(payoutModalAstro.name)},%20your%20KangleiAstro%20commission%20payout%20of%20%E2%82%B9${payoutForm.amount}%20has%20been%20processed%20successfully!%20Transaction%20UTR:%20${encodeURIComponent(payoutForm.utr)}`}
                 target="_blank"
@@ -13407,7 +13482,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <button
                   type="button"
                   onClick={() => setPayoutModalAstro(null)}
-                  className="px-4 py-2.5 rounded-xl font-bold text-xs bg-[#fef3c7] text-[#b45309] border border-[#fde68a] cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl font-bold text-xs bg-amber-50 dark:bg-amber-950/40 text-[#b45309] border border-slate-200 cursor-pointer"
                 >
                   Cancel
                 </button>
@@ -13427,8 +13502,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       {/* MODAL: CREATE / EDIT PROMO COUPON */}
       {showCouponModal && editingCoupon && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className={`w-full max-w-md rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-5 relative transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
-            <div className={`flex justify-between items-center border-b pb-3 ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
+          <div className={`w-full max-w-md rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-5 relative transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+            <div className={`flex justify-between items-center border-b pb-3 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
               <h3 className="font-serif font-bold text-xl text-[#fbbf24]">
                 {editingCoupon.id ? 'Edit Promo Coupon' : 'Create New Promo Coupon'}
               </h3>
@@ -13451,7 +13526,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="e.g. KANGLEI20"
                   value={editingCoupon.code || ''}
                   onChange={(e) => setEditingCoupon({ ...editingCoupon, code: e.target.value.toUpperCase() })}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-mono font-black text-sm uppercase tracking-wider focus:outline-none"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-[#fbbf24] font-mono font-black text-sm uppercase tracking-wider focus:outline-none"
                 />
               </div>
 
@@ -13462,7 +13537,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <select
                   value={editingCoupon.type || 'PERCENTAGE'}
                   onChange={(e) => setEditingCoupon({ ...editingCoupon, type: e.target.value as any })}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-bold text-xs"
                 >
                   <option value="PERCENTAGE">PERCENTAGE (% Off Subtotal)</option>
                   <option value="FLAT">FLAT (Flat ₹ Amount Off)</option>
@@ -13482,7 +13557,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder={editingCoupon.type === 'PERCENTAGE' ? '20' : '100'}
                     value={editingCoupon.value ?? ''}
                     onChange={(e) => setEditingCoupon({ ...editingCoupon, value: Number(e.target.value) })}
-                    className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-emerald-400 font-mono font-extrabold text-sm focus:outline-none"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-emerald-400 font-mono font-extrabold text-sm focus:outline-none"
                   />
                 </div>
               )}
@@ -13498,7 +13573,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="499"
                   value={editingCoupon.minOrderAmount ?? ''}
                   onChange={(e) => setEditingCoupon({ ...editingCoupon, minOrderAmount: Number(e.target.value) })}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-mono text-xs focus:outline-none"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-mono text-xs focus:outline-none"
                 />
               </div>
 
@@ -13518,7 +13593,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <button
                   type="button"
                   onClick={() => setShowCouponModal(false)}
-                  className="flex-1 py-3 rounded-xl border border-[#3a506b] text-gray-300 font-bold text-xs hover:bg-[#0b132b]"
+                  className="flex-1 py-3 rounded-xl border border-slate-800 text-gray-300 font-bold text-xs hover:bg-slate-950"
                 >
                   Cancel
                 </button>
@@ -13537,8 +13612,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
       {/* MODAL: CREATE / EDIT SHOP HERO SLIDER */}
       {showSliderModal && editingSlider && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4">
-          <div className={`w-full max-w-lg rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-5 relative max-h-[90vh] overflow-y-auto transition-colors ${theme === 'dark' ? 'bg-[#1c2541] border-[#3a506b] text-white' : 'bg-white border-[#fde68a] text-[#0f172a]'}`}>
-            <div className={`flex justify-between items-center border-b pb-3 ${theme === 'dark' ? 'border-[#3a506b]' : 'border-[#fde68a]'}`}>
+          <div className={`w-full max-w-lg rounded-3xl border shadow-2xl p-6 sm:p-8 space-y-5 relative max-h-[90vh] overflow-y-auto transition-colors ${theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'}`}>
+            <div className={`flex justify-between items-center border-b pb-3 ${theme === 'dark' ? 'border-slate-800' : 'border-slate-200'}`}>
               <h3 className="font-serif font-bold text-xl text-[#fbbf24]">
                 {editingSlider.id ? 'Edit Shop Hero Slider' : 'Create New Shop Hero Slider'}
               </h3>
@@ -13561,7 +13636,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="✨ AUTHENTIC MANIPURI & VEDIC CONSECRATED STORE"
                   value={editingSlider.badge || ''}
                   onChange={(e) => setEditingSlider({ ...editingSlider, badge: e.target.value })}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-bold text-xs focus:outline-none"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-[#fbbf24] font-bold text-xs focus:outline-none"
                 />
               </div>
 
@@ -13575,7 +13650,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="Sacred Vedic Remedies &"
                   value={editingSlider.title || ''}
                   onChange={(e) => setEditingSlider({ ...editingSlider, title: e.target.value })}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-serif font-bold text-sm focus:outline-none"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-serif font-bold text-sm focus:outline-none"
                 />
               </div>
 
@@ -13588,7 +13663,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="Lab-Certified Gemstones"
                   value={editingSlider.highlightText || ''}
                   onChange={(e) => setEditingSlider({ ...editingSlider, highlightText: e.target.value })}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-[#fbbf24] font-serif font-bold text-sm focus:outline-none"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-[#fbbf24] font-serif font-bold text-sm focus:outline-none"
                 />
               </div>
 
@@ -13602,7 +13677,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   placeholder="Explore 100% genuine Ceylon Yellow Sapphires, traditional Kuthi reading books, 24k gold Shree Yantras..."
                   value={editingSlider.subtitle || ''}
                   onChange={(e) => setEditingSlider({ ...editingSlider, subtitle: e.target.value })}
-                  className="w-full p-3 rounded-xl border border-[#3a506b] bg-[#0b132b] text-gray-200 font-serif text-xs focus:outline-none"
+                  className="w-full p-3 rounded-xl border border-slate-800 bg-slate-950 text-gray-200 font-serif text-xs focus:outline-none"
                 />
               </div>
 
@@ -13617,7 +13692,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="https://images.unsplash.com/photo-..."
                     value={editingSlider.image || ''}
                     onChange={(e) => setEditingSlider({ ...editingSlider, image: e.target.value })}
-                    className="flex-1 h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono text-xs focus:outline-none"
+                    className="flex-1 h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-sky-300 font-mono text-xs focus:outline-none"
                   />
                   {editingSlider.image && (
                     <div className="w-11 h-11 rounded-xl border border-[#fbbf24] overflow-hidden bg-slate-900 shrink-0">
@@ -13638,7 +13713,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="Shop Consecrated Gemstones"
                     value={editingSlider.ctaText || ''}
                     onChange={(e) => setEditingSlider({ ...editingSlider, ctaText: e.target.value })}
-                    className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:outline-none"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-bold text-xs focus:outline-none"
                   />
                 </div>
 
@@ -13652,7 +13727,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     placeholder="/shop?category=Gemstones"
                     value={editingSlider.ctaLink || ''}
                     onChange={(e) => setEditingSlider({ ...editingSlider, ctaLink: e.target.value })}
-                    className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-sky-300 font-mono text-xs focus:outline-none"
+                    className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-sky-300 font-mono text-xs focus:outline-none"
                   />
                 </div>
               </div>
@@ -13664,7 +13739,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <select
                   value={editingSlider.bgColor || 'from-[#0b132b] via-[#1c2541] to-[#0b132b]'}
                   onChange={(e) => setEditingSlider({ ...editingSlider, bgColor: e.target.value })}
-                  className="w-full h-11 px-3.5 rounded-xl border border-[#3a506b] bg-[#0b132b] text-white font-bold text-xs focus:outline-none"
+                  className="w-full h-11 px-3.5 rounded-xl border border-slate-800 bg-slate-950 text-white font-bold text-xs focus:outline-none"
                 >
                   <option value="from-[#0b132b] via-[#1c2541] to-[#0b132b]">Midnight Navy (Default)</option>
                   <option value="from-[#1e1b4b] via-[#312e81] to-[#1e1b4b]">Royal Indigo</option>
@@ -13689,7 +13764,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 <button
                   type="button"
                   onClick={() => setShowSliderModal(false)}
-                  className="flex-1 py-3 rounded-xl border border-[#3a506b] text-gray-300 font-bold text-xs hover:bg-[#0b132b]"
+                  className="flex-1 py-3 rounded-xl border border-slate-800 text-gray-300 font-bold text-xs hover:bg-slate-950"
                 >
                   Cancel
                 </button>

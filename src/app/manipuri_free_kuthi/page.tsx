@@ -50,18 +50,18 @@ function ManipuriFreeKuthiContent() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const urlParams = new URLSearchParams(window.location.search);
-      const paramName = urlParams.get('name') || 'Sanatomba Meitei';
+      const paramName = urlParams.get('name');
       const paramDob = urlParams.get('dob');
-      const paramTob = urlParams.get('tob') || '06:00';
-      const paramPob = urlParams.get('pob') || 'Imphal, Manipur';
+      const paramTob = urlParams.get('tob') || '12:00';
+      const paramPob = urlParams.get('pob') || '';
 
-      if (urlParams.has('dob') || urlParams.has('name')) {
+      if (paramDob && paramName) {
         const formData = {
           name: paramName,
           gender: urlParams.get('gender') || 'Male',
-          dateOfBirth: paramDob || '2026-08-28',
+          dateOfBirth: paramDob,
           timeOfBirth: paramTob,
-          placeName: paramPob,
+          placeName: paramPob || 'Imphal, Manipur',
           latitude: parseFloat(urlParams.get('lat') || '24.8170'),
           longitude: parseFloat(urlParams.get('long') || '93.9368'),
           utcOffset: 5.5,

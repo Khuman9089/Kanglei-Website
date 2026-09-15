@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   ScrollText,
   Calendar,
@@ -86,8 +86,14 @@ export default function SakaToBirthWorkstation({
   const [clientName, setClientName] = useState<string>('Native Kuthi Client');
 
   // Internal Theme State (supports toggle or inherits from parent)
-  const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>(parentTheme || 'dark');
+  const [currentTheme, setCurrentTheme] = useState<'dark' | 'light'>(parentTheme || 'light');
   const isDark = currentTheme === 'dark';
+
+  useEffect(() => {
+    if (parentTheme) {
+      setCurrentTheme(parentTheme);
+    }
+  }, [parentTheme]);
 
   // UI state
   const [scriptMode, setScriptMode] = useState<'bengali' | 'meetei' | 'en'>('bengali');

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Sparkles, ArrowRight, QrCode, CheckCircle2, Truck } from 'lucide-react';
 import { Input } from '../ui/Input';
+import ManipurLocationInput, { LocationSelection } from './ManipurLocationInput';
 
 interface KuthiIbaPageFormProps {
   onSubmitSuccess: (formData: any) => void;
@@ -26,15 +27,18 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
 
   // Form State
   const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
   const [fatherName, setFatherName] = useState('');
   const [motherName, setMotherName] = useState('');
   const [yek, setYek] = useState(MANIPUR_YEK_OPTIONS[0]);
-  const [gotra, setGotra] = useState('Sagei / Gotra');
+  const [gotra, setGotra] = useState('');
   const [sex, setSex] = useState('Male');
-  const [dateOfBirth, setDateOfBirth] = useState('2026-08-28');
-  const [timeOfBirth, setTimeOfBirth] = useState('06:00');
-  const [placeOfBirth, setPlaceOfBirth] = useState('Imphal, Manipur');
-  const [whatsappNo, setWhatsappNo] = useState('+91 ');
+  const [dateOfBirth, setDateOfBirth] = useState('');
+  const [timeOfBirth, setTimeOfBirth] = useState('');
+  const [placeOfBirth, setPlaceOfBirth] = useState('');
+  const [lat, setLat] = useState(24.8170);
+  const [lng, setLng] = useState(93.9368);
+  const [whatsappNo, setWhatsappNo] = useState('');
   const [deliveryAddress, setDeliveryAddress] = useState('');
   const [utr, setUtr] = useState('');
 
@@ -89,6 +93,9 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
           dob: dateOfBirth,
           tob: timeOfBirth,
           pob: placeOfBirth,
+          latitude: lat,
+          longitude: lng,
+          email: email.trim() || 'client@kangleiastro.com',
           mobile: whatsappNo,
           whatsappNo,
           deliveryAddress,
@@ -118,8 +125,8 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
           dateOfBirth,
           timeOfBirth,
           placeName: placeOfBirth,
-          latitude: 24.8170,
-          longitude: 93.9368,
+          latitude: lat,
+          longitude: lng,
           utcOffset: 5.5,
           ayanamsa: 'LAHIRI',
         });
@@ -197,7 +204,7 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="e.g. Sanatomba Meitei"
+                placeholder="Full Name (e.g. Sanatomba Singh)"
               />
             )}
 
@@ -239,7 +246,7 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
                 required
                 value={gotra}
                 onChange={(e) => setGotra(e.target.value)}
-                placeholder="e.g. Sagei / Gotra"
+                placeholder="Gotra / Sagei (e.g. Shandilya, Khuman)"
               />
             </div>
 
@@ -274,22 +281,38 @@ export default function KuthiIbaPageForm({ onSubmitSuccess, isLoading = false }:
               />
             </div>
 
-            <Input
-              label="Place Of Birth"
-              required
+            {/* Place of Birth / Hospital with Auto GPS Fetch */}
+            <ManipurLocationInput
+              label="Place of Birth / Hospital Name (Manipur)"
+              placeholder="Search birth hospital or town (e.g. RIMS, JNIMS, Shija Hospital, Imphal)"
               value={placeOfBirth}
-              onChange={(e) => setPlaceOfBirth(e.target.value)}
-              placeholder="City, District, State (e.g. Imphal West, Manipur)"
+              latitude={lat}
+              longitude={lng}
+              required
+              onChange={(loc) => {
+                setPlaceOfBirth(loc.placeName);
+                setLat(loc.latitude);
+                setLng(loc.longitude);
+              }}
             />
 
             <div className="pt-2 border-t border-gray-100 space-y-4">
-              <Input
-                label="WhatsApp Mobile No (Digital PDF Delivery)"
-                required
-                value={whatsappNo}
-                onChange={(e) => setWhatsappNo(e.target.value)}
-                placeholder="+91 98620 12345"
-              />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Input
+                  label="Email Address (Order Confirmation)"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="abc@gmail.com"
+                />
+                <Input
+                  label="WhatsApp / Mobile No (Digital Delivery)"
+                  required
+                  value={whatsappNo}
+                  onChange={(e) => setWhatsappNo(e.target.value)}
+                  placeholder="+91 98765 43210"
+                />
+              </div>
 
               <Input
                 isTextarea

@@ -22,6 +22,7 @@ interface BengaliChartProps {
   theme?: 'light' | 'dark';
   className?: string;
   displayMode?: 'NUMBERS' | 'NAMES' | 'BOTH';
+  script?: 'bengali' | 'meetei' | 'blipi';
 }
 
 // Traditional Bengali Planet Names & Short Abbreviations
@@ -67,6 +68,18 @@ const COMPARTMENT_CONFIGS: Record<number, { name: string; titleX: number; titleY
   11: { name: 'মীন',   titleX: 470, titleY: 45 },  // Top-Right Top (Pisces)
 };
 
+const MEETEI_RASHI_NAMES: Record<number, string> = {
+  0: 'ꯃꯦꯁ', 1: 'ꯕ꯭ꯔꯤꯁ', 2: 'ꯃꯤꯊꯨꯟ', 3: 'ꯀꯔꯀꯠ',
+  4: 'ꯁꯤꯡꯍ', 5: 'ꯀꯟꯌꯥ', 6: 'ꯇꯨꯂꯥ', 7: 'ꯕ꯭ꯔꯤꯁ꯭ꯆꯤꯛ',
+  8: 'ꯙꯅꯨ', 9: 'ꯃꯀꯔ', 10: 'ꯀꯨꯝꯚ', 11: 'ꯃꯤꯟ'
+};
+
+const BLIPI_RASHI_NAMES: Record<number, string> = {
+  0: 'EmF', 1: 'b<F', 2: 'imTun', 3: 'kk`P',
+  4: 'iszH', 5: 'kn/a', 6: 'tula', 7: 'b<iScik',
+  8: 'Dnu', 9: 'mkr', 10: 'kuMv', 11: 'mIn'
+};
+
 export function BengaliChart({
   planets,
   ascendantSign,
@@ -76,6 +89,7 @@ export function BengaliChart({
   theme = 'light',
   className = '',
   displayMode,
+  script = 'bengali',
 }: BengaliChartProps) {
   const isLight = theme === 'light';
 
@@ -87,8 +101,13 @@ export function BengaliChart({
 
   // Add Lagna to ascendantSign compartment
   let lagnaLabel = 'লগ্ন';
+  if (script === 'meetei') {
+    lagnaLabel = 'ꯂꯒ꯭ꯅ';
+  } else if (script === 'blipi') {
+    lagnaLabel = 'lz';
+  }
   if (displayMode === 'NUMBERS') {
-    lagnaLabel = 'ল';
+    lagnaLabel = script === 'meetei' ? 'ꯂ' : (script === 'blipi' ? 'l' : 'ল');
   }
   signItems[ascendantSign].push({
     name: 'Ascendant',
@@ -168,6 +187,9 @@ export function BengaliChart({
         {Object.entries(COMPARTMENT_CONFIGS).map(([signIdxStr, cfg]) => {
           const signIdx = parseInt(signIdxStr, 10);
           const items = signItems[signIdx] || [];
+          const rashiDisplayName = script === 'meetei'
+            ? (MEETEI_RASHI_NAMES[signIdx] || cfg.name)
+            : (script === 'blipi' ? (BLIPI_RASHI_NAMES[signIdx] || cfg.name) : cfg.name);
 
           return (
             <g key={`sign-items-${signIdx}`}>
@@ -177,10 +199,11 @@ export function BengaliChart({
                 y={cfg.titleY - 14}
                 textAnchor="middle"
                 fill={rashiTagColor}
-                fontSize="11"
+                fontSize={script === 'blipi' ? '13' : '11'}
                 fontWeight="bold"
+                className={script === 'blipi' ? 'font-blipi' : ''}
               >
-                {cfg.name}
+                {rashiDisplayName}
               </text>
 
               {/* Planet / Lagna Names inside Compartment */}

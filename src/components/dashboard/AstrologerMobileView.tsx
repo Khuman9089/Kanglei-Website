@@ -66,6 +66,7 @@ import { calculateDetailedVimshottari } from '@/engine/vedicWorkstationEngine';
 import { calculatePlanetaryPositions } from '@/engine/ephemeris';
 import SakaToBirthWorkstation from '@/components/dashboard/SakaToBirthWorkstation';
 import KuthiResultWorkstation from '@/components/dashboard/KuthiResultWorkstation';
+import ManipuriPanchangWorkstation from '@/components/dashboard/ManipuriPanchangWorkstation';
 import { ACTIVE_TOOLS_REGISTRY, ToolDefinition } from '@/config/toolsRegistry';
 
 // ==========================================
@@ -79,7 +80,7 @@ function toBengaliDigits(num: number | string): string {
 // ==========================================
 // TYPES & DATA STRUCTURES
 // ==========================================
-type TabType = 'overview' | 'kuthi' | 'live' | 'tools' | 'charts' | 'profile';
+type TabType = 'overview' | 'kuthi' | 'panchang' | 'live' | 'tools' | 'charts' | 'profile';
 type KuthiFilter = 'ALL' | 'PENDING' | 'COMPLETED';
 
 interface KuthiOrder {
@@ -180,6 +181,7 @@ export interface MobileCustomizerConfig {
   };
   notices?: any[];
   sections?: any[];
+  theme?: 'dark' | 'light';
 }
 
 interface AstrologerMobileDashboardProps {
@@ -188,7 +190,7 @@ interface AstrologerMobileDashboardProps {
 
 export default function AstrologerMobileDashboard({ customConfig }: AstrologerMobileDashboardProps = {}) {
   // Theme state matching desktop version (defaults to 'light', synced with localStorage)
-  const [theme, setTheme] = useState<'dark' | 'light'>('light');
+  const [theme, setTheme] = useState<'dark' | 'light'>(customConfig?.theme || 'light');
   const [astroUser, setAstroUser] = useState<any>({
     name: 'Empaneled Astrologer',
     avatar: '',
@@ -304,6 +306,9 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
   useEffect(() => {
     if (customConfig) {
       setConfig((prev) => ({ ...prev, ...customConfig }));
+      if (customConfig.theme) {
+        setTheme(customConfig.theme);
+      }
     }
   }, [customConfig]);
 
@@ -1009,7 +1014,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         <h4 className="text-[11.5px] font-bold leading-tight truncate text-slate-900 dark:text-white">
                           {config.adTitle || 'Ceylon Unheated Yellow Sapphires (Pukhraj)'}
                         </h4>
-                        <p className="text-[9.5px] text-slate-500 dark:text-gray-300 truncate mt-0.5">
+                        <p className="text-[9.5px] text-slate-700 dark:text-gray-300 font-medium truncate mt-0.5">
                           {config.adSubtitle || 'Lab Certified 100% Natural • Special Astrologer Partner Discount'}
                         </p>
                       </div>
@@ -1067,14 +1072,14 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                               }`}>
                                 {ann.type.replace('_', ' ')}
                               </span>
-                              <span className={`text-[9.5px] font-medium ${isDark ? 'text-gray-400' : 'text-slate-600'}`}>
+                              <span className={`text-[9.5px] font-bold ${isDark ? 'text-gray-400' : 'text-slate-700'}`}>
                                 Audience: {ann.targetAudience}
                               </span>
                             </div>
                             <h4 className={`font-serif font-bold text-xs sm:text-sm leading-snug ${isDark ? 'text-white' : 'text-slate-900'}`}>
                               {ann.title}
                             </h4>
-                            <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-gray-300' : 'text-slate-700 font-medium'}`}>
+                            <p className={`text-[11px] mt-1 leading-relaxed ${isDark ? 'text-gray-300' : 'text-slate-800 font-medium'}`}>
                               {ann.message}
                             </p>
                           </div>
@@ -1085,7 +1090,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                             className={`absolute top-3 right-3 p-1.5 rounded-lg border text-xs transition-colors cursor-pointer ${
                               isDark
                                 ? 'bg-[#0b132b]/80 hover:bg-[#0b132b] text-gray-400 hover:text-white border-[#3a506b]'
-                                : 'bg-slate-100 hover:bg-slate-200 text-slate-600 hover:text-slate-900 border-slate-300'
+                                : 'bg-slate-100 hover:bg-slate-200 text-slate-700 hover:text-slate-900 border-slate-300'
                             }`}
                             title="Dismiss announcement"
                           >
@@ -1114,12 +1119,12 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               <section className="space-y-2">
                 <div className="flex items-center justify-between px-1">
                   <span className={`text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 ${
-                    isDark ? 'text-[#e0a96d]' : 'text-amber-800'
+                    isDark ? 'text-[#e0a96d]' : 'text-amber-900'
                   }`}>
                     <Orbit className="w-3 h-3 text-[#d97706] dark:text-[#fbbf24]" />
                     <span>Daily Panchanga & Transit (পঞ্জিকা)</span>
                   </span>
-                  <span className={`text-[10px] font-mono ${isDark ? 'text-amber-200/80' : 'text-slate-500'}`}>
+                  <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-amber-200/80' : 'text-slate-800'}`}>
                     {config.stationCity || 'Imphal · 24.8°N'}
                   </span>
                 </div>
@@ -1132,27 +1137,27 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         item.highlight
                           ? isDark 
                             ? 'bg-gradient-to-br from-[#d97706]/20 via-[#1c2541] to-[#1c2541] border-amber-500/50 text-amber-200'
-                            : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/50 border-amber-400 text-amber-900'
+                            : 'bg-gradient-to-br from-amber-50 via-white to-amber-100/50 border-amber-400 text-amber-950 font-bold'
                           : isDark
                             ? 'bg-[#1c2541]/80 border-[#3a506b]/60 text-slate-200'
-                            : 'bg-white border-slate-200 text-slate-800'
+                            : 'bg-white border-slate-200 text-slate-900'
                       }`}
                     >
                       <span className="text-base">{item.icon}</span>
                       <div>
                         <span className={`text-[10px] uppercase font-bold tracking-wider block ${
-                          isDark ? 'text-amber-200/70' : 'text-amber-700'
+                          isDark ? 'text-amber-200/70' : 'text-amber-900 font-extrabold'
                         }`}>
                           {item.label}
                         </span>
                         <span className={`text-xs font-extrabold block leading-tight ${
-                          isDark ? 'text-white' : 'text-slate-900'
+                          isDark ? 'text-white' : 'text-slate-950'
                         }`}>
                           {item.label === 'Tithi' && config.tithiText ? config.tithiText : item.label === 'Nakshatra' && config.nakshatraText ? config.nakshatraText : item.label === 'Rahu Kaal' && config.rahuKaalText ? config.rahuKaalText : item.value}
                         </span>
                         {item.sub && (
-                          <span className={`text-[9px] font-mono block ${
-                            isDark ? 'text-[#fbbf24]' : 'text-amber-600'
+                          <span className={`text-[9px] font-mono font-bold block ${
+                            isDark ? 'text-[#fbbf24]' : 'text-amber-800'
                           }`}>
                             {item.sub}
                           </span>
@@ -1184,11 +1189,11 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       )}
                     </div>
                     <h3 className="text-xs font-serif font-bold text-slate-900 dark:text-white">Kuthi Order Hub</h3>
-                    <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-tight">
+                    <p className="text-[10px] text-slate-700 dark:text-slate-300 font-medium leading-tight">
                       Client birth documents, Kuthi matching, & report delivery (No Live Call)
                     </p>
                   </div>
-                  <div className="pt-2 flex items-center text-[10px] font-bold text-[#b45309] dark:text-[#fbbf24]">
+                  <div className="pt-2 flex items-center text-[10px] font-black text-[#b45309] dark:text-[#fbbf24]">
                     <span>Manage Orders →</span>
                   </div>
                 </div>
@@ -1210,11 +1215,11 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       </span>
                     </div>
                     <h3 className="text-xs font-serif font-bold text-slate-900 dark:text-white">Live Call & Chat</h3>
-                    <p className="text-[10px] text-slate-600 dark:text-slate-300 leading-tight">
+                    <p className="text-[10px] text-slate-700 dark:text-slate-300 font-medium leading-tight">
                       1-on-1 real-time voice, video, & encrypted live chat room
                     </p>
                   </div>
-                  <div className="pt-2 flex items-center text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                  <div className="pt-2 flex items-center text-[10px] font-black text-emerald-700 dark:text-emerald-400">
                     <span>Enter Live Room →</span>
                   </div>
                 </div>
@@ -1224,12 +1229,12 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               <section className="space-y-2">
                 <div className="flex items-center justify-between px-1">
                   <span className={`text-[10px] font-extrabold uppercase tracking-widest flex items-center gap-1.5 ${
-                    isDark ? 'text-[#e0a96d]' : 'text-amber-800'
+                    isDark ? 'text-[#e0a96d]' : 'text-amber-900'
                   }`}>
                     <Sparkles className="w-3 h-3 text-[#d97706] dark:text-[#fbbf24]" />
                     <span>Quick Astrological Engines</span>
                   </span>
-                  <span className="text-[10px] text-amber-600 dark:text-amber-200/70 font-mono">Vedic Math</span>
+                  <span className={`text-[10px] font-mono font-bold ${isDark ? 'text-amber-200/70' : 'text-amber-800'}`}>Vedic Math</span>
                 </div>
 
                 <div className="grid grid-cols-4 gap-2">
@@ -1243,7 +1248,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600/30 to-blue-500/20 border border-sky-500/40 flex items-center justify-center text-sky-400 text-base">
                         🪐
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight">
+                      <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                         Sade Sati
                       </span>
                     </button>
@@ -1259,7 +1264,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-rose-600/30 to-orange-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 text-base">
                         🔥
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight">
+                      <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                         Manglik
                       </span>
                     </button>
@@ -1275,7 +1280,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600/30 to-violet-500/20 border border-purple-500/40 flex items-center justify-center text-purple-400 text-base">
                         🐍
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight">
+                      <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                         Kaal Sarp
                       </span>
                     </button>
@@ -1291,7 +1296,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-cyan-600/30 to-blue-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-400 text-base">
                         🐟
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight">
+                      <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                         ঙা-ঈশিং
                       </span>
                     </button>
@@ -1307,7 +1312,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-pink-600/30 to-rose-500/20 border border-pink-500/40 flex items-center justify-center text-pink-400 text-base">
                         💍
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight">
+                      <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                         Matching
                       </span>
                     </button>
@@ -1323,7 +1328,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-yellow-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 text-base">
                         ✨
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight">
+                      <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                         Yogas
                       </span>
                     </button>
@@ -1339,7 +1344,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600/30 to-teal-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-500 dark:text-emerald-400 text-base">
                         🏡
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight text-emerald-600 dark:text-emerald-400">
+                      <span className="text-[9px] font-extrabold text-center leading-tight text-emerald-700 dark:text-emerald-400">
                         Yumsharol
                       </span>
                     </button>
@@ -1355,7 +1360,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#d97706] dark:text-[#fbbf24]">
                         <Compass className="w-4 h-4" />
                       </div>
-                      <span className="text-[9px] font-bold text-center leading-tight">
+                      <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                         Kundli
                       </span>
                     </button>
@@ -1373,7 +1378,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#d97706] dark:text-[#fbbf24] text-base">
                       📜
                     </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
+                    <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                       Saka-to-DOB
                     </span>
                   </button>
@@ -1390,7 +1395,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[#d97706] dark:text-[#fbbf24] text-base">
                       🪶
                     </div>
-                    <span className="text-[9px] font-bold text-center leading-tight">
+                    <span className={`text-[9px] font-extrabold text-center leading-tight ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>
                       Kuthi-Result
                     </span>
                   </button>
@@ -1400,15 +1405,15 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               {/* Quick Summary Cards (Matching Desktop Version) */}
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
                 <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block">Kuthi Orders</span>
+                  <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-400 block">Kuthi Orders</span>
                   <strong className="text-base font-serif font-bold text-[#b45309] dark:text-[#fbbf24]">{kuthiOrders.length}</strong>
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block">Live Call Queue</span>
+                  <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-400 block">Live Call Queue</span>
                   <strong className="text-base font-serif font-bold text-emerald-600 dark:text-emerald-400">{liveAppointments.length}</strong>
                 </div>
                 <div className={`p-3 rounded-2xl border ${isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-sm'}`}>
-                  <span className="text-[10px] font-bold text-slate-600 dark:text-slate-400 block">Wallet Payout</span>
+                  <span className="text-[10px] font-extrabold text-slate-800 dark:text-slate-400 block">Wallet Payout</span>
                   <strong className="text-base font-mono font-bold text-emerald-600 dark:text-emerald-400">₹{walletBalance.toLocaleString()}</strong>
                 </div>
               </div>
@@ -1431,7 +1436,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     <FileText className="w-4 h-4 text-[#d97706]" />
                     <span>Kuthi Order Hub (কূথী অর্ডার্স)</span>
                   </h2>
-                  <p className={`text-[10px] ${isDark ? 'text-amber-200/70' : 'text-slate-500'}`}>
+                  <p className={`text-[10px] ${isDark ? 'text-amber-200/70' : 'text-slate-800 font-semibold'}`}>
                     Assigned written readings, paper Kuthi documents, & report upload
                   </p>
                 </div>
@@ -1450,8 +1455,8 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     onClick={() => setKuthiFilter(f)}
                     className={`flex-1 py-1.5 rounded-xl transition-all cursor-pointer text-center ${
                       kuthiFilter === f
-                        ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-xs'
-                        : 'opacity-70 hover:opacity-100'
+                        ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-xs font-black'
+                        : isDark ? 'text-slate-400 hover:text-white' : 'text-slate-800 hover:text-slate-950 font-bold'
                     }`}
                   >
                     {f === 'ALL' ? 'All Orders' : f === 'PENDING' ? 'Pending' : 'Completed'}
@@ -1483,19 +1488,19 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                             {order.status}
                           </span>
                         </div>
-                        <h3 className="text-sm font-serif font-bold mt-0.5">
+                        <h3 className="text-sm font-serif font-bold mt-0.5 text-slate-900 dark:text-white">
                           {order.clientName}
                         </h3>
-                        <p className={`text-[10px] ${isDark ? 'text-amber-200/70' : 'text-slate-500'}`}>
+                        <p className={`text-[10px] ${isDark ? 'text-amber-200/70' : 'text-slate-800 font-semibold'}`}>
                           {order.serviceType}
                         </p>
                       </div>
 
                       <div className="text-right">
-                        <span className="text-[10px] font-mono text-emerald-500 font-extrabold block">
+                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-extrabold block">
                           +₹{order.payoutFee} Fee
                         </span>
-                        <span className="text-[9px] font-mono opacity-60">
+                        <span className={`text-[9px] font-mono ${isDark ? 'opacity-60' : 'text-slate-800 font-bold'}`}>
                           {order.date}
                         </span>
                       </div>
@@ -1507,7 +1512,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     }`}>
                       {/* Religious Tradition Highlight Badge */}
                       <div className="flex items-center justify-between pb-1 border-b border-slate-200 dark:border-[#3a506b]/40">
-                        <span className="font-bold text-slate-500 dark:text-slate-400">Faith Tradition:</span>
+                        <span className={`font-extrabold ${isDark ? 'text-slate-400' : 'text-slate-800'}`}>Faith Tradition:</span>
                         <span className={`px-2 py-0.5 rounded-md font-bold text-[9.5px] border ${
                           order.clientDetails.faithTradition === 'Sanamahi Laining'
                             ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-950/60 dark:text-amber-200 dark:border-amber-500/40'
@@ -1518,15 +1523,15 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       </div>
 
                       <div className="flex justify-between">
-                        <span className="text-slate-500 dark:text-slate-400">জন্ম তারিখ / সময়:</span>
-                        <span className="font-mono font-bold text-slate-800 dark:text-slate-200">{order.clientDetails.dob} · {order.clientDetails.tob}</span>
+                        <span className={isDark ? 'text-slate-400' : 'text-slate-800 font-bold'}>জন্ম তারিখ / সময়:</span>
+                        <span className={`font-mono font-bold ${isDark ? 'text-slate-200' : 'text-slate-900'}`}>{order.clientDetails.dob} · {order.clientDetails.tob}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500 dark:text-slate-400">জন্মস্থান (POB):</span>
-                        <span className="font-medium truncate max-w-[190px] text-slate-800 dark:text-slate-200">{order.clientDetails.pob}</span>
+                        <span className={isDark ? 'text-slate-400' : 'text-slate-800 font-bold'}>জন্মস্থান (POB):</span>
+                        <span className={`font-medium truncate max-w-[190px] ${isDark ? 'text-slate-200' : 'text-slate-900 font-bold'}`}>{order.clientDetails.pob}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-500 dark:text-slate-400">
+                        <span className={isDark ? 'text-slate-400' : 'text-slate-800 font-bold'}>
                           {order.clientDetails.faithTradition === 'Sanamahi Laining' ? 'Yek Salai:' : 'Gotra:'}
                         </span>
                         <span className="font-bold text-[#b45309] dark:text-[#fbbf24]">
@@ -1536,7 +1541,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
-                        <span className="text-slate-500 dark:text-slate-400">Customer Kuthi Paper:</span>
+                        <span className={isDark ? 'text-slate-400' : 'text-slate-800 font-bold'}>Customer Kuthi Paper:</span>
                         <span className="text-amber-700 dark:text-amber-300 font-bold flex items-center gap-1">
                           <Paperclip className="w-3 h-3 text-[#d97706]" />
                           <span className="truncate max-w-[150px]">
@@ -1695,7 +1700,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     <Phone className="w-4 h-4 text-emerald-500 animate-pulse" />
                     <span>Astrologer In-App Consultation Workspace</span>
                   </h3>
-                  <p className={`text-[10.5px] sm:text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>
+                  <p className={`text-[10.5px] sm:text-xs mt-0.5 ${isDark ? 'text-slate-400' : 'text-slate-800 font-medium'}`}>
                     Conduct live 1-on-1 chats and voice/video consultations directly inside kuthiyengpham.
                   </p>
                 </div>
@@ -1740,8 +1745,8 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-200 shadow-xs'
                   }`}>
                     <MessageSquare className="w-10 h-10 text-slate-400 mx-auto" />
-                    <h4 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-800'}`}>No Active Live Session</h4>
-                    <p className="text-xs text-slate-500 max-w-xs mx-auto">
+                    <h4 className={`font-bold text-sm ${isDark ? 'text-white' : 'text-slate-900'}`}>No Active Live Session</h4>
+                    <p className="text-xs text-slate-700 dark:text-slate-300 font-medium max-w-xs mx-auto">
                       When a client initiates a live consultation, an incoming call popup will alert you here automatically.
                     </p>
 
@@ -1772,7 +1777,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       }`}>
                         Consultation Queue ({dbConsultations.length > 0 ? dbConsultations.length : liveAppointments.length})
                       </span>
-                      <span className="text-[10px] text-slate-500 font-medium">
+                      <span className="text-[10px] text-slate-700 dark:text-slate-400 font-bold">
                         Admin Dispatch Required
                       </span>
                     </div>
@@ -1827,7 +1832,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                               </div>
                               <div className="min-w-0">
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                  <h3 className="text-xs font-serif font-bold truncate">{clientName}</h3>
+                                  <h3 className="text-xs font-serif font-bold truncate text-slate-900 dark:text-white">{clientName}</h3>
                                   <span className={`px-2 py-0.2 rounded-full text-[8px] font-extrabold tracking-wide shrink-0 ${
                                     isCompleted
                                       ? 'bg-emerald-500/20 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30'
@@ -1838,17 +1843,17 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                                     {isCompleted ? 'COMPLETED' : meetingLinkSent ? 'LINK DISPATCHED' : 'PENDING ADMIN LINK'}
                                   </span>
                                 </div>
-                                <span className="text-[10px] text-slate-500 dark:text-slate-400 block font-mono truncate">
+                                <span className="text-[10px] text-slate-700 dark:text-slate-300 font-bold block font-mono truncate">
                                   Ref: {orderRef} · {modeLabel}
                                 </span>
                               </div>
                             </div>
 
                             <div className="text-right shrink-0">
-                              <span className="text-[10px] font-mono text-emerald-500 font-bold block">
+                              <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-400 font-bold block">
                                 ₹{netPayout} {isCompleted ? 'Credited' : 'Net'}
                               </span>
-                              <span className="text-[9px] font-mono opacity-60">
+                              <span className="text-[9px] font-mono text-slate-700 dark:text-slate-400 font-medium">
                                 {durationMins} Mins
                               </span>
                             </div>
@@ -1858,28 +1863,28 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                           {isCompleted ? (
                             /* COMPLETED SESSION: Order and Session details ONLY. Client phone redacted & chat closed */
                             <div className={`p-2.5 rounded-xl border text-[10.5px] space-y-1.5 ${
-                              isDark ? 'bg-[#0b132b] border-[#3a506b]/40 text-slate-300' : 'bg-slate-100/70 border-slate-200 text-slate-700'
+                              isDark ? 'bg-[#0b132b] border-[#3a506b]/40 text-slate-300' : 'bg-slate-100/70 border-slate-200 text-slate-800'
                             }`}>
                               <div className="flex justify-between items-center">
-                                <span className="text-slate-400">Service Mode:</span>
-                                <span className="font-semibold">{modeLabel}</span>
+                                <span className={isDark ? "text-slate-400" : "text-slate-800 font-extrabold"}>Service Mode:</span>
+                                <span className="font-semibold text-slate-900 dark:text-white">{modeLabel}</span>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className="text-slate-400">Completed Date:</span>
-                                <span className="font-mono">{scheduledTime}</span>
+                                <span className={isDark ? "text-slate-400" : "text-slate-800 font-extrabold"}>Completed Date:</span>
+                                <span className="font-mono text-slate-900 dark:text-slate-100 font-bold">{scheduledTime}</span>
                               </div>
                               <div className="flex justify-between items-center">
-                                <span className="text-slate-400">Client Details:</span>
-                                <span className="font-mono text-slate-400 italic">[Redacted for privacy]</span>
+                                <span className={isDark ? "text-slate-400" : "text-slate-800 font-extrabold"}>Client Details:</span>
+                                <span className={`font-mono italic ${isDark ? 'text-slate-400' : 'text-slate-700 font-semibold'}`}>[Redacted for privacy]</span>
                               </div>
                             </div>
                           ) : (
                             /* ACTIVE / WAITING SESSION */
                             <div className={`p-2 rounded-xl border text-[10px] flex items-center justify-between ${
-                              isDark ? 'bg-[#0b132b]/60 border-[#3a506b]/30 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-700'
+                              isDark ? 'bg-[#0b132b]/60 border-[#3a506b]/30 text-slate-300' : 'bg-slate-50 border-slate-200 text-slate-900'
                             }`}>
-                              <span className="text-slate-500 font-medium">In-App Live Session</span>
-                              <span className="font-medium text-amber-500">{scheduledTime}</span>
+                              <span className={isDark ? "text-slate-400 font-medium" : "text-slate-800 font-bold"}>In-App Live Session</span>
+                              <span className="font-bold text-amber-700 dark:text-amber-400">{scheduledTime}</span>
                             </div>
                           )}
 
@@ -1960,7 +1965,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     <Wrench className="w-4 h-4 text-[#d97706] dark:text-[#fbbf24]" />
                     <span>Astrological Tools & Engines</span>
                   </h2>
-                  <p className={`text-[10px] ${isDark ? 'text-amber-200/70' : 'text-slate-500'}`}>
+                  <p className={`text-[10px] ${isDark ? 'text-amber-200/70' : 'text-slate-700 font-medium'}`}>
                     Professional Vedic, KP & Manipuri Horoscopy Workstations ({filteredTools.length} Available)
                   </p>
                 </div>
@@ -1971,7 +1976,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
 
               {/* Search Bar */}
               <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-3 top-3 text-slate-400" />
+                <Search className={`w-3.5 h-3.5 absolute left-3 top-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`} />
                 <input
                   type="text"
                   value={toolSearchQuery}
@@ -1980,7 +1985,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                   className={`w-full pl-9 pr-3 py-2 rounded-xl text-xs border focus:outline-none ${
                     isDark
                       ? 'bg-[#1c2541] border-[#3a506b] text-white focus:border-amber-400 placeholder-slate-400'
-                      : 'bg-white border-slate-200 text-slate-900 focus:border-amber-500 placeholder-slate-400 shadow-xs'
+                      : 'bg-white border-slate-300 text-slate-950 font-semibold focus:border-amber-500 placeholder-slate-500 shadow-xs'
                   }`}
                 />
               </div>
@@ -2002,7 +2007,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                         ? 'bg-amber-500 text-slate-950 font-black border-amber-400 shadow-xs scale-102'
                         : isDark
                         ? 'bg-[#1c2541] border-[#3a506b] text-slate-300 hover:text-white'
-                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100 shadow-xs'
+                        : 'bg-white border-slate-300 text-slate-800 font-bold hover:bg-slate-100 shadow-xs'
                     }`}
                   >
                     {cat.label}
@@ -2016,6 +2021,10 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                   <div
                     key={tool.id}
                     onClick={() => {
+                      if (tool.id === 'manipuri-book-panchang' || tool.id === 'panchang') {
+                        setActiveTab('panchang');
+                        return;
+                      }
                       if (tool.id === 'kuthi-result-sheets') setActiveToolModal('kuthi-result-sheets');
                       else if (tool.id === 'saka-to-birth') setActiveToolModal('saka-to-birth');
                       else if (tool.id === 'vedic-workstation') setActiveToolModal('vedic-workstation');
@@ -2039,7 +2048,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                   >
                     <div className="flex items-start gap-3 min-w-0">
                       <div className={`w-10 h-10 rounded-2xl flex items-center justify-center shrink-0 border text-lg ${
-                        tool.id === 'kuthi-result-sheets' || tool.id === 'saka-to-birth'
+                        tool.id === 'kuthi-result-sheets' || tool.id === 'saka-to-birth' || tool.id === 'manipuri-book-panchang'
                           ? 'bg-gradient-to-tr from-amber-600/30 to-amber-500/20 border-amber-500/40 text-amber-500'
                           : tool.category === 'dosha'
                           ? 'bg-gradient-to-tr from-rose-600/20 to-orange-500/20 border-rose-500/30 text-rose-500'
@@ -2049,6 +2058,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       }`}>
                         {tool.id === 'kuthi-result-sheets' && '🪶'}
                         {tool.id === 'saka-to-birth' && '📜'}
+                        {tool.id === 'manipuri-book-panchang' && '📅'}
                         {tool.id === 'vedic-workstation' && '🧭'}
                         {tool.id === 'bnn-workstation' && '✨'}
                         {tool.id === 'numerology-workstation' && '🔢'}
@@ -2091,6 +2101,23 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                   </div>
                 ))}
               </div>
+            </motion.div>
+          )}
+
+          {/* ------------------------------------------------------------- */}
+          {/* TAB: MANIPURI BOOK PANCHANG WORKSTATION                        */}
+          {/* ------------------------------------------------------------- */}
+          {activeTab === 'panchang' && (
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              className="space-y-4"
+            >
+              <ManipuriPanchangWorkstation
+                theme={isDark ? 'dark' : 'light'}
+                isEmbedded={true}
+              />
             </motion.div>
           )}
 
@@ -2289,25 +2316,25 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     <ShieldCheck className="w-4 h-4 text-[#d97706] dark:text-[#fbbf24]" />
                   </h2>
                   <p className="text-[11px] font-semibold text-[#b45309] dark:text-[#fbbf24]">{astroUser.specialty || 'Master Vedic Astrologer & Kuthi Specialist'}</p>
-                  <p className="text-[10px] text-slate-600 dark:text-slate-400 font-medium mt-0.5">15+ Years Experience · 50k+ Kuthi Consultations</p>
+                  <p className="text-[10px] text-slate-800 dark:text-slate-400 font-bold mt-0.5">15+ Years Experience · 50k+ Kuthi Consultations</p>
                 </div>
 
                 <div className={`grid grid-cols-3 gap-2 pt-2 border-t text-center text-xs ${
                   isDark ? 'border-[#3a506b]/50' : 'border-slate-200'
                 }`}>
                   <div>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold block">Rating</span>
+                    <span className="text-[10px] text-slate-800 dark:text-slate-400 font-extrabold block">Rating</span>
                     <span className="font-extrabold text-[#d97706] dark:text-[#fbbf24] flex items-center justify-center gap-0.5">
                       <Star className="w-3 h-3 fill-current" /> 5.0
                     </span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold block">Live Call</span>
-                    <span className="font-extrabold font-mono text-slate-800 dark:text-slate-200">₹35/min</span>
+                    <span className="text-[10px] text-slate-800 dark:text-slate-400 font-extrabold block">Live Call</span>
+                    <span className="font-extrabold font-mono text-slate-900 dark:text-slate-200">₹35/min</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-bold block">Kuthi Yengba</span>
-                    <span className="font-extrabold text-emerald-600 dark:text-emerald-300 font-mono">₹499</span>
+                    <span className="text-[10px] text-slate-800 dark:text-slate-400 font-extrabold block">Kuthi Yengba</span>
+                    <span className="font-extrabold text-emerald-700 dark:text-emerald-300 font-mono">₹499</span>
                   </div>
                 </div>
               </div>
@@ -2323,14 +2350,14 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                     <Wallet className="w-4 h-4 text-[#d97706] dark:text-[#fbbf24]" />
                     <span>Astrologer Wallet Balance</span>
                   </span>
-                  <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30">
+                  <span className="text-[9px] font-mono text-emerald-600 dark:text-emerald-300 bg-emerald-500/20 px-2 py-0.5 rounded-full border border-emerald-500/30 font-bold">
                     Live Verified
                   </span>
                 </div>
 
                 <div className="flex items-baseline justify-between">
                   <span className="text-2xl font-black text-[#b45309] dark:text-[#fbbf24] font-mono">₹{walletBalance.toLocaleString()}</span>
-                  <span className="text-[11px] text-slate-600 dark:text-slate-300 font-medium">80% Share Earned</span>
+                  <span className="text-[11px] text-slate-700 dark:text-slate-300 font-bold">80% Share Earned</span>
                 </div>
 
                 <button
@@ -2347,8 +2374,8 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               }`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <span className="text-xs font-bold block">Consultation Availability</span>
-                    <span className="text-[10px] opacity-70">Toggle availability for client bookings</span>
+                    <span className="text-xs font-bold text-slate-900 dark:text-white block">Consultation Availability</span>
+                    <span className="text-[10px] text-slate-600 dark:text-slate-400 font-medium">Toggle availability for client bookings</span>
                   </div>
                   <button
                     onClick={() => setIsOnline(!isOnline)}
@@ -2371,7 +2398,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
           <nav className={`pointer-events-auto rounded-full backdrop-blur-md border p-1.5 flex items-center justify-around transition-colors ${
             isDark 
               ? 'bg-[#0b132b]/95 border-[#3a506b] shadow-[0_12px_40px_rgba(0,0,0,0.6)]' 
-              : 'bg-white/95 border-slate-200 shadow-[0_10px_30px_rgba(0,0,0,0.08)]'
+              : 'bg-white/95 border-slate-300 shadow-[0_10px_30px_rgba(0,0,0,0.12)]'
           }`}>
             {/* Dock 1: Overview */}
             <button
@@ -2380,8 +2407,8 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                 activeTab === 'overview'
                   ? isDark 
                     ? 'text-amber-400 bg-amber-500/15 font-bold shadow-xs border border-amber-500/30' 
-                    : 'text-[#b45309] bg-amber-50 font-extrabold border border-amber-300 shadow-xs'
-                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-600 hover:text-[#b45309]'
+                    : 'text-[#b45309] bg-amber-50 font-black border border-amber-300 shadow-xs'
+                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-800 hover:text-[#b45309] font-extrabold'
               }`}
             >
               <Home className="w-4 h-4" />
@@ -2395,8 +2422,8 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                 activeTab === 'kuthi'
                   ? isDark 
                     ? 'text-amber-400 bg-amber-500/15 font-bold shadow-xs border border-amber-500/30' 
-                    : 'text-[#b45309] bg-amber-50 font-extrabold border border-amber-300 shadow-xs'
-                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-600 hover:text-[#b45309]'
+                    : 'text-[#b45309] bg-amber-50 font-black border border-amber-300 shadow-xs'
+                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-800 hover:text-[#b45309] font-extrabold'
               }`}
             >
               <FileText className="w-4 h-4" />
@@ -2408,15 +2435,30 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               )}
             </button>
 
-            {/* Dock 3: Live Call & Chat (Audio/Video Consultations ONLY) */}
+            {/* Dock 3: Panchang */}
+            <button
+              onClick={() => setActiveTab('panchang')}
+              className={`flex-1 py-1.5 rounded-full flex flex-col items-center gap-0.5 transition-all active:scale-90 cursor-pointer ${
+                activeTab === 'panchang'
+                  ? isDark 
+                    ? 'text-amber-400 bg-amber-500/15 font-bold shadow-xs border border-amber-500/30' 
+                    : 'text-[#b45309] bg-amber-50 font-black border border-amber-300 shadow-xs'
+                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-800 hover:text-[#b45309] font-extrabold'
+              }`}
+            >
+              <Calendar className="w-4 h-4" />
+              <span className="text-[8.5px] font-extrabold tracking-tight">Panchang</span>
+            </button>
+
+            {/* Dock 4: Live Call & Chat (Audio/Video Consultations ONLY) */}
             <button
               onClick={() => setActiveTab('live')}
               className={`flex-1 py-1.5 rounded-full flex flex-col items-center gap-0.5 transition-all active:scale-90 relative cursor-pointer ${
                 activeTab === 'live'
                   ? isDark 
                     ? 'text-emerald-400 bg-emerald-500/15 font-bold shadow-xs border border-emerald-500/30' 
-                    : 'text-emerald-800 bg-emerald-50 font-extrabold border border-emerald-300 shadow-xs'
-                  : isDark ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-600 hover:text-emerald-700'
+                    : 'text-emerald-900 bg-emerald-50 font-black border border-emerald-400 shadow-xs'
+                  : isDark ? 'text-slate-400 hover:text-emerald-400' : 'text-slate-800 hover:text-emerald-800 font-extrabold'
               }`}
             >
               <PhoneCall className="w-4 h-4" />
@@ -2431,8 +2473,8 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                 activeTab === 'tools'
                   ? isDark 
                     ? 'text-amber-400 bg-amber-500/15 font-bold shadow-xs border border-amber-500/30' 
-                    : 'text-[#b45309] bg-amber-50 font-extrabold border border-amber-300 shadow-xs'
-                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-600 hover:text-[#b45309]'
+                    : 'text-[#b45309] bg-amber-50 font-black border border-amber-300 shadow-xs'
+                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-800 hover:text-[#b45309] font-extrabold'
               }`}
             >
               <Wrench className="w-4 h-4" />
@@ -2446,8 +2488,8 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                 activeTab === 'profile'
                   ? isDark 
                     ? 'text-amber-400 bg-amber-500/15 font-bold shadow-xs border border-amber-500/30' 
-                    : 'text-[#b45309] bg-amber-50 font-extrabold border border-amber-300 shadow-xs'
-                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-600 hover:text-[#b45309]'
+                    : 'text-[#b45309] bg-amber-50 font-black border border-amber-300 shadow-xs'
+                  : isDark ? 'text-slate-400 hover:text-amber-300' : 'text-slate-800 hover:text-[#b45309] font-extrabold'
               }`}
             >
               <User className="w-4 h-4" />
@@ -2847,6 +2889,21 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
                       address: astroUser?.address,
                       phone: astroUser?.phone || astroUser?.whatsappNo,
                     }}
+                    onClose={() => {
+                      setActiveToolModal(null);
+                      setMobileToolResult(null);
+                    }}
+                  />
+                </motion.div>
+              ) : activeToolModal === 'manipuri-book-panchang' || activeToolModal === 'panchang' ? (
+                <motion.div
+                  initial={{ y: 50 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: 50 }}
+                  className="w-full max-w-2xl max-h-[94vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl"
+                >
+                  <ManipuriPanchangWorkstation
+                    theme={isDark ? 'dark' : 'light'}
                     onClose={() => {
                       setActiveToolModal(null);
                       setMobileToolResult(null);

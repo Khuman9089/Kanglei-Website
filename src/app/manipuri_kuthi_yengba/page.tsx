@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { ServiceCouponScheme } from '@/app/api/services/coupons/route';
+import ManipurLocationInput, { LocationSelection } from '@/components/forms/ManipurLocationInput';
 
 interface KuthiSlot {
   id: string;
@@ -41,6 +42,7 @@ function ManipuriKuthiYengbaContent() {
 
   // Primary Contact Info
   const [clientName, setClientName] = useState('');
+  const [email, setEmail] = useState('');
   const [whatsappNo, setWhatsappNo] = useState('');
   const [gender, setGender] = useState<'Male' | 'Female'>('Male');
   const [clientRequirement, setClientRequirement] = useState('');
@@ -58,7 +60,9 @@ function ManipuriKuthiYengbaContent() {
   const [noKuthiPaper, setNoKuthiPaper] = useState(false);
   const [dob, setDob] = useState('');
   const [tob, setTob] = useState('');
-  const [pob, setPob] = useState('Imphal, Manipur');
+  const [pob, setPob] = useState('');
+  const [lat, setLat] = useState(24.8170);
+  const [lng, setLng] = useState(93.9368);
   const [notes, setNotes] = useState('');
   const [faithTradition, setFaithTradition] = useState<'Hinduism' | 'Sanamahi Laining'>('Hinduism');
 
@@ -464,6 +468,9 @@ function ManipuriKuthiYengbaContent() {
           dob,
           tob,
           pob,
+          latitude: lat,
+          longitude: lng,
+          email,
           notes,
           faithTradition,
           wantKuthiRewrite,
@@ -489,7 +496,7 @@ function ManipuriKuthiYengbaContent() {
             amount: totalAmount,
             productInfo: `Kuthi Yengba: ${selectedSubService.title}`,
             firstname: clientName.trim() || 'Client',
-            email: 'client@kangleiastro.com',
+            email: email.trim() || 'client@kangleiastro.com',
             phone: whatsappNo.trim() || '9862012345',
             orderType: 'kuthi',
             orderPayload,
@@ -609,8 +616,8 @@ function ManipuriKuthiYengbaContent() {
 
               <form onSubmit={handleStep1Submit} className="space-y-6 text-xs font-sans">
                 
-                {/* 1. NAME, WHATSAPP NO & SUB-CATEGORY DROPDOWN */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                {/* 1. NAME, EMAIL, WHATSAPP NO & SUB-CATEGORY DROPDOWN */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
                       Your Name<span className="text-red-500">*</span>
@@ -618,7 +625,7 @@ function ManipuriKuthiYengbaContent() {
                     <input
                       type="text"
                       required
-                      placeholder="Enter your full name"
+                      placeholder="Full Name (e.g. Sanatomba Singh)"
                       value={clientName}
                       onChange={(e) => setClientName(e.target.value)}
                       className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
@@ -627,7 +634,20 @@ function ManipuriKuthiYengbaContent() {
 
                   <div>
                     <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
-                      WhatsApp Number<span className="text-red-500">*</span>
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="abc@gmail.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="w-full h-11 px-3.5 rounded-xl border border-gray-300 bg-[#fefcf6] text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#0f172a] mb-1 uppercase tracking-wider">
+                      WhatsApp / Mobile No.<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="tel"
@@ -847,7 +867,7 @@ function ManipuriKuthiYengbaContent() {
                           Enter Birth Details Manually
                         </div>
 
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                           <div>
                             <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
                               Date of Birth<span className="text-red-500">*</span>
@@ -868,19 +888,6 @@ function ManipuriKuthiYengbaContent() {
                               type="time"
                               value={tob}
                               onChange={(e) => setTob(e.target.value)}
-                              className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
-                            />
-                          </div>
-
-                          <div>
-                            <label className="block text-[11px] font-bold text-gray-700 mb-1 uppercase">
-                              Place of Birth<span className="text-red-500">*</span>
-                            </label>
-                            <input
-                              type="text"
-                              placeholder="e.g. Imphal, Thoubal"
-                              value={pob}
-                              onChange={(e) => setPob(e.target.value)}
                               className="w-full h-10 px-3 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] font-bold focus:border-[#d97706] focus:outline-none"
                             />
                           </div>
@@ -915,6 +922,23 @@ function ManipuriKuthiYengbaContent() {
                               </button>
                             </div>
                           </div>
+                        </div>
+
+                        {/* Place of Birth / Hospital with Google Maps / Manipur Location Autocomplete */}
+                        <div className="pt-1">
+                          <ManipurLocationInput
+                            label="Place of Birth / Hospital Name in Manipur"
+                            placeholder="Search hospital or birth place (e.g. RIMS, JNIMS, Shija Hospital, Imphal)"
+                            value={pob}
+                            latitude={lat}
+                            longitude={lng}
+                            required={noKuthiPaper}
+                            onChange={(loc) => {
+                              setPob(loc.placeName);
+                              setLat(loc.latitude);
+                              setLng(loc.longitude);
+                            }}
+                          />
                         </div>
 
                         <div>

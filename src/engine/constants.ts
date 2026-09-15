@@ -73,3 +73,21 @@ export const NAKSHATRAS = [
   startDegree: n.index * NAKSHATRA_SPAN,
   endDegree: (n.index + 1) * NAKSHATRA_SPAN
 }));
+
+export const NAKSHATRA_NAMES_BENGALI = [
+  'অশ্বিনী', 'ভরণী', 'কৃত্তিকা', 'রোহিণী', 'মৃগশিরা', 'আর্দ্রা', 'পুনর্বসু', 'পুষ্যা', 'অশ্লেষা',
+  'মঘা', 'পূর্বফল্গুনী', 'উত্তরফল্গুনী', 'হস্তা', 'চিত্রা', 'স্বাতী', 'বিশাখা', 'অনুরাধা', 'জ্যেষ্ঠা',
+  'মূল', 'পূর্বাষাঢ়া', 'উত্তরাষাঢ়া', 'শ্রবণা', 'ধনিষ্ঠা', 'শতভিষা', 'পূর্বভাদ্রপদ', 'উত্তরভাদ্রপদ', 'রেবতী'
+];
+
+export const NAKSHATRA_NAMES_MEETEI = [
+  'ꯑꯁ꯭ꯕꯤꯅꯤ', 'ꯚꯔꯅꯤ', 'ꯀ꯭ꯔꯤꯇꯤꯀꯥ', 'ꯔꯣꯍꯤꯅꯤ', 'ꯃ꯭ꯔꯤꯒꯁꯤꯔꯥ', 'ꯑꯥꯔꯗ꯭ꯔꯥ', 'ꯄꯨꯅꯔꯕꯁꯨ', 'ꯄꯨꯁ꯭ꯌꯥ', 'ꯑꯁ꯭ꯂꯦꯁꯥ',
+  'ꯃꯘꯥ', 'ꯄꯨꯔꯕꯐꯜꯒꯨꯅꯤ', 'ꯎꯇ꯭ꯇꯔꯐꯜꯒꯨꯅꯤ', 'ꯍꯁ꯭ꯇꯥ', 'ꯆꯤꯇ꯭ꯔꯥ', 'ꯁ꯭ꯕꯥꯇꯤ', 'ꯕꯤꯁꯥꯈꯥ', 'ꯑꯅꯨꯔꯥꯙꯥ', 'ꯖ꯭ꯌꯦꯁ꯭ꯊꯥ',
+  'ꯃꯨꯜ', 'ꯄꯨꯔꯕꯥꯁꯥꯔꯥ', 'ꯎꯇ꯭ꯇꯔꯥꯁꯥꯔꯥ', 'ꯁ꯭ꯔꯕꯅꯥ', 'ꯙꯅꯤꯁ꯭ꯊꯥ', 'ꯁꯇꯚꯤꯁꯥ', 'ꯄꯨꯔꯕꯚꯥꯗ꯭ꯔꯄꯗ', 'ꯎꯇ꯭ꯇꯔꯚꯥꯗ꯭ꯔꯄꯗ', 'ꯔꯦꯕꯇꯤ'
+];
+
+export const NAKSHATRA_NAMES_BLIPI = [
+  'AiSBin', 'vrnI', 'kito_ka', 'Eraihin', 'm<giSra', 'Aad[\`a', 'punb\`bsu', 'puF/a', 'AeS]Fa',
+  'ma', 'pub\`bfnI', 'R~o_rfnI', 'ha', 'ic@_', 'atI', 'ibSaKa', 'AnuraDa', 'Ej/',
+  'mula', 'pub\`baFaP.a', 'R~o_raFaP.a', 'S[ba', 'Din', 'StivFa', 'pub\`bavad[pd', 'R~o_rvd[pd', 'ErbtI'
+];

@@ -58,6 +58,7 @@ export interface AstrologerSectionSettings {
   title: string;
   highlightText: string;
   subtitleTagline: string;
+  showSectionOnHome?: boolean; // Controls whether Top Rated Astrologers section is visible on homepage
   showRateOnHome: boolean; // Toggle rate display on homepage
   actionButtonType: 'both' | 'chat_only' | 'call_only'; // Control button function (Chat, Call, or Both)
   rateMode: 'fixed' | 'per_minute' | 'both' | 'none'; // Rate mode: fixed fee, per-minute rate, both, or hide
@@ -70,6 +71,7 @@ const DEFAULT_SECTION_SETTINGS: AstrologerSectionSettings = {
   title: "Talk to Manipur's",
   highlightText: "Top Rated",
   subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
+  showSectionOnHome: false, // Default to FALSE / Hidden on homepage as requested initially
   showRateOnHome: true,
   actionButtonType: 'both',
   rateMode: 'fixed',

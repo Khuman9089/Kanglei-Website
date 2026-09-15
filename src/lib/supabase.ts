@@ -36,7 +36,7 @@ export const supabase: SupabaseClient = new Proxy({} as SupabaseClient, {
 
 export async function checkSupabaseConnection() {
   try {
-    const { data, error } = await supabase.from('orders').select('count', { count: 'exact', head: true });
+    const { error } = await supabase.from('kv_store').select('key', { count: 'exact', head: true });
     if (error) {
       console.warn('Supabase connection warning:', error.message);
       return false;

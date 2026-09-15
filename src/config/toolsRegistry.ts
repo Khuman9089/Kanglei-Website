@@ -147,5 +147,14 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
     color: 'text-amber-600',
     description: 'Renders complete authentic Manipuri Kuthi horoscope documents across 3 tabbed sheets: Result (Classic format), Meetei_Result (BLipi15), and MM_Result_M (Budha.ttf font), with 8-direction travel predictions, lucky planetary numbers, and life dasha narrative.',
   },
+  {
+    id: 'manipuri-book-panchang',
+    title: 'Manipuri Book Panchang (মণিপুরী পঞ্জিকা)',
+    subtitle: 'Authentic 3-in-1 Manipuri Panchang Book, 3x8 Table (Excel qw.xlsm) & Modern Cards.',
+    category: 'astrology',
+    iconName: 'Calendar',
+    color: 'text-amber-500',
+    description: 'Physical Manipuri Panchang Book viewer matching authentic printed pakhangba / thawan astrological almanacs with tithi, nakshatra, yogas, auspicious muhurtas, choghadiya, and planetary transitions.',
+  },
 ];
 

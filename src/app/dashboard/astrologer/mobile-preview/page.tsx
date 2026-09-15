@@ -340,7 +340,9 @@ export default function AstrologerMobileSimulatorPage() {
               <div className="absolute -right-[7px] top-36 w-[3px] h-16 bg-slate-700 rounded-r-md" />
 
               {/* Screen Area (Interactive AstrologerMobileView inside Frame) */}
-              <div className="w-full h-full rounded-[42px] overflow-hidden overflow-y-auto no-scrollbar relative flex flex-col">
+              <div className={`w-full h-full rounded-[42px] overflow-hidden overflow-y-auto no-scrollbar relative flex flex-col ${
+                deviceTheme === 'dark' ? 'dark bg-[#070c1a] text-[#faf8f4]' : 'bg-[#faf8f5] text-slate-900'
+              }`}>
                 <AstrologerMobileView
                   customConfig={{
                     showAdBanner,
@@ -358,6 +360,7 @@ export default function AstrologerMobileSimulatorPage() {
                     isOnline: isAstrologerOnline,
                     enabledEngines,
                     notices,
+                    theme: deviceTheme,
                   }}
                 />
               </div>

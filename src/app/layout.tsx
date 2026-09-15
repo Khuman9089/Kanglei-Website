@@ -6,41 +6,62 @@ import BannerAd970x90 from "@/components/ui/BannerAd970x90";
 import JsonLd from "@/components/seo/JsonLd";
 
 import MobileBottomNav from "@/components/layout/MobileBottomNav";
+import GoogleAnalytics from "@/components/seo/GoogleAnalytics";
 
 import CartDrawer from "@/components/shop/CartDrawer";
 
-const baseUrl = 'https://benevolent-ganache-baa904.netlify.app';
+const baseUrl = 'https://kuthiyengpham.in';
 
 export const metadata: Metadata = {
   metadataBase: new URL(baseUrl),
   title: {
-    default: "KuthiYengpham by KangleiAstro — Manipuri Kuthi Yengba & Vedic Astrology",
-    template: "%s | KuthiYengpham by KangleiAstro",
+    default: "Kuthi Yengpham | Manipur Kuthi Yengba, Manipuri Calendar & Panjika",
+    template: "%s | Kuthi Yengpham",
   },
   description:
-    "Discover your life's blueprint with KuthiYengpham by KangleiAstro: authentic Manipuri Kuthi Yengba, Kuthi Iba, free Kundli generator, Ashtakoot 36-Gun Milan matching, and expert consultations.",
+    "Authentic Manipur kuthi yengba and online astrology portal. Check daily Manipuri calendar, panjika (panchang), Thaban Tatpa, Luhongba Thouro, Rashiphal, Nakshatra, and Kangleipak horoscopes.",
   keywords: [
-    "KuthiYengpham",
-    "KuthiYengpham by KangleiAstro",
-    "KangleiAstro",
-    "Kuthi Yengba",
-    "Kuthi Iba",
-    "Manipuri Astrologer",
-    "Imphal Astrologer",
-    "Kundli Generator",
-    "Horoscope Report",
-    "Jyotish Consultation",
-    "Gun Milan",
-    "Kundli Matching",
-    "Vimshottari Dasha",
+    "manipur kuthi yengba",
+    "kuthi yengpham",
+    "manipuri calendar",
+    "manipuri panchang",
+    "manipuri panjika",
+    "thaban tatpa",
+    "luhongba thouro",
+    "rashiphal manipuri",
+    "manipur astrology online",
+    "kanglei astrology",
+    "yumsa thouro",
+    "thougal thouro",
+    "meitei panjika",
+    "meitei calendar",
+    "tithi manipur",
+    "nakshatra manipur",
+    "thasi maikei",
+    "horoscope manipur",
+    "kuthi iba",
+    "kangleiastro",
+    "manipur astrologer"
   ],
-  authors: [{ name: "KuthiYengpham by KangleiAstro Vedic Panel" }],
-  creator: "KuthiYengpham by KangleiAstro",
-  publisher: "KuthiYengpham by KangleiAstro",
+  authors: [{ name: "Kuthi Yengpham Astrology Panel" }],
+  creator: "Kuthi Yengpham",
+  publisher: "Kuthi Yengpham",
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
+  },
+  alternates: {
+    canonical: "https://kuthiyengpham.in/",
+  },
+  icons: {
+    icon: [
+      { url: '/favicon.png', type: 'image/png' },
+      { url: '/favicon.ico', sizes: 'any' },
+    ],
+    apple: [
+      { url: '/apple-touch-icon.png' },
+    ],
   },
   robots: {
     index: true,
@@ -54,48 +75,46 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "KuthiYengpham by KangleiAstro — Manipuri Kuthi Yengba & Vedic Astrology",
-    description: "Connect with Manipur's top empaneled Vedic astrologers for Kuthi Yengba, Kuthi Iba, Vimshottari Dasha, and 36-Gun Ashtakoot marriage matching.",
-    url: baseUrl,
-    siteName: "KuthiYengpham by KangleiAstro",
-    locale: "en_IN",
     type: "website",
+    url: "https://kuthiyengpham.in/",
+    title: "Kuthi Yengpham | Manipur Kuthi Yengba, Calendar & Panchang",
+    description: "Calculate your Kuthi online. Access daily Manipuri Panjika, Thaban Tatpa, Luhongba & Yumsharol auspicious dates, and Vedic horoscope readings in Manipur.",
+    siteName: "Kuthi Yengpham",
+    locale: "en_IN",
     images: [
       {
-        url: `${baseUrl}/kangleiastro_og_cover.png`,
+        url: "https://kuthiyengpham.in/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "KangleiAstro Premium Vedic Astrology Consultations & Reports",
+        alt: "Kuthi Yengpham — Manipur Kuthi Yengba, Manipuri Calendar & Panjika",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "KangleiAstro — Premium Vedic Astrology & Kuthi Yengba",
-    description: "Personalized Vedic astrology consultations, birth chart calculations, and marriage matching.",
-    images: [`${baseUrl}/kangleiastro_og_cover.png`],
-    creator: "@kangleiastro",
-  },
-  alternates: {
-    canonical: baseUrl,
+    site: "@kuthiyengpham",
+    creator: "@kuthiyengpham",
+    title: "Kuthi Yengpham | Manipur Kuthi Yengba, Calendar & Panchang",
+    description: "Online Manipuri astrology portal for Kuthi Yengba, daily calendar, Panjika timings, and Meitei auspicious day calculations.",
+    images: ["https://kuthiyengpham.in/og-image.jpg"],
   },
 };
 
 const organizationSchema = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
-  "name": "KangleiAstro Vedic Astrology Platform",
-  "alternateName": "KangleiAstro",
-  "url": baseUrl,
-  "logo": `${baseUrl}/logo.png`,
-  "image": `${baseUrl}/kangleiastro_og_cover.png`,
-  "description": "Premier Manipuri Vedic Astrology platform providing live Kuthi Yengba consultations, D1 Rashi & D9 Navamsha chart reports, Ashtakoot Gun Milan matching, and consecration e-store.",
+  "name": "Kuthi Yengpham",
+  "alternateName": ["KuthiYengpham by KangleiAstro", "KangleiAstro", "Kuthi Yengpham Manipur"],
+  "url": "https://kuthiyengpham.in/",
+  "logo": "https://kuthiyengpham.in/og-image.jpg",
+  "image": "https://kuthiyengpham.in/og-image.jpg",
+  "description": "Authentic Manipur kuthi yengba and online astrology portal. Check daily Manipuri calendar, panjika (panchang), Thaban Tatpa, Luhongba Thouro, Rashiphal, Nakshatra, and Kangleipak horoscopes.",
   "address": {
     "@type": "PostalAddress",
-    "streetAddress": "Uripok Kangchup Road",
-    "addressLocality": "Imphal West",
+    "streetAddress": "Khurai Chingangbam Leikai, Tinsid Road",
+    "addressLocality": "Imphal East",
     "addressRegion": "Manipur",
-    "postalCode": "795001",
+    "postalCode": "795005",
     "addressCountry": "IN"
   },
   "geo": {
@@ -104,8 +123,8 @@ const organizationSchema = {
     "longitude": "93.9368"
   },
   "telephone": "+91 98765 43210",
-  "email": "ccare@kangleiastro.com",
-  "priceRange": "₹25 - ₹2499",
+  "email": "ccare@kuthiyengpham.in",
+  "priceRange": "₹0 - ₹2499",
   "openingHoursSpecification": [
     {
       "@type": "OpeningHoursSpecification",
@@ -125,6 +144,15 @@ const organizationSchema = {
   }
 };
 
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Kuthi Yengpham",
+  "url": "https://kuthiyengpham.in/",
+  "description": "Authentic Manipur kuthi yengba and online astrology portal. Check daily Manipuri calendar, panjika (panchang), Thaban Tatpa, Luhongba Thouro, Rashiphal, Nakshatra, and Kangleipak horoscopes.",
+  "inLanguage": ["en", "bn", "mni"]
+};
+
 export default function RootLayout({
   children,
 }: {
@@ -133,7 +161,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        <link rel="icon" href="/favicon.ico" />
+        <link rel="icon" href="/favicon.png" type="image/png" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link
@@ -145,6 +175,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <JsonLd data={organizationSchema} />
+        <JsonLd data={websiteSchema} />
+        <GoogleAnalytics />
       </head>
       <body className="min-h-screen flex flex-col bg-[#fffdfa] text-[#0f172a] antialiased selection:bg-[#d97706]/20 selection:text-[#0f172a] pb-16 md:pb-0">
         <Navbar />

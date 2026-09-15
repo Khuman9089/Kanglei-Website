@@ -12,6 +12,7 @@ import {
 } from '@/data/manipuriMonthAttributes';
 import { calculateVedicPanchang, PanchangData } from './panchang';
 import { getManipurFestival, ManipurFestival } from '@/data/manipurFestivals';
+import { NAKSHATRA_NAMES_BENGALI, NAKSHATRA_NAMES_MEETEI } from './constants';
 
 export interface CalendarDay {
   day: number;
@@ -34,10 +35,19 @@ export interface CalendarDay {
     nameMeetei: string;
   };
   tithiNumber: number; // 1 to 30
+  isDualTithi: boolean;
   tithiDisplayBengali: string; // e.g. "ইঙা ২৫" or "ইঙেন ১১, ১২"
   tithiDisplayMeetei: string;  // e.g. "ꯏꯉꯥ ꯲꯵"
   tithiEndingTime: string;     // e.g. "22|36|33"
   tithiEndingStandard: string; // e.g. "10:36 PM"
+
+  // Nakshatra
+  nakshatraNumber: number; // 1 to 27
+  isDualNakshatra: boolean;
+  nakshatraDisplayNumBengali: string; // e.g. "৭" or "৭, ৮"
+  nakshatraDisplayNumMeetei: string;  // e.g. "꯷" or "꯷, ꯸"
+  nakshatraDisplayBengali: string;    // e.g. "পুনর্বসু ৭" or "পুনর্বসু ৭, ৮"
+  nakshatraDisplayMeetei: string;     // e.g. "ꯄꯨꯅꯔꯕꯁꯨ ꯷"
 
   // Auspicious Indicators (Ee Khudeng / Kongba)
   isEeKhudengLeiba: boolean;
@@ -183,6 +193,7 @@ export function getMonthlyCalendar(
     sunLong: number;
     moonLong: number;
     rawTithi: number;
+    rawNakshatra: number;
     diff: number;
   }[] = [];
 
@@ -210,6 +221,8 @@ export function getMonthlyCalendar(
     const diff = (moonLong - sunLong + 360) % 360;
     // Tithi evaluated at sunrise (1 to 30)
     const rawTithi = panchang.fiveAngas.tithi.index || (Math.floor(diff / 12) + 1);
+    // Nakshatra evaluated at sunrise (1 to 27)
+    const rawNakshatra = panchang.fiveAngas.nakshatra.index || (Math.floor(((moonLong % 360) + 360) % 360 / (360 / 27)) + 1);
 
     rawDayData.push({
       day: d,
@@ -220,6 +233,7 @@ export function getMonthlyCalendar(
       sunLong,
       moonLong,
       rawTithi,
+      rawNakshatra,
       diff
     });
   }
@@ -267,8 +281,9 @@ export function getMonthlyCalendar(
 
     const hoursFromSunrise = (remainingDeg / relSpeed) * 24;
 
-    const sunriseParts = cur.panchang.sunMoonTimings.sunrise.split(':').map(Number);
-    const sunriseDecimal = (sunriseParts[0] || 5) + (sunriseParts[1] || 30) / 60;
+    const numOnly = cur.panchang.sunMoonTimings.sunrise.replace(/[^\d:]/g, '');
+    const sunriseParts = numOnly.split(':').map(Number);
+    const sunriseDecimal = cur.panchang.sunMoonTimings.sunriseDecimal ?? ((sunriseParts[0] || 5) + (sunriseParts[1] || 30) / 60 + (sunriseParts[2] || 0) / 3600);
     const endingDecimal = sunriseDecimal + hoursFromSunrise;
 
     const endingH = Math.floor(endingDecimal);
@@ -324,6 +339,31 @@ export function getMonthlyCalendar(
     const tithiDisplayBengali = `${manipuriMonth.nameBengali} ${bengaliTithiNum}`;
     const tithiDisplayMeetei = `${manipuriMonth.nameMeetei} ${meeteiTithiNum}`;
 
+    // Nakshatra & Dual Nakshatra calculation (matching Excel method)
+    const currentNak = cur.rawNakshatra;
+    const nextNak = next.rawNakshatra;
+    const nakDiff = (nextNak - currentNak + 27) % 27;
+
+    let finalNakStr = String(currentNak);
+    let isDualNak = false;
+    let skippedNak = currentNak;
+    if (nakDiff === 2) {
+      skippedNak = (currentNak % 27) + 1;
+      finalNakStr = `${currentNak}, ${skippedNak}`;
+      isDualNak = true;
+    }
+
+    const bengaliNakNum = finalNakStr.split(', ').map(toBengaliNumerals).join(', ');
+    const meeteiNakNum = finalNakStr.split(', ').map(toMeeteiNumerals).join(', ');
+
+    const nakNameB = NAKSHATRA_NAMES_BENGALI[currentNak - 1] || 'অশ্বিনী';
+    const nakNameM = NAKSHATRA_NAMES_MEETEI[currentNak - 1] || 'ꯑꯁ꯭ꯕꯤꯅꯤ';
+
+    const nakshatraDisplayNumBengali = bengaliNakNum;
+    const nakshatraDisplayNumMeetei = meeteiNakNum;
+    const nakshatraDisplayBengali = `${nakNameB} ${bengaliNakNum}`;
+    const nakshatraDisplayMeetei = `${nakNameM} ${meeteiNakNum}`;
+
     // Festivals & General Holidays of Manipur (Explicitly excluding KUT)
     const festival = getManipurFestival(
       cur.day,
@@ -351,10 +391,17 @@ export function getMonthlyCalendar(
       solarMonth,
       manipuriMonth,
       tithiNumber: currentTithi,
+      isDualTithi: tithiDiff === 2,
       tithiDisplayBengali,
       tithiDisplayMeetei,
       tithiEndingTime,
       tithiEndingStandard,
+      nakshatraNumber: currentNak,
+      isDualNakshatra: isDualNak,
+      nakshatraDisplayNumBengali,
+      nakshatraDisplayNumMeetei,
+      nakshatraDisplayBengali,
+      nakshatraDisplayMeetei,
       isEeKhudengLeiba,
       isEeKhudengLeitaba,
       isKongbaLeiba,

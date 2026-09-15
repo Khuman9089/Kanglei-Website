@@ -32,6 +32,7 @@ export default function TopAstrologersSection() {
     title: "Talk to Manipur's",
     highlightText: "Top Rated",
     subtitleTagline: "Every astrologer below has cleared a 4-step verification — qualification, panel interview, live audits, and a 30-day probation.",
+    showSectionOnHome: false, // Default hidden initially as requested
     showRateOnHome: true,
     actionButtonType: 'both' as 'both' | 'chat_only' | 'call_only',
     rateMode: 'fixed' as 'fixed' | 'per_minute' | 'both' | 'none',
@@ -90,6 +91,11 @@ export default function TopAstrologersSection() {
     setModalMode(type.toUpperCase() as 'CHAT' | 'CALL');
     setIsBookingModalOpen(true);
   };
+
+  // If section is toggled off in Admin CMS settings, do not render on homepage
+  if (settings.showSectionOnHome === false) {
+    return null;
+  }
 
   return (
     <section className="py-8 md:py-10 bg-[#fffdfa] text-[#0f172a] font-sans">

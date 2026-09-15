@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 
-export const dynamic = 'force-static';
+export const dynamic = 'force-dynamic';
 import { calculateVedicPanchang } from '@/engine/panchang';
+import { getManipuriBookPanchang } from '@/engine/manipuriPanchangBook';
 
 export async function GET(req: Request) {
   try {
@@ -13,10 +14,12 @@ export async function GET(req: Request) {
     const locationName = searchParams.get('location') || 'Imphal, Manipur';
 
     const panchangData = calculateVedicPanchang(dateParam, lat, lng, tzOffset, locationName);
+    const bookPanchangData = getManipuriBookPanchang(dateParam, lat, lng, tzOffset, locationName);
 
     return NextResponse.json({
       success: true,
       panchang: panchangData,
+      bookPanchang: bookPanchangData,
     });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to calculate Panchang' }, { status: 500 });

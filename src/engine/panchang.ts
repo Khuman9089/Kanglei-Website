@@ -15,6 +15,8 @@ export interface PanchangData {
     moonrise: string;
     moonset: string;
     dayLength: string;
+    sunriseDecimal?: number;
+    sunsetDecimal?: number;
   };
   fiveAngas: {
     tithi: {
@@ -38,6 +40,7 @@ export interface PanchangData {
     };
     karana: {
       name: string;
+      index?: number;
       type: string;
       isBhadra: boolean;
     };
@@ -123,28 +126,30 @@ export function calculateVedicPanchang(
   locationName = 'Imphal, Manipur'
 ): PanchangData {
   const [year, month, day] = dateStr.split('-').map(Number);
-  const dayOfYear = getDayOfYear(year, month, day);
+  // 1. Precise Sunrise / Sunset Calculation using Meeus astronomical algorithms
+  // identical to the Panjika / Kuthi calculation engine (qw.xlsm Sunrise sheet)
+  const { sunriseDecimal, sunsetDecimal } = calculateAstronomicalSunriseSunset(
+    year,
+    month,
+    day,
+    lat,
+    lng,
+    tzOffset
+  );
 
-  // 1. Precise Sunrise / Sunset Calculation
-  const declination = 23.45 * Math.sin(((284 + dayOfYear) / 365) * 2 * Math.PI);
-  const latRad = (lat * Math.PI) / 180;
-  const decRad = (declination * Math.PI) / 180;
-  
-  const cosH = -Math.tan(latRad) * Math.tan(decRad);
-  const H = Math.acos(Math.max(-1, Math.min(1, cosH))) * (180 / Math.PI);
-  const halfDayHours = H / 15;
-
-  const solarNoonDecimal = 12.0 - (lng - 82.5) / 15; // IST standard meridian (82.5°E)
-  const sunriseDecimal = solarNoonDecimal - halfDayHours;
-  const sunsetDecimal = solarNoonDecimal + halfDayHours;
-
-  const sunriseStr = formatDecimalTime(sunriseDecimal);
-  const sunsetStr = formatDecimalTime(sunsetDecimal);
+  const solarNoonDecimal = (sunriseDecimal + sunsetDecimal) / 2;
+  const sunriseStr = formatDecimalTime(sunriseDecimal, true);
+  const sunsetStr = formatDecimalTime(sunsetDecimal, true);
   const moonriseStr = formatDecimalTime((sunriseDecimal + 9.5) % 24);
   const moonsetStr = formatDecimalTime((sunsetDecimal + 9.5) % 24);
 
   const dayLengthHours = (sunsetDecimal - sunriseDecimal);
-  const dayLengthStr = `${Math.floor(dayLengthHours)}h ${Math.round((dayLengthHours % 1) * 60)}m`;
+  const dlNorm = dayLengthHours >= 0 ? dayLengthHours : dayLengthHours + 24;
+  const dlH = Math.floor(dlNorm);
+  const dlRemM = (dlNorm - dlH) * 60;
+  const dlM = Math.floor(dlRemM);
+  const dlS = Math.round((dlRemM - dlM) * 60) % 60;
+  const dayLengthStr = `${dlH}h ${dlM}m ${dlS}s`;
 
   // 2. Evaluate Panchang at SUNRISE (Surya Udaya) for Calendar Day Consistency
   const sunriseHour = Math.floor(sunriseDecimal);
@@ -269,6 +274,8 @@ export function calculateVedicPanchang(
       moonrise: moonriseStr,
       moonset: moonsetStr,
       dayLength: dayLengthStr,
+      sunriseDecimal,
+      sunsetDecimal,
     },
     fiveAngas: {
       tithi: {
@@ -292,6 +299,7 @@ export function calculateVedicPanchang(
       },
       karana: {
         name: karanaName,
+        index: (karanaIndex % 11) + 1,
         type: karanaName.includes('Bhadra') ? 'Inauspicious (Vishti)' : 'Auspicious',
         isBhadra: karanaName.includes('Bhadra'),
       },
@@ -351,21 +359,119 @@ export function calculateVedicPanchang(
   };
 }
 
-function getDayOfYear(year: number, month: number, day: number): number {
-  const start = new Date(year, 0, 0);
-  const diff = new Date(year, month - 1, day).getTime() - start.getTime();
-  return Math.floor(diff / (1000 * 60 * 60 * 24));
+/**
+ * Exact astronomical Sunrise and Sunset calculation using Meeus algorithms,
+ * matching the Panjika / Kuthi calculation engine (qw.xlsm Sunrise sheet).
+ */
+export function calculateAstronomicalSunriseSunset(
+  year: number,
+  month: number,
+  day: number,
+  lat: number = 24.817,
+  lng: number = 93.936,
+  tzOffset: number = 5.5
+): { sunriseDecimal: number; sunsetDecimal: number } {
+  const PI = Math.PI;
+  const RAD = 0.017453292519943295;
+  const DEG = 57.29577951308232;
+
+  function calc(isRise: boolean): number {
+    const L18 = 0.0; // Standard Kuthi/Panjika horizon
+    const L19 = isRise ? 1.0 : -1.0;
+    const L15 = lat;
+    const L16 = lng;
+
+    const m26 =
+      367 * year -
+      Math.floor((7 * (year + Math.floor((month + 9) / 12))) / 4) +
+      Math.floor((275 * month) / 9) +
+      day -
+      730531.5;
+    const m27 = m26 / 36525.0;
+
+    // Iteration 1
+    const l29 = (4.8949504201433 + 628.331969753199 * m27) % (2 * PI);
+    const l30 = (6.2400408 + 628.3019501 * m27) % (2 * PI);
+    const l31 = 0.033423 * Math.sin(l30) + 0.00034907 * Math.sin(2 * l30);
+    const l32 = l29 + l31;
+    const l33 = 0.0430398 * Math.sin(2 * l32) - 0.00092502 * Math.sin(4 * l32) - l31;
+    const l34 = 0.409093 - 0.0002269 * m27;
+    const l35 = Math.asin(Math.sin(l34) * Math.sin(l32));
+    const l36 = l33;
+    const cosL37 = (Math.sin(RAD * L18) - Math.sin(RAD * L15) * Math.sin(l35)) / (Math.cos(RAD * L15) * Math.cos(l35));
+    const l37 = Math.max(-1.0, Math.min(1.0, cosL37));
+    const l38 = Math.acos(l37);
+    const l39 = PI - (l36 + RAD * L16 + L19 * l38);
+    const l40 = (m26 + l39 / (2 * PI)) / 36525.0;
+
+    const m29 = (4.8949504201433 + 628.331969753199 * l40) % (2 * PI);
+    const m30 = (6.2400408 + 628.3019501 * l40) % (2 * PI);
+    const m31 = 0.033423 * Math.sin(m30) + 0.00034907 * Math.sin(2 * m30);
+    const m32 = m29 + m31;
+    const m33 = 0.0430398 * Math.sin(2 * m32) - 0.00092502 * Math.sin(4 * m32) - m31;
+    const m34 = 0.409093 - 0.0002269 * l40;
+    const m35 = Math.asin(Math.sin(m34) * Math.sin(m32));
+    const m36 = l39 - PI + m33;
+    const cosM37 = (Math.sin(RAD * L18) - Math.sin(RAD * L15) * Math.sin(m35)) / (Math.cos(RAD * L15) * Math.cos(m35));
+    const m37 = Math.max(-1.0, Math.min(1.0, cosM37));
+    const m38 = Math.acos(m37);
+    const m39 = l39 - (m36 + RAD * L16 + L19 * m38);
+    const m40 = (m26 + m39 / (2 * PI)) / 36525.0;
+
+    // Iteration 2
+    const l42 = (4.8949504201433 + 628.331969753199 * m40) % (2 * PI);
+    const l43 = (6.2400408 + 628.3019501 * m40) % (2 * PI);
+    const l44 = 0.033423 * Math.sin(l43) + 0.00034907 * Math.sin(2 * l43);
+    const l45 = l42 + l44;
+    const l46 = 0.0430398 * Math.sin(2 * l45) - 0.00092502 * Math.sin(4 * l45) - l44;
+    const l47 = 0.409093 - 0.0002269 * m40;
+    const l48 = Math.asin(Math.sin(l47) * Math.sin(l45));
+    const l49 = m39 - PI + l46;
+    const cosL50 = (Math.sin(RAD * L18) - Math.sin(RAD * L15) * Math.sin(l48)) / (Math.cos(RAD * L15) * Math.cos(l48));
+    const l50 = Math.max(-1.0, Math.min(1.0, cosL50));
+    const l51 = Math.acos(l50);
+    const l52 = m39 - (l49 + RAD * L16 + L19 * l51);
+    const l53 = (m26 + l52 / (2 * PI)) / 36525.0;
+
+    const m42 = (4.8949504201433 + 628.331969753199 * l53) % (2 * PI);
+    const m43 = (6.2400408 + 628.3019501 * l53) % (2 * PI);
+    const m44 = 0.033423 * Math.sin(m43) + 0.00034907 * Math.sin(2 * m43);
+    const m45 = m42 + m44;
+    const m46 = 0.0430398 * Math.sin(2 * m45) - 0.00092502 * Math.sin(4 * m45) - m44;
+    const m47 = 0.409093 - 0.0002269 * l53;
+    const m48 = Math.asin(Math.sin(m47) * Math.sin(m45));
+    const m49 = l52 - PI + m46;
+    const cosM50 = (Math.sin(RAD * L18) - Math.sin(RAD * L15) * Math.sin(m48)) / (Math.cos(RAD * L15) * Math.cos(m48));
+    const m50 = Math.max(-1.0, Math.min(1.0, cosM50));
+    const m51 = Math.acos(m50);
+    const m52 = l52 - (m49 + RAD * L16 + L19 * m51);
+
+    let timeDec = (m52 * DEG) / 15.0 + tzOffset;
+    while (timeDec < 0) timeDec += 24;
+    while (timeDec >= 24) timeDec -= 24;
+    return timeDec;
+  }
+
+  return {
+    sunriseDecimal: calc(true),
+    sunsetDecimal: calc(false),
+  };
 }
 
-function formatDecimalTime(decimalHours: number): string {
-  let h = Math.floor(decimalHours);
-  if (h < 0) h += 24;
-  h = h % 24;
-  const m = Math.round((decimalHours % 1) * 60);
-  const period = h >= 12 ? 'PM' : 'AM';
-  const displayH = h % 12 === 0 ? 12 : h % 12;
-  const displayM = m < 10 ? `0${m}` : m;
-  return `${displayH < 10 ? '0' : ''}${displayH}:${displayM} ${period}`;
+function formatDecimalTime(decimalHours: number, includeSeconds = false): string {
+  const norm = ((decimalHours % 24) + 24) % 24;
+  const h24 = Math.floor(norm);
+  const remM = (norm - h24) * 60;
+  const m = Math.floor(remM);
+  const s = Math.round((remM - m) * 60) % 60;
+
+  const period = h24 >= 12 ? 'PM' : 'AM';
+  let displayH = h24 % 12;
+  if (displayH === 0) displayH = 12;
+  const hStr = displayH < 10 ? `0${displayH}` : `${displayH}`;
+  const mStr = m < 10 ? `0${m}` : `${m}`;
+  const sStr = s < 10 ? `0${s}` : `${s}`;
+  return includeSeconds ? `${hStr}:${mStr}:${sStr} ${period}` : `${hStr}:${mStr} ${period}`;
 }
 
 function getVedicRitu(month: number): string {

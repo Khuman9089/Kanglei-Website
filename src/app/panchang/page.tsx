@@ -18,6 +18,7 @@ import {
   Globe
 } from 'lucide-react';
 import Link from 'next/link';
+import { calculateVedicPanchang } from '@/engine/panchang';
 
 interface PanchangState {
   date: string;
@@ -112,6 +113,25 @@ export default function PanchangPage() {
   const [panchang, setPanchang] = useState<PanchangState | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
+  // Initialize client data immediately for instant zero-flash render
+  useEffect(() => {
+    try {
+      const initial = calculateVedicPanchang(
+        selectedDate,
+        selectedLocation.lat,
+        selectedLocation.lng,
+        selectedLocation.tz,
+        selectedLocation.name
+      );
+      if (initial) {
+        setPanchang(initial as any);
+        setLoading(false);
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }, []);
+
   const fetchPanchangData = (date: string, loc = selectedLocation) => {
     setLoading(true);
     fetch(
@@ -121,11 +141,16 @@ export default function PanchangPage() {
       .then((data) => {
         if (data.panchang) {
           setPanchang(data.panchang);
+        } else {
+          const fallback = calculateVedicPanchang(date, loc.lat, loc.lng, loc.tz, loc.name);
+          setPanchang(fallback as any);
         }
         setLoading(false);
       })
       .catch((err) => {
         console.error('Error fetching panchang:', err);
+        const fallback = calculateVedicPanchang(date, loc.lat, loc.lng, loc.tz, loc.name);
+        setPanchang(fallback as any);
         setLoading(false);
       });
   };
@@ -211,11 +236,11 @@ export default function PanchangPage() {
 
               <Link
                 href="/calendar"
-                className="px-3 py-2 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs flex items-center gap-1.5 transition-all shadow-xs shrink-0"
-                title="View Full Manipuri Monthly Calendar"
+                className="px-3.5 py-2 rounded-xl border border-[#fde68a] bg-[#fefcf6] hover:bg-[#fef3c7] text-[#b45309] font-bold text-xs flex items-center gap-1.5 transition-all shadow-2xs shrink-0"
+                title="View Manipuri Monthly Calendar"
               >
-                <Calendar className="w-3.5 h-3.5 text-amber-600" />
-                <span>Monthly Calendar (থাগী ক্যালেন্ডার) →</span>
+                <Calendar className="w-4 h-4 text-[#d97706]" />
+                <span className="hidden sm:inline">Monthly Calendar →</span>
               </Link>
             </div>
 

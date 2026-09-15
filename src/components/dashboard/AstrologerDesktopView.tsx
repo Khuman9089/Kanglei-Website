@@ -36,6 +36,7 @@ import NumerologyWorkstation from '@/components/dashboard/NumerologyWorkstation'
 import VastuWorkstation from '@/components/dashboard/VastuWorkstation';
 import SakaToBirthWorkstation from '@/components/dashboard/SakaToBirthWorkstation';
 import KuthiResultWorkstation from '@/components/dashboard/KuthiResultWorkstation';
+import ManipuriPanchangWorkstation from '@/components/dashboard/ManipuriPanchangWorkstation';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
 import { calculateDetailedVimshottari, calculateRemainingDashaTime } from '@/engine/vedicWorkstationEngine';
@@ -1588,6 +1589,32 @@ Question: ${details.question || 'N/A'}`;
                     theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
                   }`}>
                     {allowedTools.length}
+                  </span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    const panchangTool = ACTIVE_TOOLS_REGISTRY.find((t) => t.id === 'manipuri-book-panchang') || {
+                      id: 'manipuri-book-panchang',
+                      title: 'Manipuri Book Panchang',
+                    };
+                    setActiveToolModal(panchangTool);
+                    setSidebarOpen(false);
+                  }}
+                  className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                    activeToolModal?.id === 'manipuri-book-panchang'
+                      ? 'bg-gradient-to-r from-[#d97706] to-[#f59e0b] text-white shadow-md'
+                      : theme === 'dark' ? 'text-gray-300 hover:bg-[#1e293b]' : 'text-slate-800 hover:bg-slate-100 hover:text-slate-950 font-bold'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Calendar className="w-4 h-4 text-amber-500" />
+                    <span>মণিপুরী পঞ্জিকা (Panchang)</span>
+                  </div>
+                  <span className={`px-2 py-0.5 rounded-full text-[9px] font-black uppercase border ${
+                    theme === 'dark' ? 'bg-[#fbbf24]/20 text-[#fbbf24] border-[#fbbf24]/30' : 'bg-amber-100 text-amber-900 border-amber-300'
+                  }`}>
+                    Pro
                   </span>
                 </button>
 
@@ -4031,6 +4058,7 @@ Question: ${details.question || 'N/A'}`;
                       }`}>
                         {t.id === 'vedic-workstation' ? '🪐' :
                          t.id === 'bnn-workstation' ? '✨' :
+                         t.id === 'manipuri-book-panchang' ? '📅' :
                          t.id === 'saka-to-birth' ? '📜' :
                          t.id === 'kuthi-result-sheets' ? '🪶' :
                          t.id === 'yumsharol' ? '🏡' :
@@ -4068,7 +4096,8 @@ Question: ${details.question || 'N/A'}`;
                           t.id !== 'numerology-workstation' &&
                           t.id !== 'vastu-workstation' &&
                           t.id !== 'saka-to-birth' &&
-                          t.id !== 'kuthi-result-sheets'
+                          t.id !== 'kuthi-result-sheets' &&
+                          t.id !== 'manipuri-book-panchang'
                         ) {
                           executeToolCalculation(t, calcForm);
                         }
@@ -4708,6 +4737,16 @@ Question: ${details.question || 'N/A'}`;
                   tob: calcForm.tob || '06:00',
                   pob: calcForm.pob || 'Imphal, Manipur',
                 }}
+                onClose={() => {
+                  setActiveToolModal(null);
+                  setCalcResult(null);
+                }}
+              />
+            </div>
+          ) : activeToolModal.id === 'manipuri-book-panchang' || activeToolModal.id === 'panchang' ? (
+            <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+              <ManipuriPanchangWorkstation
+                theme={theme}
                 onClose={() => {
                   setActiveToolModal(null);
                   setCalcResult(null);

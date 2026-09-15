@@ -30,7 +30,8 @@ export default function FeaturedShopSection() {
         if (data.products && Array.isArray(data.products)) {
           const approved = data.products.filter((p: any) => !p.status || p.status === 'APPROVED');
           const featured = approved.filter((p: any) => p.isFeatured);
-          setFeaturedProducts(featured.length > 0 ? featured : approved.slice(0, 4));
+          const list = featured.length > 0 ? featured : approved;
+          setFeaturedProducts(list.slice(0, 4));
         }
       })
       .catch((err) => console.error('Error loading featured shop products:', err));
@@ -67,9 +68,9 @@ export default function FeaturedShopSection() {
           </div>
         </div>
 
-        {/* Product Cards Grid */}
+        {/* Product Cards Grid (Strictly 4 Items on Homepage) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {featuredProducts.map((product, idx) => {
+          {featuredProducts.slice(0, 4).map((product, idx) => {
             const discountPct = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
             return (
