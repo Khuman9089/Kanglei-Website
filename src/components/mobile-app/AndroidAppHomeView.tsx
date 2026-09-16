@@ -591,142 +591,143 @@ export default function AndroidAppHomeView({
       {showSplash && <AppSplashScreen onFinish={() => setShowSplash(false)} />}
       
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 1. NATIVE ANDROID SYSTEM STATUS BAR                           */}
+      {/* 1 & 2. UNIFIED FIXED ANDROID APP TOP BAR                      */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <div className="bg-[#121212] text-amber-100/90 text-[11px] px-5 pt-2 pb-1.5 flex items-center justify-between font-mono select-none sticky top-0 z-50">
-        <span className="font-bold tracking-tight text-white">
-          {currentTime || '07:44'}
-        </span>
-        <div className="flex items-center gap-2 text-[10px] text-zinc-300">
-          <span className="text-[9px] px-1 py-0.2 rounded bg-zinc-800 border border-zinc-700 font-sans">4G+</span>
-          {/* Signal bars */}
-          <div className="flex items-end gap-0.5 h-2.5">
-            <span className="w-0.5 h-1 bg-white rounded-xs" />
-            <span className="w-0.5 h-1.5 bg-white rounded-xs" />
-            <span className="w-0.5 h-2 bg-white rounded-xs" />
-            <span className="w-0.5 h-2.5 bg-white rounded-xs" />
-          </div>
-          {/* Battery pill */}
-          <div className="flex items-center gap-1">
-            <span className="text-[10px] font-bold">100%</span>
-            <div className="w-4 h-2 rounded-xs border border-white/80 p-0.5 flex items-center">
-              <div className="w-full h-full bg-emerald-400 rounded-2xs" />
+      <div className="sticky top-0 z-40 bg-[#1e1b18] shadow-md border-b border-stone-800">
+        {/* Native Android System Status Bar */}
+        <div className="bg-[#121212] text-amber-100/90 text-[11px] px-5 pt-2 pb-1.5 flex items-center justify-between font-mono select-none">
+          <span className="font-bold tracking-tight text-white">
+            {currentTime || '07:44'}
+          </span>
+          <div className="flex items-center gap-2 text-[10px] text-zinc-300">
+            <span className="text-[9px] px-1 py-0.2 rounded bg-zinc-800 border border-zinc-700 font-sans">4G+</span>
+            {/* Signal bars */}
+            <div className="flex items-end gap-0.5 h-2.5">
+              <span className="w-0.5 h-1 bg-white rounded-xs" />
+              <span className="w-0.5 h-1.5 bg-white rounded-xs" />
+              <span className="w-0.5 h-2 bg-white rounded-xs" />
+              <span className="w-0.5 h-2.5 bg-white rounded-xs" />
+            </div>
+            {/* Battery pill */}
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] font-bold">100%</span>
+              <div className="w-4 h-2 rounded-xs border border-white/80 p-0.5 flex items-center">
+                <div className="w-full h-full bg-emerald-400 rounded-2xs" />
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* ───────────────────────────────────────────────────────────── */}
-      {/* 2. NATIVE ANDROID APP BAR (Material You Design)               */}
-      {/* ───────────────────────────────────────────────────────────── */}
-      <header className="bg-[#1e1b18] text-white px-3.5 py-2.5 flex items-center justify-between shadow-md border-b border-stone-800 sticky top-7 z-40">
-        <div className="flex items-center gap-2.5">
-          {activeTab !== 'home' ? (
-            <button
-              type="button"
-              onClick={() => setActiveTab('home')}
-              className="w-8 h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center text-amber-300 transition"
-              aria-label="Back to home"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => setShowDrawer(true)}
-              className="w-8 h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center text-amber-200 transition"
-              aria-label="Open navigation drawer"
-            >
-              <Menu className="w-5 h-5" />
-            </button>
-          )}
-          
+        {/* Native Android App Bar (Material You Header) */}
+        <header className="px-3.5 py-2.5 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            {activeTab !== 'home' ? (
+              <button
+                type="button"
+                onClick={() => setActiveTab('home')}
+                className="w-8 h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center text-amber-300 transition cursor-pointer"
+                aria-label="Back to home"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setShowDrawer(true)}
+                className="w-8 h-8 rounded-full hover:bg-white/10 active:bg-white/20 flex items-center justify-center text-amber-200 transition cursor-pointer"
+                aria-label="Open navigation drawer"
+              >
+                <Menu className="w-5 h-5" />
+              </button>
+            )}
+            
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-amber-950 font-black shadow-xs">
+                {activeTab === 'calendar' ? (
+                  <CalendarIcon className="w-4 h-4 text-amber-950" />
+                ) : activeTab === 'kuthi_eba' ? (
+                  <BookOpen className="w-4 h-4 text-amber-950" />
+                ) : activeTab === 'kuthi_yengba' ? (
+                  <Eye className="w-4 h-4 text-amber-950" />
+                ) : activeTab === 'panchang' ? (
+                  <CalendarIcon className="w-4 h-4 text-amber-950" />
+                ) : activeTab === 'leipung' ? (
+                  <MessageSquare className="w-4 h-4 text-amber-950" />
+                ) : (
+                  <Sun className="w-4 h-4 text-amber-950" />
+                )}
+              </div>
+              <div>
+                <h1 className="text-sm font-serif font-black tracking-wide leading-none text-amber-100">
+                  {activeTab === 'calendar'
+                    ? 'Manipuri Calendar'
+                    : activeTab === 'kuthi_eba'
+                    ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯏꯕ (Kuthi Eba)' : 'কুথি ইবা (Kuthi Eba)')
+                    : activeTab === 'kuthi_yengba'
+                    ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯌꯦꯡꯕ (Kuthi Yengba)' : 'কুথি য়েংবা (Kuthi Yengba)')
+                    : activeTab === 'panchang'
+                    ? (scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯄꯟꯆꯥꯡ (Panchang)' : 'মণিপুরী পঞ্জিকা (Manipuri Panchang)')
+                    : activeTab === 'leipung'
+                    ? (scriptMode === 'meetei' ? 'ꯂꯩꯄꯨꯡ (Leipung Feed)' : 'লৈপুং (Leipung Community)')
+                    : 'Kanglei Astro'}
+                </h1>
+                <span className="text-[10px] text-amber-400/90 font-serif leading-none block mt-0.5">
+                  {activeTab === 'calendar'
+                    ? `${currentCalendarData.monthNameEn} ${calYear}`
+                    : activeTab === 'kuthi_eba'
+                    ? (scriptMode === 'meetei' ? 'ꯖꯟꯃ ꯄꯠꯔꯤꯀꯥ ꯏꯕ' : 'জন্ম পত্রিকা ইবা')
+                    : activeTab === 'kuthi_yengba'
+                    ? (scriptMode === 'meetei' ? 'ꯍꯣꯔꯣꯁ꯭ꯀꯣꯞ ꯌꯦꯡꯕ' : 'হরোস্কোপ য়েংবা')
+                    : activeTab === 'panchang'
+                    ? (scriptMode === 'meetei' ? 'ꯊꯥꯕꯥꯟ, ꯅꯛꯁꯠꯔ ꯑꯃꯁꯨꯡ ꯃꯨꯍꯨꯔ꯭ꯇ' : 'থাবান, নক্ষত্র ও মুহূর্ত')
+                    : activeTab === 'leipung'
+                    ? (scriptMode === 'meetei' ? 'ꯈꯨꯟꯅꯥꯏꯒꯤ ꯋꯥꯈꯜꯂꯣꯟ ꯑꯃꯁꯨꯡ ꯂꯥꯏꯅꯤꯡ' : 'সমাজ ও পূজা-পার্বণ আলোচনা')
+                    : 'মণিপুরী ক্যালেন্ডার ও রাশিফল'}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Script Switcher & Notification Badge */}
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-amber-950 font-black shadow-xs">
-              {activeTab === 'calendar' ? (
-                <CalendarIcon className="w-4 h-4 text-amber-950" />
-              ) : activeTab === 'kuthi_eba' ? (
-                <BookOpen className="w-4 h-4 text-amber-950" />
-              ) : activeTab === 'kuthi_yengba' ? (
-                <Eye className="w-4 h-4 text-amber-950" />
-              ) : activeTab === 'panchang' ? (
-                <CalendarIcon className="w-4 h-4 text-amber-950" />
-              ) : activeTab === 'leipung' ? (
-                <MessageSquare className="w-4 h-4 text-amber-950" />
-              ) : (
-                <Sun className="w-4 h-4 text-amber-950" />
-              )}
+            <div className="inline-flex rounded-full border border-amber-700/60 p-0.5 bg-[#2b241d] text-[10px] font-bold">
+              <button
+                type="button"
+                onClick={() => setScriptMode('bengali')}
+                className={`px-2.5 py-0.5 rounded-full transition ${
+                  scriptMode === 'bengali'
+                    ? 'bg-amber-600 text-white shadow-xs font-black'
+                    : 'text-amber-300/80 hover:text-white'
+                }`}
+              >
+                বাংলা
+              </button>
+              <button
+                type="button"
+                onClick={() => setScriptMode('meetei')}
+                className={`px-2.5 py-0.5 rounded-full transition ${
+                  scriptMode === 'meetei'
+                    ? 'bg-amber-600 text-white shadow-xs font-black'
+                    : 'text-amber-300/80 hover:text-white'
+                }`}
+              >
+                ꯃꯤꯇꯩ
+              </button>
             </div>
-            <div>
-              <h1 className="text-sm font-serif font-black tracking-wide leading-none text-amber-100">
-                {activeTab === 'calendar'
-                  ? 'Manipuri Calendar'
-                  : activeTab === 'kuthi_eba'
-                  ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯏꯕ (Kuthi Eba)' : 'কুথি ইবা (Kuthi Eba)')
-                  : activeTab === 'kuthi_yengba'
-                  ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯌꯦꯡꯕ (Kuthi Yengba)' : 'কুথি য়েংবা (Kuthi Yengba)')
-                  : activeTab === 'panchang'
-                  ? (scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯄꯟꯆꯥꯡ (Panchang)' : 'মণিপুরী পঞ্জিকা (Manipuri Panchang)')
-                  : activeTab === 'leipung'
-                  ? (scriptMode === 'meetei' ? 'ꯂꯩꯄꯨꯡ (Leipung Feed)' : 'লৈপুং (Leipung Community)')
-                  : 'Kanglei Astro'}
-              </h1>
-              <span className="text-[10px] text-amber-400/90 font-serif leading-none block mt-0.5">
-                {activeTab === 'calendar'
-                  ? `${currentCalendarData.monthNameEn} ${calYear}`
-                  : activeTab === 'kuthi_eba'
-                  ? (scriptMode === 'meetei' ? 'ꯖꯟꯃ ꯄꯠꯔꯤꯀꯥ ꯏꯕ' : 'জন্ম পত্রিকা ইবা')
-                  : activeTab === 'kuthi_yengba'
-                  ? (scriptMode === 'meetei' ? 'ꯍꯣꯔꯣꯁ꯭ꯀꯣꯞ ꯌꯦꯡꯕ' : 'হরোস্কোপ য়েংবা')
-                  : activeTab === 'panchang'
-                  ? (scriptMode === 'meetei' ? 'ꯊꯥꯕꯥꯟ, ꯅꯛꯁꯠꯔ ꯑꯃꯁꯨꯡ ꯃꯨꯍꯨꯔ꯭ꯇ' : 'থাবান, নক্ষত্র ও মুহূর্ত')
-                  : activeTab === 'leipung'
-                  ? (scriptMode === 'meetei' ? 'ꯈꯨꯟꯅꯥꯏꯒꯤ ꯋꯥꯈꯜꯂꯣꯟ ꯑꯃꯁꯨꯡ ꯂꯥꯏꯅꯤꯡ' : 'সমাজ ও পূজা-পার্বণ আলোচনা')
-                  : 'মণিপুরী ক্যালেন্ডার ও রাশিফল'}
-              </span>
-            </div>
-          </div>
-        </div>
 
-        {/* Script Switcher & Notification Badge */}
-        <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-full border border-amber-700/60 p-0.5 bg-[#2b241d] text-[10px] font-bold">
             <button
               type="button"
-              onClick={() => setScriptMode('bengali')}
-              className={`px-2.5 py-0.5 rounded-full transition ${
-                scriptMode === 'bengali'
-                  ? 'bg-amber-600 text-white shadow-xs font-black'
-                  : 'text-amber-300/80 hover:text-white'
+              onClick={() => setActiveTab(activeTab === 'calendar' ? 'home' : 'calendar')}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
+                activeTab === 'calendar' ? 'bg-amber-600 text-white' : 'hover:bg-white/10 text-amber-300'
               }`}
+              title="Toggle Calendar"
             >
-              বাংলা
-            </button>
-            <button
-              type="button"
-              onClick={() => setScriptMode('meetei')}
-              className={`px-2.5 py-0.5 rounded-full transition ${
-                scriptMode === 'meetei'
-                  ? 'bg-amber-600 text-white shadow-xs font-black'
-                  : 'text-amber-300/80 hover:text-white'
-              }`}
-            >
-              ꯃꯤꯇꯩ
+              <CalendarIcon className="w-4 h-4" />
             </button>
           </div>
-
-          <button
-            type="button"
-            onClick={() => setActiveTab(activeTab === 'calendar' ? 'home' : 'calendar')}
-            className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition ${
-              activeTab === 'calendar' ? 'bg-amber-600 text-white' : 'hover:bg-white/10 text-amber-300'
-            }`}
-            title="Toggle Calendar"
-          >
-            <CalendarIcon className="w-4 h-4" />
-          </button>
-        </div>
-      </header>
+        </header>
+      </div>
 
       {/* ───────────────────────────────────────────────────────────── */}
       {/* 3. ANDROID SLIDE-OUT NAVIGATION DRAWER                        */}
