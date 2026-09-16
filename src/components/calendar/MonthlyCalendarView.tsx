@@ -48,6 +48,9 @@ function toBengaliNum(num: number | string): string {
   return String(num).split('').map(c => digits[c] || c).join('');
 }
 
+const toMeeteiNumerals = toMeeteiNum;
+const toBengaliNumerals = toBengaliNum;
+
 export default function MonthlyCalendarView() {
   const now = useMemo(() => new Date(), []);
   const todayStr = useMemo(() => {
@@ -165,23 +168,23 @@ export default function MonthlyCalendarView() {
       {/* ------------------------------------------------------------- */}
       {/* 1. SELECTION PAGE / CONTROL PANEL                             */}
       {/* ------------------------------------------------------------- */}
-      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-sm border border-amber-200/90 p-4 sm:p-6 print:hidden space-y-4">
+      <div className="bg-white/95 backdrop-blur-md rounded-2xl shadow-sm border border-gray-200 p-4 sm:p-6 print:hidden space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           
           {/* Title Header */}
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <span className="p-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200 shadow-xs">
+              <span className="p-2.5 rounded-xl bg-amber-50 text-amber-700 border border-amber-200/60 shadow-xs">
                 <CalendarIcon className="w-6 h-6 text-amber-600" />
               </span>
               <div>
-                <h1 className="text-xl sm:text-2xl font-serif font-black text-gray-900 tracking-tight flex items-center gap-2">
+                <h1 className="text-xl sm:text-2xl font-bold text-[#1e1b18] tracking-tight flex items-center gap-2">
                   <span>Manipuri Monthly Calendar</span>
-                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 font-sans font-bold border border-amber-300">
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-700 font-bold border border-gray-200">
                     থাগী ক্যালেন্ডার
                   </span>
                 </h1>
-                <p className="text-xs sm:text-sm text-gray-600 font-serif">
+                <p className="text-xs sm:text-sm text-gray-600">
                   {scriptMode === 'meetei'
                     ? 'ꯃꯇꯤꯡ ꯂꯩꯕ ꯀꯪꯂꯩ ꯊꯥꯒꯤ ꯀꯦꯂꯦꯟꯗꯔ — ꯊꯕꯥꯅꯤꯛ, ꯁꯧꯔ ꯁꯀꯥꯕ꯭ꯗ, ꯇꯥꯁꯤ ꯃꯍꯩ ꯑꯃꯁꯨꯡ ꯇꯠꯅꯕ ꯅꯨꯃꯤꯠ'
                     : 'প্রামাণিক কাংলৈ মাসিক ক্যালেন্ডার — চান্দ্র থবানীং, সৌর শকাব্দ, তাসী মহৈ ও তৎনবা নুমিৎ'}
@@ -197,10 +200,10 @@ export default function MonthlyCalendarView() {
             <button
               id="btn-present-date"
               onClick={handleJumpToToday}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border shadow-xs ${
+              className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border shadow-xs cursor-pointer ${
                 isCurrentMonthPresent && selectedDateStr === todayStr
                   ? 'bg-amber-600 text-white border-amber-700 ring-2 ring-amber-400/40'
-                  : 'bg-amber-50 text-amber-900 border-amber-300 hover:bg-amber-100'
+                  : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
               }`}
               title="Jump to Present Date (Today)"
             >
@@ -213,9 +216,9 @@ export default function MonthlyCalendarView() {
               <button
                 id="btn-script-bengali"
                 onClick={() => setScriptMode('bengali')}
-                className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                   scriptMode === 'bengali'
-                    ? 'bg-white text-gray-900 font-bold shadow-xs'
+                    ? 'bg-white text-[#1e1b18] font-bold shadow-xs'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -224,9 +227,9 @@ export default function MonthlyCalendarView() {
               <button
                 id="btn-script-meetei"
                 onClick={() => setScriptMode('meetei')}
-                className={`px-3 py-1.5 rounded-lg font-medium transition ${
+                className={`px-3 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                   scriptMode === 'meetei'
-                    ? 'bg-white text-gray-900 font-bold shadow-xs'
+                    ? 'bg-white text-[#1e1b18] font-bold shadow-xs'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -235,9 +238,9 @@ export default function MonthlyCalendarView() {
               <button
                 id="btn-script-en"
                 onClick={() => setScriptMode('en')}
-                className={`px-2.5 py-1.5 rounded-lg font-medium transition ${
+                className={`px-2.5 py-1.5 rounded-lg font-medium transition cursor-pointer ${
                   scriptMode === 'en'
-                    ? 'bg-white text-gray-900 font-bold shadow-xs'
+                    ? 'bg-white text-[#1e1b18] font-bold shadow-xs'
                     : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
@@ -249,7 +252,7 @@ export default function MonthlyCalendarView() {
             <button
               id="btn-print-calendar"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold shadow-xs transition"
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold shadow-xs transition cursor-pointer"
               title="Print Monthly Calendar"
             >
               <Printer className="w-3.5 h-3.5 text-gray-500" />
@@ -260,17 +263,17 @@ export default function MonthlyCalendarView() {
         </div>
 
         {/* Date, Month & Year Selection Inputs Bar */}
-        <div className="pt-3 border-t border-amber-100 flex flex-wrap items-center gap-3">
+        <div className="pt-3 border-t border-gray-100 flex flex-wrap items-center gap-3">
           
           {/* Direct Date Picker */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold text-gray-600 font-serif">Select Date:</span>
+            <span className="text-xs font-bold text-gray-700">Select Date:</span>
             <input
               type="date"
               id="input-direct-date"
               value={selectedDateStr}
               onChange={handleDatePickerChange}
-              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold border border-amber-300 bg-amber-50/50 text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs cursor-pointer"
+              className="px-3 py-1.5 rounded-xl text-xs font-mono font-bold border border-gray-300 bg-white text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-500 shadow-xs cursor-pointer"
             />
           </div>
 
@@ -281,7 +284,7 @@ export default function MonthlyCalendarView() {
             <button
               id="btn-prev-month"
               onClick={handlePrevMonth}
-              className="p-1.5 rounded-xl border border-gray-200 hover:border-amber-400 bg-white hover:bg-amber-50 text-gray-700 transition shadow-xs"
+              className="p-1.5 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition shadow-xs cursor-pointer"
               title="Previous Month"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -326,7 +329,7 @@ export default function MonthlyCalendarView() {
             <button
               id="btn-next-month"
               onClick={handleNextMonth}
-              className="p-1.5 rounded-xl border border-gray-200 hover:border-amber-400 bg-white hover:bg-amber-50 text-gray-700 transition shadow-xs"
+              className="p-1.5 rounded-xl border border-gray-200 hover:border-gray-300 bg-white hover:bg-gray-50 text-gray-700 transition shadow-xs cursor-pointer"
               title="Next Month"
             >
               <ChevronRight className="w-4 h-4" />
@@ -348,30 +351,23 @@ export default function MonthlyCalendarView() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           
           {/* Main Month & Year in Bright Yellow (Matching Reference Image) */}
-          <div>
+          <div className="space-y-1">
             <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black tracking-wider text-[#ffe600] uppercase drop-shadow-xs">
               {calendarData.monthNameEn} {calendarData.year}
             </h2>
-            <div className="text-[11px] sm:text-xs text-sky-200/90 mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-1 font-serif">
-              <span>
-                সৌর মাস: <strong className="text-amber-300">{scriptMode === 'meetei' ? calendarData.solarMonthSpanMeetei : calendarData.solarMonthSpanBengali}</strong>
-              </span>
-              <span>•</span>
-              <span>
-                সৌর শকাব্দ: <strong className="text-amber-300 font-mono">{calendarData.souraYearSpan}</strong>
-              </span>
+            <div className="text-sm sm:text-base font-bold text-amber-200 font-serif">
+              {scriptMode === 'meetei'
+                ? `${calendarData.manipuriMonthSpanMeetei} ꯊꯥ — ${calendarData.solarMonthSpanMeetei}`
+                : `${calendarData.manipuriMonthSpanBengali} থা — ${calendarData.solarMonthSpanBengali}`}
             </div>
           </div>
 
-          {/* Central / Right: Manipuri Lunar Month Span in Bright Yellow */}
+          {/* Central / Right: Clean Lunar Month in Bright Yellow */}
           <div className="text-left sm:text-right">
             <span className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-[#ffe600] tracking-wide block drop-shadow-xs">
               {scriptMode === 'meetei'
-                ? calendarData.manipuriMonthSpanMeetei
-                : calendarData.manipuriMonthSpanBengali}
-            </span>
-            <span className="text-[11px] uppercase tracking-wider text-sky-200 font-sans font-semibold">
-              Manipuri Lunar Month Span
+                ? `${calendarData.manipuriMonthSpanMeetei} ꯊꯥ`
+                : `${calendarData.manipuriMonthSpanBengali} থা`}
             </span>
           </div>
 
@@ -394,20 +390,27 @@ export default function MonthlyCalendarView() {
                   isSun ? 'text-red-600 font-black bg-red-50/50' : 'text-gray-900 font-black'
                 }`}
               >
-                <div className="text-xs sm:text-sm md:text-base font-black tracking-wide">
+                <div className={`text-xs sm:text-sm md:text-base font-black tracking-wide ${isSun ? 'text-red-600' : 'text-gray-900'}`}>
                   {wd.shortEn === 'Thu' ? 'THR' : wd.shortEn.toUpperCase()}
                 </div>
-                <div className={`text-[10.5px] sm:text-xs md:text-sm font-serif truncate ${
-                  isSun ? 'text-red-600 font-bold' : 'text-gray-800 font-bold'
-                }`}>
-                  {scriptMode === 'meetei'
-                    ? wd.meetei
-                    : wd.day === 3
-                    ? 'য়ুমশেকৈশা'
-                    : wd.day === 4
-                    ? 'শগোলশেন'
-                    : wd.bengali}
-                </div>
+                {/* Bengali day name hidden on mobile view per user request; Meetei Mayek shown if selected */}
+                {scriptMode === 'meetei' ? (
+                  <div className={`text-[10px] sm:text-xs md:text-sm font-serif truncate ${
+                    isSun ? 'text-red-600 font-bold' : 'text-gray-800 font-bold'
+                  }`}>
+                    {wd.meetei}
+                  </div>
+                ) : (
+                  <div className={`hidden sm:block text-[10.5px] sm:text-xs md:text-sm font-serif truncate ${
+                    isSun ? 'text-red-600 font-bold' : 'text-gray-800 font-bold'
+                  }`}>
+                    {wd.day === 3
+                      ? 'য়ুমশেকৈশা'
+                      : wd.day === 4
+                      ? 'শগোলশেন'
+                      : wd.bengali}
+                  </div>
+                )}
               </div>
             );
           })}
@@ -532,35 +535,46 @@ export default function MonthlyCalendarView() {
 
                     </div>
 
-                    {/* BOTTOM: MANIPURI LUNAR MONTH & TITHI & NAKSHATRA NUMBER (In Red if Sunday/Holiday) */}
-                    <div className="pt-0.5 border-t border-[#c5dceb] flex items-center justify-between px-0.5 text-[9px] sm:text-[10.5px] md:text-xs leading-tight gap-1">
+                    {/* BOTTOM: MANIPURI LUNAR MONTH (Line 1) & TITHI (Line 2) & NAKSHATRA (Line 3) - LINE BY LINE */}
+                    <div className="pt-1 border-t border-[#c5dceb] flex flex-col items-center justify-center text-center px-0.5 leading-tight gap-0.5 w-full">
+                      {/* Line 1: Manipuri Month Name */}
                       <span
-                        className={`font-serif font-bold truncate ${
-                          isHoliday ? 'text-red-600' : 'text-gray-800'
+                        className={`font-serif font-black text-[9px] sm:text-[11px] md:text-xs block w-full text-center leading-tight whitespace-normal break-words ${
+                          isHoliday ? 'text-red-700' : 'text-gray-950'
                         }`}
-                        title={`Lunar Month & Tithi: ${dayItem.tithiDisplayBengali}`}
                       >
                         {scriptMode === 'meetei'
-                          ? dayItem.tithiDisplayMeetei
-                          : dayItem.tithiDisplayBengali}
+                          ? dayItem.manipuriMonth.nameMeetei
+                          : dayItem.manipuriMonth.nameBengali}
                       </span>
 
-                      <div className="flex items-center gap-1 shrink-0">
-                        {/* Nakshatra Number Badge */}
+                      {/* Line 2: Tithi Number */}
+                      <span
+                        className={`font-serif font-black text-[8.5px] sm:text-[10.5px] md:text-xs block w-full text-center leading-tight whitespace-normal break-words ${
+                          isHoliday ? 'text-red-700' : 'text-amber-950'
+                        }`}
+                      >
+                        {scriptMode === 'meetei'
+                          ? (dayItem.isDualTithi ? `${toMeeteiNumerals(dayItem.tithiNumber)}, ${toMeeteiNumerals(dayItem.tithiNumber + 1)}` : toMeeteiNumerals(dayItem.tithiNumber))
+                          : (dayItem.isDualTithi ? `${toBengaliNumerals(dayItem.tithiNumber)}, ${toBengaliNumerals(dayItem.tithiNumber + 1)}` : toBengaliNumerals(dayItem.tithiNumber))}
+                      </span>
+
+                      {/* Line 3: Nakshatra Badge */}
+                      <div className="flex items-center justify-center gap-1 w-full pt-0.5">
                         {dayItem.nakshatraDisplayNumBengali && (
                           <span
-                            className="text-[7.5px] sm:text-[9px] font-serif font-bold text-amber-950 bg-amber-100/90 px-1 py-0.5 rounded border border-amber-300/80 leading-none"
+                            className="text-[7px] sm:text-[8px] font-mono font-black text-amber-950 bg-amber-200 px-1 py-0.5 rounded border border-amber-400 leading-none whitespace-nowrap"
                             title={`Nakshatra: ${scriptMode === 'meetei' ? dayItem.nakshatraDisplayMeetei : dayItem.nakshatraDisplayBengali}`}
                           >
                             {scriptMode === 'meetei'
-                              ? `ꯅ:${dayItem.nakshatraDisplayNumMeetei}`
-                              : `ন:${dayItem.nakshatraDisplayNumBengali}`}
+                              ? `ꯅꯛ:${dayItem.nakshatraDisplayNumMeetei}`
+                              : `নক্ষঃ${dayItem.nakshatraDisplayNumBengali}`}
                           </span>
                         )}
 
-                        {/* Small Tithi Ending Time */}
+                        {/* Small Tithi Ending Time on larger screens */}
                         <span
-                          className="text-[8px] sm:text-[9px] font-mono text-gray-500 font-semibold tracking-tight hidden sm:inline"
+                          className="text-[8px] sm:text-[9px] font-mono text-gray-700 font-bold tracking-tight hidden sm:inline"
                           title={`Tithi Ending: ${dayItem.tithiEndingStandard} (${dayItem.tithiEndingTime})`}
                         >
                           {dayItem.tithiEndingTime}
@@ -580,17 +594,17 @@ export default function MonthlyCalendarView() {
       {/* 4. ACTIVE SELECTED DAY DETAIL CARD (Embedded On-Page)         */}
       {/* ------------------------------------------------------------- */}
       {activeDay && (
-        <div className="bg-white rounded-2xl shadow-sm border border-amber-300 p-5 space-y-4">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-gray-100 pb-3">
             <div>
               <div className="flex items-center gap-2">
-                <span className={`text-xl font-serif font-black ${activeDay.isGeneralHoliday || activeDay.weekday === 0 ? 'text-red-700' : 'text-gray-900'}`}>
+                <span className={`text-xl font-bold ${activeDay.isGeneralHoliday || activeDay.weekday === 0 ? 'text-rose-600' : 'text-[#1e1b18]'}`}>
                   {activeDay.dateStr}
                 </span>
                 <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full border ${
                   activeDay.weekday === 0
-                    ? 'bg-red-100 text-red-800 border-red-300'
-                    : 'bg-amber-100 text-amber-900 border-amber-300'
+                    ? 'bg-rose-50 text-rose-800 border-rose-200'
+                    : 'bg-gray-100 text-gray-800 border-gray-200'
                 }`}>
                   {activeDay.weekdayName.bengali} ({activeDay.weekdayName.en})
                 </span>
@@ -600,21 +614,21 @@ export default function MonthlyCalendarView() {
                   </span>
                 )}
                 {activeDay.isGeneralHoliday && (
-                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-red-600 text-white">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-rose-600 text-white">
                     General Holiday (ছুটি)
                   </span>
                 )}
               </div>
-              <p className="text-xs text-gray-500 font-serif mt-0.5">
-                {scriptMode === 'meetei' ? activeDay.tithiDisplayMeetei : activeDay.tithiDisplayBengali} • {scriptMode === 'meetei' ? `ꯅ:${activeDay.nakshatraDisplayNumMeetei} (${activeDay.nakshatraDisplayMeetei})` : `ন:${activeDay.nakshatraDisplayNumBengali} (${activeDay.nakshatraDisplayBengali})`} • Soura {activeDay.souraDate} {activeDay.solarMonth.bengali}, Saka {activeDay.sakaYear}
+              <p className="text-xs text-gray-500 mt-0.5">
+                {scriptMode === 'meetei' ? activeDay.tithiDisplayMeetei : activeDay.tithiDisplayBengali} • {scriptMode === 'meetei' ? `ꯅꯛꯁꯇ꯭ꯔ: ${activeDay.nakshatraDisplayMeetei}` : `নক্ষত্রঃ ${activeDay.nakshatraDisplayBengali}`} • Soura {activeDay.souraDate} {activeDay.solarMonth.bengali}, Saka {activeDay.sakaYear}
               </p>
               {activeDay.festival && (
-                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-red-50 border border-red-200">
-                  <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
-                  <span className="text-xs font-bold text-red-900 font-serif">
+                <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-rose-50 border border-rose-200">
+                  <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
+                  <span className="text-xs font-bold text-rose-900">
                     {scriptMode === 'meetei' ? activeDay.festival.nameMeetei : activeDay.festival.nameBengali}
                   </span>
-                  <span className="text-[11px] text-red-700">
+                  <span className="text-[11px] text-rose-700">
                     ({activeDay.festival.nameEn})
                   </span>
                 </div>
@@ -624,13 +638,13 @@ export default function MonthlyCalendarView() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => setModalDay(activeDay)}
-                className="px-3 py-1.5 rounded-xl border border-amber-300 bg-amber-50 hover:bg-amber-100 text-amber-900 text-xs font-bold transition shadow-xs"
+                className="px-3 py-1.5 rounded-xl border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 text-xs font-bold transition shadow-xs cursor-pointer"
               >
                 Expand Details
               </button>
               <Link
-                href={`/panchang?date=${activeDay.dateStr}`}
-                className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-xs inline-flex items-center gap-1"
+                href={`/dashboard/astrologer?tab=panchang&mode=mobile&date=${activeDay.dateStr}`}
+                className="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-xs inline-flex items-center gap-1 cursor-pointer"
               >
                 <span>Full Panchang</span>
                 <ExternalLink className="w-3.5 h-3.5" />
@@ -639,19 +653,19 @@ export default function MonthlyCalendarView() {
           </div>
 
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-serif">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
             
-            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1">
-              <span className="text-[11px] text-gray-500 block">থবানীং (Tithi Ending):</span>
-              <strong className="text-sm text-gray-900 block">{activeDay.tithiDisplayBengali}</strong>
-              <span className="font-mono text-[11px] text-amber-800 font-bold block">
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+              <span className="text-[11px] text-gray-500 font-medium block">থবানীং (Tithi Ending):</span>
+              <strong className="text-sm text-[#111827] font-bold block">{activeDay.tithiDisplayBengali}</strong>
+              <span className="text-[11px] text-gray-500 font-medium block">
                 Ending: {activeDay.tithiEndingStandard} ({activeDay.tithiEndingTime})
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1">
-              <span className="text-[11px] text-gray-500 block">Surya Udaya & Asta:</span>
-              <div className="flex items-center justify-between font-mono font-bold text-gray-900">
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+              <span className="text-[11px] text-gray-500 font-medium block">Surya Udaya & Asta:</span>
+              <div className="flex items-center justify-between font-mono font-bold text-[#111827]">
                 <span>🌅 {activeDay.panchang.sunMoonTimings.sunrise}</span>
                 <span>🌇 {activeDay.panchang.sunMoonTimings.sunset}</span>
               </div>
@@ -660,24 +674,26 @@ export default function MonthlyCalendarView() {
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1">
-              <span className="text-[11px] text-gray-500 block">Nakshatra & Pada:</span>
-              <strong className="text-sm text-gray-900 block">
-                {activeDay.panchang.fiveAngas.nakshatra.name}
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+              <span className="text-[11px] text-gray-500 font-medium block">Nakshatra (নক্ষত্র) & Pada:</span>
+              <strong className="text-sm text-[#111827] font-bold block">
+                {scriptMode === 'meetei'
+                  ? `${activeDay.nakshatraDisplayMeetei} (${activeDay.panchang.fiveAngas.nakshatra.name})`
+                  : `${activeDay.nakshatraDisplayBengali} (${activeDay.panchang.fiveAngas.nakshatra.name})`}
               </strong>
               <span className="text-[11px] text-gray-600 block">
                 Pada {activeDay.panchang.fiveAngas.nakshatra.pada} • Lord {activeDay.panchang.fiveAngas.nakshatra.lord}
               </span>
             </div>
 
-            <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 space-y-1">
-              <span className="text-[11px] text-gray-500 block">Ee Khudeng Status:</span>
-              <strong className={`text-sm block ${activeDay.isKongbaLeiba ? 'text-emerald-700' : 'text-rose-700'}`}>
+            <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 space-y-1">
+              <span className="text-[11px] text-gray-500 font-medium block">Ee Khudeng Status:</span>
+              <strong className={`text-sm font-bold block ${activeDay.isKongbaLeiba ? 'text-emerald-700' : 'text-rose-700'}`}>
                 {activeDay.isKongbaLeiba
                   ? (scriptMode === 'meetei' ? 'ꯏ ꯈꯨꯗꯦꯡ ꯂꯩꯕ (Auspicious)' : 'ঈ খুদেং লৈবা (Auspicious)')
                   : (scriptMode === 'meetei' ? 'ꯏ ꯈꯨꯗꯦꯡ ꯂꯩꯇꯕ (Prohibited)' : 'ঈ খুদেং লৈতবা (Prohibited)')}
               </strong>
-              <span className="font-mono text-[11px] text-rose-700 block">
+              <span className="font-mono text-[11px] text-rose-700 font-semibold block">
                 Rahu: {activeDay.panchang.muhurtas.rahuKaal.start} – {activeDay.panchang.muhurtas.rahuKaal.end}
               </span>
             </div>
@@ -692,9 +708,9 @@ export default function MonthlyCalendarView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         
         {/* Table of Monthly Attributes (থা মমিং অমসুং নুমিৎশিং - Blipi15 Month Attributes) */}
-        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-amber-200 p-5 space-y-4">
+        <div className="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-200 p-5 space-y-4">
           <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-            <h3 className="text-base font-serif font-black text-gray-900 flex items-center gap-2">
+            <h3 className="text-base font-bold text-[#1e1b18] flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-amber-600" />
               <span>
                 {scriptMode === 'meetei' ? 'ꯊꯥ ꯃꯃꯤꯡ ꯑꯃꯁꯨꯡ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'থা মমিং অমসুং নুমিৎশিং'}
@@ -703,43 +719,43 @@ export default function MonthlyCalendarView() {
           </div>
 
           {/* Theme-matched Table with Blipi15 font */}
-          <div className="overflow-x-auto rounded-xl border border-amber-200 shadow-xs">
+          <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-xs">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="bg-gradient-to-r from-amber-100 via-amber-50 to-orange-100/60 text-amber-950 border-b border-amber-200 font-blipi">
-                  <th className="py-3 px-4 border-r border-amber-200/80 font-normal text-sm sm:text-base tracking-wide whitespace-nowrap text-amber-950">
+                <tr className="bg-gray-100 text-[#1e1b18] border-b border-gray-200 font-blipi">
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
                     {scriptMode === 'meetei' ? 'ꯊꯥ ꯃꯃꯤꯡ' : 'Ta mimz'}
                   </th>
-                  <th className="py-3 px-4 border-r border-amber-200/80 font-normal text-sm sm:text-base tracking-wide whitespace-nowrap text-amber-950">
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
                     {scriptMode === 'meetei' ? 'ꯇꯠꯅꯕ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 't\\nba nuim\\iSz'}
                   </th>
-                  <th className="py-3 px-4 border-r border-amber-200/80 font-normal text-sm sm:text-base tracking-wide whitespace-nowrap text-amber-950">
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
                     {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ ꯃꯥꯏꯒꯩ' : 'TaiS mah~e~g'}
                   </th>
-                  <th className="py-3 px-4 border-r border-amber-200/80 font-normal text-sm sm:text-base tracking-wide whitespace-nowrap text-amber-950">
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
                     {scriptMode === 'meetei' ? 'ꯋꯥꯏꯇꯦꯛ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'wah~etk nuim\\iSz'}
                   </th>
-                  <th className="py-3 px-4 font-normal text-sm sm:text-base tracking-wide whitespace-nowrap text-amber-950">
+                  <th className="py-3 px-4 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
                     {scriptMode === 'meetei' ? 'ꯆꯩ ꯀꯥꯕ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'E~c kab nuim\\iSz'}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-amber-100 font-blipi">
+              <tbody className="bg-white divide-y divide-gray-100 font-blipi">
                 {calendarData.activeMonthAttributes.map((attr) => (
-                  <tr key={attr.monthCode} className="hover:bg-amber-50/70 even:bg-amber-50/30 transition-colors">
-                    <td className="py-3 px-4 border-r border-amber-100 font-normal text-sm sm:text-base whitespace-nowrap text-amber-950 font-bold">
+                  <tr key={attr.monthCode} className="hover:bg-gray-50/80 transition-colors">
+                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base whitespace-nowrap text-[#1e1b18] font-bold">
                       {scriptMode === 'meetei' ? attr.meetei.month : attr.blipi.month}
                     </td>
-                    <td className="py-3 px-4 border-r border-amber-100 font-normal text-sm sm:text-base text-gray-800">
+                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base text-gray-700">
                       {scriptMode === 'meetei' ? attr.meetei.tatnaba : attr.blipi.tatnaba}
                     </td>
-                    <td className="py-3 px-4 border-r border-amber-100 font-normal text-sm sm:text-base text-gray-800">
+                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base text-gray-700">
                       {scriptMode === 'meetei' ? attr.meetei.thasiMaigei : attr.blipi.thasiMaigei}
                     </td>
-                    <td className="py-3 px-4 border-r border-amber-100 font-normal text-sm sm:text-base text-gray-800">
+                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base text-gray-700">
                       {scriptMode === 'meetei' ? attr.meetei.waitek : attr.blipi.waitek}
                     </td>
-                    <td className="py-3 px-4 font-normal text-sm sm:text-base text-gray-800">
+                    <td className="py-3 px-4 font-normal text-sm sm:text-base text-gray-700">
                       {scriptMode === 'meetei' ? attr.meetei.cheiKaba : attr.blipi.cheiKaba}
                     </td>
                   </tr>
@@ -750,11 +766,11 @@ export default function MonthlyCalendarView() {
         </div>
 
         {/* Ee Khudeng Leiba / Leitaba Thabanis Sidebar */}
-        <div className="bg-white rounded-2xl shadow-sm border border-amber-200 p-5 space-y-4 flex flex-col justify-between">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 space-y-4 flex flex-col justify-between">
           <div className="space-y-4">
             <div className="flex items-center gap-2 border-b border-gray-100 pb-3">
               <Compass className="w-4 h-4 text-amber-600" />
-              <h3 className="text-base font-serif font-black text-gray-900">
+              <h3 className="text-base font-bold text-[#1e1b18]">
                 {scriptMode === 'meetei' ? 'ꯏ ꯈꯨꯗꯦꯡ ꯂꯩꯕ / ꯂꯩꯇꯕ ꯊꯕꯥꯅꯤꯡ' : 'ঈ খুদেং লৈবা / লৈতবা থবানীং'}
               </h3>
             </div>
@@ -848,7 +864,7 @@ export default function MonthlyCalendarView() {
           {/* Quick link to Panchang */}
           <div className="pt-2 border-t border-gray-100">
             <Link
-              href="/panchang"
+              href="/dashboard/astrologer?tab=panchang&mode=mobile"
               className="inline-flex items-center justify-center w-full gap-2 px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold transition shadow-xs"
             >
               <span>View Daily Panchang (নুমিৎ খুদিংগী পঞ্চাং)</span>
@@ -888,7 +904,7 @@ export default function MonthlyCalendarView() {
                   )}
                 </div>
                 <p className="text-xs text-gray-500 font-serif mt-0.5">
-                  {scriptMode === 'meetei' ? modalDay.tithiDisplayMeetei : modalDay.tithiDisplayBengali} • {scriptMode === 'meetei' ? `ꯅ:${modalDay.nakshatraDisplayNumMeetei} (${modalDay.nakshatraDisplayMeetei})` : `ন:${modalDay.nakshatraDisplayNumBengali} (${modalDay.nakshatraDisplayBengali})`} • Soura {modalDay.souraDate} {modalDay.solarMonth.bengali}, Saka {modalDay.sakaYear}
+                  {scriptMode === 'meetei' ? modalDay.tithiDisplayMeetei : modalDay.tithiDisplayBengali} • {scriptMode === 'meetei' ? `ꯅꯛꯁꯇ꯭ꯔ: ${modalDay.nakshatraDisplayMeetei}` : `নক্ষত্রঃ ${modalDay.nakshatraDisplayBengali}`} • Soura {modalDay.souraDate} {modalDay.solarMonth.bengali}, Saka {modalDay.sakaYear}
                 </p>
                 {modalDay.festival && (
                   <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-red-50 border border-red-200">
@@ -939,7 +955,9 @@ export default function MonthlyCalendarView() {
               <div className="flex justify-between py-1.5 border-b border-gray-100">
                 <span className="text-gray-500">Nakshatra (নক্ষত্র):</span>
                 <span className="font-bold text-gray-900">
-                  {scriptMode === 'meetei' ? `ꯅ:${modalDay.nakshatraDisplayNumMeetei} - ${modalDay.nakshatraDisplayMeetei}` : `ন:${modalDay.nakshatraDisplayNumBengali} - ${modalDay.nakshatraDisplayBengali}`} (Pada {modalDay.panchang.fiveAngas.nakshatra.pada})
+                  {scriptMode === 'meetei'
+                    ? `ꯅꯛꯁꯇ꯭ꯔ: ${modalDay.nakshatraDisplayMeetei}`
+                    : `নক্ষত্রঃ ${modalDay.nakshatraDisplayBengali}`} ({modalDay.panchang.fiveAngas.nakshatra.name}, Pada {modalDay.panchang.fiveAngas.nakshatra.pada})
                 </span>
               </div>
 
@@ -977,7 +995,7 @@ export default function MonthlyCalendarView() {
             {/* Actions */}
             <div className="flex items-center gap-3 pt-2">
               <Link
-                href={`/panchang?date=${modalDay.dateStr}`}
+                href={`/dashboard/astrologer?tab=panchang&mode=mobile&date=${modalDay.dateStr}`}
                 className="flex-1 text-center py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs transition"
               >
                 Full Day Panchang

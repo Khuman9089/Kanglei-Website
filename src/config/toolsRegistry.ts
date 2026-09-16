@@ -149,12 +149,12 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
   },
   {
     id: 'manipuri-book-panchang',
-    title: 'Manipuri Book Panchang (মণিপুরী পঞ্জিকা)',
-    subtitle: 'Authentic 3-in-1 Manipuri Panchang Book, 3x8 Table (Excel qw.xlsm) & Modern Cards.',
+    title: 'Manipuri Panchang (মণিপুরী পঞ্জিকা)',
+    subtitle: 'Daily Vedic & Manipuri Panchang, Rashi Chakra, Planetary Positions & Muhurtas.',
     category: 'astrology',
     iconName: 'Calendar',
     color: 'text-amber-500',
-    description: 'Physical Manipuri Panchang Book viewer matching authentic printed pakhangba / thawan astrological almanacs with tithi, nakshatra, yogas, auspicious muhurtas, choghadiya, and planetary transitions.',
+    description: 'Complete authentic Manipuri Panchang with 5 Angas (Tithi, Nakshatra, Yoga, Karana, Vara), D1 Rashi Chakra, Graha Sthiti (Planetary Longitudes), Shubh Muhurtas, and Almanac guidance.',
   },
 ];
 

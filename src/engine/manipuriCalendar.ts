@@ -46,7 +46,9 @@ export interface CalendarDay {
   isDualNakshatra: boolean;
   nakshatraDisplayNumBengali: string; // e.g. "৭" or "৭, ৮"
   nakshatraDisplayNumMeetei: string;  // e.g. "꯷" or "꯷, ꯸"
-  nakshatraDisplayBengali: string;    // e.g. "পুনর্বসু ৭" or "পুনর্বসু ৭, ৮"
+  nakshatraNameBengali: string;       // e.g. "পুনর্বসু" or "পুনর্বসু, পুষ্যা"
+  nakshatraNameMeetei: string;        // e.g. "ꯄꯨꯅꯔꯕꯁꯨ"
+  nakshatraDisplayBengali: string;    // e.g. "পুনর্বসু ৭" or "পুনর্বসু ৭, পুষ্যা ৮"
   nakshatraDisplayMeetei: string;     // e.g. "ꯄꯨꯅꯔꯕꯁꯨ ꯷"
 
   // Auspicious Indicators (Ee Khudeng / Kongba)
@@ -177,7 +179,7 @@ export function getMonthlyCalendar(
   tzOffset = 5.5
 ): MonthlyCalendarData {
   const monthIdx = month - 1;
-  const monthNameEn = `${ENGLISH_MONTHS[monthIdx]} ${year}`;
+  const monthNameEn = ENGLISH_MONTHS[monthIdx];
   const daysInMonth = new Date(year, month, 0).getDate();
   const firstDayWeekday = new Date(year, monthIdx, 1).getDay(); // 0 = Sunday
 
@@ -358,11 +360,20 @@ export function getMonthlyCalendar(
 
     const nakNameB = NAKSHATRA_NAMES_BENGALI[currentNak - 1] || 'অশ্বিনী';
     const nakNameM = NAKSHATRA_NAMES_MEETEI[currentNak - 1] || 'ꯑꯁ꯭ꯕꯤꯅꯤ';
+    const nak2NameB = isDualNak ? (NAKSHATRA_NAMES_BENGALI[skippedNak - 1] || '') : '';
+    const nak2NameM = isDualNak ? (NAKSHATRA_NAMES_MEETEI[skippedNak - 1] || '') : '';
+
+    const nakshatraNameBengali = isDualNak && nak2NameB ? `${nakNameB}, ${nak2NameB}` : nakNameB;
+    const nakshatraNameMeetei = isDualNak && nak2NameM ? `${nakNameM}, ${nak2NameM}` : nakNameM;
 
     const nakshatraDisplayNumBengali = bengaliNakNum;
     const nakshatraDisplayNumMeetei = meeteiNakNum;
-    const nakshatraDisplayBengali = `${nakNameB} ${bengaliNakNum}`;
-    const nakshatraDisplayMeetei = `${nakNameM} ${meeteiNakNum}`;
+    const nakshatraDisplayBengali = isDualNak && nak2NameB
+      ? `${nakNameB} ${toBengaliNumerals(currentNak)}, ${nak2NameB} ${toBengaliNumerals(skippedNak)}`
+      : `${nakNameB} ${bengaliNakNum}`;
+    const nakshatraDisplayMeetei = isDualNak && nak2NameM
+      ? `${nakNameM} ${toMeeteiNumerals(currentNak)}, ${nak2NameM} ${toMeeteiNumerals(skippedNak)}`
+      : `${nakNameM} ${meeteiNakNum}`;
 
     // Festivals & General Holidays of Manipur (Explicitly excluding KUT)
     const festival = getManipurFestival(
@@ -400,6 +411,8 @@ export function getMonthlyCalendar(
       isDualNakshatra: isDualNak,
       nakshatraDisplayNumBengali,
       nakshatraDisplayNumMeetei,
+      nakshatraNameBengali,
+      nakshatraNameMeetei,
       nakshatraDisplayBengali,
       nakshatraDisplayMeetei,
       isEeKhudengLeiba,

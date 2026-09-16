@@ -53,7 +53,7 @@ function SuccessContent() {
             <div>
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">OFFICIAL RECEIPT</span>
               <h2 className="font-serif font-bold text-xl text-[#b45309]">KangleiAstro Services</h2>
-              <p className="text-[11px] text-gray-500">Imphal, Manipur · support@kangleiastro.com</p>
+              <p className="text-[11px] text-gray-500">Imphal, Manipur · ccare@kuthiyengpham.in</p>
             </div>
             <div className="text-right">
               <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">AMOUNT PAID</span>

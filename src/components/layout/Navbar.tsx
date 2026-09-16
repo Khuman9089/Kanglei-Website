@@ -236,7 +236,7 @@ export function Navbar() {
 
   const [headerSettings, setHeaderSettings] = useState({
     supportTiming: 'Live Support (9:30 AM – 6:00 PM IST)',
-    supportEmail: 'ccare@kangleiastro.com',
+    supportEmail: 'ccare@kuthiyengpham.in',
     supportPhone: '+91 98765 43210',
   });
 
@@ -279,7 +279,7 @@ export function Navbar() {
     window.location.href = '/';
   };
 
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/astrologer')) {
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/astrologer') || pathname?.startsWith('/app')) {
     return null;
   }
 
@@ -289,8 +289,9 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 transition-all duration-300 bg-white shadow-xs">
-      {/* 1. TOP UTILITY BAR (Bright Warm Gold Theme - Hidden on Mobile, Desktop Only) */}
-      <div className="hidden md:block bg-[#fef3c7] text-[#78350f] text-xs border-b border-[#fde68a]">
+      {/* 1. TOP UTILITY BAR (Bright Warm Gold Theme - Hidden on Mobile & Calendar) */}
+      {!pathname?.startsWith('/calendar') && (
+        <div className="hidden md:block bg-[#fef3c7] text-[#78350f] text-xs border-b border-[#fde68a]">
         <div className="max-w-7xl mx-auto py-2 px-4 sm:px-6 lg:px-8 flex flex-wrap justify-between items-center gap-2">
           <div className="flex flex-wrap items-center gap-4 sm:gap-6">
             <div className="flex items-center gap-1.5 font-medium">
@@ -386,6 +387,7 @@ export function Navbar() {
           </div>
         </div>
       </div>
+      )}
 
       {/* 2. MAIN NAVBAR */}
       <nav
@@ -658,9 +660,9 @@ export function Navbar() {
                   <Phone className="w-4 h-4 text-[#d97706]" />
                   <span>+91 98765 43210</span>
                 </a>
-                <a href="mailto:ccare@kangleiastro.com" className="flex items-center gap-2 text-gray-600 hover:underline">
+                <a href={`mailto:${headerSettings.supportEmail || 'ccare@kuthiyengpham.in'}`} className="flex items-center gap-2 text-gray-600 hover:underline">
                   <Mail className="w-4 h-4 text-[#d97706]" />
-                  <span>ccare@kangleiastro.com</span>
+                  <span>{headerSettings.supportEmail || 'ccare@kuthiyengpham.in'}</span>
                 </a>
                 <div className="pt-1">
                   <Link

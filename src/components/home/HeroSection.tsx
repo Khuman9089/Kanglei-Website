@@ -2,9 +2,50 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { Sparkles, ArrowRight, Calendar, Sun, Moon, Clock, Compass, Heart, FileText, UserCheck } from 'lucide-react';
+import { Sparkles, ArrowRight, Calendar, Sun, Moon, Clock, Compass, Heart, Orbit, CheckCircle2, FileText, UserCheck } from 'lucide-react';
 import Link from 'next/link';
 import HomeMonthlyCalendar from '@/components/home/HomeMonthlyCalendar';
+import { NAKSHATRA_NAMES_BENGALI } from '@/engine/constants';
+import { toBengaliNumerals } from '@/engine/manipuriCalendar';
+
+const RASHI_BENGALI_MAP: Record<string, string> = {
+  Aries: 'মেষ',
+  Taurus: 'বৃষ',
+  Gemini: 'মিথুন',
+  Cancer: 'কর্কট',
+  Leo: 'সিংহ',
+  Virgo: 'কন্যা',
+  Libra: 'তুলা',
+  Scorpio: 'বৃশ্চিক',
+  Sagittarius: 'ধনু',
+  Capricorn: 'মকর',
+  Aquarius: 'কুম্ভ',
+  Pisces: 'মীন',
+};
+
+const PLANET_META_MAP: Record<string, { bn: string; symbol: string }> = {
+  Sun: { bn: 'রবি', symbol: '☉' },
+  Moon: { bn: 'চন্দ্র', symbol: '☽' },
+  Mars: { bn: 'মঙ্গল', symbol: '♂' },
+  Mercury: { bn: 'বুধ', symbol: '☿' },
+  Jupiter: { bn: 'বৃহস্পতি', symbol: '♃' },
+  Venus: { bn: 'শুক্র', symbol: '♀' },
+  Saturn: { bn: 'শনি', symbol: '♄' },
+  Rahu: { bn: 'রাহু', symbol: '☊' },
+  Ketu: { bn: 'কেতু', symbol: '☋' },
+};
+
+const DEFAULT_PLANETS = [
+  { name: 'Sun', bn: 'রবি', symbol: '☉', sign: 'Leo', bnSign: 'সিংহ', deg: "12° 34'", isRetrograde: false },
+  { name: 'Moon', bn: 'চন্দ্র', symbol: '☽', sign: 'Virgo', bnSign: 'কন্যা', deg: "04° 18'", isRetrograde: false },
+  { name: 'Mars', bn: 'মঙ্গল', symbol: '♂', sign: 'Gemini', bnSign: 'মিথুন', deg: "18° 42'", isRetrograde: false },
+  { name: 'Mercury', bn: 'বুধ', symbol: '☿', sign: 'Leo', bnSign: 'সিংহ', deg: "26° 05'", isRetrograde: false },
+  { name: 'Jupiter', bn: 'বৃহস্পতি', symbol: '♃', sign: 'Taurus', bnSign: 'বৃষ', deg: "24° 51'", isRetrograde: false },
+  { name: 'Venus', bn: 'শুক্র', symbol: '♀', sign: 'Virgo', bnSign: 'কন্যা', deg: "15° 11'", isRetrograde: false },
+  { name: 'Saturn', bn: 'শনি', symbol: '♄', sign: 'Aquarius', bnSign: 'কুম্ভ', deg: "20° 38'", isRetrograde: true },
+  { name: 'Rahu', bn: 'রাহু', symbol: '☊', sign: 'Pisces', bnSign: 'মীন', deg: "11° 14'", isRetrograde: true },
+  { name: 'Ketu', bn: 'কেতু', symbol: '☋', sign: 'Virgo', bnSign: 'কন্যা', deg: "11° 14'", isRetrograde: true },
+];
 
 export default function HeroSection() {
   // Dynamic Ticker Data state from /api/ticker
@@ -101,6 +142,25 @@ export default function HeroSection() {
     year: 'numeric',
   });
 
+  const displayPlanets =
+    homePanchang?.planets && homePanchang.planets.length > 0
+      ? homePanchang.planets.slice(0, 9).map((p: any) => {
+          const meta = PLANET_META_MAP[p.name] || { bn: p.name, symbol: '★' };
+          const bnSign = RASHI_BENGALI_MAP[p.signName] || p.signName;
+          return {
+            name: p.name,
+            bn: meta.bn,
+            symbol: meta.symbol,
+            sign: p.signName,
+            bnSign: bnSign,
+            deg: p.degreeStr,
+            nakshatra: p.nakshatraName,
+            pada: p.nakshatraPada,
+            isRetrograde: p.isRetrograde,
+          };
+        })
+      : DEFAULT_PLANETS;
+
   return (
     <section className="relative pt-6 sm:pt-8 pb-8 sm:pb-10 bg-[#fffdfa] text-[#0f172a] border-b border-[#f3e8d2]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
@@ -189,61 +249,88 @@ export default function HeroSection() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5 }}
-                className="bg-white p-5 rounded-3xl border border-[#f3e8d2] shadow-[0_15px_50px_rgba(217,119,6,0.06)] relative overflow-hidden flex-1 flex flex-col"
+                className="bg-white p-4 sm:p-5 rounded-3xl border border-[#f3e8d2] shadow-[0_15px_50px_rgba(217,119,6,0.06)] relative overflow-hidden flex-1 flex flex-col justify-between"
               >
                 {/* Top Gold Ribbon Accent */}
                 <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
 
-                <div className="flex items-center justify-between mb-5 pb-3 border-b border-[#fde68a]/50">
+                {/* 1. Header */}
+                <div className="flex items-center justify-between mb-3 pb-2.5 border-b border-[#fde68a]/50">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-10 h-10 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#b45309] shadow-xs">
-                      <Calendar className="w-5 h-5 text-[#d97706]" />
+                    <div className="w-9 h-9 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#b45309] shadow-xs">
+                      <Calendar className="w-4.5 h-4.5 text-[#d97706]" />
                     </div>
                     <div>
-                      <h3 className="font-serif font-bold text-lg text-[#0f172a]">{panchangDateLabel ? 'Panchang' : "Today's Panchang"}</h3>
-                      <p className="text-[11px] text-[#b45309] font-bold font-sans">{panchangDateLabel || todayDateStr}</p>
+                      <h3 className="font-serif font-bold text-base text-[#0f172a]">
+                        {panchangDateLabel ? 'Panchang & Graha' : "Today's Panchang"}
+                      </h3>
+                      <p className="text-[11px] text-[#b45309] font-bold font-sans">
+                        {panchangDateLabel || todayDateStr}
+                      </p>
                     </div>
                   </div>
                   <span className="px-2 py-0.5 rounded bg-[#fef3c7] text-[#b45309] text-[9px] font-extrabold uppercase border border-[#fde68a]">
-                    VEDIC
+                    VEDIC & MANIPURI
                   </span>
                 </div>
 
-                {/* Panchang Metrics List */}
-                <div className="space-y-3 text-xs font-sans mb-6 flex-1">
-                  <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
-                    <div className="flex items-center gap-2 text-gray-600">
-                      <Sun className="w-4 h-4 text-[#d97706]" />
-                      <span>Sunrise / Sunset</span>
+                {/* 2. Sunrise / Sunset & Moonrise / Moonset */}
+                <div className="grid grid-cols-2 gap-2 mb-2.5 font-sans">
+                  <div className="p-2 rounded-xl bg-[#fefcf6] border border-[#f3e8d2] flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-gray-600">
+                      <Sun className="w-3.5 h-3.5 text-[#d97706]" />
+                      <span className="text-[11px] font-medium">Sun</span>
                     </div>
-                    <span className="font-bold text-[#0f172a]">
+                    <span className="font-bold text-[#0f172a] text-[11px] font-mono">
                       {homePanchang ? `${homePanchang.sunMoonTimings.sunrise} / ${homePanchang.sunMoonTimings.sunset}` : '04:57 AM / 05:31 PM'}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
+                  <div className="p-2 rounded-xl bg-[#fefcf6] border border-[#f3e8d2] flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-gray-600">
+                      <Moon className="w-3.5 h-3.5 text-indigo-600" />
+                      <span className="text-[11px] font-medium">Moon</span>
+                    </div>
+                    <span className="font-bold text-[#0f172a] text-[11px] font-mono">
+                      {homePanchang?.sunMoonTimings?.moonrise ? `${homePanchang.sunMoonTimings.moonrise} / ${homePanchang.sunMoonTimings.moonset}` : '06:12 PM / 06:40 AM'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 3. Core Panchang Metrics List */}
+                <div className="space-y-1.5 text-xs font-sans mb-2.5">
+                  <div className="flex items-center justify-between py-1 border-b border-[#f3e8d2]">
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Moon className="w-4 h-4 text-[#d97706]" />
-                      <span>Tithi</span>
+                      <Moon className="w-3.5 h-3.5 text-[#d97706]" />
+                      <span>Tithi (থিথি)</span>
                     </div>
                     <span className="font-bold text-[#b45309]">
                       {homePanchang ? homePanchang.fiveAngas.tithi.summary : 'Shukla Paksha Purnima'}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
+                  <div className="flex items-center justify-between py-1 border-b border-[#f3e8d2]">
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Sparkles className="w-4 h-4 text-[#d97706]" />
-                      <span>Nakshatra</span>
+                      <Sparkles className="w-3.5 h-3.5 text-[#d97706]" />
+                      <span>Nakshatra (নক্ষত্র)</span>
                     </div>
-                    <span className="font-bold text-[#b45309]">
-                      {homePanchang ? `${homePanchang.fiveAngas.nakshatra.name} (P${homePanchang.fiveAngas.nakshatra.pada})` : 'Shravana (Pada 2)'}
+                    <span className="font-bold text-[#b45309] text-right">
+                      {homePanchang ? (
+                        <span>
+                          {NAKSHATRA_NAMES_BENGALI[homePanchang.fiveAngas.nakshatra.index - 1] || homePanchang.fiveAngas.nakshatra.name} ({homePanchang.fiveAngas.nakshatra.index})
+                          <span className="text-[10px] text-gray-500 font-normal ml-1">
+                            • Pada {homePanchang.fiveAngas.nakshatra.pada}
+                          </span>
+                        </span>
+                      ) : (
+                        'শ্রবণা (২২) • Pada 2'
+                      )}
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between py-1.5 border-b border-[#f3e8d2]">
+                  <div className="flex items-center justify-between py-1 border-b border-[#f3e8d2]">
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Compass className="w-4 h-4 text-[#d97706]" />
+                      <Compass className="w-3.5 h-3.5 text-[#d97706]" />
                       <span>Yoga / Karana</span>
                     </div>
                     <span className="font-bold text-[#0f172a]">
@@ -251,23 +338,90 @@ export default function HeroSection() {
                     </span>
                   </div>
 
-                  <div className="flex items-center justify-between py-1.5">
+                  <div className="flex items-center justify-between py-1 border-b border-[#f3e8d2]">
                     <div className="flex items-center gap-2 text-gray-600">
-                      <Clock className="w-4 h-4 text-red-500" />
-                      <span>Rahu Kaal</span>
+                      <Sun className="w-3.5 h-3.5 text-[#d97706]" />
+                      <span>Sun / Moon Rashi</span>
                     </div>
-                    <span className="font-bold text-red-600">
-                      {homePanchang ? `${homePanchang.muhurtas.rahuKaal.start} – ${homePanchang.muhurtas.rahuKaal.end}` : '01:58 PM – 03:34 PM'}
+                    <span className="font-bold text-[#0f172a] text-right">
+                      {homePanchang?.planetaryState?.sunSign ? (
+                        <span>
+                          {RASHI_BENGALI_MAP[homePanchang.planetaryState.sunSign] || homePanchang.planetaryState.sunSign} (Sun) / {RASHI_BENGALI_MAP[homePanchang.planetaryState.moonSign] || homePanchang.planetaryState.moonSign} (Moon)
+                        </span>
+                      ) : (
+                        'সিংহ (Sun) / কন্যা (Moon)'
+                      )}
                     </span>
                   </div>
                 </div>
 
-                {/* See Full Panchang Button */}
+                {/* 4. Shubh & Ashubh Muhurtas */}
+                <div className="grid grid-cols-2 gap-2 mb-3 font-sans">
+                  <div className="p-2 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
+                    <div className="flex items-center gap-1 text-emerald-800 font-bold text-[10px] uppercase">
+                      <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                      <span>Abhijit (শুভ)</span>
+                    </div>
+                    <span className="font-bold text-emerald-950 font-mono text-[11px] block mt-0.5">
+                      {homePanchang?.muhurtas?.abhijit?.start ? `${homePanchang.muhurtas.abhijit.start} – ${homePanchang.muhurtas.abhijit.end}` : '11:18 AM – 12:08 PM'}
+                    </span>
+                  </div>
+
+                  <div className="p-2 rounded-xl bg-rose-50/70 border border-rose-200/80">
+                    <div className="flex items-center gap-1 text-rose-800 font-bold text-[10px] uppercase">
+                      <Clock className="w-3 h-3 text-rose-600" />
+                      <span>Rahu Kaal (অশুভ)</span>
+                    </div>
+                    <span className="font-bold text-rose-950 font-mono text-[11px] block mt-0.5">
+                      {homePanchang?.muhurtas?.rahuKaal?.start ? `${homePanchang.muhurtas.rahuKaal.start} – ${homePanchang.muhurtas.rahuKaal.end}` : '01:58 PM – 03:34 PM'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* 5. Graha Sfut / Planetary Positions Grid */}
+                <div className="pt-2.5 border-t border-[#f3e8d2] space-y-2 mb-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-bold text-gray-800 flex items-center gap-1.5 uppercase tracking-wide">
+                      <Orbit className="w-3.5 h-3.5 text-[#d97706]" />
+                      <span>Graha Sfut (গ্রহ স্থিতি)</span>
+                    </span>
+                    <span className="text-[10px] text-amber-700 font-semibold bg-amber-50 border border-amber-200 px-1.5 py-0.2 rounded-full">
+                      9 Grahas Transit
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-1.5 text-[11px] font-sans">
+                    {displayPlanets.slice(0, 9).map((pl: any) => (
+                      <div
+                        key={pl.name}
+                        className="p-1.5 rounded-lg bg-[#fffdfa] border border-[#f3e8d2] flex flex-col justify-between hover:border-amber-400 transition-colors shadow-2xs"
+                      >
+                        <div className="flex items-center justify-between leading-none">
+                          <span className="font-bold text-gray-900 flex items-center gap-1 text-[11px]">
+                            <span className="text-[#d97706] font-mono text-xs">{pl.symbol}</span>
+                            <span>{pl.bn}</span>
+                          </span>
+                          {pl.isRetrograde && (
+                            <span className="text-[8.5px] font-bold text-red-600 bg-red-50 border border-red-200 px-1 rounded-xs leading-tight" title="Retrograde (বক্রী)">
+                              R
+                            </span>
+                          )}
+                        </div>
+                        <div className="mt-1 flex items-baseline justify-between text-[10px] leading-tight">
+                          <span className="text-gray-600 font-semibold truncate">{pl.bnSign}</span>
+                          <span className="text-amber-700 font-mono font-medium">{pl.deg}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* 6. Action Button */}
                 <Link
                   href="/panchang"
-                  className="w-full py-3 rounded-xl border border-[#d97706] bg-[#fefcf6] text-[#b45309] font-bold text-xs hover:bg-[#fef3c7] transition-all flex items-center justify-center gap-2 shadow-xs"
+                  className="w-full py-2.5 rounded-xl border border-[#d97706] bg-[#fefcf6] text-[#b45309] font-bold text-xs hover:bg-[#fef3c7] transition-all flex items-center justify-center gap-2 shadow-xs"
                 >
-                  <span>See Full Panchang</span>
+                  <span>See Full Panchang & Muhurta</span>
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </motion.div>

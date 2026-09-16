@@ -162,7 +162,7 @@ ${details.huChenbaMatam ? (isBengali ? `${details.huChenbaMatam.fullTextBengali}
                 ? 'মণিপুরী পঞ্জিকা বুক ভিউ'
                 : 'ꯃꯅꯤꯄꯨꯔꯤ ꯄꯟꯆꯥꯡ ꯕꯨꯛ ꯚꯤꯎ'}
             </span>
-            <span className="text-[10px] text-slate-500">
+            <span className="hidden sm:block text-[10px] text-slate-500">
               Authentic Manipuri Almanac Page & Excel Kuthi_Preparation Sheet (BLipi15 Typeset)
             </span>
           </div>
@@ -190,7 +190,7 @@ ${details.huChenbaMatam ? (isBengali ? `${details.huChenbaMatam.fullTextBengali}
 
           <button
             onClick={handlePrint}
-            className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold text-xs hover:opacity-95 shadow-xs flex items-center gap-1.5 transition-opacity cursor-pointer"
+            className="hidden sm:flex px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold text-xs hover:opacity-95 shadow-xs items-center gap-1.5 transition-opacity cursor-pointer"
             title="Print this Page"
           >
             <Printer className="w-3.5 h-3.5" />

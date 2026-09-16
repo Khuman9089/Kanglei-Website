@@ -10,7 +10,44 @@ function extractLast10Digits(phoneStr?: string): string {
   return digits.length >= 10 ? digits.slice(-10) : digits;
 }
 
-const DEMO_CLIENTS: Record<string, any> = {};
+const DEMO_CLIENTS: Record<string, any> = {
+  'demo@kuthiyengpham.in': {
+    id: 'usr-reviewer-demo',
+    name: 'App Store Reviewer',
+    email: 'demo@kuthiyengpham.in',
+    phone: '+919999999999',
+    whatsappNo: '+919999999999',
+    sex: 'Male',
+    address: 'App Store Review Testing Sandbox, Imphal, Manipur',
+    role: 'CLIENT',
+    joinedAt: '2026-01-01',
+    is_demo: true,
+  },
+  'demo@kangleiastro.com': {
+    id: 'usr-reviewer-demo',
+    name: 'App Store Reviewer',
+    email: 'demo@kuthiyengpham.in',
+    phone: '+919999999999',
+    whatsappNo: '+919999999999',
+    sex: 'Male',
+    address: 'App Store Review Testing Sandbox, Imphal, Manipur',
+    role: 'CLIENT',
+    joinedAt: '2026-01-01',
+    is_demo: true,
+  },
+  '9999999999': {
+    id: 'usr-reviewer-demo',
+    name: 'App Store Reviewer',
+    email: 'demo@kuthiyengpham.in',
+    phone: '+919999999999',
+    whatsappNo: '+919999999999',
+    sex: 'Male',
+    address: 'App Store Review Testing Sandbox, Imphal, Manipur',
+    role: 'CLIENT',
+    joinedAt: '2026-01-01',
+    is_demo: true,
+  },
+};
 const DEMO_ASTROLOGERS: Record<string, any> = {};
 
 export async function POST(request: Request) {
@@ -35,6 +72,20 @@ export async function POST(request: Request) {
     const cleanId = identifier.trim();
     const cleanIdLower = cleanId.toLowerCase();
     const idLast10 = extractLast10Digits(cleanId);
+
+    // 0. Store Reviewer Test Account Quick Bypass (Apple 5.1.1 & Google Play Review)
+    if (
+      (cleanIdLower === 'demo@kuthiyengpham.in' || cleanIdLower === 'demo@kangleiastro.com' || idLast10 === '9999999999' || cleanId === '9999999999') &&
+      password === 'DemoPass123!'
+    ) {
+      const reviewerUser = DEMO_CLIENTS[cleanIdLower] || DEMO_CLIENTS['demo@kuthiyengpham.in'] || DEMO_CLIENTS['9999999999'];
+      return NextResponse.json({
+        success: true,
+        user: reviewerUser,
+        message: 'Reviewer Test Session authenticated successfully.',
+        redirectTo: '/dashboard/client',
+      });
+    }
 
     // 1. Attempt Prisma Database query if DATABASE_URL is configured
     if (process.env.DATABASE_URL) {

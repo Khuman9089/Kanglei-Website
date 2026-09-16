@@ -4,7 +4,6 @@ import React, { useState, useMemo } from 'react';
 import {
   ChevronLeft,
   ChevronRight,
-  Calendar as CalendarIcon,
   RotateCcw
 } from 'lucide-react';
 import Link from 'next/link';
@@ -91,19 +90,19 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
   const currentMonthItem = MONTHS_LIST[selectedMonth - 1];
 
   return (
-    <div className="bg-transparent rounded-3xl border-2 border-[#d6c7af] dark:border-slate-800 shadow-[0_15px_50px_rgba(217,119,6,0.06)] overflow-hidden flex flex-col transition-all">
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col font-sans transition-all">
       {/* Accent Top Ribbon */}
-      <div className="h-1.5 bg-gradient-to-r from-[#b45309] via-[#d97706] to-[#f59e0b]" />
+      <div className="h-1 bg-amber-600" />
 
       {/* ───── 1. COMPACT SINGLE-LINE HEADER BANNER ───── */}
-      <div className="bg-[#181512] dark:bg-slate-950 text-white px-2.5 py-2 border-b-2 border-[#b8a48b]">
+      <div className="bg-[#1e1b18] text-white px-3 py-2.5 border-b border-gray-200">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           {/* Left: Nav controls + Month/Year selects */}
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={handlePrevMonth}
-              className="p-1 rounded-md border border-amber-600/50 bg-[#292524] hover:bg-amber-900/60 text-amber-300 transition-all cursor-pointer"
+              className="p-1 rounded-lg border border-gray-700 bg-black/40 hover:bg-black/60 text-gray-200 transition-all cursor-pointer"
               title="Previous Month"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -113,10 +112,10 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
               id="home-cal-month"
               value={selectedMonth}
               onChange={(e) => setSelectedMonth(Number(e.target.value))}
-              className="h-7 px-1.5 rounded-md text-[11px] font-bold border border-amber-600/50 bg-[#292524] text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer"
+              className="h-7 px-2 rounded-lg text-xs font-semibold border border-gray-700 bg-[#2b241d] text-white focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer"
             >
               {MONTHS_LIST.map((m) => (
-                <option key={m.value} value={m.value} className="bg-[#1c1917] text-white">
+                <option key={m.value} value={m.value} className="bg-[#1e1b18] text-white">
                   {scriptMode === 'meetei' ? m.nameMeetei : scriptMode === 'bengali' ? m.nameBengali : m.nameEn} ({m.nameEn})
                 </option>
               ))}
@@ -126,10 +125,10 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
               id="home-cal-year"
               value={selectedYear}
               onChange={(e) => setSelectedYear(Number(e.target.value))}
-              className="h-7 px-1.5 rounded-md text-[11px] font-bold border border-amber-600/50 bg-[#292524] text-amber-100 focus:outline-none focus:ring-1 focus:ring-amber-400 cursor-pointer font-mono"
+              className="h-7 px-2 rounded-lg text-xs font-semibold border border-gray-700 bg-[#2b241d] text-white focus:outline-none focus:ring-1 focus:ring-amber-500 cursor-pointer font-mono"
             >
               {YEARS_LIST.map((y) => (
-                <option key={y} value={y} className="bg-[#1c1917] text-white">
+                <option key={y} value={y} className="bg-[#1e1b18] text-white">
                   {y}
                 </option>
               ))}
@@ -138,7 +137,7 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
             <button
               type="button"
               onClick={handleNextMonth}
-              className="p-1 rounded-md border border-amber-600/50 bg-[#292524] hover:bg-amber-900/60 text-amber-300 transition-all cursor-pointer"
+              className="p-1 rounded-lg border border-gray-700 bg-black/40 hover:bg-black/60 text-gray-200 transition-all cursor-pointer"
               title="Next Month"
             >
               <ChevronRight className="w-3.5 h-3.5" />
@@ -148,7 +147,7 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
               <button
                 type="button"
                 onClick={handleJumpToToday}
-                className="h-7 px-1.5 rounded-md text-[10px] font-bold bg-amber-600/30 hover:bg-amber-600/50 text-amber-200 border border-amber-500/50 cursor-pointer flex items-center gap-1"
+                className="h-7 px-2 rounded-lg text-[10px] font-bold bg-amber-600 hover:bg-amber-700 text-white cursor-pointer flex items-center gap-1 transition"
                 title="Jump to current month"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -159,28 +158,28 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
 
           {/* Center: Month title + dual-month span */}
           <div className="flex items-center gap-2 flex-wrap">
-            <span className="text-base sm:text-lg font-serif font-black tracking-wider text-[#f59e0b] uppercase">
+            <span className="text-base sm:text-lg font-bold tracking-wider text-amber-400 uppercase">
               {currentMonthItem.nameEn}
             </span>
-            <span className="text-[10px] sm:text-[11px] font-serif font-bold text-amber-200/80 hidden sm:inline">
+            <span className="text-xs font-semibold text-gray-300 hidden sm:inline">
               {scriptMode === 'meetei'
                 ? `${calendarData.manipuriMonthSpanMeetei} — ${calendarData.solarMonthSpanMeetei}`
                 : `${calendarData.manipuriMonthSpanBengali} — ${calendarData.solarMonthSpanBengali}`}
-              <span className="text-amber-400 ml-1 font-mono text-[9px]">
+              <span className="text-amber-400 ml-1 font-mono text-[10px] font-bold">
                 ({scriptMode === 'meetei' ? `ꯁꯀꯥꯕ꯭ꯗ ${toMeeteiNumerals(calendarData.souraYearSpan)}` : `শকাব্দ ${toBengaliNumerals(calendarData.souraYearSpan)}`})
               </span>
             </span>
           </div>
 
           {/* Right: Script Switcher */}
-          <div className="inline-flex rounded-md border border-amber-700/50 p-0.5 bg-[#292524] text-[10px] font-bold">
+          <div className="inline-flex rounded-lg border border-gray-700 p-0.5 bg-[#2b241d] text-xs font-semibold">
             <button
               type="button"
               onClick={() => setScriptMode('bengali')}
-              className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
                 scriptMode === 'bengali'
-                  ? 'bg-amber-600 text-white font-black shadow-xs'
-                  : 'text-amber-300/70 hover:text-amber-200'
+                  ? 'bg-amber-600 text-white font-bold shadow-xs'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               বাং
@@ -188,10 +187,10 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
             <button
               type="button"
               onClick={() => setScriptMode('meetei')}
-              className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
                 scriptMode === 'meetei'
-                  ? 'bg-amber-600 text-white font-black shadow-xs'
-                  : 'text-amber-300/70 hover:text-amber-200'
+                  ? 'bg-amber-600 text-white font-bold shadow-xs'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               ꯃꯤ
@@ -199,10 +198,10 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
             <button
               type="button"
               onClick={() => setScriptMode('en')}
-              className={`px-1.5 py-0.5 rounded transition-all cursor-pointer ${
+              className={`px-2 py-0.5 rounded-md transition-all cursor-pointer ${
                 scriptMode === 'en'
-                  ? 'bg-amber-600 text-white font-black shadow-xs'
-                  : 'text-amber-300/70 hover:text-amber-200'
+                  ? 'bg-amber-600 text-white font-bold shadow-xs'
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               EN
@@ -211,180 +210,267 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
         </div>
       </div>
 
-      {/* ───── 2. WEEKDAY HEADERS (English, Meetei Mayek & Bengali) ───── */}
-      <div className="grid grid-cols-7 border-b-2 border-[#b8a48b] bg-[#f4ebd9]/70 dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-serif">
+      {/* ───── 2. WEEKDAY HEADERS (SUN - SAT) ───── */}
+      <div className="grid grid-cols-7 bg-[#F8FAFC] border-b border-[#E5E7EB] text-center">
         {WEEKDAYS_MANIPURI.map((wd) => {
           const isSun = wd.day === 0;
           return (
             <div
               key={wd.day}
-              className={`py-1 px-0.5 text-center border-r border-[#ccbba2] dark:border-slate-700 last:border-r-0 ${
-                isSun ? 'text-red-600 dark:text-red-400 font-black bg-red-100/30 dark:bg-red-950/20' : 'font-bold'
-              }`}
+              className="py-1.5 md:py-2.5 px-0.5 md:px-1 flex flex-col items-center justify-center border-r border-[#E5E7EB] last:border-r-0"
             >
-              <div className="text-xs sm:text-sm font-black tracking-wider uppercase">
-                {wd.shortEn === 'Thu' ? 'THU' : wd.shortEn.toUpperCase()}
+              {/* Mobile: single compact row SUN - SAT at 11px bold */}
+              <div
+                className={`text-[11px] md:text-[13px] font-bold uppercase tracking-wider leading-none ${
+                  isSun ? 'text-[#DC2626]' : 'text-[#64748B]'
+                }`}
+              >
+                {wd.shortEn}
               </div>
-              <div className="text-[10px] sm:text-[11px] leading-tight font-serif mt-0.5">
-                {wd.meetei}
-              </div>
-              <div className="text-[9px] sm:text-[10px] leading-tight font-serif text-slate-700 dark:text-slate-300">
-                {wd.bengali}
+              {/* Desktop: trilingual stacked labels */}
+              <div className="hidden md:flex flex-col items-center mt-1 space-y-0.5">
+                <span
+                  className={`text-[10px] font-semibold leading-none ${
+                    isSun ? 'text-[#DC2626]' : 'text-[#475569]'
+                  }`}
+                >
+                  {wd.meetei}
+                </span>
+                <span
+                  className={`text-[10px] font-semibold leading-none ${
+                    isSun ? 'text-[#DC2626]' : 'text-[#64748B]'
+                  }`}
+                >
+                  {wd.bengali}
+                </span>
               </div>
             </div>
           );
         })}
       </div>
 
-      {/* ───── 3. COMPACT 7-COLUMN DAYS GRID (transparent bg) ───── */}
-      <div className="divide-y border-b border-[#b8a48b] dark:border-slate-700 divide-[#b8a48b] dark:divide-slate-700 bg-transparent">
-        {calendarData.weeks.map((week, wIdx) => (
-          <div key={`week-${wIdx}`} className="grid grid-cols-7 divide-x divide-[#b8a48b] dark:divide-slate-700 w-full">
-            {week.map((dayItem, dIdx) => {
-              if (!dayItem) {
-                return (
-                  <div
-                    key={`empty-${wIdx}-${dIdx}`}
-                    className="bg-transparent min-h-[44px] sm:min-h-[50px] md:min-h-[54px]"
-                  />
-                );
-              }
-
-              const isSunday = dayItem.weekday === 0;
-              const is2ndSaturday = dayItem.weekday === 6 && dayItem.day >= 8 && dayItem.day <= 14;
-              const is4thSaturday = dayItem.weekday === 6 && dayItem.day >= 22 && dayItem.day <= 28;
-              const isHoliday = isSunday || dayItem.isGeneralHoliday || is2ndSaturday || is4thSaturday;
-              const isSelected = dayItem.dateStr === selectedDateStr;
-              const holidayTag = is2ndSaturday ? '2nd Saturday' : is4thSaturday ? '4th Saturday' : null;
-
+      {/* ───── 3. RESPONSIVE 7-COLUMN DAYS GRID ───── */}
+      <div className="bg-[#E5E7EB] grid grid-cols-7 gap-[1px]">
+        {calendarData.weeks.flatMap((week, wIdx) =>
+          week.map((dayItem, dIdx) => {
+            if (!dayItem) {
               return (
-                <button
-                  type="button"
-                  key={dayItem.dateStr}
-                  title={`${dayItem.dateStr}`}
-                  onClick={() => handleDayClick(dayItem)}
-                  className={`relative p-1 sm:p-1.5 cursor-pointer transition-all flex flex-col items-center justify-between select-none min-h-[44px] sm:min-h-[50px] md:min-h-[54px] group text-center ${
-                    isSelected
-                      ? 'bg-amber-100/90 dark:bg-amber-950/60 ring-2 ring-inset ring-amber-600 shadow-xs z-10'
-                      : dayItem.isToday
-                      ? 'bg-amber-50/60 dark:bg-amber-950/30 ring-1.5 ring-inset ring-amber-500'
-                      : isHoliday
-                      ? 'bg-red-50/40 dark:bg-red-950/15 hover:bg-red-100/40'
-                      : 'bg-transparent hover:bg-[#f5ecdd]/60'
+                <div
+                  key={`empty-${wIdx}-${dIdx}`}
+                  className="min-h-[70px] md:min-h-[115px] bg-[#FAFAFA]"
+                />
+              );
+            }
+
+            const isSunday = dayItem.weekday === 0;
+            const isHoliday = isSunday || dayItem.isGeneralHoliday;
+            const isSelected = dayItem.dateStr === selectedDateStr;
+            const isToday = dayItem.isToday;
+
+            const monthName =
+              scriptMode === 'meetei'
+                ? dayItem.manipuriMonth.nameMeetei
+                : dayItem.manipuriMonth.nameBengali;
+
+            const tithiNumStr =
+              scriptMode === 'meetei'
+                ? dayItem.isDualTithi
+                  ? `${toMeeteiNumerals(dayItem.tithiNumber)}, ${toMeeteiNumerals(dayItem.tithiNumber + 1)}`
+                  : toMeeteiNumerals(dayItem.tithiNumber)
+                : dayItem.isDualTithi
+                ? `${toBengaliNumerals(dayItem.tithiNumber)}, ${toBengaliNumerals(dayItem.tithiNumber + 1)}`
+                : toBengaliNumerals(dayItem.tithiNumber);
+
+            const nakshatraName =
+              scriptMode === 'meetei'
+                ? dayItem.nakshatraNameMeetei
+                : dayItem.nakshatraNameBengali;
+
+            const nakshatraNum =
+              scriptMode === 'meetei'
+                ? dayItem.nakshatraDisplayNumMeetei
+                : dayItem.nakshatraDisplayNumBengali;
+
+            // Event or Holiday display badge
+            const eventBadgeLabel = dayItem.festival
+              ? scriptMode === 'meetei'
+                ? dayItem.festival.nameMeetei || dayItem.festival.nameBengali
+                : dayItem.festival.nameBengali
+              : dayItem.isPurnima
+              ? scriptMode === 'meetei'
+                ? 'ꯄꯨꯔꯅꯤꯃꯥ'
+                : 'পূর্ণিমা'
+              : dayItem.isAmavasya
+              ? scriptMode === 'meetei'
+                ? 'ꯊꯥꯁꯤ'
+                : 'থাশী'
+              : dayItem.isEkadashi
+              ? scriptMode === 'meetei'
+                ? 'ꯑꯦꯀꯥꯗꯁꯤ'
+                : 'একাদশী'
+              : null;
+
+            return (
+              <button
+                type="button"
+                key={dayItem.dateStr}
+                title={`${dayItem.dateStr} • ${
+                  scriptMode === 'meetei'
+                    ? dayItem.tithiDisplayMeetei
+                    : dayItem.tithiDisplayBengali
+                } • Nakshatra: ${
+                  scriptMode === 'meetei'
+                    ? dayItem.nakshatraDisplayMeetei
+                    : dayItem.nakshatraDisplayBengali
+                }${eventBadgeLabel ? ` • ${eventBadgeLabel}` : ''}`}
+                onClick={() => handleDayClick(dayItem)}
+                className={`relative min-h-[72px] md:min-h-[115px] p-1 md:p-2 flex flex-col justify-center md:justify-between items-center md:items-stretch text-center md:text-left overflow-hidden cursor-pointer transition-all select-none rounded-[10px] md:rounded-none border md:border-0 ${
+                  isToday
+                    ? 'bg-[#FFFBEB] ring-2 ring-inset ring-amber-500 border-amber-500 rounded-lg z-10'
+                    : isSelected
+                    ? 'bg-[#FFFBEB] ring-2 ring-inset ring-amber-600 border-amber-600 shadow-xs z-10'
+                    : isSunday
+                    ? 'bg-[#FFF8F8] border-[#F1F5F9] hover:bg-rose-100/50'
+                    : 'bg-white border-[#F1F5F9] hover:bg-slate-50'
+                }`}
+              >
+                {/* ── MOBILE TOP-LEFT: Nakshatra Number ONLY ── */}
+                <span
+                  className={`md:hidden absolute top-1 left-1.5 text-[10px] font-semibold leading-none ${
+                    isToday ? 'text-[#B45309]' : 'text-slate-400'
                   }`}
                 >
-                  {/* TOP: Festival / Holiday Name (compact) */}
-                  <div className="w-full min-h-[12px] leading-tight">
-                    {dayItem.festival || holidayTag ? (
-                      <span
-                        className={`text-[7px] sm:text-[8.5px] font-bold block truncate max-w-full ${
-                          isHoliday ? 'text-red-600 dark:text-red-400' : 'text-[#92400e] dark:text-amber-300'
-                        }`}
-                      >
-                        {holidayTag || (scriptMode === 'meetei' ? dayItem.festival?.nameMeetei : dayItem.festival?.nameBengali)}
-                      </span>
-                    ) : (
-                      <span />
-                    )}
-                  </div>
+                  {nakshatraNum}
+                </span>
 
-                  {/* MIDDLE: Manipuri Month Name ABOVE, then BIG Date Number */}
-                  <div className="flex flex-col items-center justify-center flex-1">
-                    {/* Manipuri Month Name (above date) */}
-                    <span className="text-[7px] sm:text-[8.5px] font-bold text-slate-600 dark:text-slate-300 truncate max-w-full leading-tight">
-                      {scriptMode === 'meetei'
-                        ? dayItem.manipuriMonth.nameMeetei.slice(0, 4)
-                        : scriptMode === 'en'
-                        ? dayItem.manipuriMonth.nameEn.slice(0, 4)
-                        : dayItem.manipuriMonth.nameBengali.slice(0, 4)}
+                {/* ── TOP ROW: Gregorian Date & Badges/Indicators ── */}
+                <div className="flex items-start justify-center md:justify-between w-full gap-1">
+                  <span
+                    className={`text-lg md:text-xl font-extrabold tracking-tight leading-none font-sans ${
+                      isSunday
+                        ? 'text-[#DC2626]'
+                        : isToday
+                        ? 'text-[#B45309]'
+                        : 'text-[#0F172A]'
+                    }`}
+                  >
+                    {dayItem.day}
+                  </span>
+
+                  {/* Desktop: Full Event/Holiday Badge */}
+                  {eventBadgeLabel && (
+                    <span
+                      className={`hidden md:inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded truncate max-w-[65%] leading-tight ${
+                        dayItem.isGeneralHoliday
+                          ? 'bg-red-100 text-red-700'
+                          : dayItem.isPurnima || dayItem.isAmavasya
+                          ? 'bg-purple-100 text-purple-700'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                      title={eventBadgeLabel}
+                    >
+                      {eventBadgeLabel}
                     </span>
+                  )}
 
-                    {/* BIG BOLD DATE NUMBER & STAMP BADGES */}
-                    {dayItem.isPurnima ? (
-                      <div
-                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-red-600 text-white flex flex-col items-center justify-center shadow-xs text-center border-2 border-red-700"
-                        title="Purnima (পূর্ণিমা)"
-                      >
-                        <span className="text-xs sm:text-sm font-serif font-black leading-none">{dayItem.day}</span>
-                        <span className="text-[6px] sm:text-[7px] font-bold leading-none mt-px">
-                          {scriptMode === 'meetei' ? 'ꯄꯨꯔꯅꯤ' : 'পূর্ণিমা'}
-                        </span>
-                      </div>
-                    ) : dayItem.isAmavasya ? (
-                      <div
-                        className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-red-700 text-white flex flex-col items-center justify-center shadow-xs text-center border-2 border-black"
-                        title="Thasi / Amavasya (থাসী)"
-                      >
-                        <span className="text-xs sm:text-sm font-serif font-black leading-none">{dayItem.day}</span>
-                        <span className="text-[6px] sm:text-[7px] font-bold leading-none mt-px">
-                          {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ' : 'থাসী'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex flex-col items-center">
-                        <span
-                          className={`text-lg sm:text-xl md:text-2xl font-serif font-black tracking-tight leading-none ${
-                            isHoliday
-                              ? 'text-red-600 dark:text-red-400'
-                              : dayItem.isToday
-                              ? 'text-amber-700 dark:text-amber-300'
-                              : 'text-slate-900 dark:text-slate-100'
-                          }`}
-                        >
-                          {dayItem.day}
-                        </span>
-                        {dayItem.isEkadashi && (
-                          <span className="mt-px px-1 rounded-full bg-red-600 text-white text-[6px] sm:text-[7px] font-bold leading-none">
-                            {scriptMode === 'meetei' ? 'ꯑꯦꯀꯥ' : 'একাদশী'}
-                          </span>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                  {/* Mobile: 5px Colored Indicator Dot */}
+                  {(dayItem.isGeneralHoliday || dayItem.festival || dayItem.isPurnima || dayItem.isAmavasya || dayItem.isEkadashi) && (
+                    <div className="md:hidden absolute top-1.5 right-1.5 flex items-center gap-0.5">
+                      {dayItem.isGeneralHoliday || dayItem.isPurnima || isSunday ? (
+                        <span className="w-[5px] h-[5px] rounded-full bg-red-500 shrink-0" />
+                      ) : (
+                        <span className="w-[5px] h-[5px] rounded-full bg-amber-500 shrink-0" />
+                      )}
+                    </div>
+                  )}
+                </div>
 
-                  {/* BOTTOM ROW: Tithi + Solar Month Date */}
-                  <div className="w-full flex items-center justify-between text-[7px] sm:text-[8px] font-serif border-t border-[#e2d5c3]/60 dark:border-slate-800 pt-px text-slate-600 dark:text-slate-400 leading-tight">
-                    {/* Tithi */}
-                    <span className="text-[#854d0e] dark:text-amber-400 font-bold truncate">
-                      {scriptMode === 'meetei'
-                        ? `${toMeeteiNumerals(dayItem.tithiNumber)}`
-                        : `${toBengaliNumerals(dayItem.tithiNumber)}`}
-                    </span>
-
-                    {/* Solar Month & Day */}
-                    <span className="font-semibold truncate">
-                      {scriptMode === 'meetei'
-                        ? `${dayItem.solarMonth.meetei.slice(0, 3)} ${toMeeteiNumerals(dayItem.souraDate)}`
-                        : `${dayItem.solarMonth.bengali.slice(0, 3)} ${toBengaliNumerals(dayItem.souraDate)}`}
+                {/* ── MIDDLE ROW: Manipuri Month Name at Center (Just Below Date) ── */}
+                <div className="my-0.5 md:my-auto py-0.5 w-full text-center">
+                  {/* Desktop Layout: Month Name centered prominently */}
+                  <div className="hidden md:flex flex-col items-center justify-center">
+                    <span
+                      className={`text-[13px] font-bold tracking-wide leading-tight truncate block ${
+                        isSunday ? 'text-[#991B1B]' : 'text-[#334155]'
+                      }`}
+                    >
+                      {monthName}
                     </span>
                   </div>
-                </button>
-              );
-            })}
-          </div>
-        ))}
+
+                  {/* Mobile Layout: Month Name below Date */}
+                  <div className="md:hidden flex flex-col items-center leading-tight">
+                    <span
+                      className={`text-[10.5px] font-medium truncate max-w-full block ${
+                        isSunday ? 'text-[#DC2626]' : isToday ? 'text-[#92400E]' : 'text-slate-600'
+                      }`}
+                    >
+                      {monthName}
+                    </span>
+                  </div>
+                </div>
+
+                {/* ── BOTTOM ROW: Tithi (Mobile) / Nakshatra + Tithi (Desktop) ── */}
+                {/* Desktop: Clean neutral Nakshatra pill on left + Tithi at bottom right */}
+                <div className="hidden md:flex items-center justify-between w-full gap-1.5 mt-auto pt-0.5">
+                  <div className="bg-slate-100 text-slate-700 text-xs px-1.5 py-0.5 rounded truncate flex items-center gap-1 max-w-[65%]">
+                    <span className="truncate">{nakshatraName}</span>
+                    <span className="font-mono text-[10px] text-slate-500 shrink-0">
+                      {nakshatraNum}
+                    </span>
+                  </div>
+
+                  {/* Tithi at bottom right hand side */}
+                  <span
+                    className={`text-[12px] font-bold tracking-tight text-right shrink-0 px-1.5 py-0.5 rounded ${
+                      isSunday
+                        ? 'text-[#991B1B] bg-rose-50/80'
+                        : isToday
+                        ? 'text-[#B45309] bg-amber-100/60'
+                        : 'text-[#1F2937] bg-slate-100/90'
+                    }`}
+                    title={`Tithi: ${tithiNumStr}`}
+                  >
+                    {tithiNumStr}
+                  </span>
+                </div>
+
+                {/* Mobile: Tithi Number at bottom */}
+                <div className="md:hidden text-[11px] font-bold leading-none mt-0.5 truncate w-full block text-center">
+                  <span className={isSunday ? 'text-[#DC2626]' : isToday ? 'text-[#92400E]' : 'text-slate-800'}>
+                    {tithiNumStr}
+                  </span>
+                </div>
+              </button>
+            );
+          })
+        )}
       </div>
 
       {/* ───── 4. BOTTOM BAR: LEGEND & LINK ───── */}
-      <div className="p-2 sm:p-2.5 bg-[#f4ebd9]/50 dark:bg-slate-800 flex flex-wrap items-center justify-between gap-2 text-[10px] sm:text-[11px] text-slate-700 dark:text-slate-300 font-serif">
+      <div className="p-2 sm:p-2.5 bg-gray-50 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-700 font-medium border-t border-[#E5E7EB]">
         <div className="flex items-center gap-3 flex-wrap">
-          <span className="inline-flex items-center gap-1 font-bold text-red-600 dark:text-red-400">
-            <span className="w-2 h-2 rounded-full bg-red-600" />
-            <span>Holiday / Sunday / 2nd Sat</span>
+          <span className="inline-flex items-center gap-1 font-semibold text-rose-700">
+            <span className="w-2 h-2 rounded-full bg-rose-600" />
+            <span>Holiday / Sunday</span>
           </span>
-          <span className="inline-flex items-center gap-1 font-bold text-amber-700 dark:text-amber-400">
+          <span className="inline-flex items-center gap-1 font-semibold text-amber-700">
             <span className="w-2 h-2 rounded-full bg-amber-500" />
             <span>Today</span>
           </span>
-          <span className="inline-flex items-center gap-1 font-bold text-red-700">
-            <span className="w-2 h-2 rounded-full bg-red-700 text-white flex items-center justify-center text-[6px]">●</span>
+          <span className="inline-flex items-center gap-1 font-semibold text-purple-700">
+            <span className="w-2 h-2 rounded-full bg-purple-600" />
             <span>Purnima / Thasi</span>
+          </span>
+          <span className="inline-flex items-center gap-1 font-semibold text-amber-800">
+            <span className="w-2 h-2 rounded-full bg-amber-500" />
+            <span>Festival / Ekadashi</span>
           </span>
         </div>
 
         <Link
           href="/calendar"
-          className="text-amber-800 dark:text-amber-400 font-bold hover:underline flex items-center gap-1"
+          className="text-amber-700 font-bold hover:underline flex items-center gap-1 cursor-pointer ml-auto"
         >
           <span>Open Full Wall Calendar Details</span>
           <span>→</span>

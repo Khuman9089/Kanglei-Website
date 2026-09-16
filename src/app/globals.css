@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700;800;900&family=Noto+Serif+Bengali:wght@400;600;700;900&family=Dancing+Script:wght@600;700&display=swap');
 @import "tailwindcss";
 
 /* ─────────────────────────────────────────────────────────────
@@ -6,9 +6,9 @@
    ───────────────────────────────────────────────────────────── */
 
 :root {
-  --midnight-900: #0f172a;
-  --midnight-800: #1e293b;
-  --midnight-700: #334155;
+  --midnight-900: #111827;
+  --midnight-800: #1e1b18;
+  --midnight-700: #374151;
 
   --gold-700: #b45309;
   --gold-600: #d97706;
@@ -16,17 +16,19 @@
   --gold-400: #fbbf24;
   --gold-100: #fef3c7;
 
-  --bright-bg: #fffdfa;
+  --bright-bg: #f9fafb;
   --bright-card: #ffffff;
-  --bright-cream: #faf8f4;
-  --bright-border: #f3e8d2;
+  --bright-cream: #f9fafb;
+  --bright-border: #e5e7eb;
 
-  --font-inter: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-cormorant: 'Cormorant Garamond', Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-inter: 'Inter', 'Noto Sans Bengali', 'Noto Serif Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-cormorant: 'Cormorant Garamond', 'Noto Serif Bengali', 'Noto Sans Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', Georgia, Cambria, 'Times New Roman', Times, serif;
 }
 
 * {
   box-sizing: border-box;
+  font-feature-settings: "liga" 1, "dlig" 1, "clig" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
 }
 
 html {
@@ -37,10 +39,10 @@ html {
 }
 
 body {
-  background-color: #fffdfa;
-  color: #0f172a;
+  background-color: #f9fafb;
+  color: #374151;
   font-family: var(--font-inter);
-  line-height: 1.65;
+  line-height: 1.6;
   font-size: 1.05rem; /* Larger baseline body text */
   margin: 0;
   padding: 0;
@@ -48,11 +50,13 @@ body {
 
 /* Explicit typography overrides */
 .font-serif {
-  font-family: 'Cormorant Garamond', Georgia, serif !important;
+  font-family: 'Cormorant Garamond', 'Noto Serif Bengali', 'Noto Sans Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', Georgia, serif !important;
+  font-feature-settings: "liga" 1, "dlig" 1, "clig" 1, "calt" 1;
 }
 
 .font-sans {
-  font-family: 'Inter', system-ui, sans-serif !important;
+  font-family: 'Inter', 'Noto Sans Bengali', 'Noto Serif Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', system-ui, sans-serif !important;
+  font-feature-settings: "liga" 1, "dlig" 1, "clig" 1, "calt" 1;
 }
 
 .font-script {

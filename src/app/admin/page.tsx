@@ -9,7 +9,7 @@ import {
   DollarSign, Filter, Share2, UserCheck, Award, Eye, EyeOff, Download, Copy, X, Sparkles, Save, Tag,
   BookOpen, FilePlus, Trash2, Edit, ShoppingBag, Package, Megaphone, Star, Truck, Upload, Sun, Image as ImageIcon,
   Headphones, Mail, Phone, Camera, MessageCircle, RefreshCw, Gift, ArrowLeft, ArrowRight,
-  CreditCard, Building2, MapPin, RotateCcw, Smartphone
+  CreditCard, Building2, MapPin, RotateCcw, Smartphone, Sliders, Send, Radio
 } from 'lucide-react';
 import Link from 'next/link';
 import { ACTIVE_TOOLS_REGISTRY } from '@/config/toolsRegistry';
@@ -525,7 +525,7 @@ export default function AdminDashboardPage() {
   const [siteSettings, setSiteSettings] = useState({
     headerSettings: {
       supportTiming: 'Live Support (9:30 AM – 6:00 PM IST)',
-      supportEmail: 'ccare@kangleiastro.com',
+      supportEmail: 'ccare@kuthiyengpham.in',
       supportPhone: '+91 98765 43210',
     },
     upiSettings: {
@@ -3641,14 +3641,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
   return (
     <div className={`min-h-screen flex font-sans antialiased transition-colors duration-300 ${
-      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-900'
+      theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-[#F8FAFC] text-slate-900'
     }`}>
       
       {/* ─────────────────────────────────────────────────────────────
          1. MODERN HIGH-PERFORMANCE ADMIN SIDEBAR DRAWER
          ───────────────────────────────────────────────────────────── */}
       <aside className={`w-64 border-r flex flex-col justify-between shrink-0 hidden md:flex min-h-screen transition-colors duration-300 ${
-        theme === 'dark' ? 'bg-slate-900/95 border-slate-800' : 'bg-white border-slate-200/90 shadow-xs'
+        theme === 'dark' ? 'bg-slate-900/95 border-slate-800' : 'bg-white border-slate-200 shadow-xs'
       }`}>
         <div className="overflow-y-auto max-h-[calc(100vh-80px)] scrollbar-thin">
           {/* App Brand Header */}
@@ -3656,48 +3656,46 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             theme === 'dark' ? 'bg-slate-900/95 border-slate-800' : 'bg-white border-slate-200'
           }`}>
             <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-500 text-white flex items-center justify-center shadow-md">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-500 text-white flex items-center justify-center shadow-xs">
                 <Moon className="w-5 h-5 fill-amber-300 text-amber-300" />
               </div>
               <div>
                 <span className={`font-serif text-base font-bold block leading-tight ${
-                  theme === 'dark' ? 'text-white' : 'text-slate-900'
+                  theme === 'dark' ? 'text-white' : 'text-[#0F172A]'
                 }`}>
                   KangleiAstro
                 </span>
-                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-extrabold uppercase tracking-wider block">
+                <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold uppercase tracking-wider block">
                   Central Admin Portal
                 </span>
               </div>
             </div>
           </div>
 
-          {/* Navigation Links (Strictly Categorized into 6 Logical Sections) */}
+          {/* Navigation Links (Strictly Categorized into 5 Logical Sections) */}
           <div className="p-3.5 space-y-5">
             
-            {/* ──────────────── CATEGORY 1: CORE OPERATIONS & ANALYTICS ──────────────── */}
+            {/* ──────────────── CATEGORY 1: CORE OPERATIONS ──────────────── */}
             <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
-                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
-              }`}>
-                Core Operations
+              <span className="text-[11px] uppercase tracking-wider block px-2.5 mb-2 font-bold text-slate-400 dark:text-slate-500">
+                CORE OPERATIONS
               </span>
               <div className="space-y-1">
                 {/* Overview & Analytics */}
                 <button
                   onClick={() => setActiveTab('dashboard')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'dashboard'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <LayoutDashboard className="w-4 h-4 text-amber-500 shrink-0" />
+                    <LayoutDashboard className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Overview & Stats</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    activeTab === 'dashboard' ? 'bg-white/20 text-white' : theme === 'dark' ? 'bg-slate-800 text-slate-400' : 'bg-slate-100 text-slate-600'
+                    activeTab === 'dashboard' ? 'bg-amber-100 text-amber-900 dark:bg-amber-900/60 dark:text-amber-200' : 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400'
                   }`}>
                     Live
                   </span>
@@ -3706,19 +3704,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Kuthi Orders Hub */}
                 <button
                   onClick={() => setActiveTab('kuthi')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'kuthi'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <FileText className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Kuthi Orders Hub</span>
+                    <FileText className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Kuthi Hub</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'kuthi'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {orders.filter(o => o.status !== 'COMPLETED').length} Pending
@@ -3728,19 +3726,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Live Consultations Hub */}
                 <button
                   onClick={() => setActiveTab('consultations')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'consultations'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <MessageCircle className="w-4 h-4 text-emerald-500 shrink-0" />
-                    <span>Live Consultations</span>
+                    <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Consultations</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'consultations'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700'
                       : theme === 'dark' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                   }`}>
                     {consultationSessions.filter(s => s.paymentStatus === 'PENDING_VERIFICATION').length} Queue
@@ -3750,19 +3748,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Client Directory */}
                 <button
                   onClick={() => setActiveTab('clients')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'clients'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Users className="w-4 h-4 text-sky-500 shrink-0" />
-                    <span>Client Directory</span>
+                    <Users className="w-4 h-4 text-sky-600 shrink-0" />
+                    <span>Directory</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'clients'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-900/60 dark:text-sky-200 dark:border-sky-700'
                       : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
                   }`}>
                     {clientBase.length} Users
@@ -3771,30 +3769,71 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
 
-            {/* ──────────────── CATEGORY 2: MOBILE APP & BUILDER ──────────────── */}
+            {/* ──────────────── CATEGORY 2: MOBILE APP & CMS ──────────────── */}
             <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
-                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
-              }`}>
-                Mobile Experience
+              <span className="text-[11px] uppercase tracking-wider block px-2.5 mb-2 font-bold text-slate-400 dark:text-slate-500">
+                MOBILE APP & CMS
               </span>
               <div className="space-y-1">
+                {/* App Control Center */}
+                <Link
+                  href="/admin/app-control"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sliders className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>App Control Center</span>
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40">
+                    AdMob & Push
+                  </span>
+                </Link>
+
+                {/* Useful Info & Guides Composer */}
+                <Link
+                  href="/admin/useful"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <BookOpen className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Useful Composer</span>
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40">
+                    Rich Editor
+                  </span>
+                </Link>
+
+                {/* Leipung Social Feed Moderation */}
+                <Link
+                  href="/admin/leipung"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <MessageSquare className="w-4 h-4 text-rose-500 shrink-0" />
+                    <span>Leipung Feed</span>
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40">
+                    Community
+                  </span>
+                </Link>
+
+                {/* Mobile Version Builder */}
                 <button
                   onClick={() => setActiveTab('mobile_builder')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'mobile_builder'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Smartphone className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Mobile Version Builder</span>
+                    <Smartphone className="w-4 h-4 text-sky-600 shrink-0" />
+                    <span>Mobile Builder</span>
                   </div>
-                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'mobile_builder'
-                      ? 'bg-white/20 text-white border-white/30'
-                      : 'bg-gradient-to-r from-amber-500/20 to-orange-500/20 text-amber-700 dark:text-amber-300 border-amber-300 dark:border-amber-500/40'
+                      ? 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-900/60 dark:text-sky-200 dark:border-sky-700'
+                      : 'bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40'
                   }`}>
                     Pro Studio
                   </span>
@@ -3802,30 +3841,28 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
 
-            {/* ──────────────── CATEGORY 3: GURU & ASTROLOGER MANAGEMENT ──────────────── */}
+            {/* ──────────────── CATEGORY 3: ASTROLOGER NETWORK ──────────────── */}
             <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
-                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
-              }`}>
-                Astrologers & Team
+              <span className="text-[11px] uppercase tracking-wider block px-2.5 mb-2 font-bold text-slate-400 dark:text-slate-500">
+                ASTROLOGER NETWORK
               </span>
               <div className="space-y-1">
                 {/* All Astrologers */}
                 <button
                   onClick={() => setActiveTab('astrologers')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'astrologers'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Award className="w-4 h-4 text-purple-500 shrink-0" />
+                    <Award className="w-4 h-4 text-purple-600 shrink-0" />
                     <span>All Astrologers</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'astrologers'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-900/60 dark:text-purple-200 dark:border-purple-700'
                       : theme === 'dark' ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'bg-purple-50 text-purple-800 border-purple-200'
                   }`}>
                     {astrologers.length} Gurus
@@ -3835,19 +3872,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Assign List */}
                 <button
                   onClick={() => setActiveTab('astro_assign_list')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'astro_assign_list'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <UserCheck className="w-4 h-4 text-sky-500 shrink-0" />
+                    <UserCheck className="w-4 h-4 text-sky-600 shrink-0" />
                     <span>Assign Orders</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'astro_assign_list'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-900/60 dark:text-sky-200 dark:border-sky-700'
                       : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
                   }`}>
                     {orders.filter(o => o.assignedAstrologerId || o.status === 'ASSIGNED').length} Assigned
@@ -3857,25 +3894,25 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Payout Request */}
                 <button
                   onClick={() => setActiveTab('astro_payouts')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'astro_payouts'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <DollarSign className="w-4 h-4 text-green-500 shrink-0" />
-                    <span>Payout Requests</span>
+                    <DollarSign className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Payouts</span>
                   </div>
                   {astrologers.filter((a) => a.payoutStatus === 'REQUESTED' || a.pendingPayout > 0).length > 0 ? (
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
                       ₹{astrologers.reduce((s, a) => s + (a.pendingPayout || 0), 0).toLocaleString()}
                     </span>
                   ) : (
                     <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                       activeTab === 'astro_payouts'
-                        ? 'bg-white/20 text-white border-white/30'
-                        : theme === 'dark' ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-green-50 text-green-800 border-green-200'
+                        ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700'
+                        : theme === 'dark' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                     }`}>
                       Settled
                     </span>
@@ -3889,19 +3926,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     setNewAstroForm(DEFAULT_ASTRO_FORM);
                     setActiveTab('add_astro');
                   }}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'add_astro'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Plus className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Plus className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>+ Add Astrologer</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'add_astro'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     New
@@ -3911,19 +3948,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Announcements */}
                 <button
                   onClick={() => setActiveTab('announcements')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'announcements'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Bell className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Bell className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Announcements</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'announcements'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {announcements.length} Posts
@@ -3932,30 +3969,28 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
 
-            {/* ──────────────── CATEGORY 4: SERVICES & RATE CARDS ──────────────── */}
+            {/* ──────────────── CATEGORY 4: COMMERCE & SERVICES ──────────────── */}
             <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
-                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
-              }`}>
-                Services & Pricing
+              <span className="text-[11px] uppercase tracking-wider block px-2.5 mb-2 font-bold text-slate-400 dark:text-slate-500">
+                COMMERCE & SERVICES
               </span>
               <div className="space-y-1">
                 {/* Website Services */}
                 <button
                   onClick={() => setActiveTab('astro_services')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'astro_services'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Tag className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Tag className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Website Services</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'astro_services'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {services.length} Items
@@ -3965,19 +4000,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Service Rate Card Matrix */}
                 <button
                   onClick={() => setActiveTab('astro_rates')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'astro_rates'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <TrendingUp className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Rate Card Matrix</span>
+                    <TrendingUp className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Rate Cards</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'astro_rates'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     Pricing
@@ -3987,51 +4022,41 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Service Coupons & Schemes */}
                 <button
                   onClick={() => setActiveTab('service_coupons')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'service_coupons'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Gift className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Service Coupons</span>
+                    <Gift className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Coupons</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'service_coupons'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     Offers
                   </span>
                 </button>
-              </div>
-            </div>
 
-            {/* ──────────────── CATEGORY 5: E-STORE & INVENTORY ──────────────── */}
-            <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
-                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
-              }`}>
-                E-Store & Inventory
-              </span>
-              <div className="space-y-1">
                 {/* Store Orders & UTR */}
                 <button
                   onClick={() => setActiveTab('shop_orders')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'shop_orders' || activeTab === 'shop'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <ShoppingBag className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Store Orders & UTR</span>
+                    <ShoppingBag className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Store Orders</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'shop_orders' || activeTab === 'shop'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-green-500/15 text-green-300 border-green-500/30' : 'bg-green-50 text-green-800 border-green-200'
                   }`}>
                     {shopOrders.length} Orders
@@ -4041,19 +4066,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Add & Edit Products */}
                 <button
                   onClick={() => setActiveTab('shop_products')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'shop_products'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Package className="w-4 h-4 text-amber-500 shrink-0" />
-                    <span>Products Catalog</span>
+                    <Package className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Inventory</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'shop_products'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {shopProducts.length} Items
@@ -4063,24 +4088,24 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Astrologer Products */}
                 <button
                   onClick={() => setActiveTab('shop_astro_products')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'shop_astro_products'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Award className="w-4 h-4 text-purple-500 shrink-0" />
+                    <Award className="w-4 h-4 text-purple-600 shrink-0" />
                     <span>Vendor Products</span>
                   </div>
                   {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER' && p.status === 'PENDING_APPROVAL').length > 0 ? (
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
                       {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER' && p.status === 'PENDING_APPROVAL').length} Pending
                     </span>
                   ) : (
                     <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                       activeTab === 'shop_astro_products'
-                        ? 'bg-white/20 text-white border-white/30'
+                        ? 'bg-purple-100 text-purple-900 border-purple-300 dark:bg-purple-900/60 dark:text-purple-200 dark:border-purple-700'
                         : theme === 'dark' ? 'bg-purple-500/15 text-purple-300 border-purple-500/30' : 'bg-purple-50 text-purple-800 border-purple-200'
                     }`}>
                       {shopProducts.filter((p) => p.sellerType === 'ASTROLOGER').length} Vendor
@@ -4091,41 +4116,41 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Assign Delivery Logistics */}
                 <button
                   onClick={() => setActiveTab('shop_delivery')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'shop_delivery'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Truck className="w-4 h-4 text-sky-500 shrink-0" />
-                    <span>Assign Delivery</span>
+                    <Truck className="w-4 h-4 text-sky-600 shrink-0" />
+                    <span>Logistics</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'shop_delivery'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-900/60 dark:text-sky-200 dark:border-sky-700'
                       : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
                   }`}>
-                    Logistics
+                    Delivery
                   </span>
                 </button>
 
                 {/* Promo Coupons */}
                 <button
                   onClick={() => setActiveTab('shop_coupons')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'shop_coupons'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Tag className="w-4 h-4 text-emerald-500 shrink-0" />
+                    <Tag className="w-4 h-4 text-emerald-600 shrink-0" />
                     <span>Store Coupons</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'shop_coupons'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-emerald-100 text-emerald-900 border-emerald-300 dark:bg-emerald-900/60 dark:text-emerald-200 dark:border-emerald-700'
                       : theme === 'dark' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30' : 'bg-emerald-50 text-emerald-800 border-emerald-200'
                   }`}>
                     {shopCoupons.length} Vouchers
@@ -4135,19 +4160,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Shop Hero Sliders */}
                 <button
                   onClick={() => setActiveTab('shop_sliders')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'shop_sliders'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <ImageIcon className="w-4 h-4 text-amber-500 shrink-0" />
+                    <ImageIcon className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Shop Hero Sliders</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'shop_sliders'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {shopSliders.length} Banners
@@ -4157,24 +4182,24 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Returns & Replacements */}
                 <button
                   onClick={() => setActiveTab('shop_returns')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'shop_returns'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
                     <RotateCcw className="w-4 h-4 text-rose-500 shrink-0" />
-                    <span>Returns & Refunds</span>
+                    <span>Returns</span>
                   </div>
                   {returnRequests.filter((r) => r.status === 'PENDING').length > 0 ? (
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-rose-500 text-white text-[10px] font-bold">
                       {returnRequests.filter((r) => r.status === 'PENDING').length} New
                     </span>
                   ) : (
                     <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                       activeTab === 'shop_returns'
-                        ? 'bg-white/20 text-white border-white/30'
+                        ? 'bg-rose-100 text-rose-900 border-rose-300 dark:bg-rose-900/60 dark:text-rose-200 dark:border-rose-700'
                         : theme === 'dark' ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200'
                     }`}>
                       {returnRequests.length}
@@ -4184,30 +4209,28 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               </div>
             </div>
 
-            {/* ──────────────── CATEGORY 6: WEBSITE CMS, MEDIA & SYSTEM ──────────────── */}
+            {/* ──────────────── CATEGORY 5: WEBSITE CMS & SYSTEM ──────────────── */}
             <div>
-              <span className={`text-[10px] uppercase tracking-wider block px-2.5 mb-1.5 font-black ${
-                theme === 'dark' ? 'text-amber-400' : 'text-amber-700'
-              }`}>
-                Website CMS & System
+              <span className="text-[11px] uppercase tracking-wider block px-2.5 mb-2 font-bold text-slate-400 dark:text-slate-500">
+                WEBSITE CMS & SYSTEM
               </span>
               <div className="space-y-1">
                 {/* Navbar Menu Manager */}
                 <button
                   onClick={() => setActiveTab('navbar')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'navbar'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Menu className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Menu className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Navbar Menu Manager</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'navbar'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     Top Menu
@@ -4217,19 +4240,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Website Astrologers Display */}
                 <button
                   onClick={() => setActiveTab('astro_website')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'astro_website'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Website Astrologers</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'astro_website'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     CMS Display
@@ -4239,19 +4262,19 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Blog & Articles CMS */}
                 <button
                   onClick={() => setActiveTab('blog')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'blog'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <BookOpen className="w-4 h-4 text-sky-500 shrink-0" />
+                    <BookOpen className="w-4 h-4 text-sky-600 shrink-0" />
                     <span>Blog & Articles CMS</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'blog'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-sky-100 text-sky-900 border-sky-300 dark:bg-sky-900/60 dark:text-sky-200 dark:border-sky-700'
                       : theme === 'dark' ? 'bg-sky-500/15 text-sky-300 border-sky-500/30' : 'bg-sky-50 text-sky-800 border-sky-200'
                   }`}>
                     {blogPosts.length} Posts
@@ -4261,10 +4284,10 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Client Reviews CMS */}
                 <button
                   onClick={() => setActiveTab('reviews')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'reviews'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
@@ -4272,13 +4295,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                     <span>Client Reviews CMS</span>
                   </div>
                   {reviews.filter((r) => r.status === 'PENDING').length > 0 ? (
-                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-extrabold animate-pulse">
+                    <span className="shrink-0 px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-bold">
                       {reviews.filter((r) => r.status === 'PENDING').length} New
                     </span>
                   ) : (
                     <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                       activeTab === 'reviews'
-                        ? 'bg-white/20 text-white border-white/30'
+                        ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                         : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                     }`}>
                       {reviews.length}
@@ -4289,14 +4312,14 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Top 970x90 Ad Banner CMS */}
                 <button
                   onClick={() => setActiveTab('banner')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'banner'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Megaphone className="w-4 h-4 text-purple-500 shrink-0" />
+                    <Megaphone className="w-4 h-4 text-purple-600 shrink-0" />
                     <span>Top Ad Banner (970x90)</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
@@ -4311,41 +4334,69 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                 {/* Live Activity Ticker CMS */}
                 <button
                   onClick={() => setActiveTab('ticker')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'ticker'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <Sparkles className="w-4 h-4 text-amber-500 shrink-0" />
+                    <Sparkles className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Activity Ticker CMS</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'ticker'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-amber-500/15 text-amber-300 border-amber-500/30' : 'bg-amber-50 text-amber-800 border-amber-200'
                   }`}>
                     {tickerSettings.speedSeconds}s
                   </span>
                 </button>
 
+                {/* Useful Info & Guides Knowledge CMS */}
+                <Link
+                  href="/admin/useful"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <BookOpen className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Useful Guides CMS</span>
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-amber-50 text-amber-800 border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/40">
+                    Guides
+                  </span>
+                </Link>
+
+                {/* Mobile App Controller */}
+                <Link
+                  href="/admin/app-control"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Sliders className="w-4 h-4 text-emerald-600 shrink-0" />
+                    <span>Mobile App Controller</span>
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-emerald-50 text-emerald-800 border-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/40">
+                    AdMob
+                  </span>
+                </Link>
+
                 {/* Consolidated Site Settings, UPI & Security */}
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  className={`w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer ${
                     activeTab === 'settings' || activeTab === 'upi'
-                      ? 'bg-gradient-to-r from-amber-600 to-amber-500 text-white shadow-sm'
-                      : theme === 'dark' ? 'text-slate-300 hover:bg-slate-800/80 hover:text-white' : 'text-slate-700 hover:bg-slate-100 hover:text-slate-900'
+                      ? 'bg-amber-50 text-amber-900 font-semibold border-r-4 border-amber-600 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-500 rounded-lg'
+                      : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg'
                   }`}
                 >
                   <div className="flex items-center gap-2.5">
-                    <ShieldCheck className="w-4 h-4 text-amber-500 shrink-0" />
+                    <ShieldCheck className="w-4 h-4 text-amber-600 shrink-0" />
                     <span>Security, UPI & Settings</span>
                   </div>
                   <span className={`shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border ${
                     activeTab === 'settings' || activeTab === 'upi'
-                      ? 'bg-white/20 text-white border-white/30'
+                      ? 'bg-amber-100 text-amber-900 border-amber-300 dark:bg-amber-900/60 dark:text-amber-200 dark:border-amber-700'
                       : theme === 'dark' ? 'bg-slate-800 text-slate-400 border-slate-700' : 'bg-slate-100 text-slate-600 border-slate-200'
                   }`}>
                     Live Config
@@ -4361,7 +4412,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         <div className={`p-3 border-t ${theme === 'dark' ? 'border-slate-800 bg-slate-900/60' : 'border-slate-200 bg-slate-50/70'}`}>
           <div className="flex items-center justify-between p-2.5 rounded-xl border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 shadow-2xs">
             <div className="flex items-center gap-2.5 min-w-0">
-              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-600 to-amber-500 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-600 to-amber-500 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-xs">
                 ADM
               </div>
               <div className="overflow-hidden min-w-0">
@@ -4390,7 +4441,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         
         {/* Top Control Header Bar */}
         <header className={`h-16 border-b px-6 flex items-center justify-between sticky top-0 z-30 transition-colors duration-300 ${
-          theme === 'dark' ? 'bg-slate-900/90 border-slate-800 backdrop-blur-md' : 'bg-white/95 border-slate-200/90 backdrop-blur-md shadow-xs'
+          theme === 'dark' ? 'bg-slate-900/90 border-slate-800 backdrop-blur-md' : 'bg-white/95 border-slate-200 backdrop-blur-md shadow-xs'
         }`}>
           <div className="flex items-center gap-4">
             <div className="relative w-64 md:w-80">
@@ -4440,6 +4491,31 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
             </button>
 
             {/* Direct Mobile Builder Quick Button */}
+            {/* Direct App Control Quick Button */}
+            <Link
+              href="/admin/app-control"
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                theme === 'dark' ? 'bg-emerald-950/40 text-emerald-300 border-emerald-800/40 hover:bg-emerald-900/40' : 'bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100'
+              }`}
+              title="Open App Control Center (AdMob, Toggles & Push)"
+            >
+              <Sliders className="w-3.5 h-3.5 text-emerald-500" />
+              <span className="hidden sm:inline">App Control</span>
+            </Link>
+
+            {/* Direct Useful Info Composer Quick Button */}
+            <Link
+              href="/admin/useful"
+              className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                theme === 'dark' ? 'bg-amber-950/40 text-amber-300 border-amber-800/40 hover:bg-amber-900/40' : 'bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100'
+              }`}
+              title="Open Useful Topics & Guides Composer"
+            >
+              <BookOpen className="w-3.5 h-3.5 text-amber-500" />
+              <span className="hidden sm:inline">Useful Guides</span>
+            </Link>
+
+            {/* Direct Mobile Builder Quick Button */}
             <button
               onClick={() => setActiveTab('mobile_builder')}
               className={`px-3 py-1.5 rounded-xl border text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
@@ -4449,13 +4525,13 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
               }`}
               title="Open Mobile Version Builder"
             >
-              <Smartphone className="w-3.5 h-3.5 text-amber-500" />
+              <Smartphone className="w-3.5 h-3.5 text-sky-500" />
               <span className="hidden sm:inline">Mobile Builder</span>
             </button>
 
             <button
               onClick={() => setActiveTab('kuthi')}
-              className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 text-white font-bold text-xs hover:opacity-95 transition-opacity flex items-center gap-1.5 shadow-sm cursor-pointer"
+              className="px-3.5 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs transition-colors flex items-center gap-1.5 shadow-xs cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Assign Kuthi</span>
@@ -4465,12 +4541,37 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
         {/* Secondary Quick Navigation Strip */}
         <div className={`px-6 py-2.5 border-b flex items-center gap-2 overflow-x-auto text-xs font-semibold no-scrollbar transition-colors ${
-          theme === 'dark' ? 'bg-slate-900/60 border-slate-800' : 'bg-white/80 border-slate-200'
+          theme === 'dark' ? 'bg-slate-900/60 border-slate-800' : 'bg-white border-slate-200'
         }`}>
           <span className={`text-[11px] uppercase tracking-wider font-bold shrink-0 ${theme === 'dark' ? 'text-slate-500' : 'text-slate-400'}`}>
             Quick Access:
           </span>
           <div className="flex items-center gap-1.5 shrink-0">
+            {/* Live Controller Links */}
+            <Link
+              href="/admin/app-control"
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 border ${
+                theme === 'dark'
+                  ? 'bg-emerald-950/50 text-emerald-300 border-emerald-700/50 hover:bg-emerald-900/50'
+                  : 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+              }`}
+            >
+              <Sliders className="w-3 h-3 text-emerald-500" />
+              <span>⚙️ App Control Center</span>
+            </Link>
+
+            <Link
+              href="/admin/useful"
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer whitespace-nowrap flex items-center gap-1.5 border ${
+                theme === 'dark'
+                  ? 'bg-amber-950/50 text-amber-300 border-amber-700/50 hover:bg-amber-900/50'
+                  : 'bg-amber-50 text-amber-800 border-amber-300 hover:bg-amber-100'
+              }`}
+            >
+              <BookOpen className="w-3 h-3 text-amber-500" />
+              <span>📖 Useful Topics Composer</span>
+            </Link>
+
             {[
               { id: 'dashboard', label: 'Dashboard' },
               { id: 'mobile_builder', label: 'Mobile Builder', highlight: true },
@@ -4507,8 +4608,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
         <main className="p-6 md:p-8 space-y-6">
 
           {saveAlert && (
-            <div className="p-4 rounded-2xl bg-green-500/20 border border-green-500/30 text-green-300 text-xs font-bold text-center flex items-center justify-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-green-400" />
+            <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/40 text-emerald-800 dark:text-emerald-300 text-xs font-bold text-center flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
               <span>{saveAlert}</span>
             </div>
           )}
@@ -4517,65 +4618,162 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
           {activeTab === 'dashboard' && (
             <div className="space-y-6">
               
-              {/* Top 4 Royal Vedic KPI Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+              {/* Top 4 KPI Stat Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 
-                <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
+                <div className={`p-5 rounded-xl border flex flex-col justify-between h-full transition-all ${
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-xs'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Gross Revenue</span>
-                    <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full border border-green-200">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Gross Revenue</span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 dark:bg-emerald-950/50 dark:text-emerald-300 px-2 py-0.5 rounded-full border border-emerald-200 dark:border-emerald-800/40">
                       {orders.length > 0 ? `${orders.filter(o => o.status === 'COMPLETED').length} Completed` : '₹0'}
                     </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  <span className="text-2xl font-bold mb-1 font-mono tabular-nums text-[#0F172A] dark:text-white">
                     ₹{orders.reduce((sum, o) => sum + (Number(o.amount) || 0), 0).toLocaleString()}
                   </span>
-                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Total Kuthi Yengba Collections</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Total Kuthi Yengba Collections</span>
                 </div>
 
-                <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
+                <div className={`p-5 rounded-xl border flex flex-col justify-between h-full transition-all ${
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-xs'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Active Astrologers</span>
-                    <span className="text-[11px] font-bold text-[#b45309] bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-slate-200">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Active Astrologers</span>
+                    <span className="text-[10px] font-bold text-amber-700 bg-amber-50 dark:bg-amber-950/50 dark:text-amber-300 px-2 py-0.5 rounded-full border border-amber-200 dark:border-amber-800/40">
                       {astrologers.length} Empaneled
                     </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>{astrologers.length} Gurus</span>
-                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Ready for Kuthi Assignments</span>
+                  <span className="text-2xl font-bold mb-1 tabular-nums text-[#0F172A] dark:text-white">{astrologers.length} Gurus</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Ready for Kuthi Assignments</span>
                 </div>
 
-                <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
+                <div className={`p-5 rounded-xl border flex flex-col justify-between h-full transition-all ${
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-xs'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Pending Kuthi Orders</span>
-                    <span className="text-[11px] font-bold text-[#b45309] bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-slate-200">Action Needed</span>
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Pending Kuthi Orders</span>
+                    <span className="text-[10px] font-bold text-red-700 bg-red-50 dark:bg-red-950/50 dark:text-red-300 px-2 py-0.5 rounded-full border border-red-200 dark:border-red-800/40">
+                      {orders.filter(o => o.status !== 'COMPLETED').length > 0 ? 'Action Needed' : 'All Clear'}
+                    </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  <span className="text-2xl font-bold mb-1 tabular-nums text-[#0F172A] dark:text-white">
                     {orders.filter(o => o.status !== 'COMPLETED').length} Orders
                   </span>
-                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Awaiting Astrologer / Client Dispatch</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Awaiting Astrologer / Client Dispatch</span>
                 </div>
 
-                <div className={`p-5 rounded-2xl border flex flex-col justify-between transition-colors ${
-                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-md'
+                <div className={`p-5 rounded-xl border flex flex-col justify-between h-full transition-all ${
+                  theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900 shadow-xs'
                 }`}>
                   <div className="flex items-center justify-between mb-3">
-                    <span className={`text-xs font-bold ${theme === 'dark' ? 'text-[#e0a96d]' : 'text-[#b45309]'}`}>Astrologer Payouts</span>
-                    <span className="text-[11px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full border border-blue-200">
+                    <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Astrologer Payouts</span>
+                    <span className="text-[10px] font-bold text-sky-700 bg-sky-50 dark:bg-sky-950/50 dark:text-sky-300 px-2 py-0.5 rounded-full border border-sky-200 dark:border-sky-800/40">
                       {orders.filter(o => o.status === 'COMPLETED').length} Settled
                     </span>
                   </div>
-                  <span className={`text-2xl font-black mb-1 font-mono ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>
+                  <span className="text-2xl font-bold mb-1 font-mono tabular-nums text-[#0F172A] dark:text-white">
                     ₹{orders.filter(o => o.status === 'COMPLETED').reduce((sum, o) => sum + ((o as any).payoutFee || (Number(o.amount) ? Math.round(Number(o.amount) * 0.6) : 0)), 0).toLocaleString()}
                   </span>
-                  <span className={`text-[10px] ${theme === 'dark' ? 'text-[#5c7a99]' : 'text-gray-500'}`}>Pending Astrologer Payout Pool</span>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">Pending Astrologer Payout Pool</span>
                 </div>
 
+              </div>
+
+              {/* Symmetrical 2-Column Command Grid for Quick Access */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {/* App Control Center Card */}
+                <div className={`p-5 rounded-xl border transition-all flex flex-col justify-between ${
+                  theme === 'dark'
+                    ? 'bg-slate-900 border-slate-800 shadow-sm'
+                    : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20">
+                          <Sliders className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm text-[#0F172A] dark:text-white">App Control Center</h4>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">AdMob Units, Toggles & Push Broadcasts</span>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800/40">
+                        LIVE CONTROLLER
+                      </span>
+                    </div>
+                    <p className={`text-xs mb-4 leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Control maintenance mode, AdMob Google banner/interstitial placements, and broadcast instant push notifications to all users.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <Link
+                      href="/admin/app-control"
+                      className="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs transition-all"
+                    >
+                      <Sliders className="w-3.5 h-3.5" />
+                      <span>Open Controller</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                    <Link
+                      href="/admin/app-control"
+                      className={`px-3 py-2 rounded-lg border text-xs font-semibold transition-all ${
+                        theme === 'dark' ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      📢 Push Broadcast
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Useful Information CMS Card */}
+                <div className={`p-5 rounded-xl border transition-all flex flex-col justify-between ${
+                  theme === 'dark'
+                    ? 'bg-slate-900 border-slate-800 shadow-sm'
+                    : 'bg-white border-slate-200 shadow-xs'
+                }`}>
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center border border-amber-500/20">
+                          <BookOpen className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-sm text-[#0F172A] dark:text-white">Useful Information & Guides</h4>
+                          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Rich-Text Composer & Knowledge Hub</span>
+                        </div>
+                      </div>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300 border border-amber-200 dark:border-amber-800/40">
+                        CMS COMPOSER
+                      </span>
+                    </div>
+                    <p className={`text-xs mb-4 leading-relaxed ${theme === 'dark' ? 'text-slate-400' : 'text-slate-600'}`}>
+                      Publish rituals, panchang rules, and astrologer guides with rich text formatting (H2/H3, bold, lists, quotes) and live mobile preview.
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                    <Link
+                      href="/admin/useful"
+                      className="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold text-xs flex items-center gap-2 shadow-xs transition-all"
+                    >
+                      <BookOpen className="w-3.5 h-3.5" />
+                      <span>Write / Manage Topics</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </Link>
+                    <Link
+                      href="/app/useful"
+                      target="_blank"
+                      className={`px-3 py-2 rounded-lg border text-xs font-semibold transition-all flex items-center gap-1 ${
+                        theme === 'dark' ? 'bg-slate-800 text-slate-300 border-slate-700 hover:bg-slate-700' : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                      }`}
+                    >
+                      <span>Preview App Feed</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </Link>
+                  </div>
+                </div>
               </div>
 
             </div>
@@ -4583,27 +4781,25 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
 
           {/* TAB 2: KUTHI ORDERS & MULTI-ASTROLOGER ROUTING HUB */}
           {(activeTab === 'dashboard' || activeTab === 'kuthi') && (
-            <div className={`rounded-2xl border shadow-xl overflow-hidden transition-colors ${
-              theme === 'dark' ? 'bg-slate-900 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
-            }`}>
-              <div className={`p-6 border-b flex flex-wrap items-center justify-between gap-4 transition-colors ${
-                theme === 'dark' ? 'bg-slate-950 border-slate-800 text-white' : 'bg-white border-slate-200 text-slate-900'
+            <div className="w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-xs dark:bg-slate-900 dark:border-slate-800">
+              <div className={`p-5 border-b flex flex-wrap items-center justify-between gap-4 transition-colors ${
+                theme === 'dark' ? 'bg-slate-950/70 border-slate-800 text-white' : 'bg-slate-50/70 border-slate-200 text-slate-900'
               }`}>
                 <div>
-                  <h3 className={`font-serif font-bold text-xl ${theme === 'dark' ? 'text-white' : 'text-slate-900'}`}>Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
-                  <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Assign orders to astrologers via WhatsApp & deliver finished reports back to clients</p>
+                  <h3 className={`font-bold text-lg ${theme === 'dark' ? 'text-white' : 'text-[#0F172A]'}`}>Kuthi Yengba Orders & Multi-Astrologer Dispatching</h3>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-slate-400' : 'text-slate-500'}`}>Assign orders to astrologers via WhatsApp & deliver finished reports back to clients</p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="px-3.5 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-[#b45309] text-xs font-extrabold border border-slate-200">
+                  <span className="px-3 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 text-xs font-bold border border-amber-200 dark:border-amber-800/40">
                     {filteredOrders.length} Total Orders
                   </span>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs font-sans text-slate-900">
-                  <thead className="bg-amber-50 dark:bg-amber-950/40 text-amber-900 dark:text-amber-300 font-serif font-bold uppercase tracking-wider border-b border-slate-200">
+              <div className="overflow-x-auto min-w-[1280px]">
+                <table className="w-full text-left text-xs font-sans text-slate-900 dark:text-slate-100">
+                  <thead className="bg-slate-50 dark:bg-slate-800/60 text-slate-600 dark:text-slate-300 font-bold uppercase tracking-wider text-[11px] border-b border-slate-200 dark:border-slate-700">
                     <tr>
                       <th className="px-4 py-3.5">Order Ref</th>
                       <th className="px-4 py-3.5">Client & Details</th>
@@ -4615,7 +4811,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       <th className="px-4 py-3.5 text-right">Step 4: Payout & Settlement</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200">
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                     {filteredOrders.map((o) => {
                       const assignedAstro = astrologers.find(a => a.id === o.assignedAstrologerId);
                       const isCompleted = o.status === 'COMPLETED' || o.walletCredited;
@@ -4628,27 +4824,27 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                       const netPayout = o.astrologerPayoutFee || matchingService?.astroPayoutFee || calculatedNet;
 
                       return (
-                        <tr key={o.id} className="hover:bg-white transition-colors">
+                        <tr key={o.id} className="hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
                           <td className="px-4 py-4 space-y-1.5">
-                            <div className="font-mono font-bold text-[#b45309] text-sm">{o.orderRef}</div>
+                            <div className="font-mono font-bold text-amber-700 dark:text-amber-400 text-sm">{o.orderRef}</div>
                             {o.category === 'generated_kuthi' && (
-                              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">
+                              <span className="inline-block px-2 py-0.5 rounded-full text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800">
                                 📜 Generated Kuthi Sheet
                               </span>
                             )}
-                            <div className="text-[10px] text-gray-500 font-mono">
+                            <div className="text-[10px] text-slate-500 font-mono">
                               UTR: {o.utr || 'N/A'} {o.paymentMethod ? `(${o.paymentMethod})` : ''}
                             </div>
                             <div className="pt-1">
                               <select
                                 value={o.paymentStatus || (o.status === 'COMPLETED' ? 'PAYMENT_RECEIVED' : 'VERIFICATION_PENDING')}
                                 onChange={(e) => handleUpdateKuthiOrderPaymentStatus(o.id, e.target.value)}
-                                className={`w-full px-2 py-0.5 rounded text-[10px] font-extrabold border focus:outline-none ${
+                                className={`w-full px-2 py-1 rounded text-[10px] font-bold border focus:outline-none ${
                                   o.paymentStatus === 'PAYMENT_RECEIVED' || o.status === 'COMPLETED'
-                                    ? 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                                    ? 'bg-emerald-50 text-emerald-900 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
                                     : o.paymentStatus === 'PAYMENT_NOT_RECEIVED'
-                                    ? 'bg-red-100 text-red-900 border-red-400'
-                                    : 'bg-amber-100 text-amber-900 border-amber-400'
+                                    ? 'bg-red-50 text-red-900 border-red-300 dark:bg-red-950/50 dark:text-red-300 dark:border-red-800'
+                                    : 'bg-amber-50 text-amber-900 border-amber-300 dark:bg-amber-950/50 dark:text-amber-300 dark:border-amber-800'
                                 }`}
                               >
                                 <option value="PAYMENT_RECEIVED">🟢 Payment Received (Verified)</option>
@@ -4659,27 +4855,27 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             {o.paymentStatus === 'VERIFICATION_PENDING' && (
                               <button
                                 onClick={() => handleUpdateKuthiOrderPaymentStatus(o.id, 'PAYMENT_RECEIVED')}
-                                className="w-full mt-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-black text-[10px] shadow-sm flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
+                                className="w-full mt-1.5 px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[10px] shadow-xs flex items-center justify-center gap-1 cursor-pointer transition-all active:scale-95"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
                                 <span>Approve Payment (UPI)</span>
                               </button>
                             )}
                           </td>
-                          <td className="px-4 py-4 font-bold text-slate-900">{o.clientName} ({o.sex})</td>
+                          <td className="px-4 py-4 font-semibold text-slate-900 dark:text-slate-100">{o.clientName} ({o.sex})</td>
                           <td className="px-4 py-4">
                             <button
                               onClick={() => setInspectingOrder(o)}
-                              className="group p-2.5 rounded-xl bg-white hover:bg-amber-50 border border-slate-200 text-left w-full cursor-pointer transition-colors"
+                              className="group p-2.5 rounded-xl bg-white hover:bg-amber-50/50 border border-slate-200 dark:bg-slate-800/80 dark:border-slate-700 text-left w-full cursor-pointer transition-colors"
                             >
-                              <span className="font-bold text-[#b45309] text-xs flex items-center gap-1.5">
-                                <Eye className="w-3.5 h-3.5 text-[#d97706]" />
+                              <span className="font-bold text-amber-700 dark:text-amber-400 text-xs flex items-center gap-1.5">
+                                <Eye className="w-3.5 h-3.5 text-amber-600" />
                                 <span>View & Download Kuthi</span>
                               </span>
                               {o.kuthiAttached ? (
-                                <span className="text-[10px] text-green-700 font-bold block mt-0.5">📄 File Attached: {o.kuthiFileName}</span>
+                                <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold block mt-0.5">📄 File Attached: {o.kuthiFileName}</span>
                               ) : (
-                                <span className="text-[10px] text-gray-600 block mt-0.5">📅 DOB: {o.dob}</span>
+                                <span className="text-[10px] text-slate-500 dark:text-slate-400 block mt-0.5">📅 DOB: {o.dob}</span>
                               )}
                             </button>
                           </td>
@@ -4688,7 +4884,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             <select
                               value={o.assignedAstrologerId || ''}
                               onChange={(e) => handleAssignAstrologer(o.id, e.target.value)}
-                              className="w-full py-1.5 px-2 rounded-xl border border-gray-300 bg-white text-xs font-bold text-slate-900 focus:border-[#d97706] focus:outline-none"
+                              className="w-full py-1.5 px-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs font-semibold text-slate-900 dark:text-slate-100 focus:border-amber-600 focus:outline-none"
                             >
                               <option value="">-- Assign Astrologer --</option>
                               {astrologers.map((astro) => (
@@ -4698,7 +4894,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               ))}
                             </select>
                             {o.assignedAstrologerName && (
-                              <span className="text-[10px] text-[#b45309] font-bold block mt-1">
+                              <span className="text-[10px] text-amber-700 dark:text-amber-400 font-semibold block mt-1">
                                 Guru: {o.assignedAstrologerName}
                               </span>
                             )}
@@ -4708,23 +4904,23 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                             {assignedAstro ? (
                               <button
                                 onClick={() => handleForwardToAstrologer(o, assignedAstro)}
-                                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-[11px] inline-flex items-center gap-1.5 shadow-md transition-all cursor-pointer"
+                                className="px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
                               >
                                 <Share2 className="w-3.5 h-3.5" />
                                 <span>Forward to {assignedAstro.name.split(' ')[0]}</span>
                               </button>
                             ) : (
-                              <span className="text-[10px] text-gray-500 italic">Assign Astrologer First</span>
+                              <span className="text-[10px] text-slate-400 italic">Assign Astrologer First</span>
                             )}
                           </td>
 
                           <td className="px-3 py-4 text-center">
                             <button
                               onClick={() => handleToggleReportReceived(o.id)}
-                              className={`px-3 py-1 rounded-full text-[10px] font-extrabold transition-all border cursor-pointer ${
+                              className={`px-3 py-1 rounded-full text-[10px] font-bold transition-all border cursor-pointer ${
                                 o.reportReceivedFromAstro
-                                  ? 'bg-green-500/20 text-green-700 border-green-500/40'
-                                  : 'bg-amber-50 text-gray-500 border-gray-300 hover:text-gray-900'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800'
+                                  : 'bg-slate-100 text-slate-600 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700 hover:text-slate-900'
                               }`}
                             >
                               {o.reportReceivedFromAstro ? '✓ Report Received' : '⏳ Awaiting Astro Report'}
@@ -4736,7 +4932,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                               href={`https://wa.me/${o.whatsappNo.replace(/[^0-9]/g, '')}?text=Hello%20${encodeURIComponent(o.clientName)},%20your%20Kuthi%20report%20for%20Order%20${o.orderRef}%20is%20ready.`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="px-3 py-1.5 rounded-xl bg-green-600 hover:bg-green-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-sm cursor-pointer"
+                              className="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] inline-flex items-center gap-1.5 shadow-xs cursor-pointer"
                             >
                               <MessageSquare className="w-3.5 h-3.5" />
                               <span>Dispatch to Client</span>
@@ -4746,8 +4942,8 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                           {/* Step 4: Complete & Credit Wallet Button */}
                           <td className="px-4 py-4 text-right whitespace-nowrap">
                             {isCompleted ? (
-                              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold shadow-xs">
-                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800 text-xs font-bold shadow-xs">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                                 <span>✅ ₹{netPayout} Credited</span>
                               </div>
                             ) : (
@@ -4755,7 +4951,7 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                                 type="button"
                                 disabled={actionProcessingId === o.id}
                                 onClick={() => handleAdminCompleteKuthiOrder(o)}
-                                className="px-4 py-2 rounded-full bg-gradient-to-r from-[#d97706] to-[#f59e0b] hover:from-[#b45309] hover:to-[#d97706] text-white font-extrabold text-xs shadow-md inline-flex items-center gap-2 cursor-pointer transition-all hover:scale-[1.03] active:scale-[0.98] border border-amber-400/30"
+                                className="px-4 py-2 rounded-full bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-xs inline-flex items-center gap-2 cursor-pointer transition-all border border-amber-500/30"
                                 title={`Mark Order Complete and Credit ₹${netPayout} to Astrologer's Wallet`}
                               >
                                 <span className="font-serif font-black text-sm text-amber-100">$</span>

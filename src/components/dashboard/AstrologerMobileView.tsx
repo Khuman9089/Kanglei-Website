@@ -23,6 +23,7 @@ import {
   MessageCircle,
   Calendar,
   ArrowUpRight,
+  ArrowLeft,
   Share2,
   Printer,
   Download,
@@ -186,9 +187,10 @@ export interface MobileCustomizerConfig {
 
 interface AstrologerMobileDashboardProps {
   customConfig?: MobileCustomizerConfig;
+  initialTab?: TabType;
 }
 
-export default function AstrologerMobileDashboard({ customConfig }: AstrologerMobileDashboardProps = {}) {
+export default function AstrologerMobileDashboard({ customConfig, initialTab }: AstrologerMobileDashboardProps = {}) {
   // Theme state matching desktop version (defaults to 'light', synced with localStorage)
   const [theme, setTheme] = useState<'dark' | 'light'>(customConfig?.theme || 'light');
   const [astroUser, setAstroUser] = useState<any>({
@@ -324,8 +326,21 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
   const [allowedToolIds, setAllowedToolIds] = useState<string[]>(ACTIVE_TOOLS_REGISTRY.map((t) => t.id));
 
   // Navigation: 5 distinct app tabs
-  const [activeTab, setActiveTab] = useState<TabType>('overview');
+  const [activeTab, setActiveTab] = useState<TabType>(initialTab || 'overview');
   const [isOnline, setIsOnline] = useState<boolean>(true);
+
+  // Sync activeTab if initialTab changes or URL query parameter ?tab=... is present
+  useEffect(() => {
+    if (initialTab) {
+      setActiveTab(initialTab);
+    } else if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab') as TabType;
+      if (tabParam && ['overview', 'kuthi', 'panchang', 'live', 'tools', 'charts', 'profile'].includes(tabParam)) {
+        setActiveTab(tabParam);
+      }
+    }
+  }, [initialTab]);
 
   // Filtered tools computed from master registry and admin allowed permissions
   const filteredTools = useMemo(() => {
@@ -704,56 +719,86 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
         <header className={`sticky top-0 z-30 px-4 py-3 backdrop-blur-md border-b flex items-center justify-between transition-colors shadow-xs ${
           isDark ? 'bg-[#1c2541]/95 border-[#3a506b]' : 'bg-white/90 border-slate-200'
         }`}>
-          {/* Astrologer Profile Brief */}
-          <div className="flex items-center gap-2.5">
-            <div 
-              onClick={() => setIsOnline(!isOnline)}
-              className="relative cursor-pointer group active:scale-95 transition-transform"
-              title="Toggle Online status"
-            >
-              <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#d97706] via-[#fbbf24] to-[#f59e0b] shadow-xs">
-                <img
-                  src={astroUser.avatar || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80"}
-                  alt={astroUser.name || "Astrologer"}
-                  className="w-full h-full object-cover rounded-full"
-                />
+          {activeTab === 'panchang' ? (
+            <div className="flex items-center gap-2.5">
+              <button
+                type="button"
+                onClick={() => setActiveTab('overview')}
+                className={`p-2 rounded-xl border flex items-center justify-center transition-all cursor-pointer ${
+                  isDark ? 'bg-[#0b132b] border-[#3a506b] text-amber-400 hover:bg-[#18233c]' : 'bg-amber-50 border-amber-300 text-amber-900 hover:bg-amber-100'
+                }`}
+                title="Back to Overview"
+              >
+                <ArrowLeft className="w-4 h-4" />
+              </button>
+              <div>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-xs sm:text-sm font-serif font-black tracking-wide text-slate-900 dark:text-white">
+                    Manipuri Panchang
+                  </h1>
+                  <span className="px-1.5 py-0.2 rounded-full text-[8px] font-black uppercase bg-amber-500/20 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    App
+                  </span>
+                </div>
+                <p className="text-[10px] text-amber-800 dark:text-amber-300/80 font-serif font-medium">
+                  মণিপুরী পঞ্জিকা • Daily Vedic Almanac
+                </p>
               </div>
-              <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 ${
-                isDark ? 'border-[#0b132b]' : 'border-white'
-              } flex items-center justify-center ${
-                isOnline ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-slate-400'
-              }`}>
-                {isOnline && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping opacity-75" />
-                )}
-              </span>
             </div>
-
-            <div>
-              <div className="flex items-center gap-1">
-                <h1 className="text-xs font-serif font-bold tracking-wide text-slate-900 dark:text-white">{astroUser.name || 'Empaneled Astrologer'}</h1>
-                <ShieldCheck className="w-3.5 h-3.5 text-[#d97706] dark:text-[#fbbf24]" />
-              </div>
+          ) : (
+            /* Astrologer Profile Brief */
+            <div className="flex items-center gap-2.5">
               <div 
                 onClick={() => setIsOnline(!isOnline)} 
-                className="flex items-center gap-1 cursor-pointer text-[10px] font-medium"
+                className="relative cursor-pointer group active:scale-95 transition-transform"
+                title="Toggle Online status"
               >
-                <span className={`inline-block w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-slate-400'}`} />
-                <span className={isOnline ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500'}>
-                  {isOnline ? 'Accepting Orders' : 'Away'}
+                <div className="w-10 h-10 rounded-full p-[2px] bg-gradient-to-tr from-[#d97706] via-[#fbbf24] to-[#f59e0b] shadow-xs">
+                  <img
+                    src={astroUser.avatar || "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&q=80"}
+                    alt={astroUser.name || "Astrologer"}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
+                <span className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full border-2 ${
+                  isDark ? 'border-[#0b132b]' : 'border-white'
+                } flex items-center justify-center ${
+                  isOnline ? 'bg-emerald-500 shadow-[0_0_8px_#10b981]' : 'bg-slate-400'
+                }`}>
+                  {isOnline && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-white animate-ping opacity-75" />
+                  )}
                 </span>
               </div>
+
+              <div>
+                <div className="flex items-center gap-1">
+                  <h1 className="text-xs font-serif font-bold tracking-wide text-slate-900 dark:text-white">{astroUser.name || 'Empaneled Astrologer'}</h1>
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#d97706] dark:text-[#fbbf24]" />
+                </div>
+                <div 
+                  onClick={() => setIsOnline(!isOnline)} 
+                  className="flex items-center gap-1 cursor-pointer text-[10px] font-medium"
+                >
+                  <span className={`inline-block w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-slate-400'}`} />
+                  <span className={isOnline ? 'text-emerald-600 dark:text-emerald-400 font-bold' : 'text-slate-500'}>
+                    {isOnline ? 'Accepting Orders' : 'Away'}
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Center Brand */}
-          <div className="flex flex-col items-center">
-            <span className="text-[11px] font-serif font-bold text-slate-900 dark:text-amber-100 flex items-center gap-1">
-              <Moon className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
-              <span>kuthiyengpham</span>
-            </span>
-            <span className="text-[9px] text-[#d97706] dark:text-[#fbbf24] font-extrabold uppercase tracking-wider">Guru Portal</span>
-          </div>
+          {activeTab !== 'panchang' && (
+            <div className="flex flex-col items-center">
+              <span className="text-[11px] font-serif font-bold text-slate-900 dark:text-amber-100 flex items-center gap-1">
+                <Moon className="w-3.5 h-3.5 fill-[#d97706] text-[#d97706]" />
+                <span>kuthiyengpham</span>
+              </span>
+              <span className="text-[9px] text-[#d97706] dark:text-[#fbbf24] font-extrabold uppercase tracking-wider">Guru Portal</span>
+            </div>
+          )}
 
           {/* Right Header Actions: Theme Switcher & Notifications */}
           <div className="flex items-center gap-2">
@@ -2117,6 +2162,7 @@ export default function AstrologerMobileDashboard({ customConfig }: AstrologerMo
               <ManipuriPanchangWorkstation
                 theme={isDark ? 'dark' : 'light'}
                 isEmbedded={true}
+                onClose={() => setActiveTab('overview')}
               />
             </motion.div>
           )}

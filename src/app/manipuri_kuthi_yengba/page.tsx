@@ -97,6 +97,14 @@ function ManipuriKuthiYengbaContent() {
   const [couponMessage, setCouponMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('app') === 'true') {
+        window.location.replace('/app?tab=kuthi_yengba');
+        return;
+      }
+    }
+
     const ref = 'KY-2026-' + Math.floor(1000 + Math.random() * 9000);
     setOrderRef(ref);
 

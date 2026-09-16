@@ -1,7 +1,5 @@
 import React from 'react';
 import type { Metadata } from 'next';
-import Navbar from '@/components/layout/Navbar';
-import Footer from '@/components/layout/Footer';
 import MonthlyCalendarView from '@/components/calendar/MonthlyCalendarView';
 
 export const metadata: Metadata = {
@@ -22,13 +20,9 @@ export const metadata: Metadata = {
 export default function CalendarPage() {
   return (
     <div className="min-h-screen flex flex-col bg-[#faf8f5] text-slate-900 selection:bg-amber-200 selection:text-amber-950 font-sans">
-      <Navbar />
-
-      <main className="flex-1 pt-24 pb-16">
+      <main className="flex-1 py-6 md:py-10">
         <MonthlyCalendarView />
       </main>
-
-      <Footer />
     </div>
   );
 }

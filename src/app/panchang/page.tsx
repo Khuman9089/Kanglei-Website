@@ -112,8 +112,33 @@ export default function PanchangPage() {
   const [selectedLocation, setSelectedLocation] = useState(PRESET_LOCATIONS[0]);
   const [panchang, setPanchang] = useState<PanchangState | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isRedirecting, setIsRedirecting] = useState<boolean>(false);
 
-  // Initialize client data immediately for instant zero-flash render
+  // On mobile screens or mobile app visits, redirect to the mobile app Panchang view in /dashboard/astrologer
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const isMobileScreen = window.innerWidth < 768;
+      const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+      const params = new URLSearchParams(window.location.search);
+      const forceMobile = params.get('mode') === 'mobile' || params.get('app') === 'true';
+      if (forceMobile || (isMobileScreen && params.get('view') !== 'desktop')) {
+        setIsRedirecting(true);
+        window.location.replace('/dashboard/astrologer?tab=panchang&mode=mobile');
+      }
+    }
+  }, []);
+
+  if (isRedirecting) {
+    return (
+      <div className="min-h-screen bg-[#070c1a] flex flex-col items-center justify-center text-white p-6">
+        <div className="w-12 h-12 rounded-full border-4 border-amber-400 border-t-transparent animate-spin mb-4" />
+        <span className="font-serif text-amber-300 text-sm font-bold">Opening Manipuri Panchang in Mobile App...</span>
+        <span className="text-[11px] text-amber-200/70 font-mono mt-1">/dashboard/astrologer</span>
+      </div>
+    );
+  }
+
+  // Initialize client data immediately for instant zero-flash render on desktop
   useEffect(() => {
     try {
       const initial = calculateVedicPanchang(
