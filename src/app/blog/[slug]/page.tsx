@@ -231,7 +231,7 @@ export default function BlogPostPage({ params }: { params: Promise<{ slug: strin
         <article className="bg-white p-6 sm:p-10 rounded-3xl border border-[#f3e8d2] shadow-xs text-sm sm:text-base text-gray-800 leading-relaxed space-y-6 font-sans">
           {/<([a-z][a-z0-9]*)\b[^>]*>/i.test(post.content) ? (
             <div
-              className="blog-rich-content prose max-w-none text-gray-800 text-sm sm:text-base leading-relaxed space-y-4 font-sans [&>h2]:font-serif [&>h2]:font-bold [&>h2]:text-2xl [&>h2]:sm:text-3xl [&>h2]:text-[#0f172a] [&>h2]:pt-6 [&>h2]:pb-2 [&>h2]:border-b [&>h2]:border-[#f3e8d2] [&>h2]:tracking-tight [&>h3]:font-serif [&>h3]:font-bold [&>h3]:text-xl [&>h3]:sm:text-2xl [&>h3]:text-[#0f172a] [&>h3]:pt-4 [&>h4]:font-serif [&>h4]:font-bold [&>h4]:text-lg [&>h4]:text-[#b45309] [&>p]:leading-relaxed [&>blockquote]:p-5 [&>blockquote]:rounded-2xl [&>blockquote]:bg-[#fefaf0] [&>blockquote]:border-l-4 [&>blockquote]:border-[#d97706] [&>blockquote]:font-serif [&>blockquote]:italic [&>blockquote]:text-gray-800 [&>ul]:list-disc [&>ul]:pl-6 [&>ul]:space-y-2 [&>ol]:list-decimal [&>ol]:pl-6 [&>ol]:space-y-2 [&>figure]:my-6 [&>figure>img]:rounded-2xl [&>figure>img]:shadow-md [&>figure>figcaption]:text-xs [&>figure>figcaption]:text-gray-500 [&>figure>figcaption]:italic [&>figure>figcaption]:mt-2 [&>img]:rounded-2xl [&>img]:shadow-md [&>img]:my-6 [&>a]:text-[#b45309] [&>a]:font-bold [&>a]:underline hover:[&>a]:text-[#d97706] [&>hr]:my-6 [&>hr]:border-gray-200"
+              className="blog-rich-content max-w-none text-gray-800 text-sm sm:text-base leading-relaxed space-y-4 font-sans"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           ) : (

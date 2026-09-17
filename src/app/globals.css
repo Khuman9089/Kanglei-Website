@@ -1,25 +1,38 @@
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700;800;900&family=Noto+Serif+Bengali:wght@400;600;700;900&family=Dancing+Script:wght@600;700&display=swap');
 @import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────
-   KangleiAstro Bright Luminous Gold & Ivory Design System
-   ───────────────────────────────────────────────────────────── */
+/* ==========================================================================
+   KangleiAstro High-End Mobile & Web Design System (Midnight Blue & Royal Gold)
+   ========================================================================== */
 
 :root {
-  --midnight-900: #111827;
-  --midnight-800: #1e1b18;
-  --midnight-700: #374151;
+  /* Primary Midnight Blue & Deep Indigo */
+  --midnight-950: #090d16;
+  --midnight-900: #0f172a;
+  --midnight-850: #141e33;
+  --midnight-800: #1e293b;
+  --midnight-700: #334155;
+  --midnight-600: #475569;
 
+  /* Royal Gold & Warm Amber Accents */
   --gold-700: #b45309;
   --gold-600: #d97706;
   --gold-500: #f59e0b;
   --gold-400: #fbbf24;
   --gold-100: #fef3c7;
+  --gold-50: #fffbeb;
 
-  --bright-bg: #f9fafb;
-  --bright-card: #ffffff;
-  --bright-cream: #f9fafb;
-  --bright-border: #e5e7eb;
+  /* Surfaces & Backgrounds */
+  --surface-bg: #f8fafc;
+  --surface-card: #ffffff;
+  --surface-muted: #f1f5f9;
+  --surface-border: #e2e8f0;
+  --surface-border-subtle: #f1f5f9;
+
+  /* Safe Area Insets */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
 
   --font-inter: 'Inter', 'Noto Sans Bengali', 'Noto Serif Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-cormorant: 'Cormorant Garamond', 'Noto Serif Bengali', 'Noto Sans Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', Georgia, Cambria, 'Times New Roman', Times, serif;
@@ -32,20 +45,23 @@
 }
 
 html {
-  font-size: 108%; /* Scales base rem sizing proportionally across all pages for bigger, comfortable typography */
+  font-size: 100%;
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overscroll-behavior-y: none;
+  background-color: var(--surface-bg);
 }
 
 body {
-  background-color: #f9fafb;
-  color: #374151;
+  background-color: var(--surface-bg);
+  color: #1e293b;
   font-family: var(--font-inter);
-  line-height: 1.6;
-  font-size: 1.05rem; /* Larger baseline body text */
+  line-height: 1.5;
   margin: 0;
   padding: 0;
+  overscroll-behavior-y: none;
+  -webkit-touch-callout: none;
 }
 
 /* Explicit typography overrides */
@@ -63,9 +79,9 @@ body {
   font-family: 'Dancing Script', cursive, serif !important;
 }
 
-/* ─────────────────────────────────────────────────────────────
+/* ==========================================================================
    Custom Manipuri Font: Blipi15 & Budha
-   ───────────────────────────────────────────────────────────── */
+   ========================================================================== */
 @font-face {
   font-family: 'Blipi15';
   src: url('/fonts/Blipi15.TTF') format('truetype');
@@ -90,7 +106,6 @@ body {
   font-display: swap;
 }
 
-/* Custom font utility classes */
 .font-blipi { font-family: 'Blipi15', sans-serif !important; }
 .font-meetei { font-family: 'Blipi15', sans-serif !important; }
 .font-budha { font-family: 'Budha', 'BudhaMei05', sans-serif !important; }
@@ -101,12 +116,12 @@ h1, h2, h3, h4, h5, h6 {
   line-height: 1.2;
 }
 
-/* Bright Glassmorphism Card Utility */
+/* Glassmorphism Card Utility */
 .glass-card {
   background-color: #ffffff;
-  border: 1px solid #f3e8d2;
-  border-radius: 1.5rem;
-  box-shadow: 0 10px 40px rgba(217, 119, 6, 0.06);
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.05);
 }
 
 /* Gold Gradient Text */
@@ -119,12 +134,8 @@ h1, h2, h3, h4, h5, h6 {
 
 /* Continuous Infinite Marquee Ticker */
 @keyframes marquee {
-  0% {
-    transform: translateX(0%);
-  }
-  100% {
-    transform: translateX(-50%);
-  }
+  0% { transform: translateX(0%); }
+  100% { transform: translateX(-50%); }
 }
 
 .animate-marquee {
@@ -136,42 +147,204 @@ h1, h2, h3, h4, h5, h6 {
   animation-play-state: paused;
 }
 
-/* Mobile App Experience Enhancements */
+/* ==========================================================================
+   High-End Mobile Native App Utility Classes
+   ========================================================================== */
+
+/* Disable web tap highlight and enable fast tap responses */
 body, button, a, input, select, textarea {
   -webkit-tap-highlight-color: transparent;
   touch-action: manipulation;
 }
 
-/* Hide scrollbars for app-like smooth horizontal scroll views */
+/* Hide scrollbars for smooth app horizontal & vertical views */
+.no-scrollbar::-webkit-scrollbar,
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+.no-scrollbar,
 .scrollbar-none {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
 
-/* Mobile Safe Area Padding */
+/* Safe Area Inset Helpers */
+.pt-safe {
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+}
 .pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+}
+.safe-bottom-nav {
+  padding-bottom: max(16px, env(safe-area-inset-bottom, 16px));
 }
 
-/* Mobile App Active Press Feedback */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+.app-scrollable-workspace {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
+/* Native App Touch Feedback */
 .app-active-press {
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.12s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.12s ease;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .app-active-press:active {
   transform: scale(0.96);
-  opacity: 0.9;
+  opacity: 0.88;
 }
 
-/* Prevent accidental text selection on mobile app buttons */
-.select-none-mobile {
+/* Prevent accidental text selection on interactive controls */
+.select-none-mobile,
+button,
+nav,
+header {
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* Strict Mobile Hiding Utility (Guaranteed to hide elements on screens < 1024px) */
+/* Native Shadow Levels */
+.shadow-mobile-appbar {
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.08);
+}
+.shadow-mobile-card {
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.02);
+}
+.shadow-mobile-elevated {
+  box-shadow: 0 10px 30px -4px rgba(15, 23, 42, 0.08), 0 2px 8px -1px rgba(15, 23, 42, 0.04);
+}
+.shadow-mobile-nav {
+  box-shadow: 0 -4px 24px -2px rgba(15, 23, 42, 0.06);
+}
+
+/* Native Slide-up Bottom Sheet Keyframes */
+@keyframes sheetSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes sheetFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-sheet-up {
+  animation: sheetSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-backdrop {
+  animation: sheetFadeIn 0.2s ease-out forwards;
+}
+
+/* Blogger Composer & Blog Rich Content Styles */
+.blogger-composer-content h2,
+.blog-rich-content h2 {
+  font-family: var(--font-cormorant);
+  font-weight: 700;
+  font-size: 1.5rem;
+  color: #0f172a;
+  padding-top: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #f3e8d2;
+  letter-spacing: -0.025em;
+}
+.blogger-composer-content h3,
+.blog-rich-content h3 {
+  font-family: var(--font-cormorant);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: #0f172a;
+  padding-top: 1rem;
+}
+.blogger-composer-content h4,
+.blog-rich-content h4 {
+  font-family: var(--font-cormorant);
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: #b45309;
+  padding-top: 0.75rem;
+}
+.blogger-composer-content p,
+.blog-rich-content p {
+  line-height: 1.625;
+}
+.blogger-composer-content blockquote,
+.blog-rich-content blockquote {
+  padding: 1.25rem;
+  border-radius: 1rem;
+  background-color: #fefaf0;
+  border-left: 4px solid #d97706;
+  font-family: var(--font-cormorant);
+  font-style: italic;
+  color: #1f2937;
+}
+.blogger-composer-content ul,
+.blog-rich-content ul {
+  list-style-type: disc;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.blogger-composer-content ol,
+.blog-rich-content ol {
+  list-style-type: decimal;
+  padding-left: 1.5rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.blogger-composer-content figure,
+.blog-rich-content figure {
+  margin: 1.5rem 0;
+}
+.blogger-composer-content figure img,
+.blog-rich-content figure img,
+.blogger-composer-content img,
+.blog-rich-content img {
+  border-radius: 1rem;
+  margin: 0.75rem 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+}
+.blogger-composer-content figure figcaption,
+.blog-rich-content figure figcaption {
+  font-size: 0.75rem;
+  color: #6b7280;
+  font-style: italic;
+  margin-top: 0.5rem;
+}
+.blogger-composer-content a,
+.blog-rich-content a {
+  color: #b45309;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.blogger-composer-content a:hover,
+.blog-rich-content a:hover {
+  color: #d97706;
+}
+.blogger-composer-content hr,
+.blog-rich-content hr {
+  margin: 1.5rem 0;
+  border-color: #e5e7eb;
+}
+
+/* Strict Mobile Hiding Utility */
 @media (max-width: 1023.98px) {
   .hidden-on-mobile,
   .mobile-hide-section,
@@ -187,3 +360,5 @@ body, button, a, input, select, textarea {
     pointer-events: none !important;
   }
 }
+
+

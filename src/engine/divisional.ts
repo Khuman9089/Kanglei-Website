@@ -24,7 +24,7 @@ export function calculateNavamsha(longitude: number): { signIndex: number; signN
   
   return {
     signIndex: navamshaSignIndex,
-    signName: ZODIAC_SIGNS[navamshaSignIndex].name,
+    signName: ZODIAC_SIGNS[navamshaSignIndex]?.name || 'Unknown',
     degree
   };
 }

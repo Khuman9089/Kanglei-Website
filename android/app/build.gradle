@@ -3,6 +3,10 @@ apply plugin: 'com.android.application'
 android {
     namespace = "com.kangleiastro.manipuricalendar"
     compileSdk = rootProject.ext.compileSdkVersion
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
     defaultConfig {
         applicationId "com.kangleiastro.manipuricalendar"
         minSdkVersion rootProject.ext.minSdkVersion
@@ -16,10 +20,19 @@ android {
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*~'
         }
     }
+    signingConfigs {
+        release {
+            storeFile file('release-key.jks')
+            storePassword 'kangleiastro123'
+            keyAlias 'kangleiastro'
+            keyPassword 'kangleiastro123'
+        }
+    }
     buildTypes {
         release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            signingConfig signingConfigs.release
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
 }

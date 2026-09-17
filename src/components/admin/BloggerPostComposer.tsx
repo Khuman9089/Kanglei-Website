@@ -1038,7 +1038,7 @@ export default function BloggerPostComposer({
                   ref={editorRef}
                   contentEditable
                   onInput={handleContentInput}
-                  className="outline-none min-h-[400px] text-gray-800 text-sm sm:text-base leading-relaxed space-y-4 font-sans focus:ring-0 [&>h2]:font-serif [&>h2]:font-bold [&>h2]:text-2xl [&>h2]:text-[#0f172a] [&>h2]:pt-4 [&>h2]:pb-1 [&>h2]:border-b [&>h2]:border-[#f3e8d2] [&>h3]:font-serif [&>h3]:font-bold [&>h3]:text-xl [&>h3]:text-[#b45309] [&>h3]:pt-3 [&>blockquote]:p-4 [&>blockquote]:rounded-2xl [&>blockquote]:bg-[#fefaf0] [&>blockquote]:border-l-4 [&>blockquote]:border-[#d97706] [&>blockquote]:italic [&>blockquote]:text-gray-800 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1 [&>img]:rounded-2xl [&>img]:my-3 [&>a]:text-[#b45309] [&>a]:underline [&>hr]:my-5 [&>hr]:border-gray-200"
+                  className="outline-none min-h-[400px] text-gray-800 text-sm sm:text-base leading-relaxed space-y-4 font-sans focus:ring-0 blogger-composer-content"
                   style={{ minHeight: '400px' }}
                 />
               ) : (
@@ -1793,7 +1793,7 @@ export default function BloggerPostComposer({
 
               {/* Rich Body Content */}
               <div
-                className="prose max-w-none text-gray-800 text-sm sm:text-base leading-relaxed space-y-4 font-sans [&>h2]:font-serif [&>h2]:font-bold [&>h2]:text-2xl [&>h2]:text-[#0f172a] [&>h2]:pt-4 [&>h2]:pb-1 [&>h2]:border-b [&>h2]:border-[#f3e8d2] [&>h3]:font-serif [&>h3]:font-bold [&>h3]:text-xl [&>h3]:text-[#b45309] [&>h3]:pt-3 [&>blockquote]:p-4 [&>blockquote]:rounded-2xl [&>blockquote]:bg-[#fefaf0] [&>blockquote]:border-l-4 [&>blockquote]:border-[#d97706] [&>blockquote]:italic [&>blockquote]:text-gray-800 [&>ul]:list-disc [&>ul]:pl-5 [&>ul]:space-y-1 [&>ol]:list-decimal [&>ol]:pl-5 [&>ol]:space-y-1 [&>img]:rounded-2xl [&>img]:my-3 [&>a]:text-[#b45309] [&>a]:underline [&>hr]:my-5 [&>hr]:border-gray-200"
+                className="prose max-w-none text-gray-800 text-sm sm:text-base leading-relaxed space-y-4 font-sans blogger-composer-content"
                 dangerouslySetInnerHTML={{
                   __html: viewMode === 'compose' && editorRef.current ? editorRef.current.innerHTML : htmlContent,
                 }}
