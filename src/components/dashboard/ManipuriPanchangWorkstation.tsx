@@ -18,10 +18,13 @@ import {
   RefreshCw,
   Star,
   ShieldCheck,
-  Globe
+  Globe,
+  BookOpen,
+  LayoutGrid
 } from 'lucide-react';
 import BengaliChart, { BengaliPlanetInfo } from '@/components/charts/BengaliChart';
 import { getManipuriBookPanchang, ManipuriBookPanchangData } from '@/engine/manipuriPanchangBook';
+import ManipuriBookPanchangView from '@/components/panchang/ManipuriBookPanchangView';
 import { toBengaliNumerals, toMeeteiNumerals } from '@/engine/manipuriCalendar';
 import { MANIPURI_MONTH_ATTRIBUTES } from '@/data/manipuriMonthAttributes';
 
@@ -73,7 +76,8 @@ export default function ManipuriPanchangWorkstation({
     new Date().toISOString().split('T')[0]
   );
   const [selectedLocation, setSelectedLocation] = useState(PRESET_LOCATIONS[0]);
-  const [script, setScript] = useState<'bengali' | 'meetei' | 'en'>('bengali');
+  const [script, setScript] = useState<'bengali' | 'meetei' | 'blipi' | 'en'>('bengali');
+  const [viewMode, setViewMode] = useState<'book' | 'compact'>(isEmbedded ? 'compact' : 'book');
   const [bookPanchang, setBookPanchang] = useState<ManipuriBookPanchangData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -210,8 +214,8 @@ export default function ManipuriPanchangWorkstation({
         isDark ? 'bg-[#1c2541]/90 border-[#3a506b]' : 'bg-white border-[#E5E7EB]'
       }`}>
         
-        {/* Row 1: Header Title + Back Button + Script Switcher */}
-        <div className="flex items-center justify-between gap-2">
+        {/* Row 1: Header Title + Back Button + View Mode + Script Switcher */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2 min-w-0">
             {onClose && (
               <button
@@ -224,50 +228,95 @@ export default function ManipuriPanchangWorkstation({
               </button>
             )}
             <div className="w-7 h-7 rounded-xl bg-amber-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shrink-0">
-              <CalendarIcon className="w-3.5 h-3.5" />
+              <BookOpen className="w-3.5 h-3.5" />
             </div>
             <div className="min-w-0">
               <h2 className="text-xs sm:text-sm font-bold leading-tight text-[#111827] dark:text-white truncate">
-                {isMeetei ? 'ꯄꯟꯆꯥꯡ • ꯅꯨꯃꯤꯠ ꯈꯨꯗꯤꯡꯒꯤ' : isBengali ? 'দৈনিক পঞ্জিকা ও পঞ্চাঙ্গ' : 'Daily Panchang'}
+                {isMeetei ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯄꯟꯆꯥꯡ ꯕꯨꯛ' : isBengali ? 'মণিপুরী পঞ্জিকা বই (Book Panchang)' : 'Manipuri Panchang'}
               </h2>
             </div>
           </div>
 
-          {/* Script Switcher */}
-          <div className="flex items-center gap-0.5 p-0.5 bg-gray-100 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 text-[11px] shrink-0">
-            <button
-              type="button"
-              onClick={() => setScript('bengali')}
-              className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
-                script === 'bengali'
-                  ? 'bg-amber-600 text-white shadow-2xs'
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900'
-              }`}
-            >
-              বাং
-            </button>
-            <button
-              type="button"
-              onClick={() => setScript('meetei')}
-              className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
-                script === 'meetei'
-                  ? 'bg-amber-600 text-white shadow-2xs'
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900'
-              }`}
-            >
-              ꯃꯤ
-            </button>
-            <button
-              type="button"
-              onClick={() => setScript('en')}
-              className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
-                script === 'en'
-                  ? 'bg-amber-600 text-white shadow-2xs'
-                  : 'text-gray-600 dark:text-slate-400 hover:text-gray-900'
-              }`}
-            >
-              EN
-            </button>
+          <div className="flex items-center gap-2 shrink-0">
+            {/* View Mode Switcher: Book vs Mobile Compact */}
+            <div className="flex items-center gap-0.5 p-0.5 bg-gray-100 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('book')}
+                className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewMode === 'book'
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Authentic Book Panchang Sheet"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">বুক ভিউ</span>
+                <span className="sm:hidden">Book</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('compact')}
+                className={`px-2.5 py-1 rounded-lg font-bold flex items-center gap-1.5 transition-all cursor-pointer ${
+                  viewMode === 'compact'
+                    ? 'bg-amber-600 text-white shadow-xs'
+                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900 dark:hover:text-white'
+                }`}
+                title="Mobile Cards View"
+              >
+                <LayoutGrid className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">মোবাইল</span>
+                <span className="sm:hidden">Cards</span>
+              </button>
+            </div>
+
+            {/* Script Switcher */}
+            <div className="flex items-center gap-0.5 p-0.5 bg-gray-100 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 text-[11px]">
+              <button
+                type="button"
+                onClick={() => setScript('bengali')}
+                className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  script === 'bengali'
+                    ? 'bg-amber-600 text-white shadow-2xs'
+                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900'
+                }`}
+              >
+                বাং
+              </button>
+              <button
+                type="button"
+                onClick={() => setScript('meetei')}
+                className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  script === 'meetei'
+                    ? 'bg-amber-600 text-white shadow-2xs'
+                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900'
+                }`}
+              >
+                ꯃꯤ
+              </button>
+              <button
+                type="button"
+                onClick={() => setScript('blipi')}
+                className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  script === 'blipi'
+                    ? 'bg-amber-600 text-white shadow-2xs'
+                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900'
+                }`}
+              >
+                BLipi
+              </button>
+              <button
+                type="button"
+                onClick={() => setScript('en')}
+                className={`px-2 py-0.5 rounded-lg font-bold transition-all cursor-pointer ${
+                  script === 'en'
+                    ? 'bg-amber-600 text-white shadow-2xs'
+                    : 'text-gray-600 dark:text-slate-400 hover:text-gray-900'
+                }`}
+              >
+                EN
+              </button>
+            </div>
           </div>
         </div>
 
@@ -342,9 +391,19 @@ export default function ManipuriPanchangWorkstation({
           <RefreshCw className="w-7 h-7 text-amber-600 animate-spin mx-auto" />
           <p className="text-xs font-bold text-gray-600 dark:text-slate-400">Loading Detail Daily Panchang...</p>
         </div>
+      ) : viewMode === 'book' ? (
+        /* ─────────────────────────────────────────────────────────── */
+        /* 3. AUTHENTIC BOOK PANCHANG VIEW                             */
+        /* ─────────────────────────────────────────────────────────── */
+        <div className="space-y-4">
+          <ManipuriBookPanchangView
+            data={bookPanchang}
+            script={script === 'blipi' ? 'blipi' : script === 'meetei' ? 'meetei' : 'bengali'}
+          />
+        </div>
       ) : (
         /* ─────────────────────────────────────────────────────────── */
-        /* 3. CLEAN MODERN MYSTIC MOBILE APP PANCHANG VIEW              */
+        /* 4. CLEAN MODERN MYSTIC MOBILE APP PANCHANG VIEW             */
         /* ─────────────────────────────────────────────────────────── */
         <div className="space-y-3.5 font-sans">
           
