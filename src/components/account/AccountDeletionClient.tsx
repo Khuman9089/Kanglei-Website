@@ -347,7 +347,7 @@ export default function AccountDeletionClient() {
                   className="w-4 h-4 rounded-md border-slate-300 text-red-600 focus:ring-red-500 mt-0.5 cursor-pointer"
                 />
                 <span>
-                  I request permanent deletion of my account, profile, birth charts (DOB/TOB/POB), and personal records in <strong>Manipuri Calendar KangleiAstro</strong> published by <strong>NexGen Info Lab</strong>. I understand this action is permanent and irreversible.
+                  I request permanent deletion of my account, profile, birth charts (DOB/TOB/POB), and personal records in <strong>Manipuri Calendar KangleiAstro</strong> published by <strong>NexGen InfoLab</strong>. I understand this action is permanent and irreversible.
                 </span>
               </label>
             </div>

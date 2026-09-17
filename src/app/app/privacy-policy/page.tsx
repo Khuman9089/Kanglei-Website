@@ -106,14 +106,18 @@ export default function MobilePrivacyPolicyPage() {
         {/* Section 5 */}
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900">
-            5. Contact Privacy Officer
+            5. Developer Profile & Privacy Officer
           </h2>
           <p>
             If you have questions regarding this Privacy Policy or your data rights, contact us at:
           </p>
-          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 font-mono text-[11px] text-slate-700 space-y-0.5">
-            <div>Email: ccare@kuthiyengpham.in</div>
-            <div>Location: Imphal West, Manipur, India 795001</div>
+          <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-[11px] text-slate-700 space-y-1">
+            <div><strong>Publisher:</strong> NexGen InfoLab (ID: 6187819673998470854)</div>
+            <div><strong>Representative:</strong> Oinam Robert Singh</div>
+            <div><strong>Support Email:</strong> <a href="mailto:ccare@kuthiyengpham.in" className="text-amber-700 underline font-mono">ccare@kuthiyengpham.in</a></div>
+            <div><strong>Developer Email:</strong> <a href="mailto:aiabaazar@gmail.com" className="text-amber-700 underline font-mono">aiabaazar@gmail.com</a></div>
+            <div><strong>Helpline:</strong> <a href="tel:+918837487801" className="text-slate-900 font-mono font-bold">+91 8837487801</a></div>
+            <div><strong>Address:</strong> Khurai Chingangbam Leikai, Tinsid Road, Imphal East - 795005, Manipur, India</div>
           </div>
         </div>
 

@@ -63,8 +63,9 @@ export function Footer() {
             <h4 className="font-serif text-lg font-bold text-[#fbbf24] mb-4">Contact & Support</h4>
             <ul className="space-y-2.5 text-xs text-gray-300">
               <li className="font-medium text-white">ccare@kuthiyengpham.in</li>
-              <li className="font-medium text-white">+91 99999 99999</li>
-              <li className="text-gray-400">Live Support: 9:30 AM – 6:00 PM IST</li>
+              <li className="font-medium text-white">+91 88374 87801</li>
+              <li className="text-gray-400">NexGen InfoLab • Oinam Robert Singh</li>
+              <li className="text-gray-400">Khurai Chingangbam Leikai, Imphal East</li>
               <li className="pt-1">
                 <Link href="/contact" className="text-[#fbbf24] font-bold hover:underline inline-flex items-center gap-1">
                   <span>Visit Office / Send Message →</span>
@@ -75,7 +76,7 @@ export function Footer() {
         </div>
 
         <div className="mt-12 pt-8 border-t border-[#1e293b] flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-4">
-          <p>&copy; {new Date().getFullYear()} KuthiYengpham by KangleiAstro &bull; Oinam Robert Singh. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Manipuri Calendar KangleiAstro &bull; NexGen InfoLab (Oinam Robert Singh). All rights reserved.</p>
           <div className="flex flex-wrap gap-4 sm:gap-6">
             <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
             <Link href="/delete-account" className="hover:text-white transition-colors">Delete Account</Link>

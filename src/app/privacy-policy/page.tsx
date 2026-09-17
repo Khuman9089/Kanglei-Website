@@ -149,16 +149,19 @@ export default function PrivacyPolicyPage() {
         {/* Grievance & Contact */}
         <div className="bg-[#fefcf6] rounded-3xl p-6 sm:p-8 border border-[#fde68a] space-y-3">
           <h2 className="font-serif text-xl font-black text-[#0f172a]">
-            7. Privacy Grievance Officer & Inquiries
+            7. Privacy Grievance Officer & Developer Details
           </h2>
           <p className="text-xs text-gray-600">
             If you have questions about this Privacy Policy, wish to access, rectify, or request the deletion of your personal records, please reach out to our Privacy & Grievance Desk:
           </p>
-          <div className="pt-2 space-y-1 text-xs font-medium text-gray-800">
-            <div><strong>Organization:</strong> KuthiYengpham by KangleiAstro</div>
-            <div><strong>Email:</strong> <a href="mailto:ccare@kuthiyengpham.in" className="text-[#b45309] underline font-mono">ccare@kuthiyengpham.in</a></div>
-            <div><strong>Helpline:</strong> <a href="tel:9999999999" className="text-[#b45309] font-mono">9999999999</a></div>
-            <div><strong>Office Address:</strong> Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur, Pin 795005</div>
+          <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-gray-800">
+            <div><strong>Publisher / Developer:</strong> NexGen InfoLab (ID: 6187819673998470854)</div>
+            <div><strong>Legal Representative:</strong> Oinam Robert Singh</div>
+            <div><strong>Application:</strong> Manipuri Calendar KangleiAstro</div>
+            <div><strong>Support Email:</strong> <a href="mailto:ccare@kuthiyengpham.in" className="text-[#b45309] underline font-mono">ccare@kuthiyengpham.in</a></div>
+            <div><strong>Developer Email:</strong> <a href="mailto:aiabaazar@gmail.com" className="text-[#b45309] underline font-mono">aiabaazar@gmail.com</a></div>
+            <div><strong>Contact Helpline:</strong> <a href="tel:+918837487801" className="text-[#b45309] font-mono font-bold">+91 8837487801</a></div>
+            <div className="sm:col-span-2"><strong>Registered Legal Address:</strong> Khurai Chingangbam Leikai, Tinsid Road, Imphal East - 795005, Manipur, India (IN)</div>
           </div>
         </div>
 

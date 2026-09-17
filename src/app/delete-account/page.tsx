@@ -10,30 +10,36 @@ import {
   Building,
   Smartphone,
   Info,
-  CheckCircle2
+  CheckCircle2,
+  Mail,
+  Phone,
+  MapPin,
+  UserCheck
 } from 'lucide-react';
 import AccountDeletionClient from '@/components/account/AccountDeletionClient';
 
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: 'Manipuri Calendar KangleiAstro - Account & Data Deletion | NexGen Info Lab',
+  title: 'Manipuri Calendar KangleiAstro - Account & Data Deletion | NexGen InfoLab',
   description:
-    'Official Account and Personal Data Deletion Portal for Manipuri Calendar KangleiAstro published by NexGen Info Lab. Submit account deletion requests and review data retention policies.',
+    'Official Account and Personal Data Deletion Portal for Manipuri Calendar KangleiAstro published by NexGen InfoLab (Developer ID: 6187819673998470854, Owner: Oinam Robert Singh). Submit account deletion requests and review data retention policies.',
   keywords: [
     'Manipuri Calendar KangleiAstro delete account',
+    'NexGen InfoLab account deletion',
     'NexGen Info Lab account deletion',
     'KangleiAstro data deletion',
     'Kuthi Yengpham account deletion',
     'delete Manipuri Calendar account',
+    'Oinam Robert Singh developer',
   ],
   alternates: {
     canonical: 'https://kuthiyengpham.in/delete-account',
   },
   openGraph: {
-    title: 'Manipuri Calendar KangleiAstro - Account & Data Deletion | NexGen Info Lab',
+    title: 'Manipuri Calendar KangleiAstro - Account & Data Deletion | NexGen InfoLab',
     description:
-      'Official Account & Personal Data Deletion Request Page for Manipuri Calendar KangleiAstro by NexGen Info Lab.',
+      'Official Account & Personal Data Deletion Request Page for Manipuri Calendar KangleiAstro by NexGen InfoLab.',
     url: 'https://kuthiyengpham.in/delete-account',
     siteName: 'Manipuri Calendar KangleiAstro',
     type: 'website',
@@ -46,12 +52,23 @@ export default function RootAccountDeletionPage() {
     '@type': 'WebPage',
     name: 'Manipuri Calendar KangleiAstro Account and Data Deletion',
     description:
-      'Official account and personal data deletion request page for Manipuri Calendar KangleiAstro published by NexGen Info Lab.',
+      'Official account and personal data deletion request page for Manipuri Calendar KangleiAstro published by NexGen InfoLab.',
     url: 'https://kuthiyengpham.in/delete-account',
     publisher: {
       '@type': 'Organization',
-      name: 'NexGen Info Lab',
+      name: 'NexGen InfoLab',
+      legalName: 'Oinam Robert Singh',
       url: 'https://kuthiyengpham.in',
+      email: 'ccare@kuthiyengpham.in',
+      telephone: '+918837487801',
+      address: {
+        '@type': 'PostalAddress',
+        streetAddress: 'Khurai Chingangbam Leikai, Tinsid Road',
+        addressLocality: 'Imphal East',
+        addressRegion: 'Manipur',
+        postalCode: '795005',
+        addressCountry: 'IN',
+      },
     },
     about: {
       '@type': 'SoftwareApplication',
@@ -60,7 +77,7 @@ export default function RootAccountDeletionPage() {
       applicationCategory: 'LifestyleApplication',
       author: {
         '@type': 'Organization',
-        name: 'NexGen Info Lab',
+        name: 'NexGen InfoLab',
       },
     },
   };
@@ -88,7 +105,7 @@ export default function RootAccountDeletionPage() {
                 Manipuri Calendar KangleiAstro
               </span>
               <p className="text-[11px] text-amber-700 font-semibold">
-                Account & Data Deletion Portal • NexGen Info Lab
+                Account & Data Deletion Portal • NexGen InfoLab
               </p>
             </div>
           </div>
@@ -123,7 +140,7 @@ export default function RootAccountDeletionPage() {
             </h1>
 
             <p className="text-xs sm:text-sm text-amber-100/90 leading-relaxed pt-1">
-              This official page allows users of the <strong>Manipuri Calendar KangleiAstro</strong> mobile application (published on Google Play by <strong>NexGen Info Lab</strong>) to request the permanent deletion of their account and all associated personal data in accordance with the Google Play User Data Policy.
+              This official portal allows users of the <strong>Manipuri Calendar KangleiAstro</strong> mobile application (published on Google Play by <strong>NexGen InfoLab</strong>, Developer ID: <code>6187819673998470854</code>) to request the permanent deletion of their account and all associated personal data in accordance with the Google Play User Data & Account Deletion Policy.
             </p>
           </div>
 
@@ -146,19 +163,19 @@ export default function RootAccountDeletionPage() {
                 Developer / Publisher
               </span>
               <strong className="text-white text-xs block font-bold">
-                NexGen Info Lab
+                NexGen InfoLab
               </strong>
               <span className="text-[10px] text-slate-300 block">
-                (Google Play Developer Account)
+                ID: 6187819673998470854
               </span>
             </div>
 
             <div className="p-3.5 rounded-2xl bg-white/5 border border-white/10 space-y-1">
               <span className="text-[10px] uppercase tracking-wider font-bold text-amber-300/90 block">
-                Service Portal
+                Legal Owner / Registered
               </span>
               <strong className="text-white text-xs block font-bold">
-                KangleiAstro / KuthiYengpham
+                Oinam Robert Singh
               </strong>
               <span className="text-[10px] text-slate-300 block">
                 Imphal East, Manipur, India
@@ -243,7 +260,7 @@ export default function RootAccountDeletionPage() {
               </span>
               <ul className="list-disc pl-4 space-y-1.5 text-slate-700 text-[11px] leading-relaxed">
                 <li>
-                  <strong>Financial & Tax Invoices:</strong> Payment transaction records from astrological consultations are retained for up to <strong>7 years</strong> strictly to comply with statutory taxation (GST) and accounting laws. These records are completely anonymized.
+                  <strong>Financial & Tax Invoices:</strong> Payment transaction records from astrological consultations are retained for up to <strong>7 years</strong> strictly to comply with statutory taxation (GST) and accounting laws in India. These records are completely anonymized.
                 </li>
                 <li>
                   <strong>Deletion Audit Log:</strong> Cryptographic deletion timestamp log is maintained for 90 days for audit compliance.
@@ -261,32 +278,46 @@ export default function RootAccountDeletionPage() {
         </section>
 
         {/* ─────────────────────────────────────────────────────────────
-           5. PRIVACY CONTACT & GRIEVANCE OFFICER
+           5. PRIVACY CONTACT & DEVELOPER DETAILS
            ───────────────────────────────────────────────────────────── */}
         <section className="bg-white rounded-3xl border border-slate-200 p-5 sm:p-6 shadow-xs space-y-3 text-xs">
           <h3 className="font-bold text-slate-900 flex items-center gap-1.5 text-sm">
             <Building className="w-4 h-4 text-slate-700" />
-            <span>Developer & Privacy Desk Contacts</span>
+            <span>Developer Profile & Privacy Desk Contacts</span>
           </h3>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-700 font-medium">
-            <div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-[11px] text-slate-700 font-medium">
+            <div className="space-y-0.5">
               <span className="text-slate-500 block">Developer / Publisher:</span>
-              <strong className="text-slate-900">NexGen Info Lab</strong>
+              <strong className="text-slate-900 text-xs block">NexGen InfoLab</strong>
+              <span className="text-[10px] text-slate-400 font-mono">Developer ID: 6187819673998470854</span>
             </div>
-            <div>
-              <span className="text-slate-500 block">Application:</span>
-              <strong className="text-slate-900">Manipuri Calendar KangleiAstro</strong>
+
+            <div className="space-y-0.5">
+              <span className="text-slate-500 block">Account Owner / Legal Name:</span>
+              <strong className="text-slate-900 text-xs block">Oinam Robert Singh</strong>
             </div>
-            <div>
-              <span className="text-slate-500 block">Official Support Email:</span>
-              <a href="mailto:ccare@kuthiyengpham.in" className="text-amber-700 font-mono underline font-bold">
+
+            <div className="space-y-0.5">
+              <span className="text-slate-500 block">Support & Grievance Email:</span>
+              <a href="mailto:ccare@kuthiyengpham.in" className="text-amber-700 font-mono underline font-bold block">
                 ccare@kuthiyengpham.in
               </a>
+              <span className="text-[10px] text-slate-400 font-mono">Dev: aiabaazar@gmail.com</span>
             </div>
-            <div>
-              <span className="text-slate-500 block">Location:</span>
-              <span>Imphal East, Manipur, India</span>
+
+            <div className="space-y-0.5">
+              <span className="text-slate-500 block">Contact Phone / Helpline:</span>
+              <a href="tel:+918837487801" className="text-slate-900 font-mono font-bold block">
+                +91 8837487801
+              </a>
+            </div>
+
+            <div className="sm:col-span-2 space-y-0.5 pt-1 border-t border-slate-100">
+              <span className="text-slate-500 block">Registered Legal Address:</span>
+              <span className="text-slate-800 font-medium block">
+                Khurai Chingangbam Leikai, Tinsid Road, Imphal East - 795005, Manipur, India (IN)
+              </span>
             </div>
           </div>
 
