@@ -76,8 +76,9 @@ export function Footer() {
 
         <div className="mt-12 pt-8 border-t border-[#1e293b] flex flex-col sm:flex-row justify-between items-center text-xs text-gray-400 gap-4">
           <p>&copy; {new Date().getFullYear()} KuthiYengpham by KangleiAstro &bull; Oinam Robert Singh. All rights reserved.</p>
-          <div className="flex flex-wrap gap-6">
+          <div className="flex flex-wrap gap-4 sm:gap-6">
             <Link href="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/delete-account" className="hover:text-white transition-colors">Delete Account</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
             <Link href="/return-policy" className="hover:text-white transition-colors">Return & Refund Policy</Link>
           </div>
