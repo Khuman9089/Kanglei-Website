@@ -9,6 +9,25 @@ const nextConfig = {
     '192.168.1.9:3000',
     'localhost:3000',
   ],
+  async redirects() {
+    return [
+      {
+        source: '/app/delete-account',
+        destination: '/delete-account',
+        permanent: true,
+      },
+      {
+        source: '/account-deletion',
+        destination: '/delete-account',
+        permanent: true,
+      },
+      {
+        source: '/delete',
+        destination: '/delete-account',
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
