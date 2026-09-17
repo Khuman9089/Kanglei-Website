@@ -125,10 +125,31 @@ export default function PrivacyPolicyPage() {
           </p>
         </div>
 
+        {/* Account and Data Deletion */}
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-200 shadow-md space-y-4">
+          <h2 className="font-serif text-xl sm:text-2xl font-black text-[#0f172a]">
+            6. Account & Data Deletion Rights
+          </h2>
+          <p>
+            In compliance with Google Play Developer Policy and user privacy standards, any user may request the permanent deletion of their account and all associated personal data (including birth chart data, names, phone numbers, email addresses, and community posts) at any time.
+          </p>
+          <div className="p-4 rounded-2xl bg-amber-50/60 border border-amber-200/80 space-y-2">
+            <p className="font-bold text-amber-950">How to Delete Your Account & Associated Data:</p>
+            <ul className="list-disc pl-5 space-y-1 text-xs text-amber-900">
+              <li><strong>In-App Self-Service:</strong> Open the Kanglei Astro app &gt; Go to Account Settings &gt; Tap &ldquo;Delete Account&rdquo;.</li>
+              <li><strong>Online Deletion Request Form (No Login/App Needed):</strong> Visit our official web deletion portal at <a href="https://kuthiyengpham.in/delete-account" className="underline font-bold text-amber-800">https://kuthiyengpham.in/delete-account</a>.</li>
+              <li><strong>Direct Email:</strong> You can also email your deletion request to <a href="mailto:ccare@kuthiyengpham.in" className="underline font-mono text-amber-800">ccare@kuthiyengpham.in</a>.</li>
+            </ul>
+          </div>
+          <p className="text-xs text-gray-500">
+            Account deletion requests submitted online or via email are processed within 48–72 hours. All personal identity and astrological data will be permanently erased.
+          </p>
+        </div>
+
         {/* Grievance & Contact */}
         <div className="bg-[#fefcf6] rounded-3xl p-6 sm:p-8 border border-[#fde68a] space-y-3">
           <h2 className="font-serif text-xl font-black text-[#0f172a]">
-            6. Privacy Grievance Officer & Inquiries
+            7. Privacy Grievance Officer & Inquiries
           </h2>
           <p className="text-xs text-gray-600">
             If you have questions about this Privacy Policy, wish to access, rectify, or request the deletion of your personal records, please reach out to our Privacy & Grievance Desk:

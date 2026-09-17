@@ -94,8 +94,13 @@ export default function MobilePrivacyPolicyPage() {
             <span>4. Self-Service Account & Data Deletion</span>
           </h2>
           <p>
-            In full compliance with <strong>Apple App Store Guideline 5.1.1</strong> and <strong>Google Play Data Safety</strong> rules, you can permanently delete your account and all associated personal data at any time directly in the app via <strong>Settings &gt; Account &gt; Delete Account</strong> or by visiting <Link href="/app/settings/account" className="text-amber-700 underline font-semibold">Account Settings</Link>.
+            In full compliance with <strong>Apple App Store Guideline 5.1.1</strong> and <strong>Google Play Data Safety</strong> rules, you can permanently delete your account and all associated personal data at any time:
           </p>
+          <ul className="list-disc pl-5 space-y-1 text-slate-600">
+            <li><strong>In the App:</strong> Go to <strong>Settings &gt; Account &gt; Delete Account</strong>.</li>
+            <li><strong>Online Web Form (No App/Login Required):</strong> Visit <a href="https://kuthiyengpham.in/delete-account" target="_blank" rel="noopener noreferrer" className="text-amber-700 underline font-semibold">https://kuthiyengpham.in/delete-account</a>.</li>
+            <li><strong>Email:</strong> Write to <a href="mailto:ccare@kuthiyengpham.in" className="text-amber-700 underline font-mono">ccare@kuthiyengpham.in</a>.</li>
+          </ul>
         </div>
 
         {/* Section 5 */}

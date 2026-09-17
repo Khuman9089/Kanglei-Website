@@ -200,7 +200,7 @@ export default function RootAccountDeletionPage() {
                 Account & Data Deletion
               </h1>
               <p className="text-[11px] text-amber-700 font-semibold">
-                Kanglei Astro • Manipuri Calendar by KangleiAstro
+                Manipuri Calendar KangleiAstro • NexGen Info Lab
               </p>
             </div>
           </div>
@@ -232,7 +232,7 @@ export default function RootAccountDeletionPage() {
                 Official Account & Personal Data Deletion Portal
               </h2>
               <p className="text-xs text-amber-100/80 leading-relaxed">
-                In compliance with Google Play Developer Policy and user privacy rights, this official portal allows users of the <strong>Kanglei Astro (Manipuri Calendar)</strong> application to permanently delete their account and all associated personal records.
+                In compliance with Google Play Developer Policy and user privacy rights, this official portal allows users of the <strong>Manipuri Calendar KangleiAstro</strong> application published by <strong>NexGen Info Lab</strong> to permanently delete their account and all associated personal records.
               </p>
             </div>
           </div>
@@ -244,31 +244,31 @@ export default function RootAccountDeletionPage() {
                 Application Name
               </span>
               <strong className="text-white text-xs block">
-                Kanglei Astro / Manipuri Calendar
+                Manipuri Calendar KangleiAstro
               </strong>
               <span className="text-[10px] text-slate-300 block">
-                (Manipuri Calendar by KangleiAstro)
+                (Google Play Published App)
               </span>
             </div>
 
             <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
               <span className="text-[10px] uppercase font-bold text-amber-300/80 block">
-                Developer Name
+                Developer Account
               </span>
               <strong className="text-white text-xs block">
-                Oinam Robert Singh
+                NexGen Info Lab
               </strong>
               <span className="text-[10px] text-slate-300 block">
-                (KangleiAstro Developer Account)
+                (Google Play Console Developer)
               </span>
             </div>
 
             <div className="p-3 rounded-2xl bg-white/5 border border-white/10 space-y-1">
               <span className="text-[10px] uppercase font-bold text-amber-300/80 block">
-                Entity / Company
+                Service Brand
               </span>
               <strong className="text-white text-xs block">
-                KuthiYengpham by KangleiAstro
+                KangleiAstro / KuthiYengpham
               </strong>
               <span className="text-[10px] text-slate-300 block">
                 Imphal East, Manipur, India
@@ -403,7 +403,7 @@ export default function RootAccountDeletionPage() {
 
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-slate-700 block">
-                  Full Name (as used in Kanglei Astro / Manipuri Calendar)
+                  Full Name (as registered in Manipuri Calendar KangleiAstro)
                 </label>
                 <div className="relative">
                   <User className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
@@ -443,7 +443,7 @@ export default function RootAccountDeletionPage() {
                     className="w-4 h-4 rounded-md border-slate-300 text-red-600 focus:ring-red-500 mt-0.5 cursor-pointer"
                   />
                   <span>
-                    I request permanent deletion of my account, profile, birth charts (DOB/TOB/POB), and community posts in <strong>Kanglei Astro (Manipuri Calendar by KangleiAstro / KuthiYengpham)</strong> developed by <strong>Oinam Robert Singh</strong>. I understand this action is irreversible.
+                    I request permanent deletion of my account, profile, birth charts (DOB/TOB/POB), and data in <strong>Manipuri Calendar KangleiAstro</strong> published by <strong>NexGen Info Lab</strong>. I understand this action is irreversible.
                   </span>
                 </label>
               </div>
@@ -481,12 +481,12 @@ export default function RootAccountDeletionPage() {
           </div>
 
           <p className="text-xs text-slate-600 leading-relaxed">
-            If you have the <strong>Kanglei Astro / Manipuri Calendar</strong> Android application installed on your device, you can delete your account instantly at any time:
+            If you have the <strong>Manipuri Calendar KangleiAstro</strong> Android application installed on your device, you can delete your account instantly at any time:
           </p>
 
           <ol className="list-decimal pl-5 space-y-2 text-xs text-slate-700">
             <li>
-              Open the <strong>Kanglei Astro (Manipuri Calendar)</strong> app on your Android device.
+              Open the <strong>Manipuri Calendar KangleiAstro</strong> app on your Android device.
             </li>
             <li>
               Navigate to <strong>Menu / Profile</strong> icon in the top header or side drawer.
@@ -540,7 +540,7 @@ export default function RootAccountDeletionPage() {
               </span>
               <ul className="list-disc pl-4 space-y-1 text-slate-700 text-[11px] leading-relaxed">
                 <li>
-                  <strong>Financial & Tax Invoices:</strong> Payment transaction records from the Jyotish E-Store or consultations are retained for up to <strong>7 years</strong> strictly to comply with Indian statutory taxation (GST) and accounting laws. These records are completely anonymized.
+                  <strong>Financial & Tax Invoices:</strong> Payment transaction records from consultations are retained for up to <strong>7 years</strong> strictly to comply with statutory taxation (GST) and accounting regulations. These records are completely anonymized.
                 </li>
                 <li>
                   <strong>Audit Log:</strong> Deletion request timestamp is kept for 90 days for audit compliance.
@@ -569,11 +569,11 @@ export default function RootAccountDeletionPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] text-slate-700 font-medium">
             <div>
               <span className="text-slate-500 block">Developer / Publisher:</span>
-              <strong>Oinam Robert Singh (KangleiAstro)</strong>
+              <strong>NexGen Info Lab</strong>
             </div>
             <div>
-              <span className="text-slate-500 block">Organization:</span>
-              <strong>KuthiYengpham by KangleiAstro</strong>
+              <span className="text-slate-500 block">Application:</span>
+              <strong>Manipuri Calendar KangleiAstro</strong>
             </div>
             <div>
               <span className="text-slate-500 block">Official Support Email:</span>
@@ -582,8 +582,8 @@ export default function RootAccountDeletionPage() {
               </a>
             </div>
             <div>
-              <span className="text-slate-500 block">Registered Office:</span>
-              <span>Khurai Chingangbam Leikai, Tinsid Road, Imphal East, Manipur 795005, India</span>
+              <span className="text-slate-500 block">Location:</span>
+              <span>Imphal, Manipur, India</span>
             </div>
           </div>
 
@@ -621,7 +621,7 @@ export default function RootAccountDeletionPage() {
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              Are you sure you want to permanently delete your <strong>Kanglei Astro</strong> account? All your personal birth charts, horoscope calculations, and community posts will be erased immediately.
+              Are you sure you want to permanently delete your <strong>Manipuri Calendar KangleiAstro</strong> account? All your personal birth charts, horoscope calculations, and community posts will be erased immediately.
             </p>
 
             <div className="space-y-1.5">

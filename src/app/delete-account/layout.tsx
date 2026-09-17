@@ -1,15 +1,15 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Account & Data Deletion | Kanglei Astro - Manipuri Calendar (Developer: Oinam Robert Singh)',
+  title: 'Account & Data Deletion | Manipuri Calendar KangleiAstro (Developer: NexGen Info Lab)',
   description:
-    'Official Account and Data Deletion portal for Kanglei Astro (Manipuri Calendar by KangleiAstro / KuthiYengpham), developed by Oinam Robert Singh. Request immediate or web-assisted permanent deletion of your account, sacred birth charts, and user data in compliance with Google Play Data Safety policy.',
+    'Official Account and Data Deletion portal for Manipuri Calendar KangleiAstro, developed by NexGen Info Lab. Request permanent deletion of your account and personal user data in compliance with Google Play Data Safety policy.',
   openGraph: {
-    title: 'Account & Data Deletion | Kanglei Astro (Developer: Oinam Robert Singh)',
+    title: 'Account & Data Deletion | Manipuri Calendar KangleiAstro (Developer: NexGen Info Lab)',
     description:
-      'Official Google Play Data Safety account and data deletion request page for Kanglei Astro / Manipuri Calendar mobile app by Oinam Robert Singh.',
+      'Official Google Play Data Safety account and data deletion request page for Manipuri Calendar KangleiAstro mobile app by NexGen Info Lab.',
     url: 'https://kuthiyengpham.in/delete-account',
-    siteName: 'Kanglei Astro - KuthiYengpham',
+    siteName: 'Manipuri Calendar KangleiAstro - NexGen Info Lab',
     locale: 'en_US',
     type: 'website',
   },
