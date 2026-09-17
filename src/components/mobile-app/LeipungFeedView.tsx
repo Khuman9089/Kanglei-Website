@@ -335,7 +335,10 @@ export default function LeipungFeedView() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          author: currentUser,
+          author: {
+            ...currentUser,
+            name: (authNameInput || currentUser.name || 'Community Member').trim(),
+          },
           content_text: composerText.trim(),
           media_urls: composerImage ? [composerImage] : [],
           category_tag: composerCategory,
@@ -347,7 +350,12 @@ export default function LeipungFeedView() {
         setComposerImage('');
         setShowComposer(false);
         fetchPosts();
-        showToast('Your post has been published to Leipung.');
+        if (data.requires_approval) {
+          showToast('Post submitted for admin verification.');
+          alert('Khurumjari! Your post has been submitted for admin verification. It will appear on the public feed once approved by our moderator.');
+        } else {
+          showToast('Your post has been published to Leipung.');
+        }
       } else {
         alert(data.error || 'Failed to submit post');
       }
@@ -1102,14 +1110,23 @@ export default function LeipungFeedView() {
             </div>
 
             {/* Author Identification */}
-            <div className="flex items-center gap-2.5">
-              <div className={`w-8 h-8 rounded-full ${currentUser.color || 'bg-amber-600'} text-white font-bold text-xs flex items-center justify-center`}>
-                {currentUser.name.charAt(0)}
+            <div className="flex items-center gap-2.5 bg-amber-50/70 p-2.5 rounded-2xl border border-amber-200/70">
+              <div className={`w-8 h-8 rounded-full ${currentUser.color || 'bg-amber-600'} text-white font-bold text-xs flex items-center justify-center shrink-0`}>
+                {(authNameInput || currentUser.name || 'C').charAt(0)}
               </div>
-              <div>
-                <span className="text-xs font-bold text-gray-900 block leading-tight">{currentUser.name}</span>
-                <span className="text-[10px] text-amber-700 font-semibold block leading-none mt-0.5">
-                  Posting publicly in Leipung Community
+              <div className="flex-1">
+                <input
+                  type="text"
+                  value={authNameInput}
+                  onChange={(e) => {
+                    setAuthNameInput(e.target.value);
+                    setCurrentUser((prev) => ({ ...prev, name: e.target.value || 'Community Member' }));
+                  }}
+                  placeholder="Your Name (e.g. Sanatomba Meitei)"
+                  className="w-full px-2.5 py-1 rounded-xl bg-white border border-amber-300 text-xs font-bold text-gray-900 focus:outline-none focus:ring-1 focus:ring-amber-500"
+                />
+                <span className="text-[10px] text-amber-800 font-semibold block mt-0.5">
+                  Verified by admin before appearing publicly • No account required
                 </span>
               </div>
             </div>

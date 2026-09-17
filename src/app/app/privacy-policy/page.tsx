@@ -44,20 +44,20 @@ export default function MobilePrivacyPolicyPage() {
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>1. Information We Collect</span>
+            <span>1. Account-Free Experience & Information Handled</span>
           </h2>
           <ul className="list-disc pl-5 space-y-1.5 text-slate-600">
             <li>
-              <strong>User Identifiers & Profile:</strong> Name, email address, phone number/WhatsApp number, and optional avatar selections for account authentication.
+              <strong>No Mandatory User Accounts:</strong> Manipuri Calendar KangleiAstro does not require users to register or create an account. You can freely view daily calendars, panchang muhurtas, rashiphal, and calculate natal horoscopes without creating an account.
             </li>
             <li>
-              <strong>Astrological Chart Inputs:</strong> Date of Birth (DOB), Time of Birth (TOB), Place of Birth (POB), and clan (Yek/Salai) provided voluntarily for Janma Patrika (Kuthi) and Panchang calculations.
+              <strong>Local Astrological Inputs:</strong> Astrological parameters (Date of Birth, Time of Birth, Place of Birth) entered into local calculation tools are computed directly and are not collected or shared off-device.
             </li>
             <li>
-              <strong>User-Generated Content (UGC):</strong> Public posts, comments, photos, and reactions shared on our &quot;Leipung&quot; community feed.
+              <strong>Admin-Moderated Community Feed (Leipung):</strong> Anyone can submit cultural discussions or queries. To ensure family-safe, respectful interactions, all community posts are held for administrative review and verification before being published to the public feed.
             </li>
             <li>
-              <strong>Device & Analytics Identifiers:</strong> Non-personally identifiable diagnostic data, app version, and Google AdMob advertising IDs (in compliance with Google Play and Apple App Tracking Transparency).
+              <strong>Anonymous Diagnostics:</strong> Crash diagnostics and non-identifying performance logs strictly to ensure app stability.
             </li>
           </ul>
         </div>
@@ -69,10 +69,7 @@ export default function MobilePrivacyPolicyPage() {
             <span>2. How We Use & Protect Your Information</span>
           </h2>
           <p>
-            We process your information exclusively to compute authentic Manipuri astrological charts, facilitate astrologer consultations, display daily panchang muhurtas, and deliver orders. We never sell, rent, or trade your personal birth data to third-party brokers.
-          </p>
-          <p>
-            All data transmissions are encrypted using industry-standard HTTPS / TLS 1.3 encryption protocols.
+            We never sell, rent, or trade any personal or astrological data to third-party data brokers or advertisers. All web data transfers use encrypted HTTPS / TLS 1.3 channels.
           </p>
         </div>
 
@@ -80,10 +77,10 @@ export default function MobilePrivacyPolicyPage() {
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
             <Eye className="w-3.5 h-3.5 text-emerald-600" />
-            <span>3. Camera & Photo Library Permissions</span>
+            <span>3. Camera & Photo Permissions</span>
           </h2>
           <p>
-            The app requests optional camera/photo library access strictly when you choose to attach temple or ritual photos to a Leipung community post or upload an existing handwritten Kuthi document for chart analysis. Uploaded images are stored securely on our cloud infrastructure and are never accessed without your permission.
+            Optional image attachments for Leipung community posts are only accessed when you choose to attach a photo. Uploaded photos are reviewed by our moderation team prior to public display.
           </p>
         </div>
 
@@ -91,15 +88,14 @@ export default function MobilePrivacyPolicyPage() {
         <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-xs space-y-2">
           <h2 className="text-xs font-bold uppercase tracking-wider text-slate-900 flex items-center gap-2">
             <FileText className="w-3.5 h-3.5 text-emerald-600" />
-            <span>4. Self-Service Account & Data Deletion</span>
+            <span>4. Data Control & Deletion</span>
           </h2>
           <p>
-            In full compliance with <strong>Apple App Store Guideline 5.1.1</strong> and <strong>Google Play Data Safety</strong> rules, you can permanently delete your account and all associated personal data at any time:
+            Because the app operates account-free, clearing your local device cache at <strong>Settings &gt; Local Device Storage</strong> purges all local bookmarks and chart history immediately. If you have submitted a community post or inquiry and wish to remove it, you can request removal at:
           </p>
           <ul className="list-disc pl-5 space-y-1 text-slate-600">
-            <li><strong>In the App:</strong> Go to <strong>Settings &gt; Account &gt; Delete Account</strong>.</li>
-            <li><strong>Online Web Form (No App/Login Required):</strong> Visit <a href="https://kuthiyengpham.in/delete-account" target="_blank" rel="noopener noreferrer" className="text-amber-700 underline font-semibold">https://kuthiyengpham.in/delete-account</a>.</li>
-            <li><strong>Email:</strong> Write to <a href="mailto:ccare@kuthiyengpham.in" className="text-amber-700 underline font-mono">ccare@kuthiyengpham.in</a>.</li>
+            <li><strong>Online Portal:</strong> <a href="https://kuthiyengpham.in/delete-account" target="_blank" rel="noopener noreferrer" className="text-amber-700 underline font-semibold">https://kuthiyengpham.in/delete-account</a></li>
+            <li><strong>Support Email:</strong> <a href="mailto:ccare@kuthiyengpham.in" className="text-amber-700 underline font-mono">ccare@kuthiyengpham.in</a></li>
           </ul>
         </div>
 

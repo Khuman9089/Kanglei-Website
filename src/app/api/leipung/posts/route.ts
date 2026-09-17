@@ -92,14 +92,16 @@ export async function POST(req: Request) {
 
     const posts = readPosts();
 
+    const isVerifiedOfficial = !!author?.is_verified;
+
     const newPost = {
       id: `post-${Date.now()}`,
       author: {
-        id: author?.id || `user-${Date.now()}`,
-        name: author?.name?.trim() || 'Anonymous Member',
+        id: author?.id || `guest-${Date.now()}`,
+        name: author?.name?.trim() || 'Community Member',
         avatar_url: author?.avatar_url || '',
         badge: author?.badge || 'Community Member',
-        is_verified: !!author?.is_verified,
+        is_verified: isVerifiedOfficial,
         color: author?.color || 'bg-amber-600',
       },
       content_text: content_text.trim(),
@@ -110,14 +112,23 @@ export async function POST(req: Request) {
       comments_count: 0,
       shares_count: 0,
       is_pinned: false,
-      is_hidden: false,
+      // If official, publish immediately; otherwise hold for admin verification
+      is_hidden: !isVerifiedOfficial,
+      status: isVerifiedOfficial ? 'approved' : 'pending_approval',
       created_at: new Date().toISOString(),
     };
 
     posts.unshift(newPost);
     writePosts(posts);
 
-    return NextResponse.json({ success: true, post: newPost });
+    return NextResponse.json({
+      success: true,
+      post: newPost,
+      requires_approval: !isVerifiedOfficial,
+      message: isVerifiedOfficial
+        ? 'Post published successfully.'
+        : 'Your post has been submitted and will appear on the public feed after admin verification.',
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Failed to create post' }, { status: 500 });
   }

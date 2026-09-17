@@ -77,16 +77,20 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: true, message: 'Post unpinned' });
     }
 
-    if (action === 'hide') {
-      posts = posts.map((p: any) => (p.id === postId ? { ...p, is_hidden: true } : p));
+    if (action === 'approve' || action === 'unhide') {
+      posts = posts.map((p: any) =>
+        p.id === postId ? { ...p, is_hidden: false, status: 'approved' } : p
+      );
       writePosts(posts);
-      return NextResponse.json({ success: true, message: 'Post hidden from public feed' });
+      return NextResponse.json({ success: true, message: 'Post approved and published to public feed' });
     }
 
-    if (action === 'unhide') {
-      posts = posts.map((p: any) => (p.id === postId ? { ...p, is_hidden: false } : p));
+    if (action === 'reject' || action === 'hide') {
+      posts = posts.map((p: any) =>
+        p.id === postId ? { ...p, is_hidden: true, status: 'rejected' } : p
+      );
       writePosts(posts);
-      return NextResponse.json({ success: true, message: 'Post unhidden and visible to community' });
+      return NextResponse.json({ success: true, message: 'Post rejected / hidden from public feed' });
     }
 
     if (action === 'delete') {

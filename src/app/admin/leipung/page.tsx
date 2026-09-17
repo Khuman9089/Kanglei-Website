@@ -75,7 +75,7 @@ export default function AdminLeipungModerationPage() {
   const [posts, setPosts] = useState<LeipungPost[]>([]);
   const [reports, setReports] = useState<LeipungReport[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [statusFilter, setStatusFilter] = useState<'all' | 'reported' | 'active' | 'pinned' | 'hidden'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'reported' | 'active' | 'pinned' | 'hidden'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [toast, setToast] = useState<string | null>(null);
 
@@ -113,7 +113,7 @@ export default function AdminLeipungModerationPage() {
   }, []);
 
   // Moderate Post Action
-  const handleModerateAction = async (action: 'pin' | 'unpin' | 'hide' | 'unhide' | 'delete', postId: string) => {
+  const handleModerateAction = async (action: 'approve' | 'reject' | 'pin' | 'unpin' | 'hide' | 'unhide' | 'delete', postId: string) => {
     if (action === 'delete' && !confirm('Are you sure you want to delete this post permanently?')) {
       return;
     }
@@ -160,13 +160,13 @@ export default function AdminLeipungModerationPage() {
     const file = e.target.files?.[0];
     if (!file) return;
     if (file.size > 2.5 * 1024 * 1024) {
-      alert('Please upload an image smaller than 2.5MB.');
+      alert('Image size exceeds 2.5MB.');
       return;
     }
     const reader = new FileReader();
     reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      if (dataUrl) setAnnouncementImage(dataUrl);
+      const result = ev.target?.result as string;
+      if (result) setAnnouncementImage(result);
     };
     reader.readAsDataURL(file);
   };
@@ -185,8 +185,8 @@ export default function AdminLeipungModerationPage() {
           action: 'official_post',
           postData: {
             content_text: announcementText.trim(),
-            media_urls: announcementImage ? [announcementImage] : [],
             category_tag: announcementCategory,
+            media_urls: announcementImage ? [announcementImage] : [],
             is_pinned: announcementPinned,
           },
         }),
@@ -194,9 +194,10 @@ export default function AdminLeipungModerationPage() {
 
       const data = await res.json();
       if (data.success) {
-        showToast('Official announcement published to Leipung feed');
+        showToast('Official announcement published to feed');
         setAnnouncementText('');
         setAnnouncementImage('');
+        if (fileInputRef.current) fileInputRef.current.value = '';
         fetchPostsAndReports();
       } else {
         alert(data.error || 'Failed to publish announcement');
@@ -210,9 +211,13 @@ export default function AdminLeipungModerationPage() {
   };
 
   const pendingReports = reports.filter((r) => r.status === 'PENDING_REVIEW');
+  const pendingApprovalPosts = posts.filter((p) => p.is_hidden && !p.is_flagged);
 
   // Filter posts based on search & tab
   const filteredPosts = posts.filter((p) => {
+    if (statusFilter === 'pending') {
+      return p.is_hidden && !p.is_flagged;
+    }
     if (statusFilter === 'reported') {
       return (p.report_count && p.report_count > 0) || p.is_flagged || reports.some(r => r.postId === p.id && r.status === 'PENDING_REVIEW');
     }
@@ -517,6 +522,7 @@ export default function AdminLeipungModerationPage() {
             <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
               {[
                 { id: 'all', label: 'All Posts' },
+                { id: 'pending', label: `⏳ Pending Verification (${pendingApprovalPosts.length})` },
                 { id: 'reported', label: `🚩 Reported (${pendingReports.length})` },
                 { id: 'active', label: 'Active (Visible)' },
                 { id: 'pinned', label: '📌 Pinned' },
@@ -528,7 +534,7 @@ export default function AdminLeipungModerationPage() {
                   onClick={() => setStatusFilter(tab.id as any)}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition cursor-pointer ${
                     statusFilter === tab.id
-                      ? tab.id === 'reported' ? 'bg-red-600 text-white shadow-xs' : 'bg-amber-600 text-white shadow-xs'
+                      ? tab.id === 'reported' ? 'bg-red-600 text-white shadow-xs' : tab.id === 'pending' ? 'bg-emerald-600 text-white shadow-xs' : 'bg-amber-600 text-white shadow-xs'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
@@ -621,7 +627,7 @@ export default function AdminLeipungModerationPage() {
                         )}
                         {post.is_hidden ? (
                           <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-[10px] block">
-                            🚫 HIDDEN
+                            ⏳ PENDING / HIDDEN
                           </span>
                         ) : (
                           <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] block">
@@ -637,6 +643,19 @@ export default function AdminLeipungModerationPage() {
 
                       <td className="px-4 py-3.5 text-right whitespace-nowrap">
                         <div className="inline-flex items-center gap-1.5">
+                          {/* Approve & Publish Button */}
+                          {post.is_hidden && (
+                            <button
+                              type="button"
+                              onClick={() => handleModerateAction('approve', post.id)}
+                              className="px-2.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition flex items-center gap-1 cursor-pointer shadow-xs"
+                              title="Approve and Publish to Community Feed"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              <span>Approve</span>
+                            </button>
+                          )}
+
                           {/* Pin / Unpin */}
                           <button
                             type="button"
@@ -652,18 +671,16 @@ export default function AdminLeipungModerationPage() {
                           </button>
 
                           {/* Hide / Unhide */}
-                          <button
-                            type="button"
-                            onClick={() => handleModerateAction(post.is_hidden ? 'unhide' : 'hide', post.id)}
-                            className={`p-1.5 rounded-xl border text-xs font-bold transition cursor-pointer ${
-                              post.is_hidden
-                                ? 'bg-rose-100 text-rose-800 border-rose-300 hover:bg-rose-200'
-                                : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
-                            }`}
-                            title={post.is_hidden ? 'Unhide Post (Make Public)' : 'Hide Post from Feed'}
-                          >
-                            {post.is_hidden ? <Eye className="w-3.5 h-3.5" /> : <EyeOff className="w-3.5 h-3.5" />}
-                          </button>
+                          {!post.is_hidden && (
+                            <button
+                              type="button"
+                              onClick={() => handleModerateAction('hide', post.id)}
+                              className="p-1.5 rounded-xl border text-xs font-bold bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200 transition cursor-pointer"
+                              title="Hide Post from Feed"
+                            >
+                              <EyeOff className="w-3.5 h-3.5" />
+                            </button>
+                          )}
 
                           {/* Delete */}
                           <button
