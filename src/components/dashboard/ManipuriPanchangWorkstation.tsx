@@ -464,85 +464,77 @@ export default function ManipuriPanchangWorkstation({
           {/* B. THE 5 PANCHANG PILLARS (PANCHA-ANGA) */}
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-black text-slate-950 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 <span>The Five Angas (পঞ্চ অঙ্গ)</span>
               </span>
-              <span className="text-xs text-slate-800 dark:text-stone-200 font-bold">Core Vedic Elements</span>
+              <span className="text-xs text-slate-700 font-bold">Core Vedic Elements</span>
             </div>
 
             <div className="grid grid-cols-2 gap-2">
               
               {/* 1. Tithi */}
-              <div className={`p-3 rounded-2xl border-2 shadow-xs space-y-1.5 ${
-                isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-300'
-              }`}>
+              <div className="bg-white border-2 border-slate-300 rounded-2xl p-3 shadow-xs space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-amber-400">
+                  <span className="text-xs font-bold text-amber-900">
                     ১. Tithi (থবানীং)
                   </span>
                   <Moon className="w-3.5 h-3.5 text-amber-600" />
                 </div>
-                <div className="text-sm font-black text-slate-950 dark:text-white leading-snug">
+                <div className="text-base font-black text-slate-950 leading-snug">
                   {bookPanchang.rawPanchang.fiveAngas.tithi.name}
                 </div>
-                <div className="text-xs font-semibold text-slate-800 dark:text-stone-200 leading-tight">
+                <div className="text-xs font-bold text-slate-800 leading-tight">
                   {bookPanchang.rawPanchang.fiveAngas.tithi.paksha} Paksha ({bookPanchang.rawPanchang.fiveAngas.tithi.completionPct}% elapsed)
                 </div>
               </div>
 
               {/* 2. Nakshatra */}
-              <div className={`p-3 rounded-2xl border-2 shadow-xs space-y-1.5 ${
-                isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-300'
-              }`}>
+              <div className="bg-white border-2 border-slate-300 rounded-2xl p-3 shadow-xs space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-amber-400">
+                  <span className="text-xs font-bold text-amber-900">
                     ২. Nakshatra (নক্ষত্র)
                   </span>
                   <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                 </div>
-                <div className="text-sm font-black text-slate-950 dark:text-white leading-snug">
+                <div className="text-base font-black text-slate-950 leading-snug">
                   {bookPanchang.rawPanchang.fiveAngas.nakshatra.name}
                 </div>
-                <div className="text-xs font-semibold text-slate-800 dark:text-stone-200 leading-tight">
+                <div className="text-xs font-bold text-slate-800 leading-tight">
                   Pada {bookPanchang.rawPanchang.fiveAngas.nakshatra.pada} • Lord: {bookPanchang.rawPanchang.fiveAngas.nakshatra.lord}
                 </div>
               </div>
 
               {/* 3. Yoga */}
-              <div className={`p-3 rounded-2xl border-2 shadow-xs space-y-1.5 ${
-                isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-300'
-              }`}>
+              <div className="bg-white border-2 border-slate-300 rounded-2xl p-3 shadow-xs space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-amber-400">
+                  <span className="text-xs font-bold text-amber-900">
                     ৩. Yoga (যোগ)
                   </span>
                   <Compass className="w-3.5 h-3.5 text-emerald-600" />
                 </div>
-                <div className="text-sm font-black text-slate-950 dark:text-white leading-snug">
+                <div className="text-base font-black text-slate-950 leading-snug">
                   {bookPanchang.rawPanchang.fiveAngas.yoga.name}
                 </div>
                 <div className="text-xs font-bold leading-tight">
-                  <span className="px-2 py-0.5 rounded-md bg-emerald-100 border border-emerald-300 text-emerald-900 dark:bg-emerald-950 dark:text-emerald-300 text-[11px] font-black">
+                  <span className="px-2 py-0.5 rounded-md bg-emerald-100 border border-emerald-400 text-emerald-950 text-[11px] font-black">
                     {bookPanchang.rawPanchang.fiveAngas.yoga.isAuspicious ? '🟢 Auspicious (শুভ)' : '⚪ Neutral (সাধারণ)'}
                   </span>
                 </div>
               </div>
 
               {/* 4. Karana */}
-              <div className={`p-3 rounded-2xl border-2 shadow-xs space-y-1.5 ${
-                isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-300'
-              }`}>
+              <div className="bg-white border-2 border-slate-300 rounded-2xl p-3 shadow-xs space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700 dark:text-amber-400">
+                  <span className="text-xs font-bold text-amber-900">
                     ৪. Karana (করণ)
                   </span>
                   <Flame className="w-3.5 h-3.5 text-orange-600" />
                 </div>
-                <div className="text-sm font-black text-slate-950 dark:text-white leading-snug">
+                <div className="text-base font-black text-slate-950 leading-snug">
                   {bookPanchang.rawPanchang.fiveAngas.karana.name}
                 </div>
-                <div className="text-xs font-semibold text-slate-800 dark:text-stone-200 leading-tight">
+                <div className="text-xs font-bold text-slate-800 leading-tight">
                   Type: {bookPanchang.rawPanchang.fiveAngas.karana.type || 'Chara (চর)'}
                 </div>
               </div>
@@ -562,25 +554,23 @@ export default function ManipuriPanchangWorkstation({
           {/* D. RASHI CHAKRA & PLANETARY POSITIONS (GRAHA SFUT) */}
           <div className="space-y-3">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-black text-slate-950 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
                 <Star className="w-3.5 h-3.5 text-amber-600" />
-                <span>{isMeetei ? 'ꯒ꯭ꯔꯍ ꯁ꯭ꯐꯨꯠ ꯑꯃꯁꯨꯡ ꯔꯥꯁꯤ ꯆꯛꯔ' : 'গ্রহ স্ফুট ও রাশি চক্র (Planetary Chart)'}</span>
+                <span>{isMeetei ? 'ꯒ꯭ꯔꯍ ꯁ꯭ꯐꯨꯠ ꯑꯃꯁꯨꯡ ꯔꯥꯁꯤ ꯆꯛꯔ (PLANETARY CHART)' : 'গ্রহ স্ফুট ও রাশি চক্র (PLANETARY CHART)'}</span>
               </span>
-              <span className="text-xs text-amber-800 dark:text-amber-400 font-black">
+              <span className="text-xs text-amber-950 font-black">
                 Lagna: {bookPanchang.astronomical.lagnaRise.rashiBengali}
               </span>
             </div>
 
             {/* Rashi Chakra Chart Container */}
-            <div className={`p-3 rounded-2xl border-2 shadow-xs space-y-2.5 ${
-              isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-300'
-            }`}>
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                <span className="text-xs font-black text-slate-950 dark:text-white flex items-center gap-1.5">
+            <div className="p-3 rounded-2xl border-2 bg-white border-slate-300 shadow-xs space-y-2.5">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                <span className="text-xs font-black text-slate-950 flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
                   <span>{isMeetei ? 'ꯖꯟꯃ ꯆꯛꯔ (D1 Rashi Chart)' : 'জন্ম চক্র (D1 Rashi Chart)'}</span>
                 </span>
-                <span className="text-xs text-slate-800 font-bold font-mono">
+                <span className="text-xs text-slate-900 font-black font-mono">
                   Asc: {bookPanchang.astronomical.lagnaRise.rashiIndex + 1}
                 </span>
               </div>
@@ -592,24 +582,22 @@ export default function ManipuriPanchangWorkstation({
                     planets={chartPlanets}
                     ascendantSign={bookPanchang.astronomical.lagnaRise.rashiIndex}
                     title={isMeetei ? 'ꯖꯟꯃ ꯆꯛꯔ' : 'জন্ম চক্র'}
-                    theme={isDark ? 'dark' : 'light'}
+                    theme="light"
                     script={script === 'en' ? 'bengali' : script}
-                    className="w-full rounded-xl border border-slate-300 dark:border-slate-700 shadow-2xs"
+                    className="w-full rounded-xl border border-slate-300 shadow-2xs"
                   />
                 </div>
               </div>
             </div>
 
             {/* Planetary Coordinates Table (Graha Sfut) */}
-            <div className={`p-3 rounded-2xl border-2 shadow-xs space-y-2.5 ${
-              isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-300'
-            }`}>
-              <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-                <span className="text-xs font-black text-slate-950 dark:text-white flex items-center gap-1.5">
+            <div className="p-3 rounded-2xl border-2 bg-white border-slate-300 shadow-xs space-y-2.5">
+              <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+                <span className="text-xs font-black text-slate-950 flex items-center gap-1.5">
                   <Globe className="w-3.5 h-3.5 text-amber-600" />
                   <span>{isMeetei ? 'ꯒ꯭ꯔꯍ ꯁ꯭ꯐꯨꯠ (Planetary Longitudes)' : 'গ্রহ স্ফুট (Planetary Longitudes)'}</span>
                 </span>
-                <span className="text-xs font-bold text-slate-700">
+                <span className="text-xs font-black text-slate-900">
                   {isMeetei ? 'ꯒ꯭ꯔꯍ ꯹ (9 Grahas)' : '৯ গ্রহ (9 Grahas)'}
                 </span>
               </div>
@@ -618,14 +606,14 @@ export default function ManipuriPanchangWorkstation({
               <div className="overflow-x-auto -mx-1 px-1">
                 <table className="w-full text-left border-collapse text-xs">
                   <thead>
-                    <tr className="border-b-2 border-slate-300 dark:border-slate-800 text-xs font-black text-slate-900 dark:text-slate-200 bg-slate-50 dark:bg-slate-800/40">
+                    <tr className="border-b-2 border-slate-300 text-xs font-black text-slate-950 bg-slate-100">
                       <th className="py-2 px-1 font-black">Graha</th>
                       <th className="py-2 px-1 font-black">Rashi (Sign)</th>
                       <th className="py-2 px-1 font-black">Degree</th>
                       <th className="py-2 px-1 font-black text-right">Nakshatra</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-200 dark:divide-slate-800 font-sans text-xs">
+                  <tbody className="divide-y divide-slate-200 font-sans text-xs">
                     {/* 9 Planetary Rows */}
                     {bookPanchang.astronomical.planets.map((p) => {
                       const symbol = PLANET_SYMBOLS[p.id] || '✨';
@@ -636,8 +624,8 @@ export default function ManipuriPanchangWorkstation({
                       const nakNum = isMeetei ? toMeeteiNumerals(p.nakshatraIndex) : toBengaliNumerals(p.nakshatraIndex);
 
                       return (
-                        <tr key={p.id} className="hover:bg-amber-50/60 dark:hover:bg-slate-800/40">
-                          <td className="py-2 font-black text-slate-950 dark:text-white flex items-center gap-1.5">
+                        <tr key={p.id} className="hover:bg-amber-50/60 border-b border-slate-100">
+                          <td className="py-2 font-black text-slate-950 flex items-center gap-1.5 text-xs">
                             <span>{symbol}</span>
                             <span>{name}</span>
                             {isRetro && (
@@ -646,13 +634,13 @@ export default function ManipuriPanchangWorkstation({
                               </span>
                             )}
                           </td>
-                          <td className="py-2 font-bold text-slate-900 dark:text-slate-100">
+                          <td className="py-2 font-black text-slate-900 text-xs">
                             {rashi}
                           </td>
-                          <td className="py-2 font-mono font-bold text-amber-900 dark:text-amber-300">
+                          <td className="py-2 font-mono font-black text-amber-950 text-xs">
                             {degree}
                           </td>
-                          <td className="py-2 text-right font-bold text-slate-800 dark:text-slate-300">
+                          <td className="py-2 text-right font-black text-slate-900 text-xs">
                             Nak: {nakNum}
                           </td>
                         </tr>
@@ -667,35 +655,35 @@ export default function ManipuriPanchangWorkstation({
           {/* E. AUSPICIOUS & INAUSPICIOUS MUHURTAS */}
           <div className="space-y-2">
             <div className="flex items-center justify-between px-1">
-              <span className="text-xs font-black text-slate-950 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-amber-600" />
                 <span>Auspicious & Inauspicious Timings</span>
               </span>
-              <span className="text-xs text-slate-800 dark:text-stone-200 font-bold">শুভ ও অশুভ সময়</span>
+              <span className="text-xs text-slate-700 font-bold">শুভ ও অশুভ সময়</span>
             </div>
 
             {/* Auspicious Timings (Green) */}
-            <div className="p-3.5 rounded-2xl bg-emerald-50/90 border-2 border-emerald-300 dark:border-emerald-800 space-y-2.5 shadow-xs">
-              <div className="flex items-center gap-1.5 text-xs font-black text-emerald-950 dark:text-emerald-300">
+            <div className="p-3.5 rounded-2xl bg-emerald-50/90 border-2 border-emerald-300 space-y-2.5 shadow-xs">
+              <div className="flex items-center gap-1.5 text-xs font-black text-emerald-950">
                 <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
                 <span>Auspicious Windows (শুভ মুহূর্ত — শুভ কার্যের জন্য প্রশস্ত)</span>
               </div>
 
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-white border-2 border-emerald-300 dark:bg-slate-900 dark:border-emerald-800 space-y-0.5">
-                  <span className="text-xs text-emerald-900 dark:text-emerald-300 font-bold block">
+                <div className="p-2.5 rounded-xl bg-[#0f172a] border border-slate-800 text-white space-y-0.5">
+                  <span className="text-xs text-emerald-300 font-bold block">
                     Abhijit Muhurta (অভিজিৎ)
                   </span>
-                  <strong className="text-xs font-mono font-black text-emerald-950 dark:text-white block">
+                  <strong className="text-xs font-mono font-black text-white block">
                     {bookPanchang.rawPanchang.muhurtas.abhijit.start} – {bookPanchang.rawPanchang.muhurtas.abhijit.end}
                   </strong>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white border-2 border-emerald-300 dark:bg-slate-900 dark:border-emerald-800 space-y-0.5">
-                  <span className="text-xs text-emerald-900 dark:text-emerald-300 font-bold block">
+                <div className="p-2.5 rounded-xl bg-[#0f172a] border border-slate-800 text-white space-y-0.5">
+                  <span className="text-xs text-emerald-300 font-bold block">
                     Amrit Kaal (অমৃত কাল)
                   </span>
-                  <strong className="text-xs font-mono font-black text-emerald-950 dark:text-white block">
+                  <strong className="text-xs font-mono font-black text-white block">
                     {bookPanchang.rawPanchang.muhurtas.amritKaal.start} – {bookPanchang.rawPanchang.muhurtas.amritKaal.end}
                   </strong>
                 </div>
@@ -703,36 +691,36 @@ export default function ManipuriPanchangWorkstation({
             </div>
 
             {/* Inauspicious Timings (Red Alert) */}
-            <div className="p-3.5 rounded-2xl bg-rose-50/90 border-2 border-rose-300 dark:border-rose-900 space-y-2.5 shadow-xs">
-              <div className="flex items-center gap-1.5 text-xs font-black text-rose-950 dark:text-rose-300">
+            <div className="p-3.5 rounded-2xl bg-rose-50/90 border-2 border-rose-300 space-y-2.5 shadow-xs">
+              <div className="flex items-center gap-1.5 text-xs font-black text-rose-950">
                 <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0" />
                 <span>Inauspicious Timings (বর্জনীয় সময় — শুভ কাজ বর্জন করুন)</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-white border-2 border-rose-300 dark:bg-slate-900 dark:border-rose-900 space-y-0.5">
-                  <span className="text-xs text-rose-900 dark:text-rose-300 font-bold block">
+                <div className="p-2.5 rounded-xl bg-[#0f172a] border border-slate-800 text-white space-y-0.5">
+                  <span className="text-xs text-rose-300 font-bold block">
                     Rahu Kaal (রাহু কাল)
                   </span>
-                  <strong className="text-xs font-mono font-black text-rose-950 dark:text-rose-400 block">
+                  <strong className="text-xs font-mono font-black text-white block">
                     {bookPanchang.rawPanchang.muhurtas.rahuKaal.start} – {bookPanchang.rawPanchang.muhurtas.rahuKaal.end}
                   </strong>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white border-2 border-rose-300 dark:bg-slate-900 dark:border-rose-900 space-y-0.5">
-                  <span className="text-xs text-rose-900 dark:text-rose-300 font-bold block">
+                <div className="p-2.5 rounded-xl bg-[#0f172a] border border-slate-800 text-white space-y-0.5">
+                  <span className="text-xs text-rose-300 font-bold block">
                     Yamaganda (যমগণ্ড)
                   </span>
-                  <strong className="text-xs font-mono font-black text-rose-950 dark:text-white block">
+                  <strong className="text-xs font-mono font-black text-white block">
                     {bookPanchang.rawPanchang.muhurtas.yamaganda.start} – {bookPanchang.rawPanchang.muhurtas.yamaganda.end}
                   </strong>
                 </div>
 
-                <div className="p-2.5 rounded-xl bg-white border-2 border-rose-300 dark:bg-slate-900 dark:border-rose-900 col-span-2 sm:col-span-1 space-y-0.5">
-                  <span className="text-xs text-rose-900 dark:text-rose-300 font-bold block">
+                <div className="p-2.5 rounded-xl bg-[#0f172a] border border-slate-800 text-white col-span-2 sm:col-span-1 space-y-0.5">
+                  <span className="text-xs text-rose-300 font-bold block">
                     Gulika Kaal (গুলিক কাল)
                   </span>
-                  <strong className="text-xs font-mono font-black text-rose-950 dark:text-white block">
+                  <strong className="text-xs font-mono font-black text-white block">
                     {bookPanchang.rawPanchang.muhurtas.gulikaKaal.start} – {bookPanchang.rawPanchang.muhurtas.gulikaKaal.end}
                   </strong>
                 </div>
@@ -741,46 +729,44 @@ export default function ManipuriPanchangWorkstation({
           </div>
 
           {/* F. TRADITIONAL MANIPURI ALMANAC GUIDANCE */}
-          <div className={`p-3.5 rounded-2xl border-2 shadow-xs space-y-2.5 ${
-            isDark ? 'bg-[#1c2541] border-[#3a506b]' : 'bg-white border-slate-300'
-          }`}>
-            <div className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
-              <span className="text-xs font-black text-slate-950 dark:text-amber-300 uppercase tracking-wider flex items-center gap-1.5">
+          <div className="p-3.5 rounded-2xl border-2 bg-white border-slate-300 shadow-xs space-y-2.5">
+            <div className="flex items-center justify-between border-b border-slate-200 pb-2">
+              <span className="text-xs font-black text-amber-950 uppercase tracking-wider flex items-center gap-1.5">
                 <Compass className="w-3.5 h-3.5 text-amber-600" />
                 <span>Manipuri Almanac Guidance (কাংলৈ থৌরম)</span>
               </span>
-              <span className="text-xs text-amber-900 dark:text-amber-400 font-black">
+              <span className="text-xs text-amber-950 font-black">
                 {getMonthName()}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2 text-xs">
               {/* Thasi Maikei */}
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-0.5">
-                <span className="text-xs text-slate-800 dark:text-stone-200 font-bold block">
+              <div className="p-2.5 rounded-xl bg-[#1e293b] border border-slate-700 text-white space-y-0.5">
+                <span className="text-xs text-amber-300 font-bold block">
                   তাসী মাইকৈ (Travel Direction):
                 </span>
-                <strong className="text-xs font-black text-slate-950 dark:text-amber-300 block">
+                <strong className="text-xs font-black text-white block">
                   {getThasiMaikei()}
                 </strong>
               </div>
 
               {/* Tatnaba Numit */}
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 space-y-0.5">
-                <span className="text-xs text-slate-800 dark:text-stone-200 font-bold block">
+              <div className="p-2.5 rounded-xl bg-[#1e293b] border border-slate-700 text-white space-y-0.5">
+                <span className="text-xs text-amber-300 font-bold block">
                   তৎনবা নুমিৎ (Restricted Days):
                 </span>
-                <strong className="text-xs font-black text-slate-950 dark:text-amber-300 block">
+                <strong className="text-xs font-black text-white block">
                   {getTatnabaNumit()}
                 </strong>
               </div>
 
               {/* Sun & Moon Rashi Positions */}
-              <div className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 border border-slate-200 dark:border-slate-700 col-span-2 space-y-0.5">
-                <span className="text-xs text-slate-800 dark:text-stone-200 font-bold block">
+              <div className="p-2.5 rounded-xl bg-[#1e293b] border border-slate-700 text-white col-span-2 space-y-0.5">
+                <span className="text-xs text-amber-300 font-bold block">
                   সূর্য ও চন্দ্র রাশি সঞ্চার (Sun & Moon Signs):
                 </span>
-                <div className="text-xs font-black text-slate-950 dark:text-slate-100 space-y-0.5">
+                <div className="text-xs font-bold text-white space-y-0.5">
                   <div>• {isMeetei ? bookPanchang.astronomical.rabiPadaStrMeetei : bookPanchang.astronomical.rabiPadaStrBengali}</div>
                   <div>• {isMeetei ? bookPanchang.astronomical.chandraTransitMeetei : bookPanchang.astronomical.chandraTransitBengali}</div>
                 </div>

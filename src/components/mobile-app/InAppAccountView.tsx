@@ -126,12 +126,6 @@ export default function InAppAccountView({ onBackToHome, onNavigateTab }: InAppA
     }
   };
 
-  // Quick Demo Login for Reviewers
-  const handleDemoLogin = () => {
-    setSignInIdentifier('demo@kuthiyengpham.in');
-    setSignInPassword('demo123');
-  };
-
   // Handle Sign Up
   const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -530,18 +524,6 @@ export default function InAppAccountView({ onBackToHome, onNavigateTab }: InAppA
                     </>
                   )}
                 </button>
-
-                {/* Quick Reviewer Demo Fill */}
-                <div className="pt-2 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                  <span>Reviewer Testing Account:</span>
-                  <button
-                    type="button"
-                    onClick={handleDemoLogin}
-                    className="text-amber-700 font-bold underline hover:text-amber-900 cursor-pointer"
-                  >
-                    Auto-Fill Demo Credentials
-                  </button>
-                </div>
               </form>
             ) : (
               /* ── 2. SIGN UP FORM ── */
