@@ -722,41 +722,41 @@ export default function MonthlyCalendarView() {
           <div className="overflow-x-auto rounded-xl border border-gray-200 shadow-xs">
             <table className="w-full text-left border-collapse text-xs sm:text-sm">
               <thead>
-                <tr className="bg-gray-100 text-[#1e1b18] border-b border-gray-200 font-blipi">
-                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
-                    {scriptMode === 'meetei' ? 'ꯊꯥ ꯃꯃꯤꯡ' : 'Ta mimz'}
+                <tr className={`bg-gray-100 text-[#1e1b18] border-b border-gray-200 ${scriptMode === 'meetei' ? 'font-sans' : 'font-serif'}`}>
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">
+                    {scriptMode === 'meetei' ? 'ꯊꯥ ꯃꯃꯤꯡ' : 'থা মমিং (Month)'}
                   </th>
-                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
-                    {scriptMode === 'meetei' ? 'ꯇꯠꯅꯕ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 't\\nba nuim\\iSz'}
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">
+                    {scriptMode === 'meetei' ? 'ꯇꯠꯅꯕ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'তৎনবা নুমিৎ (Tatnaba)'}
                   </th>
-                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
-                    {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ ꯃꯥꯏꯒꯩ' : 'TaiS mah~e~g'}
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">
+                    {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ ꯃꯥꯏꯒꯩ' : 'থাসী মাইকৈ (Thasi Maikei)'}
                   </th>
-                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
-                    {scriptMode === 'meetei' ? 'ꯋꯥꯏꯇꯦꯛ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'wah~etk nuim\\iSz'}
+                  <th className="py-3 px-4 border-r border-gray-200 font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">
+                    {scriptMode === 'meetei' ? 'ꯋꯥꯏꯇꯦꯛ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'ৱাইতেক নুমিৎ (Waitek)'}
                   </th>
-                  <th className="py-3 px-4 font-bold text-sm sm:text-base tracking-wide whitespace-nowrap">
-                    {scriptMode === 'meetei' ? 'ꯆꯩ ꯀꯥꯕ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'E~c kab nuim\\iSz'}
+                  <th className="py-3 px-4 font-bold text-xs sm:text-sm tracking-wide whitespace-nowrap">
+                    {scriptMode === 'meetei' ? 'ꯆꯩ ꯀꯥꯕ ꯅꯨꯃꯤꯠꯁꯤꯡ' : 'চৈ কাবা নুমিৎ (Chei Kaba)'}
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-100 font-blipi">
+              <tbody className={`bg-white divide-y divide-gray-100 ${scriptMode === 'meetei' ? 'font-sans' : 'font-serif'}`}>
                 {calendarData.activeMonthAttributes.map((attr) => (
                   <tr key={attr.monthCode} className="hover:bg-gray-50/80 transition-colors">
-                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base whitespace-nowrap text-[#1e1b18] font-bold">
-                      {scriptMode === 'meetei' ? attr.meetei.month : attr.blipi.month}
+                    <td className="py-3 px-4 border-r border-gray-100 font-bold text-xs sm:text-sm whitespace-nowrap text-[#1e1b18]">
+                      {scriptMode === 'meetei' ? attr.meetei.month : attr.bengali.month}
                     </td>
-                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base text-gray-700">
-                      {scriptMode === 'meetei' ? attr.meetei.tatnaba : attr.blipi.tatnaba}
+                    <td className="py-3 px-4 border-r border-gray-100 font-medium text-xs sm:text-sm text-gray-800">
+                      {scriptMode === 'meetei' ? attr.meetei.tatnaba : attr.bengali.tatnaba}
                     </td>
-                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base text-gray-700">
-                      {scriptMode === 'meetei' ? attr.meetei.thasiMaigei : attr.blipi.thasiMaigei}
+                    <td className="py-3 px-4 border-r border-gray-100 font-medium text-xs sm:text-sm text-gray-800">
+                      {scriptMode === 'meetei' ? attr.meetei.thasiMaigei : attr.bengali.thasiMaigei}
                     </td>
-                    <td className="py-3 px-4 border-r border-gray-100 font-normal text-sm sm:text-base text-gray-700">
-                      {scriptMode === 'meetei' ? attr.meetei.waitek : attr.blipi.waitek}
+                    <td className="py-3 px-4 border-r border-gray-100 font-medium text-xs sm:text-sm text-gray-800">
+                      {scriptMode === 'meetei' ? attr.meetei.waitek : attr.bengali.waitek}
                     </td>
-                    <td className="py-3 px-4 font-normal text-sm sm:text-base text-gray-700">
-                      {scriptMode === 'meetei' ? attr.meetei.cheiKaba : attr.blipi.cheiKaba}
+                    <td className="py-3 px-4 font-medium text-xs sm:text-sm text-gray-800">
+                      {scriptMode === 'meetei' ? attr.meetei.cheiKaba : attr.bengali.cheiKaba}
                     </td>
                   </tr>
                 ))}

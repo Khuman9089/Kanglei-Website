@@ -1331,7 +1331,7 @@ export default function AndroidAppHomeView({
           <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2 text-xs">
             <h4 className="font-bold text-[#1e1b18] border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
               <Compass className="w-4 h-4 text-amber-600" />
-              <span>থাগী মরূইরিবা নিয়মশিং (Month Rules & Directions)</span>
+              <span>Month Rules & Directions</span>
             </h4>
 
             <div className="grid grid-cols-2 gap-2 text-xs pt-1">
@@ -1352,8 +1352,8 @@ export default function AndroidAppHomeView({
                 </span>
                 <strong className="text-[#1e1b18] font-bold block mt-0.5">
                   {scriptMode === 'meetei'
-                    ? (currentCalendarData.activeMonthAttributes[0]?.tatnabaNumit?.meetei || 'ꯂꯩꯄꯥꯛꯄꯣꯛꯄ ꯑꯃꯁꯨꯡ ꯊꯥꯡꯖꯥ')
-                    : (currentCalendarData.activeMonthAttributes[0]?.tatnabaNumit?.bengali || 'লৈবাকপোকপা ও থাংজা')}
+                    ? (currentCalendarData.activeMonthAttributes[0]?.tatnabaNumit?.meetei || 'ꯅꯣꯡꯃꯥꯏꯖꯤꯡ, ꯅꯤꯡꯊꯧꯀꯥꯕ')
+                    : (currentCalendarData.activeMonthAttributes[0]?.tatnabaNumit?.bengali || 'নোংমাইজিং, নিংথৌকাবা')}
                 </strong>
               </div>
             </div>
