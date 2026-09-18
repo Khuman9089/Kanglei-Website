@@ -41,7 +41,7 @@ export const BottomNavigation: React.FC<BottomNavigationProps> = ({
   ];
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-40 bg-[#0B0F19]/95 backdrop-blur-xl border-t border-slate-800 shadow-2xl px-2 pt-1.5 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))] select-none">
+    <nav className="w-full shrink-0 z-40 bg-[#0B0F19] border-t border-slate-800 shadow-2xl px-2 pt-1.5 pb-[max(0.6rem,env(safe-area-inset-bottom,0.6rem))] select-none">
       <div className="max-w-md mx-auto grid grid-cols-4 gap-1">
         {tabs.map((tab) => {
           const isActive = activeTab === tab.id;

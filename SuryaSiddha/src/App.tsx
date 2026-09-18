@@ -102,7 +102,7 @@ export const App: React.FC = () => {
   }, [adminConfig.notifications.items]);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 selection:bg-amber-100 selection:text-amber-950 flex flex-col font-sans antialiased">
+    <div className="h-[100dvh] h-screen w-full bg-[#F8FAFC] text-slate-900 selection:bg-amber-100 selection:text-amber-950 flex flex-col font-sans antialiased overflow-hidden">
       {/* Mobile Cosmic Splash Screen */}
       {showSplash && (
         <SplashScreen
@@ -111,7 +111,7 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 1. Sticky Top Navigation Header */}
+      {/* 1. Top Navigation Header (Anchored at top, cannot overlap content) */}
       <StickyHeader
         profile={profile}
         panchang={calendarData.panchang}
@@ -121,46 +121,48 @@ export const App: React.FC = () => {
         unreadNotificationsCount={unreadNotificationsCount}
       />
 
-      {/* 2. Main Screen View Canvas */}
-      <main className="mx-auto max-w-5xl w-full px-3 pt-18 sm:pt-20 pb-28 sm:px-6 flex-1 overflow-x-hidden">
-        {activeTab === 'panchang' && (
-          <PanchangScreen
-            currentDate={currentDate}
-            profile={profile}
-            calendarData={calendarData}
-            adminConfig={adminConfig}
-            onDateChange={setCurrentDate}
-            onOpenKundli={() => setActiveTab('kundli')}
-          />
-        )}
+      {/* 2. Main Screen View Canvas (Dedicated middle scrollable area) */}
+      <main className="flex-1 w-full overflow-y-auto overflow-x-hidden overscroll-contain px-3 py-4 sm:px-6">
+        <div className="mx-auto max-w-5xl w-full">
+          {activeTab === 'panchang' && (
+            <PanchangScreen
+              currentDate={currentDate}
+              profile={profile}
+              calendarData={calendarData}
+              adminConfig={adminConfig}
+              onDateChange={setCurrentDate}
+              onOpenKundli={() => setActiveTab('kundli')}
+            />
+          )}
 
-        {activeTab === 'kundli' && (
-          <KundliScreen
-            profile={profile}
-            kundliData={calendarData}
-            onUpdateProfile={handleUpdateProfile}
-          />
-        )}
+          {activeTab === 'kundli' && (
+            <KundliScreen
+              profile={profile}
+              kundliData={calendarData}
+              onUpdateProfile={handleUpdateProfile}
+            />
+          )}
 
-        {activeTab === 'muhurta' && (
-          <MuhurtaScreen
-            currentDate={currentDate}
-            profile={profile}
-            calendarData={calendarData}
-            onDateChange={setCurrentDate}
-          />
-        )}
+          {activeTab === 'muhurta' && (
+            <MuhurtaScreen
+              currentDate={currentDate}
+              profile={profile}
+              calendarData={calendarData}
+              onDateChange={setCurrentDate}
+            />
+          )}
 
-        {activeTab === 'settings' && (
-          <SettingsEphemerisScreen
-            profile={profile}
-            calendarData={calendarData}
-            onUpdateProfile={handleUpdateProfile}
-          />
-        )}
+          {activeTab === 'settings' && (
+            <SettingsEphemerisScreen
+              profile={profile}
+              calendarData={calendarData}
+              onUpdateProfile={handleUpdateProfile}
+            />
+          )}
+        </div>
       </main>
 
-      {/* 3. Fixed Bottom Navigation Dock */}
+      {/* 3. Bottom Navigation Dock (Anchored at bottom, cannot move on scroll) */}
       <BottomNavigation
         activeTab={activeTab}
         onTabChange={setActiveTab}

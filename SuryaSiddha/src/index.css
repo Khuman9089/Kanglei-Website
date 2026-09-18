@@ -3,16 +3,13 @@
 @tailwind utilities;
 
 @layer base {
-  html {
-    overflow-x: hidden;
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  body {
-    min-height: 100%;
-    overflow-x: hidden;
-    background-color: #F8FAFC;
+  html, body, #root {
+    height: 100%;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #0B0F19;
     color: #0F172A;
     font-family: 'Outfit', sans-serif;
     -webkit-tap-highlight-color: transparent;
@@ -20,11 +17,11 @@
 
   /* Custom Light Slate Scrollbar */
   ::-webkit-scrollbar {
-    width: 5px;
-    height: 5px;
+    width: 4px;
+    height: 4px;
   }
   ::-webkit-scrollbar-track {
-    background: #F1F5F9;
+    background: transparent;
   }
   ::-webkit-scrollbar-thumb {
     background: #CBD5E1;
