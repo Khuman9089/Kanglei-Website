@@ -18,6 +18,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   longitude,
   timezone,
   onChange,
+  googleApiKey,
 }) => {
   const [query, setQuery] = useState(value);
   const [isOpen, setIsOpen] = useState(false);
@@ -45,6 +46,8 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
   const handleSearch = (text: string) => {
     setQuery(text);
     if (!text.trim()) {
@@ -53,15 +56,82 @@ export const LocationInput: React.FC<LocationInputProps> = ({
       return;
     }
 
+    // 1. Instant local filter
     const lower = text.toLowerCase();
-    const matches = CITIES_DATABASE.filter(
+    const localMatches = CITIES_DATABASE.filter(
       (c) =>
         c.main_text.toLowerCase().includes(lower) ||
         c.secondary_text.toLowerCase().includes(lower) ||
         c.description.toLowerCase().includes(lower)
     );
-    setSuggestions(matches);
+    setSuggestions(localMatches.slice(0, 8));
     setIsOpen(true);
+
+    // 2. Debounced Live API Search (via /api/places/search or direct Google API)
+    if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+    if (text.trim().length >= 2) {
+      debounceTimerRef.current = setTimeout(async () => {
+        try {
+          const googleKey =
+            googleApiKey ||
+            (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_MAPS_API_KEY);
+
+          if (googleKey) {
+            // Direct Google Places / Geocode API
+            const gUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+              text
+            )}&key=${googleKey}`;
+            const res = await fetch(gUrl);
+            const data = await res.json();
+            if (data.status === 'OK' && data.results?.length > 0) {
+              const liveResults: PlaceSuggestion[] = data.results.slice(0, 8).map((item: any, idx: number) => {
+                const lat = parseFloat(item.geometry.location.lat.toFixed(4));
+                const lng = parseFloat(item.geometry.location.lng.toFixed(4));
+                const isIndia = lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
+                const tz = isIndia ? 5.5 : Math.round((lng / 15) * 2) / 2;
+                return {
+                  place_id: `g_${item.place_id || idx}`,
+                  description: item.formatted_address,
+                  main_text: item.address_components?.[0]?.long_name || item.formatted_address.split(',')[0],
+                  secondary_text: item.formatted_address,
+                  latitude: lat,
+                  longitude: lng,
+                  timezone: tz,
+                };
+              });
+              setSuggestions(liveResults);
+              return;
+            }
+          }
+
+          // Fallback to /api/places/search endpoint
+          const apiRes = await fetch(`/api/places/search?q=${encodeURIComponent(text)}`);
+          if (apiRes.ok) {
+            const data = await apiRes.json();
+            if (data.results && data.results.length > 0) {
+              const liveResults: PlaceSuggestion[] = data.results.map((r: any, idx: number) => {
+                const lat = r.latitude;
+                const lng = r.longitude;
+                const isIndia = lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
+                const tz = isIndia ? 5.5 : Math.round((lng / 15) * 2) / 2;
+                return {
+                  place_id: `api_${idx}`,
+                  description: r.name,
+                  main_text: r.name.split(',')[0],
+                  secondary_text: r.name.split(',').slice(1).join(',').trim() || r.name,
+                  latitude: lat,
+                  longitude: lng,
+                  timezone: tz,
+                };
+              });
+              setSuggestions(liveResults);
+            }
+          }
+        } catch {
+          // Keep offline filtered suggestions on error
+        }
+      }, 350);
+    }
   };
 
   const selectPlace = (place: PlaceSuggestion) => {
