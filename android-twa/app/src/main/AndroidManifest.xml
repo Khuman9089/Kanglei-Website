@@ -15,19 +15,13 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SuryaSiddha">
 
-        <meta-data
-            android:name="asset_statements"
-            android:value="${assetStatements}" />
-
         <activity
-            android:name="com.google.androidbrowserhelper.trusted.LauncherActivity"
+            android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
+            android:configChanges="orientation|screenSize|keyboardHidden"
+            android:windowSoftInputMode="adjustResize"
             android:screenOrientation="portrait">
-
-            <meta-data
-                android:name="android.support.customtabs.trusted.DEFAULT_URL"
-                android:value="${defaultUrl}" />
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -40,7 +34,7 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data
                     android:scheme="https"
-                    android:host="${hostName}"
+                    android:host="kuthiyengpham.in"
                     android:pathPrefix="/suryasiddha" />
             </intent-filter>
         </activity>
