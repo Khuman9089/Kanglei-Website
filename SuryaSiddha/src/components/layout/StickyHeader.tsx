@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sun, MapPin, ChevronDown, Bell, Shield } from 'lucide-react';
+import { Sun, MapPin, ChevronDown, Bell } from 'lucide-react';
 import { UserBirthProfile, PanchangData } from '../../types/astronomy';
 import { LocationInput } from '../places/LocationInput';
 
@@ -9,7 +9,6 @@ interface StickyHeaderProps {
   onLocationChange: (loc: { place: string; lat: number; lng: number; timezone: number }) => void;
   onOpenKundliTab?: () => void;
   onOpenNotifications?: () => void;
-  onOpenAdmin?: () => void;
   unreadNotificationsCount?: number;
 }
 
@@ -18,7 +17,6 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
   panchang,
   onLocationChange,
   onOpenNotifications,
-  onOpenAdmin,
   unreadNotificationsCount = 0,
 }) => {
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
@@ -102,17 +100,6 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
                   {unreadNotificationsCount}
                 </span>
               )}
-            </button>
-          )}
-
-          {/* Admin Portal Button */}
-          {onOpenAdmin && (
-            <button
-              onClick={onOpenAdmin}
-              title="Admin & App Controls"
-              className="p-2 rounded-full bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-950 transition border border-slate-200 cursor-pointer"
-            >
-              <Shield className="w-4 h-4 text-indigo-700" />
             </button>
           )}
         </div>

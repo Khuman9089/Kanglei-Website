@@ -11,23 +11,15 @@ import { KundliScreen } from './components/kundli/KundliScreen';
 import { MuhurtaScreen } from './components/muhurta/MuhurtaScreen';
 import { SettingsEphemerisScreen } from './components/settings/SettingsEphemerisScreen';
 import { SplashScreen } from './components/splash/SplashScreen';
-import { AdminModal } from './components/admin/AdminModal';
 import { NotificationCenterModal } from './components/notifications/NotificationCenterModal';
 import { InterstitialPromoModal } from './components/ads/InterstitialPromoModal';
 
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MainTabType>('panchang');
 
-  // Admin and Mobile Management Configuration
+  // Loaded Configuration (Managed via separate /suryasiddha/admin.html portal)
   const [adminConfig, setAdminConfig] = useState<AdminAppConfig>(() => loadAdminConfig());
   const [showSplash, setShowSplash] = useState<boolean>(() => Boolean(adminConfig.mobile?.showSplashScreen));
-  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(() => {
-    if (typeof window !== 'undefined') {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.has('admin') || window.location.hash === '#admin';
-    }
-    return false;
-  });
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
 
   // Observation date for Panchang & Muhurta screens
@@ -78,8 +70,7 @@ export const App: React.FC = () => {
     }
   };
 
-  // Admin Config Handlers
-  const handleSaveAdminConfig = (newConfig: AdminAppConfig) => {
+  const handleSaveConfig = (newConfig: AdminAppConfig) => {
     setAdminConfig(newConfig);
     saveAdminConfig(newConfig);
   };
@@ -92,7 +83,7 @@ export const App: React.FC = () => {
         items: adminConfig.notifications.items.map((item) => ({ ...item, read: true })),
       },
     };
-    handleSaveAdminConfig(updated);
+    handleSaveConfig(updated);
   };
 
   const handleClearAllNotifications = () => {
@@ -103,7 +94,7 @@ export const App: React.FC = () => {
         items: [],
       },
     };
-    handleSaveAdminConfig(updated);
+    handleSaveConfig(updated);
   };
 
   const unreadNotificationsCount = useMemo(() => {
@@ -127,7 +118,6 @@ export const App: React.FC = () => {
         onLocationChange={handleLocationChange}
         onOpenKundliTab={() => setActiveTab('kundli')}
         onOpenNotifications={() => setIsNotificationsOpen(true)}
-        onOpenAdmin={() => setIsAdminOpen(true)}
         unreadNotificationsCount={unreadNotificationsCount}
       />
 
@@ -166,7 +156,6 @@ export const App: React.FC = () => {
             profile={profile}
             calendarData={calendarData}
             onUpdateProfile={handleUpdateProfile}
-            onOpenAdmin={() => setIsAdminOpen(true)}
           />
         )}
       </main>
@@ -175,14 +164,6 @@ export const App: React.FC = () => {
       <BottomNavigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
-      />
-
-      {/* Admin Portal Modal */}
-      <AdminModal
-        isOpen={isAdminOpen}
-        onClose={() => setIsAdminOpen(false)}
-        config={adminConfig}
-        onSave={handleSaveAdminConfig}
       />
 
       {/* Notification Center Modal */}

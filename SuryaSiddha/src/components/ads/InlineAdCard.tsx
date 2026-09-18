@@ -14,9 +14,25 @@ export const InlineAdCard: React.FC<InlineAdCardProps> = ({ config }) => {
   if (config.type === 'adsense' && config.adSlot) {
     return (
       <div className="my-5 rounded-2xl border border-slate-200 bg-white p-3 text-center overflow-hidden shadow-xs">
-        <span className="text-[9px] uppercase font-bold text-slate-400 block mb-1">Sponsored Advertisement</span>
+        <span className="text-[9px] uppercase font-bold text-slate-400 block mb-1">Sponsored Advertisement (AdSense)</span>
         <div className="min-h-[90px] flex items-center justify-center bg-slate-50 rounded-xl border border-dashed border-slate-200 text-xs text-slate-400">
           <p>AdSense Slot: {config.adSlot}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Google AdMob Native Banner Mode
+  if (config.type === 'admob') {
+    return (
+      <div className="my-5 rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 p-3 text-center overflow-hidden shadow-xs">
+        <div className="flex items-center justify-between px-2 mb-1.5">
+          <span className="text-[9px] uppercase font-black tracking-wider text-indigo-700">Google AdMob Banner</span>
+          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-indigo-100 text-indigo-800">Mobile Ad</span>
+        </div>
+        <div className="min-h-[70px] sm:min-h-[90px] flex flex-col items-center justify-center bg-white rounded-xl border border-indigo-100 text-xs text-slate-600 p-3">
+          <p className="font-bold text-slate-800">{config.title || 'AdMob Smart Banner 320x50 / 728x90'}</p>
+          <p className="text-[11px] text-slate-400 mt-0.5">{config.body || 'Google Mobile Ads SDK Responsive Unit'}</p>
         </div>
       </div>
     );

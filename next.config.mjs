@@ -12,6 +12,14 @@ const nextConfig = {
   async rewrites() {
     return [
       {
+        source: '/suryasiddha/admin',
+        destination: '/suryasiddha/admin.html',
+      },
+      {
+        source: '/suryasiddha/admin/',
+        destination: '/suryasiddha/admin.html',
+      },
+      {
         source: '/suryasiddha',
         destination: '/suryasiddha/index.html',
       },

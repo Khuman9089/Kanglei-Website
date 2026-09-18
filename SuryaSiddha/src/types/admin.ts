@@ -12,7 +12,7 @@ export interface BannerAdConfig {
 
 export interface InlineAdConfig {
   enabled: boolean;
-  type: 'custom' | 'adsense';
+  type: 'custom' | 'adsense' | 'admob';
   title: string;
   body: string;
   ctaText: string;
@@ -20,6 +20,21 @@ export interface InlineAdConfig {
   imageUrl?: string;
   adClient?: string;
   adSlot?: string;
+}
+
+export interface AdMobConfig {
+  enabled: boolean;
+  testMode: boolean;
+  appIdAndroid: string;
+  appIdIos: string;
+  bannerAdUnitIdAndroid: string;
+  bannerAdUnitIdIos: string;
+  interstitialAdUnitIdAndroid: string;
+  interstitialAdUnitIdIos: string;
+  rewardedAdUnitIdAndroid: string;
+  rewardedAdUnitIdIos: string;
+  showBannerOnPanchang: boolean;
+  showInterstitialOnTabSwitch: boolean;
 }
 
 export interface InterstitialPromoConfig {
@@ -57,6 +72,7 @@ export interface AdminAppConfig {
     topBanner: BannerAdConfig;
     inlineCard: InlineAdConfig;
     interstitial: InterstitialPromoConfig;
+    admob: AdMobConfig;
   };
   notifications: {
     announcement: AnnouncementBarConfig;

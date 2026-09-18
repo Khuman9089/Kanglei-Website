@@ -34,6 +34,20 @@ export const DEFAULT_ADMIN_CONFIG: AdminAppConfig = {
       ctaText: 'Explore Pooja Services',
       frequency: 'once_per_session',
     },
+    admob: {
+      enabled: false,
+      testMode: true,
+      appIdAndroid: 'ca-app-pub-3940256099942544~3347511713',
+      appIdIos: 'ca-app-pub-3940256099942544~1458002511',
+      bannerAdUnitIdAndroid: 'ca-app-pub-3940256099942544/6300978111',
+      bannerAdUnitIdIos: 'ca-app-pub-3940256099942544/2934735716',
+      interstitialAdUnitIdAndroid: 'ca-app-pub-3940256099942544/1033173712',
+      interstitialAdUnitIdIos: 'ca-app-pub-3940256099942544/4411468910',
+      rewardedAdUnitIdAndroid: 'ca-app-pub-3940256099942544/5224354917',
+      rewardedAdUnitIdIos: 'ca-app-pub-3940256099942544/1712485313',
+      showBannerOnPanchang: true,
+      showInterstitialOnTabSwitch: false,
+    },
   },
   notifications: {
     announcement: {
