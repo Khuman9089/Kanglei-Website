@@ -43,6 +43,11 @@ jobs:
             -storepass android123 -keypass android123 \
             -dname "CN=SuryaSiddha, OU=KangleiAstro, O=KuthiYengpham, L=Imphal, S=Manipur, C=IN"
 
+      - name: Accept Android SDK Licenses & Install Platform
+        run: |
+          yes | sdkmanager --licenses || true
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" || true
+
       - name: Build Android App Bundle (AAB) & Release APK
         working-directory: android-twa
         env:
