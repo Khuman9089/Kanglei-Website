@@ -6,7 +6,7 @@ export interface PlaceSuggestion {
   latitude: number;
   longitude: number;
   timezone: number; // UTC offset in hours, e.g. 5.5 for IST
-  country: string;
+  country?: string;
   state?: string;
 }
 

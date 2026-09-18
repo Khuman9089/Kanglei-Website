@@ -46,17 +46,20 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchSource, setSearchSource] = useState<'curated' | 'live'>('curated');
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleSearch = (text: string) => {
     setQuery(text);
     if (!text.trim()) {
       setSuggestions(CITIES_DATABASE.slice(0, 8));
+      setSearchSource('curated');
       setIsOpen(true);
       return;
     }
 
-    // 1. Instant local filter
+    // 1. Instant local filter from curated database
     const lower = text.toLowerCase();
     const localMatches = CITIES_DATABASE.filter(
       (c) =>
@@ -65,72 +68,85 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         c.description.toLowerCase().includes(lower)
     );
     setSuggestions(localMatches.slice(0, 8));
+    setSearchSource('curated');
     setIsOpen(true);
 
-    // 2. Debounced Live API Search (via /api/places/search or direct Google API)
+    // 2. Debounced Live Search (Next.js /api/places/search or direct CORS-friendly OSM)
     if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
     if (text.trim().length >= 2) {
       debounceTimerRef.current = setTimeout(async () => {
+        setIsSearching(true);
         try {
-          const googleKey =
-            googleApiKey ||
-            (typeof import.meta !== 'undefined' && import.meta.env?.VITE_GOOGLE_MAPS_API_KEY);
+          // Attempt 1: Try Next.js API route if on same host
+          let liveData: PlaceSuggestion[] = [];
+          try {
+            const apiRes = await fetch(`/api/places/search?q=${encodeURIComponent(text)}`);
+            if (apiRes.ok) {
+              const data = await apiRes.json();
+              if (data.results && Array.isArray(data.results) && data.results.length > 0) {
+                liveData = data.results.map((r: any, idx: number) => {
+                  const lat = parseFloat(r.latitude);
+                  const lng = parseFloat(r.longitude);
+                  const isIndia = lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
+                  const tz = isIndia ? 5.5 : Math.round((lng / 15) * 2) / 2;
+                  return {
+                    place_id: `api_${idx}`,
+                    description: r.name,
+                    main_text: r.name.split(',')[0],
+                    secondary_text: r.name.split(',').slice(1).join(',').trim() || r.name,
+                    latitude: lat,
+                    longitude: lng,
+                    timezone: tz,
+                    country: isIndia ? 'India' : 'International',
+                  };
+                });
+              }
+            }
+          } catch {
+            // Standalone or cross-origin
+          }
 
-          if (googleKey) {
-            // Direct Google Places / Geocode API
-            const gUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-              text
-            )}&key=${googleKey}`;
-            const res = await fetch(gUrl);
-            const data = await res.json();
-            if (data.status === 'OK' && data.results?.length > 0) {
-              const liveResults: PlaceSuggestion[] = data.results.slice(0, 8).map((item: any, idx: number) => {
-                const lat = parseFloat(item.geometry.location.lat.toFixed(4));
-                const lng = parseFloat(item.geometry.location.lng.toFixed(4));
-                const isIndia = lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
-                const tz = isIndia ? 5.5 : Math.round((lng / 15) * 2) / 2;
-                return {
-                  place_id: `g_${item.place_id || idx}`,
-                  description: item.formatted_address,
-                  main_text: item.address_components?.[0]?.long_name || item.formatted_address.split(',')[0],
-                  secondary_text: item.formatted_address,
-                  latitude: lat,
-                  longitude: lng,
-                  timezone: tz,
-                };
-              });
-              setSuggestions(liveResults);
-              return;
+          // Attempt 2: If no API route results, use direct browser-accessible OpenStreetMap / Nominatim
+          if (liveData.length === 0) {
+            const osmRes = await fetch(
+              `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
+                text
+              )}&format=json&limit=8`
+            );
+            if (osmRes.ok) {
+              const osmData = await osmRes.json();
+              if (Array.isArray(osmData) && osmData.length > 0) {
+                liveData = osmData.map((item: any, idx: number) => {
+                  const lat = parseFloat(parseFloat(item.lat).toFixed(4));
+                  const lng = parseFloat(parseFloat(item.lon).toFixed(4));
+                  const isIndia = lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
+                  const tz = isIndia ? 5.5 : Math.round((lng / 15) * 2) / 2;
+                  const parts = item.display_name.split(',');
+                  return {
+                    place_id: `osm_${item.place_id || idx}`,
+                    description: parts.slice(0, 3).join(',').trim(),
+                    main_text: parts[0]?.trim() || item.name,
+                    secondary_text: parts.slice(1, 4).join(',').trim(),
+                    latitude: lat,
+                    longitude: lng,
+                    timezone: tz,
+                    country: isIndia ? 'India' : 'International',
+                  };
+                });
+              }
             }
           }
 
-          // Fallback to /api/places/search endpoint
-          const apiRes = await fetch(`/api/places/search?q=${encodeURIComponent(text)}`);
-          if (apiRes.ok) {
-            const data = await apiRes.json();
-            if (data.results && data.results.length > 0) {
-              const liveResults: PlaceSuggestion[] = data.results.map((r: any, idx: number) => {
-                const lat = r.latitude;
-                const lng = r.longitude;
-                const isIndia = lat >= 6 && lat <= 38 && lng >= 68 && lng <= 98;
-                const tz = isIndia ? 5.5 : Math.round((lng / 15) * 2) / 2;
-                return {
-                  place_id: `api_${idx}`,
-                  description: r.name,
-                  main_text: r.name.split(',')[0],
-                  secondary_text: r.name.split(',').slice(1).join(',').trim() || r.name,
-                  latitude: lat,
-                  longitude: lng,
-                  timezone: tz,
-                };
-              });
-              setSuggestions(liveResults);
-            }
+          if (liveData.length > 0) {
+            setSuggestions(liveData);
+            setSearchSource('live');
           }
         } catch {
-          // Keep offline filtered suggestions on error
+          // Keep localMatches
+        } finally {
+          setIsSearching(false);
         }
-      }, 350);
+      }, 300);
     }
   };
 
@@ -202,7 +218,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
             else handleSearch(query);
             setIsOpen(true);
           }}
-          placeholder="Search city (e.g., Delhi, Varanasi, London, New York...)"
+          placeholder="Search city, town or hospital (e.g. Imphal, Delhi, Varanasi, London...)"
           className="w-full bg-white text-slate-800 border border-amber-200/80 rounded-xl px-4 py-2.5 pl-10 pr-12 text-sm placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 shadow-xs transition-all"
         />
         <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
@@ -233,9 +249,18 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         >
           <div className="p-2.5 border-b border-amber-100 text-[11px] font-semibold text-amber-900 bg-amber-50/60 flex items-center justify-between">
             <span className="flex items-center gap-1">
-              <Globe className="w-3.5 h-3.5 text-amber-600" /> Curated Astronomical Locations
+              <Globe className="w-3.5 h-3.5 text-amber-600" />
+              {searchSource === 'live' ? 'Live Worldwide Locations' : 'Curated Vedic Locations'}
             </span>
-            <span className="text-[10px] text-slate-500 font-normal">Offline database active</span>
+            <span className="text-[10px] font-medium flex items-center gap-1">
+              {isSearching ? (
+                <span className="text-amber-600 animate-pulse">Searching online...</span>
+              ) : searchSource === 'live' ? (
+                <span className="text-emerald-700 font-semibold">🟢 Online GPS active</span>
+              ) : (
+                <span className="text-slate-500 font-normal">Offline database active</span>
+              )}
+            </span>
           </div>
 
           {suggestions.length === 0 ? (
