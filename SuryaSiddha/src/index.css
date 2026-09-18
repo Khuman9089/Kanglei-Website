@@ -1,0 +1,49 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #F8FAFC;
+    color: #0F172A;
+    font-family: 'Outfit', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Custom Light Slate Scrollbar */
+  ::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #F1F5F9;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+}
+
+@layer utilities {
+  .card-elevated {
+    background-color: #FFFFFF;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  }
+
+  .solar-gradient {
+    background: linear-gradient(135deg, #FF6B4A 0%, #FFA133 100%);
+  }
+
+  .lunar-gradient {
+    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  }
+}
+
+/* Kundli Chart SVG */
+.kundli-chart-svg text {
+  user-select: none;
+}

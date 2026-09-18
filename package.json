@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build --webpack",
+    "build:suryasiddha": "npm --prefix SuryaSiddha run build",
+    "build": "npm run build:suryasiddha && next build --webpack",
     "postinstall": "prisma generate",
     "start": "next start",
     "lint": "eslint",

@@ -34,6 +34,10 @@ chmod 666 data/*.json 2>/dev/null || true
 # 3. Install dependencies if updated
 echo "📦 Installing npm dependencies..."
 npm ci --production=false
+if [ -d "SuryaSiddha" ]; then
+    echo "📦 Installing SuryaSiddha dependencies..."
+    (cd SuryaSiddha && npm ci --production=false)
+fi
 
 # 4. Generate Prisma client if schema exists
 if [ -f "prisma/schema.prisma" ]; then
@@ -41,8 +45,8 @@ if [ -f "prisma/schema.prisma" ]; then
     npx prisma generate
 fi
 
-# 5. Build production Next.js application
-echo "🛠️ Building Next.js production bundle..."
+# 5. Build production Next.js application & SuryaSiddha
+echo "🛠️ Building Next.js production bundle & SuryaSiddha..."
 npm run build
 
 # 6. Ensure .htaccess exists in public_html / deployment root for Hostinger LiteSpeed/Apache
@@ -56,6 +60,10 @@ if [ -d "public/assets" ]; then
     echo "🖼️ Syncing public/assets for web server..."
     cp -r public/assets ./assets 2>/dev/null || true
     chmod -R 755 public/assets ./assets 2>/dev/null || true
+fi
+if [ -d "public/suryasiddha" ]; then
+    echo "🪐 Setting permissions for public/suryasiddha..."
+    chmod -R 755 public/suryasiddha 2>/dev/null || true
 fi
 
 # 6c. Remove leftover physical "blog" directory in root if present (prevents Apache directory redirect loops)
