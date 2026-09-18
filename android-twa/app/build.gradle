@@ -16,8 +16,7 @@ android {
         manifestPlaceholders = [
             hostName: "kuthiyengpham.in",
             defaultUrl: "https://kuthiyengpham.in/suryasiddha/",
-            launcherName: "SuryaSiddha",
-            assetStatements: '[{ "relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "android_app", "package_name": "in.kuthiyengpham.suryasiddha", "sha256_cert_fingerprints": ["14:6D:E9:7D:0F:52:AB:E0:5C:4E:9B:4C:6D:88:83:B3:36:2D:42:01:DF:7B:6A:57:9A:9E:C1:92:43:08:4C:E6"]}}]'
+            launcherName: "SuryaSiddha"
         ]
     }
 
@@ -48,8 +47,7 @@ android {
 }
 
 dependencies {
-    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
-    implementation 'androidx.browser:browser:1.8.0'
+    implementation 'androidx.webkit:webkit:1.11.0'
     implementation 'androidx.core:core:1.13.1'
     implementation 'androidx.appcompat:appcompat:1.7.0'
     implementation 'com.google.android.material:material:1.12.0'
