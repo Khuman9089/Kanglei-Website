@@ -64,13 +64,13 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
 
   const todayStr = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-  // Compute 7-day horizontal carousel strip with terracotta markers
+  // Compute 5-day horizontal carousel strip with terracotta markers
   const carouselDays = useMemo(() => {
     const baseDate = new Date(year, month - 1, day);
     const days = [];
-    const dayMarkers = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
+    const dayMarkers = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    for (let offset = -3; offset <= 3; offset++) {
+    for (let offset = -2; offset <= 2; offset++) {
       const d = new Date(baseDate);
       d.setDate(baseDate.getDate() + offset);
 
@@ -276,34 +276,34 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
         </div>
       </div>
 
-      {/* 2. Horizontal Date Strip with Terracotta Ochre (#7C2D12) Markers */}
+      {/* 2. Horizontal Date Strip with 5 Spacious Days */}
       {!isMonthExpanded ? (
         <div className="bg-white rounded-2xl p-3 border border-slate-300 shadow-sm">
-          <div className="grid grid-cols-7 gap-1.5">
+          <div className="grid grid-cols-5 gap-2 sm:gap-2.5">
             {carouselDays.map((d) => {
               const isSelected = currentDate === d.fullDate;
               return (
                 <button
                   key={d.fullDate}
                   onClick={() => onDateChange(d.fullDate)}
-                  className={`relative flex flex-col items-center py-2 px-1 rounded-xl text-center transition-all cursor-pointer ${
+                  className={`relative flex flex-col items-center py-2.5 px-1 rounded-xl text-center transition-all cursor-pointer ${
                     isSelected
                       ? 'bg-[#FEF3C7] border-2 border-[#B45309] shadow-sm scale-[1.02]'
                       : 'bg-white hover:bg-slate-50 border border-slate-200 text-slate-800'
                   }`}
                 >
                   {/* Weekday Label in Terracotta Ochre #7C2D12 font-black */}
-                  <span className="text-[11px] font-black uppercase text-[#7C2D12]">
+                  <span className="text-[11px] sm:text-xs font-black uppercase text-[#7C2D12]">
                     {d.marker}
                   </span>
 
                   {/* Solar Date Number in True Deep Ink #020617 font-black */}
-                  <span className="text-base font-black font-serif my-0.5 text-[#020617]">
+                  <span className="text-base sm:text-lg font-black font-serif my-0.5 text-[#020617]">
                     {d.dateNumber}
                   </span>
 
                   {/* Tithi Name in Saturated Dark Slate font-bold */}
-                  <span className="text-[10px] font-bold line-clamp-1 text-[#1E293B]">
+                  <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full px-0.5 text-[#1E293B]">
                     {d.tithi}
                   </span>
 
@@ -311,7 +311,7 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
                   {d.festivalTagType ? (
                     <span
                       title={d.festival}
-                      className={`mt-1 text-[8px] font-black tracking-wider px-1.5 py-0.5 rounded uppercase text-white ${
+                      className={`mt-1 text-[8px] sm:text-[9px] font-black tracking-wider px-1.5 py-0.5 rounded uppercase text-white truncate max-w-full ${
                         d.festivalTagType === 'VRAT'
                           ? 'bg-[#BE123C]'
                           : d.festivalTagType === 'PUJA'
@@ -322,7 +322,7 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
                       {d.festivalTagType}
                     </span>
                   ) : (
-                    <span className="text-[9px] font-bold text-[#475569] line-clamp-1 mt-0.5">
+                    <span className="text-[9px] sm:text-[10px] font-bold text-[#475569] truncate max-w-full px-0.5 mt-0.5">
                       {d.nakshatra}
                     </span>
                   )}
