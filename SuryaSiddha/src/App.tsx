@@ -21,7 +21,13 @@ export const App: React.FC = () => {
   // Admin and Mobile Management Configuration
   const [adminConfig, setAdminConfig] = useState<AdminAppConfig>(() => loadAdminConfig());
   const [showSplash, setShowSplash] = useState<boolean>(() => Boolean(adminConfig.mobile?.showSplashScreen));
-  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(false);
+  const [isAdminOpen, setIsAdminOpen] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.has('admin') || window.location.hash === '#admin';
+    }
+    return false;
+  });
   const [isNotificationsOpen, setIsNotificationsOpen] = useState<boolean>(false);
 
   // Observation date for Panchang & Muhurta screens
