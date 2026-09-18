@@ -26,15 +26,8 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-
-      - name: Accept Android Licenses
-        run: |
-          yes | sdkmanager --licenses || true
-
-      - name: Set up Gradle 8.5
-        uses: gradle/actions/setup-gradle@v3
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.5'
 
@@ -47,6 +40,8 @@ jobs:
 
       - name: Build Android App Bundle (AAB) & Release APK
         working-directory: android-twa
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
         run: |
           gradle bundleRelease assembleRelease --no-daemon --stacktrace
 
