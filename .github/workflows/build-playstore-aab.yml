@@ -29,54 +29,36 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
+      - name: Set up Gradle 8.5
+        uses: gradle/actions/setup-gradle@v3
         with:
-          node-version: '20'
+          gradle-version: '8.5'
 
-      - name: Install Bubblewrap CLI
-        run: npm install -g @bubblewrap/cli
-
-      - name: Build SuryaSiddha Web Bundle
+      - name: Generate Release Signing Keystore
         run: |
-          npm --prefix SuryaSiddha run build || true
+          keytool -genkey -v -keystore android.keystore \
+            -alias android -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass android123 -keypass android123 \
+            -dname "CN=SuryaSiddha, OU=KangleiAstro, O=KuthiYengpham, L=Imphal, S=Manipur, C=IN"
 
-      - name: Initialize & Build Android TWA Project
+      - name: Build Android App Bundle (AAB) & Release APK
+        working-directory: android-twa
+        run: |
+          gradle bundleRelease assembleRelease --no-daemon --stacktrace
+
+      - name: Collect & Organize Artifacts
         run: |
           mkdir -p build-output
-          cd android-twa
-
-          # Generate signing keystore if not present
-          if [ ! -f android.keystore ]; then
-            keytool -genkey -v -keystore android.keystore \
-              -alias android -keyalg RSA -keysize 2048 -validity 10000 \
-              -storepass android123 -keypass android123 \
-              -dname "CN=SuryaSiddha, OU=KangleiAstro, O=KuthiYengpham, L=Imphal, S=Manipur, C=IN"
-          fi
-
-          # Generate Android Gradle Project from twa-manifest.json
-          bubblewrap build --manifest=twa-manifest.json \
-            --signingKeyPath=android.keystore \
-            --signingKeyAlias=android \
-            --keyPassword=android123 \
-            --keyStorePassword=android123 || true
-
-          # If bubblewrap CLI needs manual gradle trigger
-          if [ -d "app" ] || [ -f "build.gradle" ] || [ -f "gradlew" ]; then
-            chmod +x gradlew || true
-            ./gradlew bundleRelease assembleRelease || true
-          fi
-
-          # Collect generated AAB and APK files
-          find . -name "*.aab" -exec cp {} ../build-output/SuryaSiddha-Release.aab \;
-          find . -name "*.apk" -exec cp {} ../build-output/SuryaSiddha-Release.apk \;
+          find android-twa/app/build/outputs/bundle/release -name "*.aab" -exec cp {} build-output/SuryaSiddha-Release.aab \; || true
+          find android-twa/app/build/outputs/apk/release -name "*.apk" -exec cp {} build-output/SuryaSiddha-Release.apk \; || true
+          ls -la build-output/
 
       - name: Upload Google Play Store AAB Bundle
         uses: actions/upload-artifact@v4
         with:
           name: SuryaSiddha-PlayStore-AAB
           path: build-output/SuryaSiddha-Release.aab
-          if-no-files-found: warn
+          if-no-files-found: error
           retention-days: 30
 
       - name: Upload Release APK (For Direct Phone Testing)
@@ -87,11 +69,11 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
-      - name: Print Completion Summary
+      - name: Print Build Success
         run: |
           echo "========================================================="
           echo "  SuryaSiddha Google Play Store Package Build Complete!  "
           echo "  - Package Name: in.kuthiyengpham.suryasiddha            "
           echo "  - Host: https://kuthiyengpham.in/suryasiddha/          "
-          echo "  - Download your .aab & .apk directly from Artifacts!   "
+          echo "  - Ready for Google Play Console Upload!                "
           echo "========================================================="

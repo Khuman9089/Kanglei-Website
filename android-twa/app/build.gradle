@@ -13,23 +13,34 @@ android {
         versionCode 1
         versionName "1.0.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        
         manifestPlaceholders = [
             hostName: "kuthiyengpham.in",
             defaultUrl: "https://kuthiyengpham.in/suryasiddha/",
             launcherName: "SuryaSiddha",
-            assetStatements: '[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": {\"namespace\": \"android_app\", \"package_name\": \"in.kuthiyengpham.suryasiddha\", \"sha256_cert_fingerprints\": [\"14:6D:E9:7D:0F:52:AB:E0:5C:4E:9B:4C:6D:88:83:B3:36:2D:42:01:DF:7B:6A:57:9A:9E:C1:92:43:08:4C:E6\"]}}]'
+            assetStatements: '[{ "relation": ["delegate_permission/common.handle_all_urls"], "target": {"namespace": "android_app", "package_name": "in.kuthiyengpham.suryasiddha", "sha256_cert_fingerprints": ["14:6D:E9:7D:0F:52:AB:E0:5C:4E:9B:4C:6D:88:83:B3:36:2D:42:01:DF:7B:6A:57:9A:9E:C1:92:43:08:4C:E6"]}}]'
         ]
+    }
+
+    signingConfigs {
+        release {
+            storeFile file("../../android.keystore")
+            storePassword "android123"
+            keyAlias "android"
+            keyPassword "android123"
+        }
     }
 
     buildTypes {
         release {
-            minifyEnabled true
-            shrinkResources true
+            minifyEnabled false
+            signingConfig signingConfigs.release
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+        debug {
+            minifyEnabled false
+        }
     }
+
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
@@ -39,4 +50,5 @@ android {
 dependencies {
     implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
     implementation 'androidx.browser:browser:1.8.0'
+    implementation 'androidx.core:core:1.13.1'
 }
