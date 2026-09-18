@@ -11,53 +11,62 @@ export async function GET(req: Request) {
       return NextResponse.json({ results: [] });
     }
 
-    const apiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    const apiKey =
+      process.env.GOOGLE_MAPS_API_KEY ||
+      process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ||
+      process.env.GOOGLE_PLACES_API_KEY ||
+      process.env.NEXT_PUBLIC_GOOGLE_PLACES_API_KEY;
 
-    // 1. If Google Maps API key is configured, query Google Places / Geocoding API
+    // 1. If Google Maps / Places API key is configured, query Google APIs
     if (apiKey) {
       try {
-        // First try Geocoding with full query
-        const googleUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+        // Strategy 1A: Google Places TextSearch API (Best for places, hospitals, localities)
+        const placesUrl = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(
           query
         )}&key=${apiKey}`;
 
-        const res = await fetch(googleUrl);
-        const data = await res.json();
+        const pRes = await fetch(placesUrl);
+        const pData = await pRes.json();
 
-        if (data.status === 'OK' && data.results && data.results.length > 0) {
-          const results = data.results.slice(0, 8).map((item: any) => ({
-            name: item.formatted_address,
+        if (pData.status === 'OK' && pData.results && pData.results.length > 0) {
+          const results = pData.results.slice(0, 8).map((item: any) => ({
+            name: item.formatted_address || item.name,
             latitude: parseFloat(item.geometry.location.lat.toFixed(4)),
             longitude: parseFloat(item.geometry.location.lng.toFixed(4)),
             source: 'google',
             type: item.types?.includes('hospital') ? 'hospital' : 'locality',
           }));
-          return NextResponse.json({ results });
+          return NextResponse.json({ results, provider: 'google_places' });
+        } else if (pData.status && pData.status !== 'ZERO_RESULTS') {
+          console.warn('[Places API] Google Places TextSearch status:', pData.status, pData.error_message || '');
         }
 
-        // If zero results, try with Manipur / India context
-        const googleManipurUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
-          query + ', Manipur, India'
+        // Strategy 1B: Google Geocoding API (Best for addresses, cities, districts)
+        const geocodeUrl = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
+          query
         )}&key=${apiKey}`;
-        const resM = await fetch(googleManipurUrl);
-        const dataM = await resM.json();
 
-        if (dataM.status === 'OK' && dataM.results && dataM.results.length > 0) {
-          const results = dataM.results.slice(0, 8).map((item: any) => ({
+        const gRes = await fetch(geocodeUrl);
+        const gData = await gRes.json();
+
+        if (gData.status === 'OK' && gData.results && gData.results.length > 0) {
+          const results = gData.results.slice(0, 8).map((item: any) => ({
             name: item.formatted_address,
             latitude: parseFloat(item.geometry.location.lat.toFixed(4)),
             longitude: parseFloat(item.geometry.location.lng.toFixed(4)),
             source: 'google',
             type: item.types?.includes('hospital') ? 'hospital' : 'locality',
           }));
-          return NextResponse.json({ results });
+          return NextResponse.json({ results, provider: 'google_geocode' });
+        } else if (gData.status && gData.status !== 'ZERO_RESULTS') {
+          console.warn('[Places API] Google Geocoding status:', gData.status, gData.error_message || '');
         }
       } catch (gErr) {
-        console.error('Google Maps API Error:', gErr);
+        console.error('[Places API] Google Maps API fetch error:', gErr);
       }
     }
 
-    // 2. OpenStreetMap / Nominatim fallback
+    // 2. OpenStreetMap / Nominatim high-accuracy fallback
     try {
       const nomUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
         query
@@ -78,10 +87,10 @@ export async function GET(req: Request) {
           source: 'osm',
           type: item.type === 'hospital' ? 'hospital' : 'locality',
         }));
-        return NextResponse.json({ results });
+        return NextResponse.json({ results, provider: 'osm' });
       }
 
-      // Nominatim Manipur fallback
+      // Nominatim Regional fallback
       const nomManipurUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(
         query + ', Manipur, India'
       )}&format=json&limit=8`;
@@ -99,13 +108,13 @@ export async function GET(req: Request) {
           source: 'osm',
           type: item.type === 'hospital' ? 'hospital' : 'locality',
         }));
-        return NextResponse.json({ results });
+        return NextResponse.json({ results, provider: 'osm' });
       }
     } catch (nomErr) {
-      console.error('Nominatim API Error:', nomErr);
+      console.error('[Places API] Nominatim API Error:', nomErr);
     }
 
-    return NextResponse.json({ results: [] });
+    return NextResponse.json({ results: [], provider: 'none' });
   } catch (err: any) {
     return NextResponse.json({ error: err.message || 'Location search error' }, { status: 500 });
   }
