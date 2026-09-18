@@ -122,7 +122,7 @@ export const App: React.FC = () => {
       />
 
       {/* 2. Main Screen View Canvas */}
-      <main className="mx-auto max-w-5xl w-full px-3 py-4 sm:px-6 flex-1">
+      <main className="mx-auto max-w-5xl w-full px-3 pt-18 sm:pt-20 pb-28 sm:px-6 flex-1 overflow-x-hidden">
         {activeTab === 'panchang' && (
           <PanchangScreen
             currentDate={currentDate}
