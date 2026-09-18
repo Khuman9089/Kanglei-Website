@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbopack",
-    "build:suryasiddha": "npm --prefix SuryaSiddha run build",
+    "build:suryasiddha": "node -e \"const fs = require('fs'), cp = require('child_process'); if (fs.existsSync('SuryaSiddha/node_modules/vite')) { cp.execSync('npm --prefix SuryaSiddha run build', {stdio: 'inherit'}); } else { console.log('SuryaSiddha: Using pre-compiled production bundle from public/suryasiddha'); }\"",
     "build": "npm run build:suryasiddha && next build --webpack",
     "postinstall": "prisma generate",
     "start": "next start",
