@@ -1,0 +1,42 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'in.kuthiyengpham.suryasiddha'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "in.kuthiyengpham.suryasiddha"
+        minSdk 21
+        targetSdk 34
+        versionCode 1
+        versionName "1.0.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        
+        manifestPlaceholders = [
+            hostName: "kuthiyengpham.in",
+            defaultUrl: "https://kuthiyengpham.in/suryasiddha/",
+            launcherName: "SuryaSiddha",
+            assetStatements: '[{ \"relation\": [\"delegate_permission/common.handle_all_urls\"], \"target\": {\"namespace\": \"android_app\", \"package_name\": \"in.kuthiyengpham.suryasiddha\", \"sha256_cert_fingerprints\": [\"14:6D:E9:7D:0F:52:AB:E0:5C:4E:9B:4C:6D:88:83:B3:36:2D:42:01:DF:7B:6A:57:9A:9E:C1:92:43:08:4C:E6\"]}}]'
+        ]
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+    implementation 'androidx.browser:browser:1.8.0'
+}

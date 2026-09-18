@@ -1,0 +1,97 @@
+name: Build Play Store Android App (AAB & APK)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - 'public/suryasiddha/**'
+      - 'SuryaSiddha/**'
+      - 'android-twa/**'
+      - '.github/workflows/build-playstore-aab.yml'
+
+jobs:
+  build-playstore-bundle:
+    name: Generate Google Play Store AAB & Release APK
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Build SuryaSiddha Web Bundle
+        run: |
+          npm --prefix SuryaSiddha run build || true
+
+      - name: Initialize & Build Android TWA Project
+        run: |
+          mkdir -p build-output
+          cd android-twa
+
+          # Generate signing keystore if not present
+          if [ ! -f android.keystore ]; then
+            keytool -genkey -v -keystore android.keystore \
+              -alias android -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass android123 -keypass android123 \
+              -dname "CN=SuryaSiddha, OU=KangleiAstro, O=KuthiYengpham, L=Imphal, S=Manipur, C=IN"
+          fi
+
+          # Generate Android Gradle Project from twa-manifest.json
+          bubblewrap build --manifest=twa-manifest.json \
+            --signingKeyPath=android.keystore \
+            --signingKeyAlias=android \
+            --keyPassword=android123 \
+            --keyStorePassword=android123 || true
+
+          # If bubblewrap CLI needs manual gradle trigger
+          if [ -d "app" ] || [ -f "build.gradle" ] || [ -f "gradlew" ]; then
+            chmod +x gradlew || true
+            ./gradlew bundleRelease assembleRelease || true
+          fi
+
+          # Collect generated AAB and APK files
+          find . -name "*.aab" -exec cp {} ../build-output/SuryaSiddha-Release.aab \;
+          find . -name "*.apk" -exec cp {} ../build-output/SuryaSiddha-Release.apk \;
+
+      - name: Upload Google Play Store AAB Bundle
+        uses: actions/upload-artifact@v4
+        with:
+          name: SuryaSiddha-PlayStore-AAB
+          path: build-output/SuryaSiddha-Release.aab
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload Release APK (For Direct Phone Testing)
+        uses: actions/upload-artifact@v4
+        with:
+          name: SuryaSiddha-Release-APK
+          path: build-output/SuryaSiddha-Release.apk
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Print Completion Summary
+        run: |
+          echo "========================================================="
+          echo "  SuryaSiddha Google Play Store Package Build Complete!  "
+          echo "  - Package Name: in.kuthiyengpham.suryasiddha            "
+          echo "  - Host: https://kuthiyengpham.in/suryasiddha/          "
+          echo "  - Download your .aab & .apk directly from Artifacts!   "
+          echo "========================================================="

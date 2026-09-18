@@ -1,0 +1,22 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "in.kuthiyengpham.suryasiddha",
+      "sha256_cert_fingerprints": [
+        "14:6D:E9:7D:0F:52:AB:E0:5C:4E:9B:4C:6D:88:83:B3:36:2D:42:01:DF:7B:6A:57:9A:9E:C1:92:43:08:4C:E6"
+      ]
+    }
+  },
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.kangleiastro.manipuricalendar",
+      "sha256_cert_fingerprints": [
+        "14:6D:E9:7D:0F:52:AB:E0:5C:4E:9B:4C:6D:88:83:B3:36:2D:42:01:DF:7B:6A:57:9A:9E:C1:92:43:08:4C:E6"
+      ]
+    }
+  }
+]

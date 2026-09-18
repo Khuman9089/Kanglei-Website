@@ -1,0 +1,36 @@
+{
+  "packageId": "in.kuthiyengpham.suryasiddha",
+  "host": "kuthiyengpham.in",
+  "name": "SuryaSiddha: Vedic Calendar",
+  "launcherName": "SuryaSiddha",
+  "display": "standalone",
+  "themeColor": "#D97706",
+  "themeColorDark": "#0F172A",
+  "navigationColor": "#0F172A",
+  "navigationColorDark": "#000000",
+  "navigationDividerColor": "#00000000",
+  "navigationDividerColorDark": "#00000000",
+  "backgroundColor": "#FAF7F2",
+  "enableNotifications": true,
+  "startUrl": "/suryasiddha/",
+  "iconUrl": "https://kuthiyengpham.in/suryasiddha/icons/icon-512.png",
+  "maskableIconUrl": "https://kuthiyengpham.in/suryasiddha/icons/icon-maskable.png",
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://kuthiyengpham.in/suryasiddha/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "orientation": "portrait"
+}

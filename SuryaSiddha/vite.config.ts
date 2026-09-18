@@ -21,7 +21,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icons/*.svg'],
+      includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'icons/*'],
       manifest: {
         name: 'SuryaSiddha: Vedic Calendar',
         short_name: 'SuryaSiddha',
@@ -32,6 +32,24 @@ export default defineConfig({
         scope: '/suryasiddha/',
         start_url: '/suryasiddha/',
         icons: [
+          {
+            src: '/suryasiddha/icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/suryasiddha/icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/suryasiddha/icons/icon-maskable.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
           {
             src: '/suryasiddha/icons/icon.svg',
             sizes: '192x192 512x512',
