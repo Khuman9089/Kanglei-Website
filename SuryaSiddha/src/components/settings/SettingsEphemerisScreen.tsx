@@ -15,6 +15,7 @@ interface SettingsEphemerisScreenProps {
   profile: UserBirthProfile;
   calendarData: KundliData;
   onUpdateProfile: (profile: UserBirthProfile) => void;
+  onOpenAdmin?: () => void;
 }
 
 const AYANAMSA_OPTIONS = [
@@ -28,12 +29,36 @@ export const SettingsEphemerisScreen: React.FC<SettingsEphemerisScreenProps> = (
   profile,
   calendarData,
   onUpdateProfile,
+  onOpenAdmin,
 }) => {
   const [selectedAyanamsa, setSelectedAyanamsa] = useState<string>('Lahiri');
   const [monthSystem, setMonthSystem] = useState<'Purnimanta' | 'Amanta'>('Purnimanta');
 
   return (
     <div className="space-y-4 pb-20 sm:pb-24 animate-in fade-in duration-150">
+      {/* Admin Management Quick Portal */}
+      {onOpenAdmin && (
+        <div className="rounded-2xl border border-indigo-200 bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 p-4 text-white shadow-md flex items-center justify-between gap-3">
+          <div>
+            <span className="text-[10px] font-black uppercase text-amber-400 tracking-wider">
+              Management Portal
+            </span>
+            <h3 className="font-serif text-base font-bold text-white leading-tight mt-0.5">
+              Admin & App Controls
+            </h3>
+            <p className="text-xs text-indigo-200 mt-0.5">
+              Manage in-app banner ads, notifications, announcements & mobile splash screen
+            </p>
+          </div>
+          <button
+            onClick={onOpenAdmin}
+            className="shrink-0 px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-xs shadow-md shadow-amber-500/20 transition cursor-pointer"
+          >
+            Open Admin
+          </button>
+        </div>
+      )}
+
       {/* 1. Daily Planetary Ephemeris at Sunrise */}
       <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">

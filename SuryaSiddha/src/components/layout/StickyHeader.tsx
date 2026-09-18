@@ -1,6 +1,5 @@
-// components/layout/StickyHeader.tsx
 import React, { useState } from 'react';
-import { Sun, MapPin, ChevronDown } from 'lucide-react';
+import { Sun, MapPin, ChevronDown, Bell, Shield } from 'lucide-react';
 import { UserBirthProfile, PanchangData } from '../../types/astronomy';
 import { LocationInput } from '../places/LocationInput';
 
@@ -9,12 +8,18 @@ interface StickyHeaderProps {
   panchang: PanchangData;
   onLocationChange: (loc: { place: string; lat: number; lng: number; timezone: number }) => void;
   onOpenKundliTab?: () => void;
+  onOpenNotifications?: () => void;
+  onOpenAdmin?: () => void;
+  unreadNotificationsCount?: number;
 }
 
 export const StickyHeader: React.FC<StickyHeaderProps> = ({
   profile,
   panchang,
   onLocationChange,
+  onOpenNotifications,
+  onOpenAdmin,
+  unreadNotificationsCount = 0,
 }) => {
   const [isLocationDropdownOpen, setIsLocationDropdownOpen] = useState(false);
 
@@ -41,16 +46,16 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
           </div>
         </div>
 
-        {/* Location Action */}
-        <div className="flex items-center gap-2">
-          {/* Active Location Chip (Indigo Badge with #1E1B4B text) */}
+        {/* Right Actions: Location, Notification Bell & Admin */}
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {/* Active Location Chip */}
           <div className="relative">
             <button
               onClick={() => setIsLocationDropdownOpen(!isLocationDropdownOpen)}
-              className="flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-3 py-1.5 text-xs font-black text-[#1E1B4B] hover:bg-indigo-100 transition shadow-2xs cursor-pointer"
+              className="flex items-center gap-1.5 rounded-full border border-indigo-300 bg-indigo-50 px-2.5 sm:px-3 py-1.5 text-xs font-black text-[#1E1B4B] hover:bg-indigo-100 transition shadow-2xs cursor-pointer"
             >
               <MapPin className="h-3.5 w-3.5 text-indigo-700 shrink-0 stroke-[2.5]" />
-              <span className="truncate max-w-[120px] sm:max-w-[200px]">
+              <span className="truncate max-w-[90px] sm:max-w-[180px]">
                 {profile.place.split(',')[0]}
               </span>
               <span className="text-[10px] text-indigo-900 font-mono font-bold hidden sm:inline">
@@ -83,6 +88,33 @@ export const StickyHeader: React.FC<StickyHeaderProps> = ({
               </div>
             )}
           </div>
+
+          {/* Notification Center Button */}
+          {onOpenNotifications && (
+            <button
+              onClick={onOpenNotifications}
+              title="Notification Center"
+              className="relative p-2 rounded-full bg-slate-100 hover:bg-amber-100 text-slate-700 hover:text-amber-950 transition border border-slate-200 cursor-pointer"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-orange-600 text-[9px] font-black text-white ring-2 ring-white">
+                  {unreadNotificationsCount}
+                </span>
+              )}
+            </button>
+          )}
+
+          {/* Admin Portal Button */}
+          {onOpenAdmin && (
+            <button
+              onClick={onOpenAdmin}
+              title="Admin & App Controls"
+              className="p-2 rounded-full bg-slate-100 hover:bg-indigo-100 text-slate-700 hover:text-indigo-950 transition border border-slate-200 cursor-pointer"
+            >
+              <Shield className="w-4 h-4 text-indigo-700" />
+            </button>
+          )}
         </div>
       </div>
     </header>

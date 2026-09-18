@@ -14,14 +14,19 @@ import {
   Hourglass
 } from 'lucide-react';
 import { UserBirthProfile, KundliData } from '../../types/astronomy';
+import { AdminAppConfig } from '../../types/admin';
 import { calculatePanchang } from '../../utils/astronomy/panchang';
 import { detectHinduFestival } from '../../utils/astronomy/festivals';
 import { RASHIS } from '../../data/rashis';
+import { TopBannerAd } from '../ads/TopBannerAd';
+import { InlineAdCard } from '../ads/InlineAdCard';
+import { InAppAnnouncementBar } from '../notifications/InAppAnnouncementBar';
 
 interface PanchangScreenProps {
   currentDate: string; // YYYY-MM-DD
   profile: UserBirthProfile;
   calendarData: KundliData;
+  adminConfig?: AdminAppConfig;
   onDateChange: (date: string) => void;
   onOpenKundli: () => void;
 }
@@ -46,6 +51,7 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
   currentDate,
   profile,
   calendarData,
+  adminConfig,
   onDateChange,
 }) => {
   const [isMonthExpanded, setIsMonthExpanded] = useState<boolean>(false);
@@ -218,6 +224,16 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
 
   return (
     <div className="space-y-4 pb-20 sm:pb-24 animate-in fade-in duration-150">
+      {/* Dynamic Announcement Bar */}
+      {adminConfig?.notifications?.announcement && (
+        <InAppAnnouncementBar config={adminConfig.notifications.announcement} />
+      )}
+
+      {/* Top Banner Promo Ad */}
+      {adminConfig?.ads?.topBanner && (
+        <TopBannerAd config={adminConfig.ads.topBanner} />
+      )}
+
       {/* 1. Month Navigation & Samvat Indicators */}
       <div className="bg-white rounded-2xl p-4 border border-slate-300 shadow-sm flex flex-wrap items-center justify-between gap-2.5">
         <div>
@@ -605,6 +621,11 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
             })}
           </div>
         </div>
+
+        {/* Inline Promotional Card */}
+        {adminConfig?.ads?.inlineCard && (
+          <InlineAdCard config={adminConfig.ads.inlineCard} />
+        )}
       </div>
     </div>
   );
