@@ -22,10 +22,10 @@ android {
 
     signingConfigs {
         release {
-            storeFile file("android.keystore")
-            storePassword "android123"
-            keyAlias "android"
-            keyPassword "android123"
+            storeFile file("release.keystore")
+            storePassword "suryasiddha123"
+            keyAlias "suryasiddha"
+            keyPassword "suryasiddha123"
         }
     }
 

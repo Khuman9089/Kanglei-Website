@@ -36,13 +36,6 @@ jobs:
           mkdir -p android-twa/app/src/main/assets
           cp -r public/suryasiddha/* android-twa/app/src/main/assets/
 
-      - name: Generate Release Signing Keystore
-        run: |
-          keytool -genkey -v -keystore android-twa/app/android.keystore \
-            -alias android -keyalg RSA -keysize 2048 -validity 10000 \
-            -storepass android123 -keypass android123 \
-            -dname "CN=SuryaSiddha, OU=KangleiAstro, O=KuthiYengpham, L=Imphal, S=Manipur, C=IN"
-
       - name: Accept Android SDK Licenses & Install Platform
         run: |
           yes | sdkmanager --licenses || true
