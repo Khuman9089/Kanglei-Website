@@ -3,14 +3,15 @@
 @tailwind utilities;
 
 @layer base {
-  html, body {
+  html {
     overflow-x: hidden;
-    overscroll-behavior-y: none;
+    overflow-y: scroll;
     -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
   }
 
   body {
+    min-height: 100%;
+    overflow-x: hidden;
     background-color: #F8FAFC;
     color: #0F172A;
     font-family: 'Outfit', sans-serif;
