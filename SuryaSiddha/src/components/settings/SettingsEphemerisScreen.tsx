@@ -5,7 +5,9 @@ import {
   Compass,
   Layers,
   BookOpen,
-  CheckCircle2
+  CheckCircle2,
+  ShieldCheck,
+  ExternalLink
 } from 'lucide-react';
 import { UserBirthProfile, KundliData } from '../../types/astronomy';
 import { LocationInput } from '../places/LocationInput';
@@ -176,6 +178,53 @@ export const SettingsEphemerisScreen: React.FC<SettingsEphemerisScreenProps> = (
               <div className="text-[11px] text-slate-600">Offline-ready cached ephemeris tables</div>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* 5. Privacy Policy & Data Safety (Google Play Policy Compliance) */}
+      <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm space-y-3">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+          <div className="flex items-center gap-2">
+            <ShieldCheck className="w-5 h-5 text-emerald-600" />
+            <h3 className="font-serif text-base font-bold text-slate-900">
+              Privacy, Security & Data Safety
+            </h3>
+          </div>
+          <span className="text-[10px] font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full border border-emerald-200">
+            Google Play Verified
+          </span>
+        </div>
+
+        <p className="text-xs text-slate-600 leading-relaxed">
+          We treat your astrological data with strict confidentiality. Location coordinates are used solely in real-time to compute local sunrise and astronomical panchang. We never sell your personal records.
+        </p>
+
+        <div className="flex flex-wrap items-center gap-2.5 pt-1">
+          <a
+            href="https://kuthiyengpham.in/privacy-policy"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold transition shadow-2xs"
+          >
+            <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
+            <span>Read Privacy Policy</span>
+            <ExternalLink className="w-3 h-3 text-slate-400" />
+          </a>
+
+          <a
+            href="https://kuthiyengpham.in/delete-account"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-rose-50 text-rose-700 border border-rose-200 hover:bg-rose-100 text-xs font-bold transition"
+          >
+            <span>Delete Account & Data</span>
+            <ExternalLink className="w-3 h-3 text-rose-400" />
+          </a>
+        </div>
+
+        <div className="text-[11px] text-stone-500 border-t border-slate-100 pt-2 flex flex-wrap items-center justify-between gap-2">
+          <span>Publisher: <strong>NexGen InfoLab</strong> (ID: 6187819673998470854)</span>
+          <span>Contact: <a href="mailto:ccare@kuthiyengpham.in" className="text-amber-700 font-mono underline">ccare@kuthiyengpham.in</a></span>
         </div>
       </div>
     </div>
