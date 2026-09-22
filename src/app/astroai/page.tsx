@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Sparkles,
   MessageSquare,
@@ -11,20 +10,16 @@ import {
   Moon,
   User,
   Send,
-  Mic,
-  MicOff,
   ArrowRight,
   ChevronRight,
-  ChevronDown,
-  ChevronUp,
+  ChevronLeft,
   Share2,
   Check,
-  RotateCcw,
   Shield,
   Heart,
   Briefcase,
   Coins,
-  Smile,
+  Activity,
   Calendar,
   Clock,
   MapPin,
@@ -41,1619 +36,1921 @@ import {
   Volume2,
   VolumeX,
   Award,
-  Crown
+  Crown,
+  Lock,
+  Search,
+  Sparkle,
+  TrendingUp,
+  Smile,
+  Users,
+  Compass as CompassIcon,
+  RefreshCw,
+  Copy,
+  CheckCircle2,
+  Info
 } from 'lucide-react';
 
-interface Planet {
-  id: string;
-  name: string;
-  glyph: string;
-  signName: string;
-  degreeInSign: number;
-  nakshatra: string;
-  houseNumber: number;
-  dignity: string;
-}
-
 interface UserProfile {
-  id: string;
   name: string;
-  email?: string;
   birthDate: string;
   birthTime: string;
-  isTimeUnknown?: boolean;
-  lat: number;
-  lon: number;
-  tz: number;
-  place: string;
-  astrologySystem: 'Vedic' | 'Western';
-  language: string;
+  birthPlace: string;
+  sunSign: string;
+  sunSignSymbol: string;
+  sunSignDates: string;
+  lifePathNumber: number;
+  lifePathMeaning: string;
+  birthNumber: number;
+  birthNumberMeaning: string;
+  element: string;
+  elementMeaning: string;
 }
 
 const ZODIAC_LIST = [
-  { name: 'Aries', symbol: '♈', dates: 'Mar 21 - Apr 19', element: 'Fire', color: 'from-orange-400 to-rose-400' },
-  { name: 'Taurus', symbol: '♉', dates: 'Apr 20 - May 20', element: 'Earth', color: 'from-emerald-400 to-teal-500' },
-  { name: 'Gemini', symbol: '♊', dates: 'May 21 - Jun 20', element: 'Air', color: 'from-amber-400 to-orange-400' },
-  { name: 'Cancer', symbol: '♋', dates: 'Jun 21 - Jul 22', element: 'Water', color: 'from-sky-400 to-blue-500' },
-  { name: 'Leo', symbol: '♌', dates: 'Jul 23 - Aug 22', element: 'Fire', color: 'from-amber-500 to-red-500' },
-  { name: 'Virgo', symbol: '♍', dates: 'Aug 23 - Sep 22', element: 'Earth', color: 'from-teal-400 to-emerald-500' },
-  { name: 'Libra', symbol: '♎', dates: 'Sep 23 - Oct 22', element: 'Air', color: 'from-pink-400 to-rose-400' },
-  { name: 'Scorpio', symbol: '♏', dates: 'Oct 23 - Nov 21', element: 'Water', color: 'from-purple-500 to-indigo-600' },
-  { name: 'Sagittarius', symbol: '♐', dates: 'Nov 22 - Dec 21', element: 'Fire', color: 'from-indigo-400 to-purple-500' },
-  { name: 'Capricorn', symbol: '♑', dates: 'Dec 22 - Jan 19', element: 'Earth', color: 'from-slate-500 to-gray-700' },
-  { name: 'Aquarius', symbol: '♒', dates: 'Jan 20 - Feb 18', element: 'Air', color: 'from-cyan-400 to-blue-500' },
-  { name: 'Pisces', symbol: '♓', dates: 'Feb 19 - Mar 20', element: 'Water', color: 'from-teal-300 to-blue-400' },
-];
-
-const SUGGESTED_PILLS = [
-  { label: '❤️ Love', query: 'What does my chart say about my love life and soulmate timing?' },
-  { label: '💼 Career', query: 'What is the most aligned career and vocational path in my birth chart?' },
-  { label: '💰 Money', query: 'What are the main financial timing indicators for this year?' },
-  { label: '✨ This month', query: 'What cosmic transits and opportunities are active for me this month?' },
-  { label: '🔮 My future', query: 'Explain my upcoming Dasha milestones and major growth periods.' },
-  { label: '🌙 My chart', query: 'Give me a simple breakdown of my Sun, Moon, and Rising signs.' },
-];
-
-const DISCOVER_ARTICLES = [
-  {
-    id: 'astro101',
-    title: 'Astrology 101: Understanding Your Big 3',
-    category: 'Beginner Guide',
-    readTime: '4 min read',
-    icon: '✨',
-    color: 'bg-purple-50 text-purple-700 border-purple-100',
-    description: 'Learn how your Sun, Moon, and Rising signs work together to create your unique celestial fingerprint.'
-  },
-  {
-    id: 'moon_guide',
-    title: 'Moon Insights & Emotional Cycles',
-    category: 'Lunar Wisdom',
-    readTime: '5 min read',
-    icon: '🌙',
-    color: 'bg-blue-50 text-blue-700 border-blue-100',
-    description: 'How new and full moons affect your subconscious drive, intuition, and energy flow.'
-  },
-  {
-    id: 'career_astro',
-    title: 'Career Astrology & The 10th House',
-    category: 'Vocational',
-    readTime: '6 min read',
-    icon: '💼',
-    color: 'bg-amber-50 text-amber-700 border-amber-100',
-    description: 'Unlocking your vocational purpose through the Midheaven, Saturn placements, and planetary periods.'
-  },
-  {
-    id: 'synastry_guide',
-    title: 'Relationship Guide & Synastry',
-    category: 'Relationships',
-    readTime: '5 min read',
-    icon: '❤️',
-    color: 'bg-rose-50 text-rose-700 border-rose-100',
-    description: 'Discover the cosmic dynamics of attraction, communication styles, and long-term compatibility.'
-  },
-  {
-    id: 'birth_chart_guide',
-    title: 'Birth Chart Guide: Houses Explained',
-    category: 'Chart Mastery',
-    readTime: '7 min read',
-    icon: '🪐',
-    color: 'bg-teal-50 text-teal-700 border-teal-100',
-    description: 'A friendly walk through the 12 astrological houses and what each sector represents in your life.'
-  },
-  {
-    id: 'zodiac_guide',
-    title: 'The 12 Zodiac Archetypes',
-    category: 'Foundations',
-    readTime: '8 min read',
-    icon: '🔮',
-    color: 'bg-indigo-50 text-indigo-700 border-indigo-100',
-    description: 'Deep dive into the 4 elements (Fire, Earth, Air, Water) and the 12 archetypal zodiac energies.'
-  },
+  { name: 'Aries', symbol: '♈', dates: 'Mar 21 - Apr 19', element: 'Fire' },
+  { name: 'Taurus', symbol: '♉', dates: 'Apr 20 - May 20', element: 'Earth' },
+  { name: 'Gemini', symbol: '♊', dates: 'May 21 - Jun 20', element: 'Air' },
+  { name: 'Cancer', symbol: '♋', dates: 'Jun 21 - Jul 22', element: 'Water' },
+  { name: 'Leo', symbol: '♌', dates: 'Jul 23 - Aug 22', element: 'Fire' },
+  { name: 'Virgo', symbol: '♍', dates: 'Aug 23 - Sep 22', element: 'Earth' },
+  { name: 'Libra', symbol: '♎', dates: 'Sep 23 - Oct 22', element: 'Air' },
+  { name: 'Scorpio', symbol: '♏', dates: 'Oct 23 - Nov 21', element: 'Water' },
+  { name: 'Sagittarius', symbol: '♐', dates: 'Nov 22 - Dec 21', element: 'Fire' },
+  { name: 'Capricorn', symbol: '♑', dates: 'Dec 22 - Jan 19', element: 'Earth' },
+  { name: 'Aquarius', symbol: '♒', dates: 'Jan 20 - Feb 18', element: 'Air' },
+  { name: 'Pisces', symbol: '♓', dates: 'Feb 19 - Mar 20', element: 'Water' },
 ];
 
 export default function AstroAIPage() {
-  // Main view: 'welcome' (splash like left reference screen) | 'app'
-  const [currentView, setCurrentView] = useState<'welcome' | 'app'>('app');
+  // Current Active Screen
+  // 'splash' | 'dob_input' | 'home' | 'career' | 'love' | 'money' | 'health' | 'cycles' | 'prediction_2026' | 'compatibility' | 'tarot' | 'numerology' | 'oracle_ai' | 'community' | 'share' | 'profile'
+  const [currentScreen, setCurrentScreen] = useState<string>('home');
   
-  // App navigation tab: 'home' | 'ask' | 'discover' | 'profile' | 'kundli_modal' | 'horoscope_modal' | 'compatibility_modal' | 'predictions_modal'
-  const [activeTab, setActiveTab] = useState<'home' | 'ask' | 'discover' | 'profile' | 'kundli' | 'horoscope' | 'compatibility' | 'predictions'>('home');
-  
-  // Predictions sub-tab
-  const [predictionTimeline, setPredictionTimeline] = useState<'today' | 'week' | 'month'>('today');
+  // Navigation stack for back button
+  const [screenHistory, setScreenHistory] = useState<string[]>(['home']);
 
-  // Gatekeeper Profile State
-  const [hasProfile, setHasProfile] = useState<boolean>(false);
-  const [isCalibrating, setIsCalibrating] = useState<boolean>(false);
-  const [activeProfile, setActiveProfile] = useState<UserProfile | null>(null);
+  // Tab sub-states for multi-tab screens
+  const [careerTab, setCareerTab] = useState<'overview' | 'best_fields' | 'timeline'>('overview');
+  const [loveTab, setLoveTab] = useState<'overview' | 'compatibility' | 'timing'>('overview');
+  const [moneyTab, setMoneyTab] = useState<'overview' | 'growth' | 'tips'>('overview');
+  const [healthTab, setHealthTab] = useState<'overview' | 'fitness' | 'mental'>('overview');
+  const [cyclesTab, setCyclesTab] = useState<'overview' | 'key_phases' | 'insights'>('overview');
+  const [predictionTab, setPredictionTab] = useState<'overview' | 'monthly' | 'lucky_guide'>('overview');
+  const [compatTypeTab, setCompatTypeTab] = useState<'love' | 'friends_business'>('love');
 
-  // Form State
-  const [profileForm, setProfileForm] = useState<UserProfile>({
-    id: 'user_primary',
-    name: 'Alex',
-    email: 'alex@example.com',
-    birthDate: '1998-05-15',
-    birthTime: '14:30',
-    isTimeUnknown: false,
-    lat: 28.6139,
-    lon: 77.2090,
-    tz: 5.5,
-    place: 'New Delhi, IN',
-    astrologySystem: 'Vedic',
-    language: 'English',
+  // Input DOB Mode
+  const [inputMode, setInputMode] = useState<'quick' | 'detailed'>('quick');
+
+  // User Profile
+  const [userProfile, setUserProfile] = useState<UserProfile>({
+    name: 'Rahul',
+    birthDate: '1995-08-15',
+    birthTime: '10:30',
+    birthPlace: 'New Delhi, India',
+    sunSign: 'Leo',
+    sunSignSymbol: '♌',
+    sunSignDates: 'Jul 23 – Aug 22',
+    lifePathNumber: 2,
+    lifePathMeaning: 'Cooperation',
+    birthNumber: 6,
+    birthNumberMeaning: 'Love & Harmony',
+    element: 'Fire',
+    elementMeaning: 'Passion & Drive',
   });
 
-  // Chart Data State
-  const [loading, setLoading] = useState<boolean>(false);
-  const [blueprint, setBlueprint] = useState<any>(null);
-  const [showAdvancedKundli, setShowAdvancedKundli] = useState<boolean>(false);
-  const [selectedZodiac, setSelectedZodiac] = useState<any>(ZODIAC_LIST[0]);
+  // Compatibility Selectors
+  const [mySign, setMySign] = useState('Leo ♌');
+  const [partnerSign, setPartnerSign] = useState('Sagittarius ♐');
 
-  // Conversational AI State
-  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'oracle'; text: string; time: string }>>([]);
-  const [inputQuery, setInputQuery] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [streamingThought, setStreamingThought] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  // Tarot State
+  const [selectedTarot, setSelectedTarot] = useState<number | null>(null);
+  const [tarotFlipped, setTarotFlipped] = useState(false);
 
-  // Audio & Voice States
-  const [isListening, setIsListening] = useState(false);
-  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const audioCtxRef = useRef<AudioContext | null>(null);
-  const oscillatorRef = useRef<OscillatorNode | null>(null);
-  const gainRef = useRef<GainNode | null>(null);
+  // AI Chat State
+  const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'guru'; text: string }>>([
+    { sender: 'guru', text: 'Namaste Rahul! I am AstroGuru, your personal celestial intelligence assistant. Ask me anything about your 2026 transits, love life, career direction, or Vedic chart!' }
+  ]);
+  const [queryInput, setQueryInput] = useState('');
+  const [isAiTyping, setIsAiTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Compatibility State
-  const [partnerName, setPartnerName] = useState('Maya');
-  const [partnerDate, setPartnerDate] = useState('1999-08-14');
-  const [compatibilityResult, setCompatibilityResult] = useState<any>(null);
-  const [isCopiedShare, setIsCopiedShare] = useState(false);
+  // Share Notification Toast
+  const [showShareToast, setShowShareToast] = useState(false);
 
-  // Auto-scroll chat
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chatMessages, streamingThought]);
-
-  // Load from local storage on mount
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem('jyoti_user_profile');
-      if (stored) {
-        const parsed: UserProfile = JSON.parse(stored);
-        if (parsed.name && parsed.birthDate) {
-          setActiveProfile(parsed);
-          setProfileForm(parsed);
-          setHasProfile(true);
-          fetchBlueprint(parsed, true);
-        }
-      } else {
-        // Default seed user Alex to match reference UI seamlessly
-        const defaultUser: UserProfile = {
-          id: 'user_alex',
-          name: 'Alex',
-          email: 'alex@astroai.app',
-          birthDate: '1998-05-15',
-          birthTime: '14:30',
-          lat: 28.6139,
-          lon: 77.2090,
-          tz: 5.5,
-          place: 'New Delhi, IN',
-          astrologySystem: 'Vedic',
-          language: 'English',
-        };
-        setActiveProfile(defaultUser);
-        setProfileForm(defaultUser);
-        setHasProfile(true);
-        fetchBlueprint(defaultUser, true);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }, []);
-
-  // Compute Astrological Blueprint
-  const fetchBlueprint = async (p: UserProfile, isInitial = false) => {
-    setLoading(true);
-    try {
-      const birthDateTime = new Date(`${p.birthDate}T${p.isTimeUnknown ? '12:00' : p.birthTime}:00Z`).toISOString();
-      const res = await fetch('/api/jyoti/calculate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          birthDateTime,
-          latitude: p.lat,
-          longitude: p.lon,
-          timezoneOffset: p.tz,
-          ayanamsa: 'Lahiri',
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        setBlueprint(data);
-
-        // Match initial zodiac
-        const zSign = ZODIAC_LIST.find((z) => z.name.toLowerCase() === (data.ascendantSign || 'aries').toLowerCase());
-        if (zSign) setSelectedZodiac(zSign);
-
-        if (isInitial && chatMessages.length === 0) {
-          setChatMessages([
-            {
-              sender: 'oracle',
-              text: `### CAREER\nYour chart points toward a period traditionally associated with **reassessing long-term goals and refining your key skills**.\n\n### WHAT THIS MEANS\nYou may feel a gentle pull to reorganize your priorities, slow down hasty decisions, and trust your intuition.\n\n### WHY\nWith **${data.chartRuler || 'Mercury'}** governing your **${data.ascendantSign || 'Virgo'} Lagna** and active **${data.dashas?.[0]?.lord || 'Jupiter'} cycle**, your vocational energy thrives through strategic clarity rather than rush.`,
-              time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-            },
-          ]);
-        }
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
+  // Helper to change screen with history
+  const navigateTo = (screen: string) => {
+    setScreenHistory((prev) => [...prev, screen]);
+    setCurrentScreen(screen);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  // Save Profile
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!profileForm.name.trim()) return;
-
-    const updated: UserProfile = {
-      ...profileForm,
-      id: profileForm.id || `user_${Date.now()}`,
-    };
-
-    localStorage.setItem('jyoti_user_profile', JSON.stringify(updated));
-    setActiveProfile(updated);
-    setHasProfile(true);
-    setIsCalibrating(false);
-    setCurrentView('app');
-
-    await fetchBlueprint(updated, true);
-  };
-
-  // Send message to AI Astrologer
-  const handleSendMessage = async (queryText?: string) => {
-    const q = queryText || inputQuery;
-    if (!q.trim() || isGenerating) return;
-
-    const userMsg = {
-      sender: 'user' as const,
-      text: q,
-      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-    };
-
-    setChatMessages((prev) => [...prev, userMsg]);
-    setInputQuery('');
-    setIsGenerating(true);
-    setStreamingThought('AstroAI is reviewing your birth chart...');
-
-    try {
-      const payload = {
-        query: q,
-        conversationHistory: chatMessages.slice(-6).map((m) => ({
-          role: m.sender === 'user' ? 'user' : 'model',
-          parts: [{ text: m.text }],
-        })),
-        birthProfile: {
-          name: activeProfile?.name || 'Friend',
-          date: activeProfile?.birthDate || '1998-05-15',
-          time: activeProfile?.birthTime || '14:30',
-          place: activeProfile?.place || 'New Delhi, IN',
-          ascendantSign: blueprint?.ascendantSign || 'Virgo',
-          moonSign: blueprint?.planets?.find((p: any) => p.name === 'Moon')?.signName || 'Sagittarius',
-          sunSign: blueprint?.planets?.find((p: any) => p.name === 'Sun')?.signName || 'Taurus',
-          nakshatra: blueprint?.ascendantNakshatra || 'Uttara Phalguni',
-          currentDasha: blueprint?.dashas?.[0]?.lord || 'Jupiter',
-        },
-      };
-
-      const res = await fetch('/api/jyoti/oracle', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) throw new Error('Could not connect to AstroAI');
-
-      const reader = res.body?.getReader();
-      const decoder = new TextDecoder();
-      let fullText = '';
-
-      if (reader) {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          const chunk = decoder.decode(value, { stream: true });
-          const lines = chunk.split('\n');
-
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              const dataStr = line.replace('data: ', '').trim();
-              if (dataStr === '[DONE]') break;
-              try {
-                const parsed = JSON.parse(dataStr);
-                if (parsed.text) {
-                  fullText += parsed.text;
-                }
-              } catch (e) {
-                // Ignore parse errors
-              }
-            } else if (line.trim() && !line.startsWith(':')) {
-              try {
-                const parsed = JSON.parse(line);
-                if (parsed.response) fullText = parsed.response;
-              } catch (e) {
-                fullText += line;
-              }
-            }
-          }
-        }
-      }
-
-      const oracleMsg = {
-        sender: 'oracle' as const,
-        text: fullText || "AstroAI could not find a distinct pattern for this question. Please try asking about your career, relationships, or planetary timing.",
-        time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      };
-
-      setChatMessages((prev) => [...prev, oracleMsg]);
-    } catch (err: any) {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          sender: 'oracle',
-          text: `### INSIGHT\nI am analyzing your chart patterns. Please try asking again in a moment!`,
-          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        },
-      ]);
-    } finally {
-      setIsGenerating(false);
-      setStreamingThought(null);
-    }
-  };
-
-  // Web Speech API Voice Recognition
-  const toggleVoiceInput = () => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      alert('Voice recognition is not supported in this browser.');
-      return;
-    }
-
-    if (isListening) {
-      setIsListening(false);
-      return;
-    }
-
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    const recognition = new SpeechRecognition();
-    recognition.continuous = false;
-    recognition.interimResults = false;
-    recognition.lang = 'en-US';
-
-    recognition.onstart = () => setIsListening(true);
-    recognition.onend = () => setIsListening(false);
-    recognition.onerror = () => setIsListening(false);
-
-    recognition.onresult = (event: any) => {
-      const transcript = event.results[0][0].transcript;
-      setInputQuery(transcript);
-      setIsListening(false);
-      handleSendMessage(transcript);
-    };
-
-    recognition.start();
-  };
-
-  // Ambient Sound Toggle
-  const toggleAudio = () => {
-    if (isPlayingAudio) {
-      oscillatorRef.current?.stop();
-      oscillatorRef.current?.disconnect();
-      setIsPlayingAudio(false);
+  const goBack = () => {
+    if (screenHistory.length > 1) {
+      const newHistory = [...screenHistory];
+      newHistory.pop();
+      const prevScreen = newHistory[newHistory.length - 1];
+      setScreenHistory(newHistory);
+      setCurrentScreen(prevScreen || 'home');
     } else {
-      try {
-        const AudioCtx = window.AudioContext || (window as any).webkitAudioContext;
-        const ctx = new AudioCtx();
-        audioCtxRef.current = ctx;
-
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(432, ctx.currentTime); // 432Hz harmonic tone
-        gain.gain.setValueAtTime(0.02, ctx.currentTime);
-
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start();
-
-        oscillatorRef.current = osc;
-        gainRef.current = gain;
-        setIsPlayingAudio(true);
-      } catch (e) {
-        console.error(e);
-      }
+      setCurrentScreen('home');
     }
   };
 
-  // Calculate Compatibility
-  const handleCalculateCompatibility = () => {
-    setCompatibilityResult({
-      partner: partnerName,
-      partnerDate,
-      overallScore: 88,
-      emotional: 'Deep emotional empathy. You both naturally sense each other’s unspoken feelings and offer steady comfort.',
-      communication: 'Open and honest. A balance of logic and intuition prevents misunderstandings.',
-      attraction: 'Magnetic natural chemistry with strong shared curiosity and humor.',
-      longTerm: 'High mutual loyalty and grounded shared values for long-term growth and harmony.',
-    });
+  const handleSendMessage = () => {
+    if (!queryInput.trim()) return;
+    const userText = queryInput;
+    setChatMessages((prev) => [...prev, { sender: 'user', text: userText }]);
+    setQueryInput('');
+    setIsAiTyping(true);
+
+    setTimeout(() => {
+      let reply = `Based on your Leo Sun sign and Life Path 2 vibration, this period calls for balanced diplomacy. Jupiter's supportive aspect brings favorable momentum in career decisions and creative expression.`;
+      if (userText.toLowerCase().includes('love') || userText.toLowerCase().includes('relationship')) {
+        reply = `Your Venus harmony indicates strong relationship stabilization. High synergy is observed with Fire signs (Aries, Sagittarius) and Air signs (Libra, Gemini). Trust open communication.`;
+      } else if (userText.toLowerCase().includes('money') || userText.toLowerCase().includes('career') || userText.toLowerCase().includes('job')) {
+        reply = `For professional advancement, your 10th house indicates leadership, media, and entrepreneurial undertakings are highly favorable between 2026 and 2027. Avoid hasty financial commitments.`;
+      }
+      setChatMessages((prev) => [...prev, { sender: 'guru', text: reply }]);
+      setIsAiTyping(false);
+    }, 900);
   };
 
-  // Render Structured Message (Clean Consumer App Formatting)
-  const renderStructuredMessage = (text: string) => {
-    const lines = text.split('\n');
-    return lines.map((line, idx) => {
-      if (line.startsWith('### ')) {
-        const title = line.replace('### ', '');
-        return (
-          <div key={idx} className="mt-3 mb-1.5 first:mt-0">
-            <span className="text-[11px] font-bold text-[#FF552E] uppercase tracking-wider bg-orange-50 px-2 py-0.5 rounded-md border border-orange-100">
-              {title}
-            </span>
-          </div>
-        );
-      }
-      if (line.startsWith('- ')) {
-        const content = line.substring(2);
-        return (
-          <div key={idx} className="flex items-start gap-2 text-xs sm:text-sm text-gray-700 my-1 leading-relaxed">
-            <span className="text-[#FF552E] mt-1 text-[8px]">●</span>
-            <span dangerouslySetInnerHTML={{ __html: formatBold(content) }} />
-          </div>
-        );
-      }
-      if (line.trim() === '') {
-        return <div key={idx} className="h-1.5" />;
-      }
-      return (
-        <p key={idx} className="text-xs sm:text-sm text-gray-700 leading-relaxed my-1" dangerouslySetInnerHTML={{ __html: formatBold(line) }} />
-      );
-    });
-  };
-
-  const formatBold = (str: string) => {
-    return str.replace(/\*\*(.*?)\*\*/g, '<strong class="text-gray-900 font-semibold">$1</strong>');
-  };
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [chatMessages, isAiTyping]);
 
   return (
-    <div className="h-screen w-screen bg-[#F7F7FA] text-gray-900 flex flex-col antialiased selection:bg-orange-100 overflow-hidden font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans flex flex-col justify-between selection:bg-indigo-500 selection:text-white pb-20 md:pb-10">
       
-      {/* Mobile-First Centered Application Workspace */}
-      <div className="w-full max-w-md sm:max-w-lg mx-auto h-full flex flex-col relative bg-[#FBFBFD] border-x border-gray-100/80 shadow-2xl overflow-hidden">
-        
-        {/* ========================================================
-            SCREEN 1: WELCOME / ONBOARDING VIEW (REFERENCE LEFT SCREEN)
-            ======================================================== */}
-        {currentView === 'welcome' && (
-          <div className="h-full flex flex-col justify-between p-6 sm:p-7 bg-[#FFFDFB] overflow-y-auto animate-fadeIn relative">
-            {/* Top Status & Brand Header */}
-            <div className="flex items-center justify-between text-xs text-gray-400 pt-1">
-              <span className="font-semibold text-gray-700 text-sm">9:41</span>
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] font-bold">●●●</span>
-                <span className="text-xs">⚡</span>
-              </div>
-            </div>
+      {/* ============================================================== */}
+      {/* 1. SPLASH / ONBOARDING SCREEN (Cosmic Dark Hero) */}
+      {/* ============================================================== */}
+      {currentScreen === 'splash' && (
+        <div className="min-h-screen bg-gradient-to-b from-[#090D1C] via-[#0E152E] to-[#1C1236] text-white flex flex-col justify-between p-6 relative overflow-hidden">
+          {/* Ambient Glows */}
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
+          <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-96 h-64 bg-purple-600/20 rounded-full blur-[90px] pointer-events-none" />
 
-            {/* Brand Title */}
-            <div className="text-center space-y-1 mt-4">
-              <div className="flex items-center justify-center gap-1.5">
-                <svg viewBox="0 0 24 24" className="w-6 h-6 text-[#FF552E]" fill="currentColor">
-                  <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-                </svg>
-                <h1 className="text-2xl font-extrabold tracking-tight text-gray-900">
-                  Astro<span className="text-[#FF552E]">AI</span>
-                </h1>
-              </div>
-              <p className="text-xs text-gray-500 font-medium">Your life. The stars. Smarter.</p>
-            </div>
-
-            {/* Center 3D Illustration */}
-            <div className="my-auto py-4 flex items-center justify-center relative">
-              <div className="w-64 h-64 sm:w-72 sm:h-72 rounded-3xl overflow-hidden relative shadow-lg shadow-orange-500/10 border border-orange-100/50 bg-gradient-to-b from-[#FFF5F0] to-[#FBF4FF]">
-                <Image
-                  src="/images/astroai/welcome_hero.jpg"
-                  alt="AstroAI 3D Illustration"
-                  fill
-                  className="object-contain p-2 hover:scale-105 transition-transform duration-700"
-                  priority
-                />
-              </div>
-            </div>
-
-            {/* Bottom Copy & Action Buttons */}
-            <div className="space-y-4 text-center pb-2">
-              <div className="space-y-2">
-                <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 leading-tight">
-                  Personalized Astrology<br />with AI
-                </h2>
-                <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
-                  Get insights about your life, relationships, career and more — all in one place.
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-2">
-                <button
-                  onClick={() => {
-                    if (!hasProfile) {
-                      setIsCalibrating(true);
-                    } else {
-                      setCurrentView('app');
-                      setActiveTab('home');
-                    }
-                  }}
-                  className="w-full py-4 rounded-full bg-gradient-to-r from-[#FF6B4A] to-[#FF552E] hover:from-[#FF552E] hover:to-[#E0451E] text-white text-sm font-bold shadow-lg shadow-orange-500/30 flex items-center justify-center gap-2 transition-all active:scale-98"
-                >
-                  <span>Get Started</span>
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-
-                <p className="text-xs text-gray-500">
-                  Already have an account?{' '}
-                  <button
-                    onClick={() => {
-                      setCurrentView('app');
-                      setActiveTab('home');
-                    }}
-                    className="text-[#FF552E] font-bold hover:underline"
-                  >
-                    Sign In
-                  </button>
-                </p>
-              </div>
-            </div>
+          {/* Top Header */}
+          <div className="flex justify-between items-center z-10 pt-4">
+            <span className="text-xs font-bold tracking-widest uppercase text-indigo-300 flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              JYOTI AI
+            </span>
+            <button
+              onClick={() => setCurrentScreen('home')}
+              className="text-xs text-slate-400 hover:text-white px-3 py-1 rounded-full bg-white/5 border border-white/10"
+            >
+              Skip
+            </button>
           </div>
-        )}
 
-        {/* ========================================================
-            SCREEN 2: MAIN APPLICATION WORKSPACE
-            ======================================================== */}
-        {currentView === 'app' && (
-          <div className="h-full flex flex-col justify-between relative bg-[#FBFBFD]">
-            
-            {/* Modern Top Header */}
-            <header className="px-5 pt-3 pb-2 flex items-center justify-between shrink-0 bg-[#FBFBFD]/95 backdrop-blur-md z-30">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentView('welcome')}
-                  className="flex items-center gap-1.5 text-gray-900 hover:opacity-80 transition-opacity"
-                  title="View Welcome Splash"
-                >
-                  <svg viewBox="0 0 24 24" className="w-5 h-5 text-[#FF552E]" fill="currentColor">
-                    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-                  </svg>
-                  <span className="font-extrabold text-base tracking-tight text-gray-900">
-                    Astro<span className="text-[#FF552E]">AI</span>
-                  </span>
-                </button>
+          {/* Center Wheel Artwork */}
+          <div className="flex-1 flex flex-col items-center justify-center text-center z-10 py-6">
+            <div className="relative w-64 h-64 sm:w-72 sm:h-72 my-4 flex items-center justify-center">
+              {/* Concentric Celestial Rings */}
+              <div className="absolute inset-0 rounded-full border border-indigo-400/25 animate-[spin_60s_linear_infinite]" />
+              <div className="absolute inset-3 rounded-full border border-purple-400/20 border-dashed animate-[spin_40s_linear_infinite_reverse]" />
+              <div className="absolute inset-8 rounded-full border border-pink-400/25" />
+              
+              {/* Outer Zodiac Glyphs */}
+              <div className="absolute inset-0 flex items-center justify-between px-2 text-indigo-300 text-xs font-serif opacity-80">
+                <span>♈</span>
+                <span>♎</span>
+              </div>
+              <div className="absolute inset-0 flex flex-col items-center justify-between py-2 text-indigo-300 text-xs font-serif opacity-80">
+                <span>♋</span>
+                <span>♑</span>
               </div>
 
-              <div className="flex items-center gap-2">
-                {/* 432Hz Sound Ambient Button */}
-                <button
-                  onClick={toggleAudio}
-                  title="Toggle 432Hz Harmonic Frequency"
-                  className={`p-1.5 rounded-full transition-all ${
-                    isPlayingAudio
-                      ? 'bg-orange-50 text-[#FF552E] border border-orange-200'
-                      : 'text-gray-400 hover:text-gray-600'
-                  }`}
-                >
-                  {isPlayingAudio ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-                </button>
-
-                {/* Profile / Avatar Button */}
-                <button
-                  onClick={() => setActiveTab('profile')}
-                  className="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-400 to-amber-300 p-0.5 shadow-sm overflow-hidden hover:scale-105 transition-transform"
-                >
-                  <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-xs font-bold text-[#FF552E]">
-                    {activeProfile?.name?.charAt(0) || 'A'}
-                  </div>
-                </button>
+              {/* Center Glowing Celestial Emblem */}
+              <div className="w-28 h-28 rounded-full bg-gradient-to-tr from-indigo-600 via-purple-500 to-pink-500 p-1 shadow-[0_0_50px_rgba(139,92,246,0.5)] flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-[#0E152E] flex flex-col items-center justify-center text-center">
+                  <Sparkles className="w-7 h-7 text-amber-300 animate-pulse" />
+                  <span className="text-[9px] font-bold text-indigo-200 mt-1 uppercase tracking-wider">Cosmic Key</span>
+                </div>
               </div>
-            </header>
-
-            {/* Scrollable Screen Body */}
-            <div className="flex-1 overflow-y-auto pb-20 relative scrollbar-none">
-
-              {/* ================= HOME DASHBOARD (REFERENCE RIGHT SCREEN) ================= */}
-              {activeTab === 'home' && (
-                <div className="px-5 py-2 space-y-4 animate-fadeIn">
-                  
-                  {/* Greeting */}
-                  <div className="space-y-0.5">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900 flex items-center gap-1.5">
-                      <span>Good evening, {activeProfile?.name || 'Alex'}</span>
-                      <span className="text-xl">👋</span>
-                    </h2>
-                    <p className="text-xs text-gray-500 font-normal">
-                      Let&apos;s see what the stars have for you today.
-                    </p>
-                  </div>
-
-                  {/* HERO CARD 1: TODAY'S COSMIC INSIGHT */}
-                  <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-br from-[#FFF5EE] via-[#FDF0E6] to-[#F5EAFE] border border-orange-200/50 shadow-xs relative overflow-hidden flex items-center justify-between gap-2">
-                    <div className="space-y-2 z-10 flex-1 max-w-[210px] sm:max-w-[230px]">
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/90 text-[#FF552E] text-[10px] font-bold border border-orange-200/60 shadow-xs">
-                        <Sparkles className="w-3 h-3 text-[#FF552E]" />
-                        <span>Today&apos;s Insight</span>
-                      </div>
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900 leading-snug">
-                        A day to slow down and trust your instincts.
-                      </h3>
-                      <p className="text-[11px] text-gray-600 leading-relaxed">
-                        AstroAI found an interesting pattern in your chart.
-                      </p>
-                      <button
-                        onClick={() => {
-                          setActiveTab('ask');
-                          handleSendMessage('Explain today’s cosmic pattern and why I should slow down and trust my instincts.');
-                        }}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#FF6B4A] to-[#FF552E] hover:from-[#FF552E] hover:to-[#E0451E] text-white text-xs font-bold shadow-md shadow-orange-500/25 transition-all active:scale-95"
-                      >
-                        <span>Explore Insight</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    {/* Integrated 3D Artwork */}
-                    <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden relative shrink-0 shadow-sm border border-purple-100/50 bg-white/40">
-                      <Image
-                        src="/images/astroai/insight_girl.jpg"
-                        alt="Today's Cosmic Insight"
-                        fill
-                        className="object-cover hover:scale-105 transition-transform"
-                      />
-                    </div>
-                  </div>
-
-                  {/* SECTION: EXPLORE ASTROAI */}
-                  <div className="space-y-2.5">
-                    <div className="flex items-center justify-between">
-                      <h3 className="text-sm font-bold text-gray-900 tracking-tight">Explore AstroAI</h3>
-                      <button
-                        onClick={() => setActiveTab('discover')}
-                        className="text-xs text-[#FF552E] font-semibold hover:underline"
-                      >
-                        See all
-                      </button>
-                    </div>
-
-                    {/* HERO CARD 2: ASK ASTROAI (LARGE AI HERO BANNER) */}
-                    <div
-                      onClick={() => setActiveTab('ask')}
-                      className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-[#EBF3FE] via-[#EDE9FE] to-[#FCE7F3] border border-indigo-100/70 shadow-xs cursor-pointer relative overflow-hidden flex items-center justify-between gap-3 group transition-all hover:scale-[1.01]"
-                    >
-                      <div className="space-y-1.5 z-10 flex-1 max-w-[210px] sm:max-w-[230px]">
-                        <h4 className="text-base sm:text-lg font-bold text-gray-900">Ask AstroAI</h4>
-                        <p className="text-xs text-gray-600 leading-relaxed">
-                          Your personal astrologer, anytime.
-                        </p>
-                        <div className="pt-1">
-                          <button className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-[#FF6B4A] to-[#FF552E] text-white text-xs font-bold shadow-md shadow-orange-500/25 group-hover:bg-[#FF552E] transition-all">
-                            <span>Start Chat</span>
-                            <ArrowRight className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* 3D Cute AI Robot Avatar */}
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden relative shrink-0 shadow-sm border border-indigo-100/50 bg-white/60 group-hover:scale-105 transition-transform">
-                        <Image
-                          src="/images/astroai/robot_avatar.jpg"
-                          alt="Ask AstroAI"
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                    </div>
-
-                    {/* 6 FEATURE GRID TILES (2 ROWS X 3 COLUMNS) */}
-                    <div className="grid grid-cols-3 gap-2.5 pt-1">
-                      
-                      {/* Tile 1: My Kundli */}
-                      <div
-                        onClick={() => setActiveTab('kundli')}
-                        className="p-2.5 rounded-2xl bg-white hover:bg-purple-50/40 border border-gray-100 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center space-y-1.5 group active:scale-95"
-                      >
-                        <div className="w-14 h-14 rounded-xl overflow-hidden relative shadow-xs group-hover:scale-105 transition-transform">
-                          <Image src="/images/astroai/kundli_icon.jpg" alt="My Kundli" fill className="object-cover" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-gray-900">My Kundli</h5>
-                          <p className="text-[10px] text-gray-400 line-clamp-1">Explore your chart</p>
-                        </div>
-                      </div>
-
-                      {/* Tile 2: Horoscope */}
-                      <div
-                        onClick={() => setActiveTab('horoscope')}
-                        className="p-2.5 rounded-2xl bg-white hover:bg-blue-50/40 border border-gray-100 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center space-y-1.5 group active:scale-95"
-                      >
-                        <div className="w-14 h-14 rounded-xl overflow-hidden relative shadow-xs group-hover:scale-105 transition-transform">
-                          <Image src="/images/astroai/horoscope_icon.jpg" alt="Horoscope" fill className="object-cover" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-gray-900">Horoscope</h5>
-                          <p className="text-[10px] text-gray-400 line-clamp-1">Today&apos;s cosmic view</p>
-                        </div>
-                      </div>
-
-                      {/* Tile 3: Compatibility */}
-                      <div
-                        onClick={() => setActiveTab('compatibility')}
-                        className="p-2.5 rounded-2xl bg-white hover:bg-pink-50/40 border border-gray-100 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center space-y-1.5 group active:scale-95"
-                      >
-                        <div className="w-14 h-14 rounded-xl overflow-hidden relative shadow-xs group-hover:scale-105 transition-transform">
-                          <Image src="/images/astroai/compatibility_icon.jpg" alt="Compatibility" fill className="object-cover" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-gray-900">Compatibility</h5>
-                          <p className="text-[10px] text-gray-400 line-clamp-1">Find your match</p>
-                        </div>
-                      </div>
-
-                      {/* Tile 4: Predictions */}
-                      <div
-                        onClick={() => setActiveTab('predictions')}
-                        className="p-2.5 rounded-2xl bg-white hover:bg-amber-50/40 border border-gray-100 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center space-y-1.5 group active:scale-95"
-                      >
-                        <div className="w-14 h-14 rounded-xl overflow-hidden relative shadow-xs group-hover:scale-105 transition-transform">
-                          <Image src="/images/astroai/predictions_icon.jpg" alt="Predictions" fill className="object-cover" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-gray-900">Predictions</h5>
-                          <p className="text-[10px] text-gray-400 line-clamp-1">Your future insights</p>
-                        </div>
-                      </div>
-
-                      {/* Tile 5: Career */}
-                      <div
-                        onClick={() => {
-                          setActiveTab('ask');
-                          handleSendMessage('Give me a detailed breakdown of my career path and vocational strengths from my birth chart.');
-                        }}
-                        className="p-2.5 rounded-2xl bg-white hover:bg-teal-50/40 border border-gray-100 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center space-y-1.5 group active:scale-95"
-                      >
-                        <div className="w-14 h-14 rounded-xl overflow-hidden relative shadow-xs group-hover:scale-105 transition-transform">
-                          <Image src="/images/astroai/career_icon.jpg" alt="Career" fill className="object-cover" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-gray-900">Career</h5>
-                          <p className="text-[10px] text-gray-400 line-clamp-1">Growth & opportunities</p>
-                        </div>
-                      </div>
-
-                      {/* Tile 6: Moon Insights */}
-                      <div
-                        onClick={() => {
-                          setActiveTab('ask');
-                          handleSendMessage('Explain my Moon sign Nakshatra and emotional subconscious rhythms.');
-                        }}
-                        className="p-2.5 rounded-2xl bg-white hover:bg-purple-50/40 border border-gray-100 shadow-xs hover:shadow-md transition-all cursor-pointer flex flex-col items-center text-center space-y-1.5 group active:scale-95"
-                      >
-                        <div className="w-14 h-14 rounded-xl overflow-hidden relative shadow-xs group-hover:scale-105 transition-transform">
-                          <Image src="/images/astroai/moon_icon.jpg" alt="Moon Insights" fill className="object-cover" />
-                        </div>
-                        <div>
-                          <h5 className="font-bold text-xs text-gray-900">Moon Insights</h5>
-                          <p className="text-[10px] text-gray-400 line-clamp-1">Emotional guidance</p>
-                        </div>
-                      </div>
-
-                    </div>
-                  </div>
-
-                  {/* TODAY'S VIBE FOOTER BANNER */}
-                  <div
-                    onClick={() => {
-                      setActiveTab('ask');
-                      handleSendMessage('Tell me more about today’s vibe and why I am in a good space for new beginnings.');
-                    }}
-                    className="p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-pink-50 border border-amber-100/70 flex items-center justify-between cursor-pointer hover:opacity-95 transition-opacity"
-                  >
-                    <div className="flex items-center gap-2">
-                      <span className="text-base">☀️</span>
-                      <div>
-                        <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block">Today&apos;s Vibe</span>
-                        <p className="text-xs font-semibold text-gray-800">You&apos;re in a good space for new beginnings.</p>
-                      </div>
-                    </div>
-                    <div className="w-6 h-6 rounded-full bg-white shadow-xs flex items-center justify-center text-gray-400">
-                      <ArrowRight className="w-3.5 h-3.5" />
-                    </div>
-                  </div>
-
-                </div>
-              )}
-
-              {/* ================= 2. ASK ASTROAI (CONVERSATIONAL AI) ================= */}
-              {activeTab === 'ask' && (
-                <div className="h-full flex flex-col justify-between bg-white animate-fadeIn">
-                  
-                  {/* Visual AI Header */}
-                  <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between bg-white shrink-0">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-9 h-9 rounded-2xl overflow-hidden relative shadow-xs border border-orange-100">
-                        <Image src="/images/astroai/robot_avatar.jpg" alt="AstroAI Assistant" fill className="object-cover" />
-                      </div>
-                      <div>
-                        <h3 className="font-bold text-sm text-gray-900">AstroAI</h3>
-                        <p className="text-[11px] text-gray-400">Your personal astrologer</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => {
-                        if (confirm('Clear chat history?')) setChatMessages([]);
-                      }}
-                      className="p-1.5 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-                      title="Clear chat"
-                    >
-                      <RotateCcw className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  {/* Chat Area */}
-                  <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5 bg-[#FAFAFC]">
-                    {chatMessages.length === 0 && (
-                      <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-3">
-                        <div className="w-16 h-16 rounded-2xl overflow-hidden relative shadow-sm border border-purple-100">
-                          <Image src="/images/astroai/robot_avatar.jpg" alt="AstroAI" fill className="object-cover" />
-                        </div>
-                        <h3 className="font-bold text-base text-gray-900">What&apos;s on your mind?</h3>
-                        <p className="text-xs text-gray-500 max-w-xs leading-relaxed">
-                          Ask anything about your life, career, relationships, or planetary timing.
-                        </p>
-                      </div>
-                    )}
-
-                    {chatMessages.map((msg, idx) => (
-                      <div
-                        key={idx}
-                        className={`flex flex-col ${msg.sender === 'user' ? 'items-end' : 'items-start'}`}
-                      >
-                        <div
-                          className={`p-4 rounded-3xl text-xs sm:text-sm leading-relaxed max-w-[90%] sm:max-w-[85%] shadow-xs ${
-                            msg.sender === 'user'
-                              ? 'bg-[#FF552E] text-white rounded-tr-sm'
-                              : 'bg-white border border-gray-100/90 text-gray-800 rounded-tl-sm space-y-1'
-                          }`}
-                        >
-                          {msg.sender === 'oracle' ? renderStructuredMessage(msg.text) : msg.text}
-                        </div>
-                      </div>
-                    ))}
-
-                    {isGenerating && (
-                      <div className="p-3.5 rounded-2xl rounded-tl-sm bg-white border border-gray-100 text-xs text-gray-500 flex items-center gap-2.5 shadow-xs">
-                        <div className="w-3.5 h-3.5 border-2 border-[#FF552E] border-t-transparent rounded-full animate-spin" />
-                        <span>{streamingThought || 'AstroAI is reading your birth chart...'}</span>
-                      </div>
-                    )}
-
-                    <div ref={messagesEndRef} />
-                  </div>
-
-                  {/* Suggestion Pills */}
-                  <div className="px-3 py-2 border-t border-gray-100 bg-white overflow-x-auto flex items-center gap-2 scrollbar-none">
-                    {SUGGESTED_PILLS.map((item, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleSendMessage(item.query)}
-                        disabled={isGenerating}
-                        className="shrink-0 px-3 py-1.5 rounded-full bg-gray-50 hover:bg-orange-50 border border-gray-200/60 hover:border-orange-200 text-xs font-medium text-gray-700 hover:text-[#FF552E] transition-all disabled:opacity-40 whitespace-nowrap"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Input Box */}
-                  <div className="p-3 sm:p-4 border-t border-gray-100 bg-white">
-                    <div className="flex items-center gap-2 bg-gray-50 border border-gray-200/80 focus-within:border-[#FF552E] rounded-2xl px-3 py-1.5 transition-all">
-                      <button
-                        type="button"
-                        onClick={toggleVoiceInput}
-                        title={isListening ? 'Stop Listening' : 'Voice Input'}
-                        className={`p-2 rounded-xl transition-all ${
-                          isListening ? 'bg-rose-100 text-rose-600 animate-pulse' : 'text-gray-400 hover:text-gray-600'
-                        }`}
-                      >
-                        {isListening ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-                      </button>
-
-                      <input
-                        type="text"
-                        value={inputQuery}
-                        onChange={(e) => setInputQuery(e.target.value)}
-                        onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
-                        placeholder="Ask anything..."
-                        className="flex-1 bg-transparent text-xs sm:text-sm text-gray-900 placeholder-gray-400 focus:outline-none px-2 py-1.5"
-                      />
-
-                      <button
-                        onClick={() => handleSendMessage()}
-                        disabled={isGenerating || !inputQuery.trim()}
-                        className="p-2.5 rounded-xl bg-[#FF552E] hover:bg-[#E0451E] disabled:opacity-30 text-white font-bold transition-all shadow-sm"
-                      >
-                        <Send className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                </div>
-              )}
-
-              {/* ================= 3. MY KUNDLI SCREEN ================= */}
-              {activeTab === 'kundli' && (
-                <div className="p-5 space-y-5 animate-fadeIn">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Your Cosmic Profile</h2>
-                      <p className="text-xs text-gray-500">Key astrological pillars explained in simple language.</p>
-                    </div>
-                    <div className="w-10 h-10 rounded-xl overflow-hidden relative shadow-xs">
-                      <Image src="/images/astroai/kundli_icon.jpg" alt="Kundli" fill className="object-cover" />
-                    </div>
-                  </div>
-
-                  {/* 4 Pillars Card Grid */}
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-4 rounded-3xl bg-white border border-amber-100 shadow-xs space-y-1">
-                      <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">Sun</span>
-                      <h4 className="text-lg font-bold text-gray-900">{blueprint?.planets?.find((p: any) => p.name === 'Sun')?.signName || 'Leo'}</h4>
-                      <p className="text-[11px] text-gray-500 leading-tight">Core vitality & purpose</p>
-                    </div>
-
-                    <div className="p-4 rounded-3xl bg-white border border-blue-100 shadow-xs space-y-1">
-                      <span className="text-[10px] font-bold text-blue-700 uppercase tracking-wider block">Moon</span>
-                      <h4 className="text-lg font-bold text-gray-900">{blueprint?.planets?.find((p: any) => p.name === 'Moon')?.signName || 'Scorpio'}</h4>
-                      <p className="text-[11px] text-gray-500 leading-tight">Intuition & emotion</p>
-                    </div>
-
-                    <div className="p-4 rounded-3xl bg-white border border-purple-100 shadow-xs space-y-1">
-                      <span className="text-[10px] font-bold text-purple-700 uppercase tracking-wider block">Rising</span>
-                      <h4 className="text-lg font-bold text-gray-900">{blueprint?.ascendantSign || 'Gemini'}</h4>
-                      <p className="text-[11px] text-gray-500 leading-tight">Outer persona & Lagna</p>
-                    </div>
-
-                    <div className="p-4 rounded-3xl bg-white border border-emerald-100 shadow-xs space-y-1">
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider block">Nakshatra</span>
-                      <h4 className="text-lg font-bold text-gray-900 truncate">{blueprint?.ascendantNakshatra || 'Rohini'}</h4>
-                      <p className="text-[11px] text-gray-500 leading-tight">Birth lunar mansion</p>
-                    </div>
-                  </div>
-
-                  {/* Personality at a Glance */}
-                  <div className="p-5 rounded-3xl bg-white border border-gray-100 shadow-xs space-y-3">
-                    <h4 className="text-sm font-bold text-gray-900">Your Personality at a Glance</h4>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="px-3 py-1 rounded-full bg-orange-50 text-[#FF552E] font-bold text-xs border border-orange-200/60">
-                        Curious
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-purple-50 text-purple-700 font-bold text-xs border border-purple-200/60">
-                        Intense
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-blue-50 text-blue-700 font-bold text-xs border border-blue-200/60">
-                        Independent
-                      </span>
-                      <span className="px-3 py-1 rounded-full bg-teal-50 text-teal-700 font-bold text-xs border border-teal-200/60">
-                        Intuitive
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Expand Full Chart CTA */}
-                  <div>
-                    <button
-                      onClick={() => setShowAdvancedKundli(!showAdvancedKundli)}
-                      className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white text-xs font-bold shadow-md shadow-purple-500/20 flex items-center justify-center gap-2 transition-all"
-                    >
-                      <span>{showAdvancedKundli ? 'Hide Full Chart' : 'Explore Full Chart →'}</span>
-                      {showAdvancedKundli ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                    </button>
-
-                    {showAdvancedKundli && (
-                      <div className="mt-3 p-4 rounded-3xl bg-white border border-gray-100 space-y-3 animate-fadeIn">
-                        <h5 className="text-xs font-bold text-gray-900">9 Planetary Coordinates & Bhavas</h5>
-                        <div className="space-y-1.5">
-                          {blueprint?.planets?.map((p: Planet) => (
-                            <div
-                              key={p.id}
-                              onClick={() => {
-                                setActiveTab('ask');
-                                handleSendMessage(`Explain ${p.name} in ${p.signName} (House ${p.houseNumber}) in detail.`);
-                              }}
-                              className="p-2.5 rounded-xl bg-gray-50 hover:bg-orange-50/50 border border-gray-100 flex items-center justify-between text-xs cursor-pointer transition-colors"
-                            >
-                              <div className="flex items-center gap-2">
-                                <span className="font-bold text-[#FF552E]">{p.glyph}</span>
-                                <span className="font-semibold text-gray-900">{p.name}</span>
-                              </div>
-                              <span className="text-gray-500 font-medium">{p.signName} {p.degreeInSign.toFixed(1)}° (H{p.houseNumber})</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                </div>
-              )}
-
-              {/* ================= 4. HOROSCOPE SCREEN ================= */}
-              {activeTab === 'horoscope' && (
-                <div className="p-5 space-y-5 animate-fadeIn">
-                  <div className="space-y-1">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Today&apos;s Horoscope</h2>
-                    <p className="text-xs text-gray-500">Select any zodiac sign for instant daily guidance.</p>
-                  </div>
-
-                  {/* Horizontal Zodiac Selector */}
-                  <div className="overflow-x-auto flex items-center gap-2 pb-2 scrollbar-none">
-                    {ZODIAC_LIST.map((z, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSelectedZodiac(z)}
-                        className={`shrink-0 px-3.5 py-2 rounded-2xl border text-center transition-all flex items-center gap-1.5 ${
-                          selectedZodiac.name === z.name
-                            ? 'bg-[#FF552E] text-white border-[#FF552E] shadow-sm'
-                            : 'bg-white text-gray-700 border-gray-200/80 hover:bg-gray-50'
-                        }`}
-                      >
-                        <span className="text-sm">{z.symbol}</span>
-                        <span className="text-xs font-bold">{z.name}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  {/* Selected Sign Hero Card */}
-                  <div className="p-5 rounded-3xl bg-gradient-to-br from-purple-50 via-pink-50 to-orange-50 border border-purple-100/70 shadow-xs space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <span className="text-xs font-bold text-[#FF552E] block">{selectedZodiac.dates}</span>
-                        <h3 className="text-xl font-bold text-gray-900">{selectedZodiac.name} ({selectedZodiac.symbol})</h3>
-                      </div>
-                      <div className="w-12 h-12 rounded-2xl overflow-hidden relative shadow-xs">
-                        <Image src="/images/astroai/horoscope_icon.jpg" alt="Horoscope" fill className="object-cover" />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-3 text-xs">
-                      <div className="p-3 rounded-2xl bg-white/90 border border-gray-100 space-y-1">
-                        <span className="font-bold text-rose-600 block">❤️ Love</span>
-                        <p className="text-gray-600 leading-snug">Warm openness brings harmonious connection.</p>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-white/90 border border-gray-100 space-y-1">
-                        <span className="font-bold text-amber-600 block">💼 Career</span>
-                        <p className="text-gray-600 leading-snug">Ideal time to refine long-term plans.</p>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-white/90 border border-gray-100 space-y-1">
-                        <span className="font-bold text-emerald-600 block">💰 Money</span>
-                        <p className="text-gray-600 leading-snug">Favorable for reviewing budget goals.</p>
-                      </div>
-                      <div className="p-3 rounded-2xl bg-white/90 border border-gray-100 space-y-1">
-                        <span className="font-bold text-blue-600 block">⚡ Energy</span>
-                        <p className="text-gray-600 leading-snug">Peak mental focus in the afternoon.</p>
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={() => {
-                        setActiveTab('ask');
-                        handleSendMessage(`Give me a detailed horoscope reading for ${selectedZodiac.name} today.`);
-                      }}
-                      className="w-full py-2.5 rounded-full bg-[#FF552E] text-white text-xs font-bold shadow-md shadow-orange-500/20 hover:bg-[#E0451E] transition-all"
-                    >
-                      Ask AI about {selectedZodiac.name} →
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* ================= 5. COMPATIBILITY SCREEN ================= */}
-              {activeTab === 'compatibility' && (
-                <div className="p-5 space-y-5 animate-fadeIn">
-                  <div className="space-y-1">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Explore Your Connection ❤️</h2>
-                    <p className="text-xs text-gray-500">Discover emotional, romantic, and communicative harmony.</p>
-                  </div>
-
-                  {/* Two Profile Illustrations */}
-                  <div className="p-5 rounded-3xl bg-white border border-pink-100 shadow-xs space-y-4">
-                    <div className="flex items-center justify-around py-2">
-                      <div className="text-center space-y-1.5">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-orange-400 to-amber-300 p-0.5 shadow-sm mx-auto overflow-hidden">
-                          <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center text-base font-bold text-[#FF552E]">
-                            {activeProfile?.name?.charAt(0) || 'Y'}
-                          </div>
-                        </div>
-                        <span className="text-xs font-bold text-gray-900 block">YOU ({activeProfile?.name || 'Alex'})</span>
-                      </div>
-
-                      <div className="w-10 h-10 rounded-full bg-pink-50 border border-pink-200 flex items-center justify-center text-pink-500 font-bold text-lg">
-                        +
-                      </div>
-
-                      <div className="text-center space-y-1.5">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-pink-400 to-rose-400 p-0.5 shadow-sm mx-auto overflow-hidden">
-                          <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center text-base font-bold text-pink-600">
-                            {partnerName.charAt(0) || 'P'}
-                          </div>
-                        </div>
-                        <span className="text-xs font-bold text-gray-900 block">PARTNER ({partnerName})</span>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-2.5">
-                      <div>
-                        <label className="block text-[11px] text-gray-500 mb-1 font-medium">Partner Name</label>
-                        <input
-                          type="text"
-                          value={partnerName}
-                          onChange={(e) => setPartnerName(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-900 focus:outline-none focus:border-[#FF552E]"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-[11px] text-gray-500 mb-1 font-medium">Birth Date</label>
-                        <input
-                          type="date"
-                          value={partnerDate}
-                          onChange={(e) => setPartnerDate(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-900 focus:outline-none focus:border-[#FF552E]"
-                        />
-                      </div>
-                    </div>
-
-                    <button
-                      onClick={handleCalculateCompatibility}
-                      className="w-full py-3 rounded-full bg-gradient-to-r from-pink-500 to-rose-500 hover:from-pink-600 hover:to-rose-600 text-white text-xs font-bold shadow-md shadow-pink-500/25 transition-all"
-                    >
-                      Explore Your Connection
-                    </button>
-                  </div>
-
-                  {/* Results Breakdown */}
-                  {compatibilityResult && (
-                    <div className="p-5 rounded-3xl bg-white border border-pink-100 shadow-xs space-y-4 animate-fadeIn">
-                      <div className="flex items-center justify-between border-b border-gray-50 pb-2">
-                        <h4 className="font-bold text-sm text-gray-900">A Strong Connection</h4>
-                        <span className="text-xs font-bold text-pink-600 px-2.5 py-0.5 rounded-full bg-pink-50 border border-pink-200">
-                          High Harmony
-                        </span>
-                      </div>
-
-                      <div className="space-y-2.5 text-xs">
-                        <div className="p-3 rounded-2xl bg-rose-50/50 border border-rose-100/60">
-                          <strong className="text-rose-900 block mb-0.5">❤️ Emotional</strong>
-                          <p className="text-gray-700 leading-relaxed">{compatibilityResult.emotional}</p>
-                        </div>
-                        <div className="p-3 rounded-2xl bg-blue-50/50 border border-blue-100/60">
-                          <strong className="text-blue-900 block mb-0.5">💬 Communication</strong>
-                          <p className="text-gray-700 leading-relaxed">{compatibilityResult.communication}</p>
-                        </div>
-                        <div className="p-3 rounded-2xl bg-amber-50/50 border border-amber-100/60">
-                          <strong className="text-amber-900 block mb-0.5">🔥 Attraction</strong>
-                          <p className="text-gray-700 leading-relaxed">{compatibilityResult.attraction}</p>
-                        </div>
-                        <div className="p-3 rounded-2xl bg-purple-50/50 border border-purple-100/60">
-                          <strong className="text-purple-900 block mb-0.5">💍 Long-term</strong>
-                          <p className="text-gray-700 leading-relaxed">{compatibilityResult.longTerm}</p>
-                        </div>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          const text = `❤️ Our Astro Compatibility: ${activeProfile?.name} + ${compatibilityResult.partner}\n"A Strong Connection" on AstroAI!`;
-                          if (navigator.share) {
-                            navigator.share({ title: 'AstroAI Compatibility', text, url: window.location.href });
-                          } else {
-                            navigator.clipboard.writeText(text);
-                            setIsCopiedShare(true);
-                            setTimeout(() => setIsCopiedShare(false), 2000);
-                          }
-                        }}
-                        className="w-full py-2.5 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-700 text-xs font-bold flex items-center justify-center gap-1.5 transition-all border border-pink-200"
-                      >
-                        {isCopiedShare ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
-                        <span>{isCopiedShare ? 'Card Copied!' : 'Share Compatibility'}</span>
-                      </button>
-                    </div>
-                  )}
-
-                </div>
-              )}
-
-              {/* ================= 6. PREDICTIONS SCREEN ================= */}
-              {activeTab === 'predictions' && (
-                <div className="p-5 space-y-5 animate-fadeIn">
-                  <div className="space-y-1">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Your Predictions</h2>
-                    <p className="text-xs text-gray-500">Personalized timeline forecasts calibrated to your chart.</p>
-                  </div>
-
-                  {/* Tabs: Today | This Week | This Month */}
-                  <div className="flex p-1 rounded-2xl bg-gray-100 border border-gray-200/60">
-                    <button
-                      onClick={() => setPredictionTimeline('today')}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                        predictionTimeline === 'today' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900'
-                      }`}
-                    >
-                      Today
-                    </button>
-                    <button
-                      onClick={() => setPredictionTimeline('week')}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                        predictionTimeline === 'week' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900'
-                      }`}
-                    >
-                      This Week
-                    </button>
-                    <button
-                      onClick={() => setPredictionTimeline('month')}
-                      className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                        predictionTimeline === 'month' ? 'bg-white text-gray-900 shadow-xs' : 'text-gray-500 hover:text-gray-900'
-                      }`}
-                    >
-                      This Month
-                    </button>
-                  </div>
-
-                  {/* Feed Items */}
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-3xl bg-white border border-rose-100 shadow-xs space-y-1.5">
-                      <div className="flex items-center gap-2 text-xs font-bold text-rose-600">
-                        <Heart className="w-4 h-4" />
-                        <span>❤️ Love & Connection</span>
-                      </div>
-                      <p className="text-xs text-gray-700 leading-relaxed">
-                        You may feel more open to honest conversations today. Speak authentically and listen with patience.
-                      </p>
-                    </div>
-
-                    <div className="p-4 rounded-3xl bg-white border border-amber-100 shadow-xs space-y-1.5">
-                      <div className="flex items-center gap-2 text-xs font-bold text-amber-600">
-                        <Briefcase className="w-4 h-4" />
-                        <span>💼 Career & Direction</span>
-                      </div>
-                      <p className="text-xs text-gray-700 leading-relaxed">
-                        A good day to revisit unfinished plans and refine workflows before jumping into new commitments.
-                      </p>
-                    </div>
-
-                    <div className="p-4 rounded-3xl bg-white border border-emerald-100 shadow-xs space-y-1.5">
-                      <div className="flex items-center gap-2 text-xs font-bold text-emerald-600">
-                        <Coins className="w-4 h-4" />
-                        <span>💰 Money & Spending</span>
-                      </div>
-                      <p className="text-xs text-gray-700 leading-relaxed">
-                        Review your spending before making a major decision. Steady patience protects long-term security.
-                      </p>
-                    </div>
-                  </div>
-
-                </div>
-              )}
-
-              {/* ================= 7. DISCOVER LIBRARY SCREEN ================= */}
-              {activeTab === 'discover' && (
-                <div className="p-5 space-y-5 animate-fadeIn">
-                  <div className="space-y-1">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Discover</h2>
-                    <p className="text-xs text-gray-500">Explore guides, wisdom, and astrological mastery.</p>
-                  </div>
-
-                  <div className="space-y-3">
-                    {DISCOVER_ARTICLES.map((art) => (
-                      <div
-                        key={art.id}
-                        onClick={() => {
-                          setActiveTab('ask');
-                          handleSendMessage(`Explain the principles of: ${art.title}`);
-                        }}
-                        className="p-4 rounded-3xl bg-white hover:bg-orange-50/40 border border-gray-100 shadow-xs hover:shadow-md transition-all cursor-pointer space-y-2 group"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${art.color}`}>
-                            {art.category}
-                          </span>
-                          <span className="text-[11px] text-gray-400">{art.readTime}</span>
-                        </div>
-                        <h4 className="font-bold text-sm text-gray-900 group-hover:text-[#FF552E] transition-colors">
-                          {art.title}
-                        </h4>
-                        <p className="text-xs text-gray-600 leading-relaxed">
-                          {art.description}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-
-                </div>
-              )}
-
-              {/* ================= 8. PROFILE & PREFERENCES ================= */}
-              {activeTab === 'profile' && (
-                <div className="p-5 space-y-5 animate-fadeIn">
-                  <div className="space-y-1">
-                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-gray-900">Your Profile</h2>
-                    <p className="text-xs text-gray-500">Manage birth details and personal preferences.</p>
-                  </div>
-
-                  {/* Profile Header Card */}
-                  <div className="p-5 rounded-3xl bg-white border border-gray-100 shadow-xs flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-orange-400 to-amber-300 p-0.5 shadow-sm overflow-hidden">
-                        <div className="w-full h-full rounded-2xl bg-white flex items-center justify-center text-lg font-bold text-[#FF552E]">
-                          {activeProfile?.name?.charAt(0) || 'A'}
-                        </div>
-                      </div>
-                      <div>
-                        <h4 className="font-bold text-sm text-gray-900">{activeProfile?.name || 'Alex'}</h4>
-                        <p className="text-xs text-gray-500">{activeProfile?.email || 'alex@astroai.app'}</p>
-                        <p className="text-[11px] text-[#FF552E] font-medium pt-0.5">
-                          {blueprint?.ascendantSign || 'Virgo'} Lagna • {activeProfile?.astrologySystem || 'Vedic'}
-                        </p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setIsCalibrating(true)}
-                      className="px-3.5 py-1.5 rounded-full bg-gray-50 hover:bg-gray-100 text-xs text-gray-700 font-bold border border-gray-200 transition-colors"
-                    >
-                      Edit
-                    </button>
-                  </div>
-
-                  {/* Tasteful Premium Upgrade Section */}
-                  <div className="p-5 rounded-3xl bg-gradient-to-br from-[#FFF5EE] via-[#FFEADB] to-[#F3E8FF] border border-orange-200/60 shadow-xs space-y-2.5">
-                    <div className="flex items-center gap-2 text-xs font-bold text-[#FF552E]">
-                      <Crown className="w-4 h-4 text-amber-500" />
-                      <span>AstroAI Unlimited</span>
-                    </div>
-                    <h4 className="font-bold text-sm text-gray-900">Unlock Full Chart Insights & Synastry</h4>
-                    <p className="text-xs text-gray-600 leading-relaxed">
-                      Unlimited AI consultations, instant relationship compatibility reports, and deep transit timeline forecasts.
-                    </p>
-                    <button className="px-4 py-2 rounded-full bg-gradient-to-r from-[#FF6B4A] to-[#FF552E] text-white text-xs font-bold shadow-md shadow-orange-500/25">
-                      Explore Premium
-                    </button>
-                  </div>
-
-                  {/* Settings Links */}
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => setActiveTab('kundli')}
-                      className="w-full p-4 rounded-2xl bg-white hover:bg-gray-50 border border-gray-100 shadow-xs flex items-center justify-between text-xs text-gray-800 font-medium transition-all"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Compass className="w-4 h-4 text-blue-500" />
-                        <span>Birth Details & Chart</span>
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </button>
-
-                    <button
-                      onClick={() => setIsCalibrating(true)}
-                      className="w-full p-4 rounded-2xl bg-white hover:bg-gray-50 border border-gray-100 shadow-xs flex items-center justify-between text-xs text-gray-800 font-medium transition-all"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Sliders className="w-4 h-4 text-orange-500" />
-                        <span>Astrology System ({activeProfile?.astrologySystem || 'Vedic'})</span>
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </button>
-
-                    <button
-                      onClick={() => setCurrentView('welcome')}
-                      className="w-full p-4 rounded-2xl bg-white hover:bg-gray-50 border border-gray-100 shadow-xs flex items-center justify-between text-xs text-gray-800 font-medium transition-all"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Sparkles className="w-4 h-4 text-purple-500" />
-                        <span>View Welcome Splash</span>
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-gray-400" />
-                    </button>
-
-                    <Link
-                      href="/astroai/delete-account"
-                      className="w-full p-4 rounded-2xl bg-white hover:bg-rose-50/50 border border-rose-100 shadow-xs flex items-center justify-between text-xs text-rose-600 font-medium transition-all"
-                    >
-                      <span className="flex items-center gap-2.5">
-                        <Shield className="w-4 h-4 text-rose-500" />
-                        <span>Google Play Data Safety & Account Deletion</span>
-                      </span>
-                      <ChevronRight className="w-4 h-4 text-rose-300" />
-                    </Link>
-                  </div>
-
-                </div>
-              )}
-
             </div>
 
-            {/* ================= CLEAN 4-ITEM BOTTOM NAVIGATION (REFERENCE DOCK) ================= */}
-            <nav className="h-16 border-t border-gray-100 bg-white/95 backdrop-blur-md shrink-0 flex items-center justify-around px-4 z-40">
-              {/* Home */}
-              <button
-                onClick={() => setActiveTab('home')}
-                className={`flex flex-col items-center gap-1 text-[11px] font-bold transition-all ${
-                  activeTab === 'home' ? 'text-[#FF552E]' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <Home className="w-5 h-5" />
-                <span>Home</span>
-              </button>
+            <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight mt-3">
+              Your Future <br />
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-300 via-pink-300 to-amber-200">
+                in Your Hands
+              </span>
+            </h1>
 
-              {/* Prominent Center Ask Button */}
-              <button
-                onClick={() => setActiveTab('ask')}
-                className="flex flex-col items-center -mt-5 group"
-              >
-                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#FF6B4A] to-[#FF552E] flex items-center justify-center text-white shadow-lg shadow-orange-500/30 group-hover:scale-105 transition-transform">
-                  <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="currentColor">
-                    <path d="M12 2L14.5 9.5L22 12L14.5 14.5L12 22L9.5 14.5L2 12L9.5 9.5L12 2Z" />
-                  </svg>
-                </div>
-                <span className={`text-[11px] font-bold mt-1 ${activeTab === 'ask' ? 'text-[#FF552E]' : 'text-gray-400'}`}>
-                  Ask
+            <p className="text-slate-300 text-xs sm:text-sm max-w-xs mx-auto mt-3 leading-relaxed">
+              Discover your path with the power of astrology, numerology, and cosmic wisdom.
+            </p>
+
+            {/* Feature Pills */}
+            <div className="flex flex-wrap items-center justify-center gap-2 mt-6">
+              {['Horoscope', 'Kundli', 'Numerology', 'Tarot', 'More'].map((pill) => (
+                <span
+                  key={pill}
+                  className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-[11px] font-medium text-slate-200 backdrop-blur-md"
+                >
+                  {pill}
                 </span>
-              </button>
-
-              {/* Discover */}
-              <button
-                onClick={() => setActiveTab('discover')}
-                className={`flex flex-col items-center gap-1 text-[11px] font-bold transition-all ${
-                  activeTab === 'discover' ? 'text-[#FF552E]' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <BookOpen className="w-5 h-5" />
-                <span>Discover</span>
-              </button>
-
-              {/* Profile */}
-              <button
-                onClick={() => setActiveTab('profile')}
-                className={`flex flex-col items-center gap-1 text-[11px] font-bold transition-all ${
-                  activeTab === 'profile' ? 'text-[#FF552E]' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <User className="w-5 h-5" />
-                <span>Profile</span>
-              </button>
-            </nav>
-
-          </div>
-        )}
-
-      </div>
-
-      {/* ================= CALIBRATION / BIRTH DETAILS MODAL ================= */}
-      {isCalibrating && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 overflow-y-auto">
-          <div className="w-full max-w-md p-6 rounded-3xl bg-white border border-gray-100 shadow-2xl space-y-4 my-auto animate-fadeIn">
-            
-            <div className="flex items-center justify-between border-b border-gray-100 pb-3">
-              <div>
-                <h3 className="font-bold text-base text-gray-900">
-                  {hasProfile ? 'Edit Birth Details' : 'Welcome to AstroAI 👋'}
-                </h3>
-                <p className="text-xs text-gray-500">
-                  {hasProfile ? 'Update your birth coordinates' : 'Enter your details to generate your personalized chart'}
-                </p>
-              </div>
-              {hasProfile && (
-                <button onClick={() => setIsCalibrating(false)} className="p-1 rounded-lg text-gray-400 hover:text-gray-600">
-                  <X className="w-4 h-4" />
-                </button>
-              )}
+              ))}
             </div>
+          </div>
 
-            <form onSubmit={handleSaveProfile} className="space-y-3.5 text-xs">
-              <div>
-                <label className="block text-gray-700 font-bold mb-1">Your Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Alex"
-                  value={profileForm.name}
-                  onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#FF552E]"
-                />
-              </div>
+          {/* Bottom Action */}
+          <div className="space-y-4 z-10 pb-4 max-w-sm mx-auto w-full text-center">
+            <button
+              onClick={() => setCurrentScreen('dob_input')}
+              className="w-full py-4 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white font-bold text-sm shadow-[0_10px_30px_rgba(99,102,241,0.4)] hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+            >
+              <span>Get Started</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
 
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-gray-700 font-bold mb-1">Birth Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={profileForm.birthDate}
-                    onChange={(e) => setProfileForm({ ...profileForm, birthDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:border-[#FF552E]"
-                  />
-                </div>
-
-                <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="text-gray-700 font-bold">Time</label>
-                    <label className="flex items-center gap-1 text-[10px] text-gray-400 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={profileForm.isTimeUnknown}
-                        onChange={(e) => setProfileForm({ ...profileForm, isTimeUnknown: e.target.checked })}
-                        className="rounded text-[#FF552E]"
-                      />
-                      <span>Approx</span>
-                    </label>
-                  </div>
-                  <input
-                    type="time"
-                    disabled={profileForm.isTimeUnknown}
-                    value={profileForm.birthTime}
-                    onChange={(e) => setProfileForm({ ...profileForm, birthTime: e.target.value })}
-                    className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 focus:outline-none focus:border-[#FF552E] disabled:opacity-40"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-gray-700 font-bold">Birthplace</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="City, Country"
-                  value={profileForm.place}
-                  onChange={(e) => setProfileForm({ ...profileForm, place: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 placeholder-gray-400 focus:outline-none focus:border-[#FF552E]"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-bold mb-1">Astrology System</label>
-                <select
-                  value={profileForm.astrologySystem}
-                  onChange={(e) => setProfileForm({ ...profileForm, astrologySystem: e.target.value as any })}
-                  className="w-full px-3 py-2 rounded-xl bg-gray-50 border border-gray-200 text-gray-900 text-xs focus:outline-none"
-                >
-                  <option value="Vedic">Vedic (Lahiri Sidereal - Recommended)</option>
-                  <option value="Western">Western (Tropical)</option>
-                </select>
-              </div>
-
-              <div className="pt-2 border-t border-gray-100 flex items-center justify-end gap-2">
-                {hasProfile && (
-                  <button
-                    type="button"
-                    onClick={() => setIsCalibrating(false)}
-                    className="px-3.5 py-2 rounded-xl text-xs text-gray-500 hover:text-gray-800"
-                  >
-                    Cancel
-                  </button>
-                )}
-                <button
-                  type="submit"
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-full bg-[#FF552E] hover:bg-[#E0451E] text-white text-xs font-bold shadow-md shadow-orange-500/25 transition-all"
-                >
-                  Generate My Chart
-                </button>
-              </div>
-            </form>
+            <p className="text-[11px] text-slate-400 font-medium">
+              Join 10M+ people on their self-discovery journey
+            </p>
           </div>
         </div>
       )}
+
+      {/* ============================================================== */}
+      {/* 2. BIRTH DATE INPUT SCREEN (Clean White Minimalist Card) */}
+      {/* ============================================================== */}
+      {currentScreen === 'dob_input' && (
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between p-4 sm:p-6 max-w-md mx-auto w-full">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between pt-2 pb-4">
+            <button
+              onClick={() => setCurrentScreen('splash')}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs hover:bg-slate-50"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Step 1 of 2</span>
+            <div className="w-9" />
+          </div>
+
+          <div className="space-y-6 my-auto">
+            {/* Title Header */}
+            <div className="text-center space-y-1.5">
+              <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
+                Enter Your Date of Birth
+              </h2>
+              <p className="text-xs text-slate-500">
+                Get your personalized astrology insights in seconds.
+              </p>
+            </div>
+
+            {/* Quick vs Detailed Toggle */}
+            <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200/80">
+              <button
+                onClick={() => setInputMode('quick')}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                  inputMode === 'quick'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                Quick (DOB Only)
+              </button>
+              <button
+                onClick={() => setInputMode('detailed')}
+                className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  inputMode === 'detailed'
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                <span>Detailed</span>
+                <Crown className="w-3.5 h-3.5 text-amber-500" />
+              </button>
+            </div>
+
+            {/* Inputs Box */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+              <div>
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                  Date of Birth
+                </label>
+                <div className="relative flex items-center">
+                  <Calendar className="w-4 h-4 text-indigo-500 absolute left-3.5" />
+                  <input
+                    type="date"
+                    value={userProfile.birthDate}
+                    onChange={(e) => setUserProfile({ ...userProfile, birthDate: e.target.value })}
+                    className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                  />
+                </div>
+              </div>
+
+              {inputMode === 'detailed' && (
+                <>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                      Your Name
+                    </label>
+                    <input
+                      type="text"
+                      value={userProfile.name}
+                      onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
+                      placeholder="e.g. Rahul"
+                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                        Birth Time
+                      </label>
+                      <div className="relative flex items-center">
+                        <Clock className="w-4 h-4 text-indigo-500 absolute left-3" />
+                        <input
+                          type="time"
+                          value={userProfile.birthTime}
+                          onChange={(e) => setUserProfile({ ...userProfile, birthTime: e.target.value })}
+                          className="w-full pl-9 pr-2 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                        Place of Birth
+                      </label>
+                      <div className="relative flex items-center">
+                        <MapPin className="w-4 h-4 text-indigo-500 absolute left-3" />
+                        <input
+                          type="text"
+                          value={userProfile.birthPlace}
+                          onChange={(e) => setUserProfile({ ...userProfile, birthPlace: e.target.value })}
+                          placeholder="City, Country"
+                          className="w-full pl-9 pr-2 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* Continue Button */}
+              <button
+                onClick={() => {
+                  setCurrentScreen('home');
+                }}
+                className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white font-bold text-sm shadow-md hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+              >
+                <span>Continue</span>
+                <ArrowRight className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium pt-1">
+                <Lock className="w-3 h-3 text-emerald-500" />
+                <span>Your data is safe & private</span>
+              </div>
+            </div>
+
+            {/* Upsell Card */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-200 flex items-start gap-3">
+              <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Crown className="w-4 h-4" />
+              </div>
+              <div className="text-xs">
+                <h4 className="font-bold text-slate-900">Unlock Full Kundli</h4>
+                <p className="text-slate-600 text-[11px] mt-0.5">
+                  Add time & place of birth for detailed Vedic chart, dasha and planetary periods.
+                </p>
+              </div>
+            </div>
+
+            {/* Inspirational Quote */}
+            <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg shrink-0">
+                🧘
+              </div>
+              <p className="text-xs italic text-slate-600 leading-relaxed">
+                &ldquo;The stars don&apos;t decide your future, they guide you to make better choices.&rdquo;
+              </p>
+            </div>
+          </div>
+
+          <div className="text-center pt-4">
+            <button
+              onClick={() => setCurrentScreen('home')}
+              className="text-xs font-bold text-indigo-600 hover:underline"
+            >
+              Skip to Dashboard $\rightarrow$
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 3. MAIN DASHBOARD / HOME SCREEN (Astrological Snapshot) */}
+      {/* ============================================================== */}
+      {currentScreen === 'home' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-5">
+          
+          {/* Top Greeting Header */}
+          <div className="flex items-center justify-between pt-2">
+            <div>
+              <h2 className="text-xl sm:text-2xl font-black text-slate-900 flex items-center gap-1.5">
+                <span>Good Morning, {userProfile.name}</span>
+                <span className="text-amber-400">✨</span>
+              </h2>
+              <p className="text-xs text-slate-500 font-medium">
+                Here&apos;s your astrological snapshot
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigateTo('oracle_ai')}
+                className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-all"
+                title="Ask AstroGuru"
+              >
+                <Sparkles className="w-5 h-5 text-indigo-600" />
+              </button>
+              <button
+                onClick={() => navigateTo('share')}
+                className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-200 transition-all"
+                title="Share Report"
+              >
+                <Share2 className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Sun Sign Hero Card */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4 relative overflow-hidden">
+            <div className="flex items-center gap-4">
+              {/* Illustrated Mascot Icon (Leo Lion) */}
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-400 to-amber-500 flex items-center justify-center text-3xl shadow-md ring-4 ring-amber-100 shrink-0">
+                🦁
+              </div>
+              <div className="flex-1">
+                <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
+                  Your Sun Sign
+                </span>
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-xl font-black text-slate-900">
+                    {userProfile.sunSign} {userProfile.sunSignSymbol}
+                  </h3>
+                </div>
+                <span className="text-xs text-slate-500 font-medium">
+                  ({userProfile.sunSignDates})
+                </span>
+              </div>
+            </div>
+
+            {/* 3 Metrics Row */}
+            <div className="grid grid-cols-3 gap-2 pt-2 border-t border-slate-100">
+              <div className="bg-slate-50 rounded-2xl p-2.5 text-center border border-slate-100">
+                <span className="text-[9px] uppercase font-bold text-slate-400 block">Life Path</span>
+                <p className="text-sm font-black text-indigo-600">{userProfile.lifePathNumber}</p>
+                <span className="text-[9px] text-slate-500 truncate block">({userProfile.lifePathMeaning})</span>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl p-2.5 text-center border border-slate-100">
+                <span className="text-[9px] uppercase font-bold text-slate-400 block">Birth Number</span>
+                <p className="text-sm font-black text-purple-600">{userProfile.birthNumber}</p>
+                <span className="text-[9px] text-slate-500 truncate block">({userProfile.birthNumberMeaning})</span>
+              </div>
+
+              <div className="bg-slate-50 rounded-2xl p-2.5 text-center border border-slate-100">
+                <span className="text-[9px] uppercase font-bold text-slate-400 block">Element</span>
+                <p className="text-sm font-black text-amber-600">{userProfile.element}</p>
+                <span className="text-[9px] text-slate-500 truncate block">({userProfile.elementMeaning})</span>
+              </div>
+            </div>
+          </div>
+
+          {/* 6 Grid Feature Cards */}
+          <div className="grid grid-cols-3 gap-3">
+            {/* 1. Daily Horoscope */}
+            <button
+              onClick={() => navigateTo('prediction_2026')}
+              className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-center text-center space-y-2 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-blue-500 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-all">
+                <Sun className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-bold text-slate-800 leading-tight">
+                Daily Horoscope
+              </span>
+            </button>
+
+            {/* 2. Career */}
+            <button
+              onClick={() => navigateTo('career')}
+              className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-purple-300 transition-all flex flex-col items-center text-center space-y-2 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-purple-500 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-all">
+                <Briefcase className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-bold text-slate-800 leading-tight">
+                Career
+              </span>
+            </button>
+
+            {/* 3. Love & Marriage */}
+            <button
+              onClick={() => navigateTo('love')}
+              className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-pink-500 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-all">
+                <Heart className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-bold text-slate-800 leading-tight">
+                Love & Marriage
+              </span>
+            </button>
+
+            {/* 4. Money & Finance */}
+            <button
+              onClick={() => navigateTo('money')}
+              className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col items-center text-center space-y-2 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-emerald-500 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-all">
+                <Coins className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-bold text-slate-800 leading-tight">
+                Money & Finance
+              </span>
+            </button>
+
+            {/* 5. Health */}
+            <button
+              onClick={() => navigateTo('health')}
+              className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-teal-300 transition-all flex flex-col items-center text-center space-y-2 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-teal-500 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-all">
+                <Activity className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-bold text-slate-800 leading-tight">
+                Health
+              </span>
+            </button>
+
+            {/* 6. Life Cycles */}
+            <button
+              onClick={() => navigateTo('cycles')}
+              className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-lime-400 transition-all flex flex-col items-center text-center space-y-2 group"
+            >
+              <div className="w-11 h-11 rounded-2xl bg-lime-500 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-all">
+                <CompassIcon className="w-5 h-5" />
+              </div>
+              <span className="text-xs font-bold text-slate-800 leading-tight">
+                Life Cycles
+              </span>
+            </button>
+          </div>
+
+          {/* Today's Cosmic Message Card */}
+          <div className="bg-gradient-to-r from-amber-50/70 via-orange-50/50 to-pink-50/70 rounded-3xl p-4 border border-amber-200/80 shadow-xs flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 flex items-center justify-center text-xl shrink-0">
+              🧘
+            </div>
+            <div>
+              <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider block">
+                Today&apos;s Cosmic Message
+              </span>
+              <p className="text-xs font-semibold text-slate-800 mt-0.5">
+                &ldquo;Trust your intuition. It knows the way.&rdquo;
+              </p>
+            </div>
+          </div>
+
+          {/* Quick Compatibility Banner */}
+          <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-3xl p-4 text-white shadow-md flex items-center justify-between">
+            <div className="space-y-0.5">
+              <span className="text-[10px] uppercase font-bold text-purple-200">Cosmic Match</span>
+              <h4 className="text-sm font-black">Check Love Compatibility</h4>
+              <p className="text-[11px] text-purple-100">Leo ♌ + Sagittarius ♐ = 78% Match</p>
+            </div>
+            <button
+              onClick={() => navigateTo('compatibility')}
+              className="px-3.5 py-2 rounded-xl bg-white text-indigo-700 font-bold text-xs shadow-sm hover:bg-purple-50 transition-all"
+            >
+              Check $\rightarrow$
+            </button>
+          </div>
+
+          {/* Bottom Interactive Feature Tiles (Matching bottom of reference image) */}
+          <div className="space-y-3 pt-2">
+            <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              Explore Celestial Tools
+            </h4>
+
+            {/* Daily Horoscope */}
+            <div className="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/30 flex items-center justify-center text-lg">
+                  🌅
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold">Daily Horoscope</h5>
+                  <p className="text-[11px] text-slate-300">Fresh guidance every day for your sign</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigateTo('prediction_2026')}
+                className="text-xs font-bold text-pink-300 hover:text-white flex items-center gap-1"
+              >
+                <span>View</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Tarot Reading */}
+            <div className="bg-gradient-to-r from-indigo-950 via-purple-950 to-indigo-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-indigo-500/30 flex items-center justify-center text-lg">
+                  🃏
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold">Tarot Reading</h5>
+                  <p className="text-[11px] text-slate-300">Get clarity on love, career, life & more</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigateTo('tarot')}
+                className="text-xs font-bold text-indigo-300 hover:text-white flex items-center gap-1"
+              >
+                <span>Draw Card</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Numerology */}
+            <div className="bg-gradient-to-r from-blue-950 via-indigo-950 to-slate-900 rounded-2xl p-4 text-white flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/30 flex items-center justify-center text-lg">
+                  🔢
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold">Numerology</h5>
+                  <p className="text-[11px] text-slate-300">Discover the power of your core numbers</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigateTo('numerology')}
+                className="text-xs font-bold text-sky-300 hover:text-white flex items-center gap-1"
+              >
+                <span>Calculate</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {/* Ask AstroGuru */}
+            <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-purple-950 rounded-2xl p-4 text-white flex items-center justify-between shadow-xs">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/30 flex items-center justify-center text-lg">
+                  🤖
+                </div>
+                <div>
+                  <h5 className="text-xs font-bold">Ask AstroGuru (AI)</h5>
+                  <p className="text-[11px] text-slate-300">Chat with your personal astrology assistant</p>
+                </div>
+              </div>
+              <button
+                onClick={() => navigateTo('oracle_ai')}
+                className="text-xs font-bold text-purple-300 hover:text-white flex items-center gap-1"
+              >
+                <span>Chat</span>
+                <ChevronRight className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 4. CAREER & PROFESSION SCREEN (Screen 4 in Reference) */}
+      {/* ============================================================== */}
+      {currentScreen === 'career' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          {/* Header */}
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Career &amp; Profession</h2>
+          </div>
+
+          {/* Segmented Control Tabs */}
+          <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            {(['overview', 'best_fields', 'timeline'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setCareerTab(tab)}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                  careerTab === tab
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+
+          {/* Artwork Banner (Mountain Hiker with Sunset Star) */}
+          <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-purple-900 via-indigo-800 to-amber-700 flex items-end p-4 shadow-sm">
+            <div className="absolute top-4 right-4 text-3xl opacity-80">⭐</div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="relative z-10 text-white">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300">
+                10th House Solar Radiance
+              </span>
+              <h3 className="text-base font-extrabold">Executive &amp; Creative Mastery</h3>
+            </div>
+          </div>
+
+          {/* Content Based on Tab */}
+          {careerTab === 'overview' && (
+            <div className="space-y-4">
+              <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-2">
+                <h4 className="text-sm font-black text-slate-900">Your Career Outlook</h4>
+                <p className="text-xs text-slate-600 leading-relaxed">
+                  You are a natural leader with strong communication skills. You thrive in roles where you can express ideas, solve problems, and work with people.
+                </p>
+              </div>
+
+              {/* Best Career Fields */}
+              <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+                <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                  Best Career Fields
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-medium text-slate-700">
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-indigo-600">👤</span>
+                    <span>Leadership &amp; Management</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-purple-600">📢</span>
+                    <span>Communication &amp; Media</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-blue-600">💼</span>
+                    <span>Business &amp; Entrepreneurship</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-pink-600">🎨</span>
+                    <span>Creative Industries</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-teal-600">🧑‍🏫</span>
+                    <span>Education &amp; Mentoring</span>
+                  </div>
+                  <div className="flex items-center gap-2 p-2 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-emerald-600">📈</span>
+                    <span>Sales &amp; Marketing</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Career Timeline */}
+              <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+                <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                  Your Career Timeline
+                </h4>
+                <div className="space-y-2.5 text-xs">
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-indigo-600 mt-1.5" />
+                    <div>
+                      <span className="font-bold text-indigo-700">2026 – 2027</span>
+                      <p className="text-slate-600">Skill development &amp; foundational professional growth.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-2 h-2 rounded-full bg-purple-600 mt-1.5" />
+                    <div>
+                      <span className="font-bold text-purple-700">2028 – 2029</span>
+                      <p className="text-slate-600">Leadership expansion and entrepreneurial milestones.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {careerTab === 'best_fields' && (
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3 text-xs text-slate-600">
+              <h4 className="font-black text-slate-900 text-sm">Deep Vocational Alignment</h4>
+              <p>Your Leo Midheaven suggests you are best suited for visible roles that allow creative sovereignty. Roles involving management, branding, architectural vision, or counseling give you maximum energy return.</p>
+            </div>
+          )}
+
+          {careerTab === 'timeline' && (
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3 text-xs text-slate-600">
+              <h4 className="font-black text-slate-900 text-sm">Major Dasha Milestones</h4>
+              <p>During the upcoming Sun-Mercury sub-period, contractual opportunities and expansion in public communication reach their peak.</p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 5. LOVE & RELATIONSHIPS SCREEN (Screen 5 in Reference) */}
+      {/* ============================================================== */}
+      {currentScreen === 'love' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Love &amp; Relationships</h2>
+          </div>
+
+          <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            {(['overview', 'compatibility', 'timing'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setLoveTab(tab)}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                  loveTab === tab
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Artwork Banner (Romantic Sunset Couple) */}
+          <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-pink-900 via-purple-900 to-amber-700 flex items-end p-4 shadow-sm">
+            <div className="absolute top-4 right-4 text-3xl opacity-80">💑</div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="relative z-10 text-white">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-pink-300">
+                7th House Synastry Harmony
+              </span>
+              <h3 className="text-base font-extrabold">Devoted &amp; Passionate Loyalty</h3>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-2">
+              <h4 className="text-sm font-black text-slate-900">Love Outlook</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                You value emotional stability and loyalty in a relationship. You may take time before committing, but once you decide, you are devoted and supportive.
+              </p>
+            </div>
+
+            {/* Potential Relationship Periods */}
+            <div className="bg-pink-50/60 rounded-3xl p-5 border border-pink-200 shadow-xs space-y-2">
+              <div className="flex items-center gap-2 text-pink-700 font-bold text-xs">
+                <Calendar className="w-4 h-4" />
+                <span>Potential Relationship Periods</span>
+              </div>
+              <div className="space-y-1 text-xs">
+                <p className="font-extrabold text-slate-900">27 – 30 years</p>
+                <p className="font-extrabold text-slate-900">32 – 34 years</p>
+              </div>
+              <span className="text-[10px] text-slate-400 block pt-1">
+                (Date-based estimate, not a guarantee)
+              </span>
+            </div>
+
+            {/* Best Matches */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+              <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                Best Matches
+              </h4>
+              <div className="grid grid-cols-4 gap-2 text-center">
+                <div className="p-2.5 rounded-2xl bg-amber-50 border border-amber-100">
+                  <span className="text-lg">♈</span>
+                  <p className="text-[11px] font-bold text-slate-800 mt-1">Aries</p>
+                  <span className="text-[9px] text-amber-600 font-medium">(Fire)</span>
+                </div>
+                <div className="p-2.5 rounded-2xl bg-sky-50 border border-sky-100">
+                  <span className="text-lg">♊</span>
+                  <p className="text-[11px] font-bold text-slate-800 mt-1">Gemini</p>
+                  <span className="text-[9px] text-sky-600 font-medium">(Air)</span>
+                </div>
+                <div className="p-2.5 rounded-2xl bg-pink-50 border border-pink-100">
+                  <span className="text-lg">♎</span>
+                  <p className="text-[11px] font-bold text-slate-800 mt-1">Libra</p>
+                  <span className="text-[9px] text-pink-600 font-medium">(Air)</span>
+                </div>
+                <div className="p-2.5 rounded-2xl bg-purple-50 border border-purple-100">
+                  <span className="text-lg">♐</span>
+                  <p className="text-[11px] font-bold text-slate-800 mt-1">Sagittarius</p>
+                  <span className="text-[9px] text-purple-600 font-medium">(Fire)</span>
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => navigateTo('compatibility')}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-pink-500 to-rose-600 text-white font-bold text-xs shadow-md hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>Check Love Compatibility</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 6. MONEY & FINANCE SCREEN (Screen 6 in Reference) */}
+      {/* ============================================================== */}
+      {currentScreen === 'money' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Money &amp; Finance</h2>
+          </div>
+
+          <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            {(['overview', 'growth', 'tips'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setMoneyTab(tab)}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                  moneyTab === tab
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Artwork Banner (Gold coins & growing sprout) */}
+          <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-900 via-teal-800 to-amber-700 flex items-end p-4 shadow-sm">
+            <div className="absolute top-4 right-4 text-3xl opacity-80">🌱💰</div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="relative z-10 text-white">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-300">
+                2nd &amp; 11th House Wealth Engine
+              </span>
+              <h3 className="text-base font-extrabold">Sustainable Wealth Building</h3>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-2">
+              <h4 className="text-sm font-black text-slate-900">Financial Outlook</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                You are good at planning and building long-term wealth. Consistency, discipline, and multiple income streams can bring strong financial stability.
+              </p>
+            </div>
+
+            {/* Key Financial Periods */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+              <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                Key Financial Periods
+              </h4>
+              <div className="space-y-2 text-xs">
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <div>
+                    <span className="font-extrabold text-slate-900">29 – 32 years:</span>
+                    <span className="text-slate-600 ml-1">Career &amp; income growth expansion.</span>
+                  </div>
+                </div>
+                <div className="flex items-start gap-2.5">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 mt-0.5 shrink-0" />
+                  <div>
+                    <span className="font-extrabold text-slate-900">35 – 38 years:</span>
+                    <span className="text-slate-600 ml-1">Substantial wealth accumulation &amp; assets.</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Lucky Elements */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+              <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                Lucky Elements
+              </h4>
+              <div className="grid grid-cols-3 gap-2 text-center text-xs">
+                <div className="p-2.5 rounded-2xl bg-indigo-50 border border-indigo-100">
+                  <span className="text-[10px] text-slate-400 block font-bold">Lucky Numbers</span>
+                  <p className="font-black text-indigo-700 mt-0.5">3, 6, 9</p>
+                </div>
+                <div className="p-2.5 rounded-2xl bg-amber-50 border border-amber-100">
+                  <span className="text-[10px] text-slate-400 block font-bold">Lucky Colors</span>
+                  <p className="font-black text-amber-700 mt-0.5 text-[11px]">Gold, Orange, White</p>
+                </div>
+                <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-100">
+                  <span className="text-[10px] text-slate-400 block font-bold">Lucky Days</span>
+                  <p className="font-black text-emerald-700 mt-0.5">Sunday, Friday</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Finance Tips Box */}
+            <div className="bg-amber-50/70 rounded-2xl p-4 border border-amber-200 flex items-start gap-3">
+              <span className="text-xl">💡</span>
+              <div className="text-xs">
+                <h5 className="font-bold text-amber-950">Finance Tip</h5>
+                <p className="text-amber-900 text-[11px] mt-0.5">
+                  Avoid impulsive speculative spending and focus on disciplined long-term assets.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 7. HEALTH & WELLNESS SCREEN (Screen 7 in Reference) */}
+      {/* ============================================================== */}
+      {currentScreen === 'health' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Health &amp; Wellness</h2>
+          </div>
+
+          <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            {(['overview', 'fitness', 'mental'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setHealthTab(tab)}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                  healthTab === tab
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          {/* Artwork Banner (Meditating Silhouette with Chakra Radiance) */}
+          <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-teal-900 via-cyan-800 to-amber-700 flex items-end p-4 shadow-sm">
+            <div className="absolute top-4 right-4 text-3xl opacity-80">🧘✨</div>
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <div className="relative z-10 text-white">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-teal-300">
+                Vitality &amp; Solar Prana
+              </span>
+              <h3 className="text-base font-extrabold">Holistic Energy Alignment</h3>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-2">
+              <h4 className="text-sm font-black text-slate-900">Health Outlook</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                You have good vitality and natural solar energy. You may be prone to stress and overthinking, so balance is important.
+              </p>
+            </div>
+
+            {/* Focus Areas */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
+              <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                Focus Areas
+              </h4>
+              <div className="grid grid-cols-2 gap-2 text-xs font-medium">
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-700">
+                  <span className="text-purple-600">🧘</span>
+                  <span>Stress Management</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-700">
+                  <span className="text-indigo-600">😴</span>
+                  <span>Better Sleep</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-700">
+                  <span className="text-emerald-600">🏃</span>
+                  <span>Regular Exercise</span>
+                </div>
+                <div className="flex items-center gap-2 p-2.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-700">
+                  <span className="text-teal-600">🥗</span>
+                  <span>Balanced Diet</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Wellness Tips */}
+            <div className="bg-purple-50/70 rounded-2xl p-4 border border-purple-200 flex items-start gap-3">
+              <span className="text-xl text-purple-600">⭐</span>
+              <div className="text-xs">
+                <h5 className="font-bold text-purple-950">Wellness Tips</h5>
+                <p className="text-purple-900 text-[11px] mt-0.5">
+                  Practice mindfulness, stay hydrated, and maintain a consistent daily circadian routine.
+                </p>
+              </div>
+            </div>
+
+            <button
+              onClick={() => navigateTo('oracle_ai')}
+              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs shadow-md hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
+            >
+              <span>Start 7-Day Wellness Plan</span>
+              <ArrowRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 8. LIFE CYCLES SCREEN (Screen 8 in Reference) */}
+      {/* ============================================================== */}
+      {currentScreen === 'cycles' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Life Cycles</h2>
+          </div>
+
+          <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            {(['overview', 'key_phases', 'insights'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setCyclesTab(tab)}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                  cyclesTab === tab
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+            <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+              Chronological Growth Cycles
+            </h4>
+
+            {/* Vertical Timeline */}
+            <div className="space-y-4 text-xs">
+              {/* 0 - 18 */}
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-amber-100 text-amber-800 font-extrabold flex items-center justify-center shrink-0 border border-amber-200 text-[11px]">
+                  0-18
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Foundation</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Learning, family influence, character and personality development.
+                  </p>
+                </div>
+              </div>
+
+              {/* 19 - 27 */}
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-sky-100 text-sky-800 font-extrabold flex items-center justify-center shrink-0 border border-sky-200 text-[11px]">
+                  19-27
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Exploration</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Higher education, initial relationship bonds, career experimentation.
+                  </p>
+                </div>
+              </div>
+
+              {/* 28 - 36 */}
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 font-extrabold flex items-center justify-center shrink-0 border border-emerald-200 text-[11px]">
+                  28-36
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Growth</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Accelerated career trajectory, financial responsibility, major life decisions.
+                  </p>
+                </div>
+              </div>
+
+              {/* 37 - 45 */}
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-purple-100 text-purple-800 font-extrabold flex items-center justify-center shrink-0 border border-purple-200 text-[11px]">
+                  37-45
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Consolidation</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Long-term stability, executive leadership, accumulated wisdom and assets.
+                  </p>
+                </div>
+              </div>
+
+              {/* 46+ */}
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-rose-100 text-rose-800 font-extrabold flex items-center justify-center shrink-0 border border-rose-200 text-[11px]">
+                  46+
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Influence</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Mentoring, family legacy, spiritual contribution, and sharing deep wisdom.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-3xl p-5 text-white text-center shadow-sm space-y-1">
+            <h5 className="text-xs font-bold text-amber-300">Your journey is unique.</h5>
+            <p className="text-[11px] text-slate-200">
+              Every astrological phase brings fresh horizons and divine timing.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 9. 2026 PREDICTION SCREEN (Screen 9 in Reference) */}
+      {/* ============================================================== */}
+      {currentScreen === 'prediction_2026' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">2026 Prediction</h2>
+          </div>
+
+          <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            {(['overview', 'monthly', 'lucky_guide'] as const).map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setPredictionTab(tab)}
+                className={`flex-1 py-2 rounded-xl text-xs font-bold capitalize transition-all ${
+                  predictionTab === tab
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {tab.replace('_', ' ')}
+              </button>
+            ))}
+          </div>
+
+          {/* Artwork Banner (2026 Cosmic Typography) */}
+          <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-purple-950 via-indigo-900 to-slate-900 flex items-center justify-center p-4 shadow-sm text-center">
+            <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent" />
+            <div className="relative z-10 text-white space-y-1">
+              <span className="text-3xl sm:text-4xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-amber-200 via-pink-200 to-purple-200">
+                2026
+              </span>
+              <p className="text-[10px] uppercase font-bold text-slate-300 tracking-wider">
+                Vedic Year Planetary Forecast
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {/* Overall Theme */}
+            <div className="bg-amber-50/70 rounded-3xl p-4 border border-amber-200/80 text-xs">
+              <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider block mb-1">
+                Overall Theme
+              </span>
+              <p className="font-extrabold text-slate-900">
+                &ldquo;Build the foundation before making the next major move.&rdquo;
+              </p>
+            </div>
+
+            {/* Categorized Forecast */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3.5 text-xs">
+              {/* Career */}
+              <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
+                  <Briefcase className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Career</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Strengthen your professional direction and take on greater administrative responsibility.
+                  </p>
+                </div>
+              </div>
+
+              {/* Money */}
+              <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                  <Coins className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Money</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Focus on financial consistency and avoid major hasty purchases from emotion.
+                  </p>
+                </div>
+              </div>
+
+              {/* Love */}
+              <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-xl bg-pink-100 text-pink-700 flex items-center justify-center shrink-0">
+                  <Heart className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Love</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Existing relationships mature into deeper commitments. Singles discover strong mutual connections.
+                  </p>
+                </div>
+              </div>
+
+              {/* Family */}
+              <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
+                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Family</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Family responsibilities increase, rewarded by closer bonding through patient communication.
+                  </p>
+                </div>
+              </div>
+
+              {/* Health */}
+              <div className="flex items-start gap-3">
+                <div className="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center shrink-0">
+                  <Activity className="w-4 h-4" />
+                </div>
+                <div>
+                  <h5 className="font-extrabold text-slate-900 text-xs">Health</h5>
+                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
+                    Maintain regular routines, quality sleep, light daily cardio, and stress reduction.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 10. COMPATIBILITY SCREEN (Screen 10 in Reference) */}
+      {/* ============================================================== */}
+      {currentScreen === 'compatibility' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Compatibility</h2>
+          </div>
+
+          <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
+            <button
+              onClick={() => setCompatTypeTab('love')}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                compatTypeTab === 'love'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Love
+            </button>
+            <button
+              onClick={() => setCompatTypeTab('friends_business')}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
+                compatTypeTab === 'friends_business'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Friends / Business
+            </button>
+          </div>
+
+          {/* Sign Selectors Box */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Your Sign</label>
+                <select
+                  value={mySign}
+                  onChange={(e) => setMySign(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-xs text-slate-800"
+                >
+                  {ZODIAC_LIST.map((z) => (
+                    <option key={z.name} value={`${z.name} ${z.symbol}`}>
+                      {z.name} {z.symbol}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-[10px] uppercase font-bold text-slate-400 block mb-1">Partner&apos;s Sign</label>
+                <select
+                  value={partnerSign}
+                  onChange={(e) => setPartnerSign(e.target.value)}
+                  className="w-full p-2.5 rounded-xl border border-slate-200 bg-slate-50 font-bold text-xs text-slate-800"
+                >
+                  {ZODIAC_LIST.map((z) => (
+                    <option key={z.name} value={`${z.name} ${z.symbol}`}>
+                      {z.name} {z.symbol}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <button
+              className="w-full py-3 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-sm hover:bg-indigo-700 transition-all"
+            >
+              Check Compatibility
+            </button>
+          </div>
+
+          {/* Result Gauge Card */}
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-4">
+              {/* Circular Percentage Meter */}
+              <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
+                <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+                  <path
+                    className="text-slate-100"
+                    strokeWidth="3.5"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path
+                    className="text-pink-500"
+                    strokeDasharray="78, 100"
+                    strokeWidth="3.5"
+                    strokeLinecap="round"
+                    stroke="currentColor"
+                    fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                </svg>
+                <span className="absolute text-base font-black text-slate-900">78%</span>
+              </div>
+
+              <div>
+                <h4 className="text-sm font-black text-slate-900">Good Compatibility</h4>
+                <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
+                  You both share enthusiasm, high vitality, adventure, and frank, direct communication.
+                </p>
+              </div>
+            </div>
+
+            {/* Strengths Checklist */}
+            <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
+              <h5 className="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Strengths</h5>
+              <div className="space-y-1.5 text-slate-600">
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Mutual natural attraction &amp; solar inspiration</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Shared ambition &amp; future goals</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Check className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Loyal emotional support through challenges</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Upsell Banner */}
+            <div className="bg-amber-50/70 rounded-2xl p-3.5 border border-amber-200 flex items-start gap-2.5 text-xs">
+              <Crown className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-amber-900 text-[11px]">
+                For a 36-Guna detailed Ashtakoota Vedic Kundli Milan matching report, add your partner&apos;s full birth details.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 11. TAROT READING SCREEN */}
+      {/* ============================================================== */}
+      {currentScreen === 'tarot' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Tarot Reading</h2>
+          </div>
+
+          <div className="bg-gradient-to-r from-purple-950 via-indigo-950 to-slate-900 rounded-3xl p-6 text-white text-center space-y-4">
+            <Sparkles className="w-8 h-8 text-amber-300 mx-auto animate-pulse" />
+            <h3 className="text-base font-extrabold">Pick Your Card of Insight</h3>
+            <p className="text-xs text-slate-300">
+              Clear your mind, take a deep breath, and tap one card for your personal oracle reading.
+            </p>
+
+            {/* 3 Tarot Cards */}
+            <div className="grid grid-cols-3 gap-3 pt-2">
+              {[
+                { title: 'The Sun', symbol: '☀️', meaning: 'Joy, Success & Vitality' },
+                { title: 'The Star', symbol: '⭐', meaning: 'Hope, Guidance & Faith' },
+                { title: 'The Magician', symbol: '🔮', meaning: 'Creation, Willpower & Resourcefulness' },
+              ].map((card, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => {
+                    setSelectedTarot(idx);
+                    setTarotFlipped(true);
+                  }}
+                  className={`h-36 rounded-2xl border-2 transition-all p-2 flex flex-col items-center justify-between ${
+                    selectedTarot === idx
+                      ? 'border-amber-400 bg-purple-900/80 scale-105 shadow-lg'
+                      : 'border-white/20 bg-white/5 hover:border-white/40'
+                  }`}
+                >
+                  <span className="text-xs font-bold text-purple-300">#{idx + 1}</span>
+                  <span className="text-3xl">{selectedTarot === idx ? card.symbol : '🂠'}</span>
+                  <span className="text-[10px] font-bold truncate">
+                    {selectedTarot === idx ? card.title : 'Draw'}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {selectedTarot !== null && (
+              <div className="bg-white/10 rounded-2xl p-4 text-left border border-white/15 space-y-1">
+                <span className="text-[10px] uppercase font-bold text-amber-300">Card Revelation</span>
+                <h5 className="font-extrabold text-sm text-white">
+                  {[
+                    'The Sun — Radiance & Achievement',
+                    'The Star — Cosmic Inspiration & Renewal',
+                    'The Magician — Infinite Creative Power',
+                  ][selectedTarot]}
+                </h5>
+                <p className="text-xs text-slate-200 mt-1 leading-relaxed">
+                  {[
+                    'Your path is illuminated with clarity. Trust your vitality and take bold strides toward your goals.',
+                    'A peaceful renewal of purpose is arriving. What you hoped for is coming into divine alignment.',
+                    'You possess all the tools and resources you need right now to manifest your highest outcome.',
+                  ][selectedTarot]}
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 12. NUMEROLOGY SCREEN */}
+      {/* ============================================================== */}
+      {currentScreen === 'numerology' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Numerology Insights</h2>
+          </div>
+
+          <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white font-black text-2xl flex items-center justify-center shadow-md">
+                2
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400">Core Frequency</span>
+                <h3 className="text-base font-black text-slate-900">Life Path 2: The Diplomat</h3>
+                <p className="text-xs text-slate-500">Born on 15 August 1995 (1+5+8+1+9+9+5 = 38 $\rightarrow$ 11 $\rightarrow$ 2)</p>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2 text-xs text-slate-600 leading-relaxed border-t border-slate-100">
+              <p>
+                As a <strong>Life Path 2</strong>, you are naturally empathetic, diplomatic, and intuitive. You bring people together, create harmony, and possess a gentle yet potent influence on everyone around you.
+              </p>
+            </div>
+
+            {/* Core Numbers Breakdown */}
+            <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                <span className="text-[9px] text-slate-400 font-bold uppercase">Destiny No</span>
+                <p className="text-base font-black text-purple-600 mt-0.5">8</p>
+                <span className="text-[9px] text-slate-500">(Abundance)</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                <span className="text-[9px] text-slate-400 font-bold uppercase">Soul Urge</span>
+                <p className="text-base font-black text-indigo-600 mt-0.5">6</p>
+                <span className="text-[9px] text-slate-500">(Nurturing)</span>
+              </div>
+              <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                <span className="text-[9px] text-slate-400 font-bold uppercase">Personality</span>
+                <p className="text-base font-black text-emerald-600 mt-0.5">4</p>
+                <span className="text-[9px] text-slate-500">(Reliability)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 13. ASK ASTROGURU (AI ASSISTANT) SCREEN */}
+      {/* ============================================================== */}
+      {currentScreen === 'oracle_ai' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 flex flex-col h-[85vh]">
+          {/* Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={goBack}
+                className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              <div>
+                <h2 className="text-base font-black text-slate-900 flex items-center gap-1.5">
+                  <span>AstroGuru (AI)</span>
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                </h2>
+                <p className="text-[10px] text-slate-400">Vedic Chart Intelligence Engine</p>
+              </div>
+            </div>
+            <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold">
+              Leo ♌
+            </span>
+          </div>
+
+          {/* Chat Messages */}
+          <div className="flex-1 overflow-y-auto py-4 space-y-3.5">
+            {chatMessages.map((msg, i) => (
+              <div
+                key={i}
+                className={`flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div
+                  className={`max-w-[85%] rounded-3xl p-4 text-xs leading-relaxed shadow-xs ${
+                    msg.sender === 'user'
+                      ? 'bg-indigo-600 text-white rounded-br-xs'
+                      : 'bg-white border border-slate-200 text-slate-800 rounded-bl-xs'
+                  }`}
+                >
+                  {msg.sender === 'guru' && (
+                    <span className="text-[10px] font-bold uppercase text-indigo-600 block mb-1">
+                      AstroGuru
+                    </span>
+                  )}
+                  {msg.text}
+                </div>
+              </div>
+            ))}
+
+            {isAiTyping && (
+              <div className="flex justify-start">
+                <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs text-slate-400 flex items-center gap-2">
+                  <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-spin" />
+                  <span>Consulting your celestial chart...</span>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} />
+          </div>
+
+          {/* Suggested Prompts */}
+          <div className="flex gap-2 overflow-x-auto pb-2 text-[11px]">
+            {['❤️ Love Timing', '💼 Career 2026', '💰 Wealth & Assets', '🔮 Rahu-Ketu'].map((prompt) => (
+              <button
+                key={prompt}
+                onClick={() => setQueryInput(`What does my chart indicate for ${prompt}?`)}
+                className="whitespace-nowrap px-3 py-1.5 rounded-full bg-white border border-slate-200 text-slate-700 font-medium hover:bg-slate-50"
+              >
+                {prompt}
+              </button>
+            ))}
+          </div>
+
+          {/* Input Box */}
+          <div className="flex items-center gap-2 pt-2">
+            <input
+              type="text"
+              value={queryInput}
+              onChange={(e) => setQueryInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              placeholder="Ask about your destiny, love, career..."
+              className="flex-1 px-4 py-3 rounded-2xl border border-slate-200 bg-white text-xs text-slate-800 focus:outline-none focus:border-indigo-500 shadow-xs"
+            />
+            <button
+              onClick={handleSendMessage}
+              disabled={!queryInput.trim()}
+              className="w-11 h-11 rounded-2xl bg-indigo-600 text-white flex items-center justify-center shadow-sm hover:bg-indigo-700 disabled:opacity-50 transition-all"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* 14. SAVE & SHARE MODAL SCREEN */}
+      {/* ============================================================== */}
+      {currentScreen === 'share' && (
+        <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={goBack}
+              className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+            <h2 className="text-lg font-black text-slate-900">Save &amp; Share</h2>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm text-center space-y-5">
+            <div className="w-16 h-16 rounded-3xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center text-2xl mx-auto shadow-md">
+              <Share2 className="w-7 h-7" />
+            </div>
+
+            <div>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-pink-500 bg-pink-50 px-2 py-0.5 rounded-full border border-pink-100">
+                NEW FEATURE
+              </span>
+              <h3 className="text-base font-black text-slate-900 mt-2">Save &amp; Share Your Cosmic Report</h3>
+              <p className="text-xs text-slate-500 mt-1">
+                Share your Leo ♌ snapshot, 2026 forecast, and astrological insights with friends and family.
+              </p>
+            </div>
+
+            {/* Social Icons Row */}
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => {
+                  window.open(`https://wa.me/?text=Check%20out%20my%20Astrological%20Snapshot%20on%20Jyoti%20AI:%20Leo%20Sun,%20Life%20Path%202!%20https://kuthiyengpham.in/astroai`, '_blank');
+                }}
+                className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-sm hover:scale-105 transition-all"
+                title="WhatsApp"
+              >
+                💬
+              </button>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText('https://kuthiyengpham.in/astroai');
+                  setShowShareToast(true);
+                  setTimeout(() => setShowShareToast(false), 2500);
+                }}
+                className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 text-white flex items-center justify-center text-xl shadow-sm hover:scale-105 transition-all"
+                title="Instagram / Story"
+              >
+                📷
+              </button>
+
+              <button
+                onClick={() => {
+                  window.open(`https://twitter.com/intent/tweet?text=Discovering%20my%202026%20Vedic%20Astrology%20insights%20on%20Jyoti%20AI!%20https://kuthiyengpham.in/astroai`, '_blank');
+                }}
+                className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center text-lg shadow-sm hover:scale-105 transition-all"
+                title="X / Twitter"
+              >
+                𝕏
+              </button>
+
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText('https://kuthiyengpham.in/astroai');
+                  setShowShareToast(true);
+                  setTimeout(() => setShowShareToast(false), 2500);
+                }}
+                className="w-12 h-12 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-700 flex items-center justify-center text-xl shadow-xs hover:scale-105 transition-all"
+                title="Copy Link"
+              >
+                <Copy className="w-5 h-5" />
+              </button>
+            </div>
+
+            {showShareToast && (
+              <div className="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-bold flex items-center justify-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>Link copied to clipboard!</span>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* BOTTOM BRANDING & STORE BADGES FOOTER */}
+      {/* ============================================================== */}
+      <div className="mt-8 pt-6 border-t border-slate-200/80 max-w-md mx-auto w-full px-4 text-center space-y-4">
+        <div className="flex items-center justify-center gap-2 text-xs font-extrabold text-indigo-900">
+          <Sparkles className="w-4 h-4 text-amber-500" />
+          <span>More Than Just Predictions $\rightarrow$ It&apos;s Your Personal Growth Companion</span>
+          <Sparkles className="w-4 h-4 text-amber-500" />
+        </div>
+
+        <div className="flex items-center justify-center gap-3">
+          <div className="px-4 py-2 rounded-xl bg-slate-900 text-white text-[11px] font-bold flex items-center gap-2 shadow-xs">
+            <span>▶ Google Play</span>
+          </div>
+          <div className="px-4 py-2 rounded-xl bg-slate-900 text-white text-[11px] font-bold flex items-center gap-2 shadow-xs">
+            <span> App Store</span>
+          </div>
+        </div>
+
+        <p className="text-[10px] text-slate-400">
+          © 2026 Jyoti AI • Built with ancient Surya Siddhanta &amp; Modern Astronomical Intelligence.
+        </p>
+      </div>
+
+      {/* ============================================================== */}
+      {/* FLOATING BOTTOM APP NAVIGATION BAR (Mobile Bottom Bar) */}
+      {/* ============================================================== */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-2 px-4">
+        <div className="max-w-md mx-auto flex items-center justify-around">
+          <button
+            onClick={() => setCurrentScreen('home')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+              currentScreen === 'home'
+                ? 'text-indigo-600 font-bold'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            <Home className="w-5 h-5" />
+            <span className="text-[10px]">Home</span>
+          </button>
+
+          <button
+            onClick={() => navigateTo('career')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+              currentScreen === 'career' || currentScreen === 'money' || currentScreen === 'health'
+                ? 'text-indigo-600 font-bold'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            <Compass className="w-5 h-5" />
+            <span className="text-[10px]">Explore</span>
+          </button>
+
+          <button
+            onClick={() => navigateTo('oracle_ai')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+              currentScreen === 'oracle_ai'
+                ? 'text-indigo-600 font-bold'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            <div className="w-6 h-6 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-xs">
+              <Sparkles className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-[10px]">Ask AI</span>
+          </button>
+
+          <button
+            onClick={() => navigateTo('compatibility')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+              currentScreen === 'compatibility'
+                ? 'text-indigo-600 font-bold'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            <Heart className="w-5 h-5" />
+            <span className="text-[10px]">Match</span>
+          </button>
+
+          <button
+            onClick={() => navigateTo('dob_input')}
+            className={`flex flex-col items-center gap-1 py-1 px-3 rounded-xl transition-all ${
+              currentScreen === 'dob_input'
+                ? 'text-indigo-600 font-bold'
+                : 'text-slate-400 hover:text-slate-700'
+            }`}
+          >
+            <User className="w-5 h-5" />
+            <span className="text-[10px]">Profile</span>
+          </button>
+        </div>
+      </div>
 
     </div>
   );
