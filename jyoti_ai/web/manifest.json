@@ -1,0 +1,18 @@
+{
+  "name": "Jyoti AI — Your Personal Celestial Intelligence",
+  "short_name": "Jyoti AI",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#07090E",
+  "theme_color": "#07090E",
+  "description": "Global Autonomous Astrological Intelligence Platform",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

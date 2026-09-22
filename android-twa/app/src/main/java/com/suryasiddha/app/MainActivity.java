@@ -1,4 +1,4 @@
-package in.kuthiyengpham.suryasiddha;
+package com.suryasiddha.app;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;

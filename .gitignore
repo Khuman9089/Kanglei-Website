@@ -46,3 +46,11 @@ urlMObile.txt
 /scratch/
 !src/data/**
 
+# Android & IDE
+.idea/
+.gradle/
+**/build/
+local.properties
+*.iml
+
+

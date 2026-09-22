@@ -35,8 +35,8 @@ export default function MobileBottomNav() {
     };
   }, []);
 
-  // Hide bottom nav in admin or astrologer portal or native app view
-  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/astrologer') || pathname?.startsWith('/app')) {
+  // Hide bottom nav in admin or astrologer portal or native app view or standalone astroai
+  if (pathname?.startsWith('/admin') || pathname?.startsWith('/dashboard/astrologer') || pathname?.startsWith('/app') || pathname?.startsWith('/astroai')) {
     return null;
   }
 
