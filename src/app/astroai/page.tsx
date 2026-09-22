@@ -47,6 +47,8 @@ import {
   RefreshCw,
   Copy,
   CheckCircle2,
+  Wifi,
+  WifiOff,
   Info
 } from 'lucide-react';
 
@@ -67,29 +69,122 @@ interface UserProfile {
 }
 
 const ZODIAC_LIST = [
-  { name: 'Aries', symbol: '♈', dates: 'Mar 21 - Apr 19', element: 'Fire' },
-  { name: 'Taurus', symbol: '♉', dates: 'Apr 20 - May 20', element: 'Earth' },
-  { name: 'Gemini', symbol: '♊', dates: 'May 21 - Jun 20', element: 'Air' },
-  { name: 'Cancer', symbol: '♋', dates: 'Jun 21 - Jul 22', element: 'Water' },
-  { name: 'Leo', symbol: '♌', dates: 'Jul 23 - Aug 22', element: 'Fire' },
-  { name: 'Virgo', symbol: '♍', dates: 'Aug 23 - Sep 22', element: 'Earth' },
-  { name: 'Libra', symbol: '♎', dates: 'Sep 23 - Oct 22', element: 'Air' },
-  { name: 'Scorpio', symbol: '♏', dates: 'Oct 23 - Nov 21', element: 'Water' },
-  { name: 'Sagittarius', symbol: '♐', dates: 'Nov 22 - Dec 21', element: 'Fire' },
-  { name: 'Capricorn', symbol: '♑', dates: 'Dec 22 - Jan 19', element: 'Earth' },
-  { name: 'Aquarius', symbol: '♒', dates: 'Jan 20 - Feb 18', element: 'Air' },
-  { name: 'Pisces', symbol: '♓', dates: 'Feb 19 - Mar 20', element: 'Water' },
+  { name: 'Aries', symbol: '♈', start: [3, 21], end: [4, 19], dates: 'Mar 21 - Apr 19', element: 'Fire', trait: 'Courage & Leadership' },
+  { name: 'Taurus', symbol: '♉', start: [4, 20], end: [5, 20], dates: 'Apr 20 - May 20', element: 'Earth', trait: 'Patience & Loyalty' },
+  { name: 'Gemini', symbol: '♊', start: [5, 21], end: [6, 20], dates: 'May 21 - Jun 20', element: 'Air', trait: 'Curiosity & Wit' },
+  { name: 'Cancer', symbol: '♋', start: [6, 21], end: [7, 22], dates: 'Jun 21 - Jul 22', element: 'Water', trait: 'Intuition & Empathy' },
+  { name: 'Leo', symbol: '♌', start: [7, 23], end: [8, 22], dates: 'Jul 23 - Aug 22', element: 'Fire', trait: 'Passion & Vitality' },
+  { name: 'Virgo', symbol: '♍', start: [8, 23], end: [9, 22], dates: 'Aug 23 - Sep 22', element: 'Earth', trait: 'Analysis & Precision' },
+  { name: 'Libra', symbol: '♎', start: [9, 23], end: [10, 22], dates: 'Sep 23 - Oct 22', element: 'Air', trait: 'Harmony & Charm' },
+  { name: 'Scorpio', symbol: '♏', start: [10, 23], end: [11, 21], dates: 'Oct 23 - Nov 21', element: 'Water', trait: 'Depth & Transformation' },
+  { name: 'Sagittarius', symbol: '♐', start: [11, 22], end: [12, 21], dates: 'Nov 22 - Dec 21', element: 'Fire', trait: 'Optimism & Exploration' },
+  { name: 'Capricorn', symbol: '♑', start: [12, 22], end: [1, 19], dates: 'Dec 22 - Jan 19', element: 'Earth', trait: 'Discipline & Mastery' },
+  { name: 'Aquarius', symbol: '♒', start: [1, 20], end: [2, 18], dates: 'Jan 20 - Feb 18', element: 'Air', trait: 'Innovation & Freedom' },
+  { name: 'Pisces', symbol: '♓', start: [2, 19], end: [3, 20], dates: 'Feb 19 - Mar 20', element: 'Water', trait: 'Compassion & Dream' },
 ];
+
+// Offline Mathematical Astrological & Numerological Calculator
+function calculateZodiacAndNumerology(dobString: string, name: string): Partial<UserProfile> {
+  const [yearStr, monthStr, dayStr] = (dobString || '1995-08-15').split('-');
+  const year = parseInt(yearStr, 10) || 1995;
+  const month = parseInt(monthStr, 10) || 8;
+  const day = parseInt(dayStr, 10) || 15;
+
+  // 1. Calculate Sun Sign
+  let foundZodiac = ZODIAC_LIST[4]; // Default Leo
+  for (const z of ZODIAC_LIST) {
+    if (z.name === 'Capricorn') {
+      if ((month === 12 && day >= 22) || (month === 1 && day <= 19)) {
+        foundZodiac = z;
+        break;
+      }
+    } else {
+      const [startM, startD] = z.start;
+      const [endM, endD] = z.end;
+      if (
+        (month === startM && day >= startD) ||
+        (month === endM && day <= endD)
+      ) {
+        foundZodiac = z;
+        break;
+      }
+    }
+  }
+
+  // 2. Calculate Birth Day Number (1-9)
+  const reduceDigits = (num: number): number => {
+    let sum = num;
+    while (sum > 9 && sum !== 11 && sum !== 22 && sum !== 33) {
+      sum = sum.toString().split('').reduce((acc, digit) => acc + parseInt(digit, 10), 0);
+    }
+    return sum;
+  };
+
+  const birthDayNumber = reduceDigits(day);
+  const birthMeanings: Record<number, string> = {
+    1: 'Leadership & Will',
+    2: 'Cooperation & Peace',
+    3: 'Creativity & Joy',
+    4: 'Stability & System',
+    5: 'Freedom & Change',
+    6: 'Love & Harmony',
+    7: 'Wisdom & Spirit',
+    8: 'Power & Abundance',
+    9: 'Compassion & Universal Love',
+  };
+
+  // 3. Calculate Life Path Number (Total sum of DOB)
+  const allDigitsSum = `${year}${month < 10 ? '0' + month : month}${day < 10 ? '0' + day : day}`
+    .split('')
+    .reduce((acc, d) => acc + (parseInt(d, 10) || 0), 0);
+  
+  const lifePathNumber = reduceDigits(allDigitsSum);
+  const lifePathMeanings: Record<number, string> = {
+    1: 'The Pioneer',
+    2: 'Cooperation',
+    3: 'The Communicator',
+    4: 'The Builder',
+    5: 'The Explorer',
+    6: 'The Nurturer',
+    7: 'The Seeker',
+    8: 'The Achiever',
+    9: 'The Humanitarian',
+    11: 'Master Intuitive',
+    22: 'Master Builder',
+    33: 'Master Teacher',
+  };
+
+  const elementMeanings: Record<string, string> = {
+    Fire: 'Passion & Drive',
+    Earth: 'Stability & Practicality',
+    Air: 'Intellect & Social Flow',
+    Water: 'Depth & Intuition',
+  };
+
+  return {
+    name: name || 'Seeker',
+    birthDate: dobString,
+    sunSign: foundZodiac.name,
+    sunSignSymbol: foundZodiac.symbol,
+    sunSignDates: foundZodiac.dates,
+    lifePathNumber: lifePathNumber,
+    lifePathMeaning: lifePathMeanings[lifePathNumber] || 'Unique Purpose',
+    birthNumber: birthDayNumber,
+    birthNumberMeaning: birthMeanings[birthDayNumber] || 'Creative Flow',
+    element: foundZodiac.element,
+    elementMeaning: elementMeanings[foundZodiac.element] || 'Vital Energy',
+  };
+}
 
 export default function AstroAIPage() {
   // Current Active Screen
-  // 'splash' | 'dob_input' | 'home' | 'career' | 'love' | 'money' | 'health' | 'cycles' | 'prediction_2026' | 'compatibility' | 'tarot' | 'numerology' | 'oracle_ai' | 'community' | 'share' | 'profile'
   const [currentScreen, setCurrentScreen] = useState<string>('home');
-  
-  // Navigation stack for back button
   const [screenHistory, setScreenHistory] = useState<string[]>(['home']);
 
-  // Tab sub-states for multi-tab screens
+  // Offline / Network Status Detector
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+
+  // Tab sub-states
   const [careerTab, setCareerTab] = useState<'overview' | 'best_fields' | 'timeline'>('overview');
   const [loveTab, setLoveTab] = useState<'overview' | 'compatibility' | 'timing'>('overview');
   const [moneyTab, setMoneyTab] = useState<'overview' | 'growth' | 'tips'>('overview');
@@ -101,7 +196,7 @@ export default function AstroAIPage() {
   // Input DOB Mode
   const [inputMode, setInputMode] = useState<'quick' | 'detailed'>('quick');
 
-  // User Profile
+  // User Profile with Default Values
   const [userProfile, setUserProfile] = useState<UserProfile>({
     name: 'Rahul',
     birthDate: '1995-08-15',
@@ -122,22 +217,89 @@ export default function AstroAIPage() {
   const [mySign, setMySign] = useState('Leo ♌');
   const [partnerSign, setPartnerSign] = useState('Sagittarius ♐');
 
+  // Dynamic Compatibility Score Calculator (Offline)
+  const calculateCompatibility = (signA: string, signB: string) => {
+    const sA = signA.split(' ')[0];
+    const sB = signB.split(' ')[0];
+    const elA = ZODIAC_LIST.find((z) => z.name === sA)?.element || 'Fire';
+    const elB = ZODIAC_LIST.find((z) => z.name === sB)?.element || 'Fire';
+
+    if (elA === elB) return { percent: 88, rating: 'High Harmonic Synergy', text: `Both share the sacred ${elA} element, fostering instant mutual understanding and deep shared motivation.` };
+    if ((elA === 'Fire' && elB === 'Air') || (elA === 'Air' && elB === 'Fire')) return { percent: 84, rating: 'Dynamic Catalyst Match', text: 'Air fuels Fire, creating an inspiring bond filled with laughter, visionary ideas, and shared passion.' };
+    if ((elA === 'Earth' && elB === 'Water') || (elA === 'Water' && elB === 'Earth')) return { percent: 86, rating: 'Grounded & Nurturing', text: 'Water enriches Earth, building long-term emotional trust, devotion, and financial stability together.' };
+    return { percent: 74, rating: 'Growth & Balance Pair', text: 'Complementary temperaments that offer profound opportunities for mutual growth, patience, and balance.' };
+  };
+
   // Tarot State
   const [selectedTarot, setSelectedTarot] = useState<number | null>(null);
-  const [tarotFlipped, setTarotFlipped] = useState(false);
 
   // AI Chat State
   const [chatMessages, setChatMessages] = useState<Array<{ sender: 'user' | 'guru'; text: string }>>([
-    { sender: 'guru', text: 'Namaste Rahul! I am AstroGuru, your personal celestial intelligence assistant. Ask me anything about your 2026 transits, love life, career direction, or Vedic chart!' }
+    { sender: 'guru', text: 'Namaste Rahul! I am AstroGuru, your offline & online celestial intelligence companion. Ask me anything about your 2026 transits, love life, career, or numbers!' }
   ]);
   const [queryInput, setQueryInput] = useState('');
   const [isAiTyping, setIsAiTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement | null>(null);
 
-  // Share Notification Toast
+  // Share Toast
   const [showShareToast, setShowShareToast] = useState(false);
 
-  // Helper to change screen with history
+  // 1. Initial LocalStorage load & offline event listeners
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsOnline(navigator.onLine);
+
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
+
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      try {
+        const cached = localStorage.getItem('jyoti_ai_offline_profile');
+        if (cached) {
+          const parsed = JSON.parse(cached);
+          setUserProfile((prev) => ({ ...prev, ...parsed }));
+        }
+      } catch (e) {
+        console.error('LocalStorage load error', e);
+      }
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, []);
+
+  // Update calculation dynamically whenever DOB changes
+  const handleUpdateDob = (newDob: string, newName: string) => {
+    const updated = calculateZodiacAndNumerology(newDob, newName);
+    const newProfile: UserProfile = {
+      ...userProfile,
+      name: newName || userProfile.name,
+      birthDate: newDob,
+      sunSign: updated.sunSign || userProfile.sunSign,
+      sunSignSymbol: updated.sunSignSymbol || userProfile.sunSignSymbol,
+      sunSignDates: updated.sunSignDates || userProfile.sunSignDates,
+      lifePathNumber: updated.lifePathNumber || userProfile.lifePathNumber,
+      lifePathMeaning: updated.lifePathMeaning || userProfile.lifePathMeaning,
+      birthNumber: updated.birthNumber || userProfile.birthNumber,
+      birthNumberMeaning: updated.birthNumberMeaning || userProfile.birthNumberMeaning,
+      element: updated.element || userProfile.element,
+      elementMeaning: updated.elementMeaning || userProfile.elementMeaning,
+    };
+
+    setUserProfile(newProfile);
+
+    // Save offline
+    try {
+      localStorage.setItem('jyoti_ai_offline_profile', JSON.stringify(newProfile));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const navigateTo = (screen: string) => {
     setScreenHistory((prev) => [...prev, screen]);
     setCurrentScreen(screen);
@@ -156,6 +318,7 @@ export default function AstroAIPage() {
     }
   };
 
+  // Offline AI Rule Engine
   const handleSendMessage = () => {
     if (!queryInput.trim()) return;
     const userText = queryInput;
@@ -164,35 +327,55 @@ export default function AstroAIPage() {
     setIsAiTyping(true);
 
     setTimeout(() => {
-      let reply = `Based on your Leo Sun sign and Life Path 2 vibration, this period calls for balanced diplomacy. Jupiter's supportive aspect brings favorable momentum in career decisions and creative expression.`;
-      if (userText.toLowerCase().includes('love') || userText.toLowerCase().includes('relationship')) {
-        reply = `Your Venus harmony indicates strong relationship stabilization. High synergy is observed with Fire signs (Aries, Sagittarius) and Air signs (Libra, Gemini). Trust open communication.`;
-      } else if (userText.toLowerCase().includes('money') || userText.toLowerCase().includes('career') || userText.toLowerCase().includes('job')) {
-        reply = `For professional advancement, your 10th house indicates leadership, media, and entrepreneurial undertakings are highly favorable between 2026 and 2027. Avoid hasty financial commitments.`;
+      let reply = `Based on your ${userProfile.sunSign} Sun sign and Life Path ${userProfile.lifePathNumber} (${userProfile.lifePathMeaning}), this period emphasizes balance and self-belief. Favorable cosmic alignments highlight your innate leadership.`;
+      
+      const q = userText.toLowerCase();
+      if (q.includes('love') || q.includes('relationship') || q.includes('marriage') || q.includes('partner')) {
+        reply = `For your ${userProfile.sunSign} placements, relationship harmony stabilizes when you practice active listening. High synergy exists with complementary ${userProfile.element === 'Fire' ? 'Air and Fire' : 'Earth and Water'} signs. Favorable connection windows open during mid-year transits.`;
+      } else if (q.includes('money') || q.includes('career') || q.includes('job') || q.includes('finance') || q.includes('business')) {
+        reply = `In career and finances, your Birth Number ${userProfile.birthNumber} highlights vocational mastery. The 2026-2027 timeline favors strategic expansion, leadership opportunities, and disciplined long-term compounding over impulsive risks.`;
+      } else if (q.includes('health') || q.includes('sleep') || q.includes('stress') || q.includes('peace')) {
+        reply = `Your ${userProfile.element} elemental alignment thrives when you balance active exertion with quiet circadian wind-downs. Daily prana breathing and hydration support your vitality.`;
+      } else if (q.includes('numerology') || q.includes('number') || q.includes('life path')) {
+        reply = `Your Core Numerology: Life Path Number ${userProfile.lifePathNumber} signifies "${userProfile.lifePathMeaning}", while your Birth Number ${userProfile.birthNumber} gives you "${userProfile.birthNumberMeaning}". Together they create a potent balance of vision and follow-through.`;
       }
+
       setChatMessages((prev) => [...prev, { sender: 'guru', text: reply }]);
       setIsAiTyping(false);
-    }, 900);
+    }, 600);
   };
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [chatMessages, isAiTyping]);
 
+  const compatData = calculateCompatibility(mySign, partnerSign);
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-900 font-sans flex flex-col justify-between selection:bg-indigo-500 selection:text-white pb-20 md:pb-10">
       
+      {/* Offline Status Badge */}
+      <div className="bg-slate-900 text-white text-[10px] font-bold py-1 px-3 text-center flex items-center justify-center gap-1.5 shadow-xs">
+        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+        <span>100% Offline Capable • Local Astro &amp; Numerology Engine Active</span>
+        {!isOnline && (
+          <span className="ml-2 px-1.5 py-0.2 rounded bg-amber-500 text-slate-950 font-black text-[9px]">
+            Offline Mode
+          </span>
+        )}
+      </div>
+
       {/* ============================================================== */}
       {/* 1. SPLASH / ONBOARDING SCREEN (Cosmic Dark Hero) */}
       {/* ============================================================== */}
       {currentScreen === 'splash' && (
-        <div className="min-h-screen bg-gradient-to-b from-[#090D1C] via-[#0E152E] to-[#1C1236] text-white flex flex-col justify-between p-6 relative overflow-hidden">
+        <div className="min-h-[92vh] bg-gradient-to-b from-[#090D1C] via-[#0E152E] to-[#1C1236] text-white flex flex-col justify-between p-6 relative overflow-hidden">
           {/* Ambient Glows */}
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
           <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-96 h-64 bg-purple-600/20 rounded-full blur-[90px] pointer-events-none" />
 
           {/* Top Header */}
-          <div className="flex justify-between items-center z-10 pt-4">
+          <div className="flex justify-between items-center z-10 pt-2">
             <span className="text-xs font-bold tracking-widest uppercase text-indigo-300 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
               JYOTI AI
@@ -208,12 +391,10 @@ export default function AstroAIPage() {
           {/* Center Wheel Artwork */}
           <div className="flex-1 flex flex-col items-center justify-center text-center z-10 py-6">
             <div className="relative w-64 h-64 sm:w-72 sm:h-72 my-4 flex items-center justify-center">
-              {/* Concentric Celestial Rings */}
               <div className="absolute inset-0 rounded-full border border-indigo-400/25 animate-[spin_60s_linear_infinite]" />
               <div className="absolute inset-3 rounded-full border border-purple-400/20 border-dashed animate-[spin_40s_linear_infinite_reverse]" />
               <div className="absolute inset-8 rounded-full border border-pink-400/25" />
               
-              {/* Outer Zodiac Glyphs */}
               <div className="absolute inset-0 flex items-center justify-between px-2 text-indigo-300 text-xs font-serif opacity-80">
                 <span>♈</span>
                 <span>♎</span>
@@ -277,31 +458,28 @@ export default function AstroAIPage() {
       {/* 2. BIRTH DATE INPUT SCREEN (Clean White Minimalist Card) */}
       {/* ============================================================== */}
       {currentScreen === 'dob_input' && (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col justify-between p-4 sm:p-6 max-w-md mx-auto w-full">
-          {/* Top Bar */}
+        <div className="min-h-[85vh] bg-[#F8FAFC] flex flex-col justify-between p-4 sm:p-6 max-w-md mx-auto w-full">
           <div className="flex items-center justify-between pt-2 pb-4">
             <button
-              onClick={() => setCurrentScreen('splash')}
+              onClick={() => setCurrentScreen('home')}
               className="w-9 h-9 rounded-xl bg-white border border-slate-200 text-slate-700 flex items-center justify-center shadow-xs hover:bg-slate-50"
             >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Step 1 of 2</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Personalize Chart</span>
             <div className="w-9" />
           </div>
 
           <div className="space-y-6 my-auto">
-            {/* Title Header */}
             <div className="text-center space-y-1.5">
               <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">
                 Enter Your Date of Birth
               </h2>
               <p className="text-xs text-slate-500">
-                Get your personalized astrology insights in seconds.
+                Calculates Sun Sign, Life Path Number &amp; 2026 Forecast instantly offline.
               </p>
             </div>
 
-            {/* Quick vs Detailed Toggle */}
             <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200/80">
               <button
                 onClick={() => setInputMode('quick')}
@@ -337,92 +515,80 @@ export default function AstroAIPage() {
                   <input
                     type="date"
                     value={userProfile.birthDate}
-                    onChange={(e) => setUserProfile({ ...userProfile, birthDate: e.target.value })}
+                    onChange={(e) => handleUpdateDob(e.target.value, userProfile.name)}
                     className="w-full pl-10 pr-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
                   />
                 </div>
               </div>
 
+              <div>
+                <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  value={userProfile.name}
+                  onChange={(e) => handleUpdateDob(userProfile.birthDate, e.target.value)}
+                  placeholder="e.g. Rahul"
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                />
+              </div>
+
               {inputMode === 'detailed' && (
-                <>
+                <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                      Your Name
+                      Birth Time
                     </label>
-                    <input
-                      type="text"
-                      value={userProfile.name}
-                      onChange={(e) => setUserProfile({ ...userProfile, name: e.target.value })}
-                      placeholder="e.g. Rahul"
-                      className="w-full px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-sm font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                        Birth Time
-                      </label>
-                      <div className="relative flex items-center">
-                        <Clock className="w-4 h-4 text-indigo-500 absolute left-3" />
-                        <input
-                          type="time"
-                          value={userProfile.birthTime}
-                          onChange={(e) => setUserProfile({ ...userProfile, birthTime: e.target.value })}
-                          className="w-full pl-9 pr-2 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
-                        Place of Birth
-                      </label>
-                      <div className="relative flex items-center">
-                        <MapPin className="w-4 h-4 text-indigo-500 absolute left-3" />
-                        <input
-                          type="text"
-                          value={userProfile.birthPlace}
-                          onChange={(e) => setUserProfile({ ...userProfile, birthPlace: e.target.value })}
-                          placeholder="City, Country"
-                          className="w-full pl-9 pr-2 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
-                        />
-                      </div>
+                    <div className="relative flex items-center">
+                      <Clock className="w-4 h-4 text-indigo-500 absolute left-3" />
+                      <input
+                        type="time"
+                        value={userProfile.birthTime}
+                        onChange={(e) => setUserProfile({ ...userProfile, birthTime: e.target.value })}
+                        className="w-full pl-9 pr-2 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                      />
                     </div>
                   </div>
-                </>
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1.5">
+                      Place of Birth
+                    </label>
+                    <div className="relative flex items-center">
+                      <MapPin className="w-4 h-4 text-indigo-500 absolute left-3" />
+                      <input
+                        type="text"
+                        value={userProfile.birthPlace}
+                        onChange={(e) => setUserProfile({ ...userProfile, birthPlace: e.target.value })}
+                        placeholder="City, Country"
+                        className="w-full pl-9 pr-2 py-3 rounded-xl border border-slate-200 bg-slate-50 text-slate-800 text-xs font-semibold focus:bg-white focus:border-indigo-500 focus:outline-none transition-all"
+                      />
+                    </div>
+                  </div>
+                </div>
               )}
+
+              {/* Calculated Preview Pill */}
+              <div className="p-3 rounded-2xl bg-indigo-50/70 border border-indigo-100 flex items-center justify-between text-xs font-bold text-indigo-950">
+                <span>Calculated: {userProfile.sunSign} {userProfile.sunSignSymbol}</span>
+                <span className="text-purple-600">Life Path {userProfile.lifePathNumber}</span>
+              </div>
 
               {/* Continue Button */}
               <button
-                onClick={() => {
-                  setCurrentScreen('home');
-                }}
+                onClick={() => setCurrentScreen('home')}
                 className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-700 text-white font-bold text-sm shadow-md hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
               >
-                <span>Continue</span>
+                <span>Save &amp; View Astrological Snapshot</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
 
               <div className="flex items-center justify-center gap-1.5 text-[11px] text-slate-400 font-medium pt-1">
                 <Lock className="w-3 h-3 text-emerald-500" />
-                <span>Your data is safe & private</span>
+                <span>Stored securely in local device storage</span>
               </div>
             </div>
 
-            {/* Upsell Card */}
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-200 flex items-start gap-3">
-              <div className="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
-                <Crown className="w-4 h-4" />
-              </div>
-              <div className="text-xs">
-                <h4 className="font-bold text-slate-900">Unlock Full Kundli</h4>
-                <p className="text-slate-600 text-[11px] mt-0.5">
-                  Add time & place of birth for detailed Vedic chart, dasha and planetary periods.
-                </p>
-              </div>
-            </div>
-
-            {/* Inspirational Quote */}
             <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3">
               <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center text-lg shrink-0">
                 🧘
@@ -431,15 +597,6 @@ export default function AstroAIPage() {
                 &ldquo;The stars don&apos;t decide your future, they guide you to make better choices.&rdquo;
               </p>
             </div>
-          </div>
-
-          <div className="text-center pt-4">
-            <button
-              onClick={() => setCurrentScreen('home')}
-              className="text-xs font-bold text-indigo-600 hover:underline"
-            >
-              Skip to Dashboard $\rightarrow$
-            </button>
           </div>
         </div>
       )}
@@ -463,11 +620,11 @@ export default function AstroAIPage() {
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={() => navigateTo('oracle_ai')}
-                className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 transition-all"
-                title="Ask AstroGuru"
+                onClick={() => navigateTo('dob_input')}
+                className="w-10 h-10 rounded-2xl bg-slate-100 border border-slate-200 text-slate-700 flex items-center justify-center hover:bg-slate-200 transition-all"
+                title="Edit Birth Date"
               >
-                <Sparkles className="w-5 h-5 text-indigo-600" />
+                <Calendar className="w-4 h-4 text-indigo-600" />
               </button>
               <button
                 onClick={() => navigateTo('share')}
@@ -482,9 +639,8 @@ export default function AstroAIPage() {
           {/* Sun Sign Hero Card */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4 relative overflow-hidden">
             <div className="flex items-center gap-4">
-              {/* Illustrated Mascot Icon (Leo Lion) */}
               <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-400 via-orange-400 to-amber-500 flex items-center justify-center text-3xl shadow-md ring-4 ring-amber-100 shrink-0">
-                🦁
+                {userProfile.sunSign === 'Leo' ? '🦁' : userProfile.sunSign === 'Aries' ? '🐏' : userProfile.sunSign === 'Taurus' ? '🐂' : userProfile.sunSign === 'Gemini' ? '♊' : userProfile.sunSign === 'Cancer' ? '🦀' : userProfile.sunSign === 'Virgo' ? '♍' : userProfile.sunSign === 'Libra' ? '⚖️' : userProfile.sunSign === 'Scorpio' ? '🦂' : userProfile.sunSign === 'Sagittarius' ? '🏹' : userProfile.sunSign === 'Capricorn' ? '🐐' : userProfile.sunSign === 'Aquarius' ? '🏺' : '🐟'}
               </div>
               <div className="flex-1">
                 <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
@@ -525,7 +681,6 @@ export default function AstroAIPage() {
 
           {/* 6 Grid Feature Cards */}
           <div className="grid grid-cols-3 gap-3">
-            {/* 1. Daily Horoscope */}
             <button
               onClick={() => navigateTo('prediction_2026')}
               className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-blue-300 transition-all flex flex-col items-center text-center space-y-2 group"
@@ -538,7 +693,6 @@ export default function AstroAIPage() {
               </span>
             </button>
 
-            {/* 2. Career */}
             <button
               onClick={() => navigateTo('career')}
               className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-purple-300 transition-all flex flex-col items-center text-center space-y-2 group"
@@ -551,7 +705,6 @@ export default function AstroAIPage() {
               </span>
             </button>
 
-            {/* 3. Love & Marriage */}
             <button
               onClick={() => navigateTo('love')}
               className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-pink-300 transition-all flex flex-col items-center text-center space-y-2 group"
@@ -560,11 +713,10 @@ export default function AstroAIPage() {
                 <Heart className="w-5 h-5" />
               </div>
               <span className="text-xs font-bold text-slate-800 leading-tight">
-                Love & Marriage
+                Love &amp; Marriage
               </span>
             </button>
 
-            {/* 4. Money & Finance */}
             <button
               onClick={() => navigateTo('money')}
               className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-emerald-300 transition-all flex flex-col items-center text-center space-y-2 group"
@@ -573,11 +725,10 @@ export default function AstroAIPage() {
                 <Coins className="w-5 h-5" />
               </div>
               <span className="text-xs font-bold text-slate-800 leading-tight">
-                Money & Finance
+                Money &amp; Finance
               </span>
             </button>
 
-            {/* 5. Health */}
             <button
               onClick={() => navigateTo('health')}
               className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-teal-300 transition-all flex flex-col items-center text-center space-y-2 group"
@@ -590,7 +741,6 @@ export default function AstroAIPage() {
               </span>
             </button>
 
-            {/* 6. Life Cycles */}
             <button
               onClick={() => navigateTo('cycles')}
               className="bg-white rounded-3xl p-3.5 border border-slate-200 shadow-xs hover:shadow-md hover:border-lime-400 transition-all flex flex-col items-center text-center space-y-2 group"
@@ -604,7 +754,7 @@ export default function AstroAIPage() {
             </button>
           </div>
 
-          {/* Today's Cosmic Message Card */}
+          {/* Today's Cosmic Message */}
           <div className="bg-gradient-to-r from-amber-50/70 via-orange-50/50 to-pink-50/70 rounded-3xl p-4 border border-amber-200/80 shadow-xs flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-2xl bg-amber-500/20 text-amber-600 flex items-center justify-center text-xl shrink-0">
               🧘
@@ -624,7 +774,7 @@ export default function AstroAIPage() {
             <div className="space-y-0.5">
               <span className="text-[10px] uppercase font-bold text-purple-200">Cosmic Match</span>
               <h4 className="text-sm font-black">Check Love Compatibility</h4>
-              <p className="text-[11px] text-purple-100">Leo ♌ + Sagittarius ♐ = 78% Match</p>
+              <p className="text-[11px] text-purple-100">{mySign} + {partnerSign} = {compatData.percent}% Match</p>
             </div>
             <button
               onClick={() => navigateTo('compatibility')}
@@ -634,7 +784,7 @@ export default function AstroAIPage() {
             </button>
           </div>
 
-          {/* Bottom Interactive Feature Tiles (Matching bottom of reference image) */}
+          {/* Bottom Interactive Feature Tiles */}
           <div className="space-y-3 pt-2">
             <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
               Explore Celestial Tools
@@ -668,7 +818,7 @@ export default function AstroAIPage() {
                 </div>
                 <div>
                   <h5 className="text-xs font-bold">Tarot Reading</h5>
-                  <p className="text-[11px] text-slate-300">Get clarity on love, career, life & more</p>
+                  <p className="text-[11px] text-slate-300">Get clarity on love, career, life &amp; more</p>
                 </div>
               </div>
               <button
@@ -708,7 +858,7 @@ export default function AstroAIPage() {
                 </div>
                 <div>
                   <h5 className="text-xs font-bold">Ask AstroGuru (AI)</h5>
-                  <p className="text-[11px] text-slate-300">Chat with your personal astrology assistant</p>
+                  <p className="text-[11px] text-slate-300">Offline &amp; online Vedic chart assistant</p>
                 </div>
               </div>
               <button
@@ -724,11 +874,10 @@ export default function AstroAIPage() {
       )}
 
       {/* ============================================================== */}
-      {/* 4. CAREER & PROFESSION SCREEN (Screen 4 in Reference) */}
+      {/* 4. CAREER & PROFESSION SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'career' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
-          {/* Header */}
           <div className="flex items-center gap-3">
             <button
               onClick={goBack}
@@ -739,7 +888,6 @@ export default function AstroAIPage() {
             <h2 className="text-lg font-black text-slate-900">Career &amp; Profession</h2>
           </div>
 
-          {/* Segmented Control Tabs */}
           <div className="flex p-1 bg-slate-100 rounded-2xl border border-slate-200">
             {(['overview', 'best_fields', 'timeline'] as const).map((tab) => (
               <button
@@ -756,29 +904,26 @@ export default function AstroAIPage() {
             ))}
           </div>
 
-          {/* Artwork Banner (Mountain Hiker with Sunset Star) */}
           <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-purple-900 via-indigo-800 to-amber-700 flex items-end p-4 shadow-sm">
             <div className="absolute top-4 right-4 text-3xl opacity-80">⭐</div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             <div className="relative z-10 text-white">
               <span className="text-[10px] uppercase font-bold tracking-wider text-amber-300">
-                10th House Solar Radiance
+                10th House Solar Radiance • {userProfile.sunSign}
               </span>
-              <h3 className="text-base font-extrabold">Executive &amp; Creative Mastery</h3>
+              <h3 className="text-base font-extrabold">Leadership &amp; Vocational Mastery</h3>
             </div>
           </div>
 
-          {/* Content Based on Tab */}
           {careerTab === 'overview' && (
             <div className="space-y-4">
               <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-2">
                 <h4 className="text-sm font-black text-slate-900">Your Career Outlook</h4>
                 <p className="text-xs text-slate-600 leading-relaxed">
-                  You are a natural leader with strong communication skills. You thrive in roles where you can express ideas, solve problems, and work with people.
+                  As a {userProfile.sunSign}, you are a natural initiator with strong communicative drive. You thrive in roles where you can express ideas, solve complex problems, and lead teams.
                 </p>
               </div>
 
-              {/* Best Career Fields */}
               <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
                 <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                   Best Career Fields
@@ -811,7 +956,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* Career Timeline */}
               <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
                 <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                   Your Career Timeline
@@ -828,7 +972,7 @@ export default function AstroAIPage() {
                     <div className="w-2 h-2 rounded-full bg-purple-600 mt-1.5" />
                     <div>
                       <span className="font-bold text-purple-700">2028 – 2029</span>
-                      <p className="text-slate-600">Leadership expansion and entrepreneurial milestones.</p>
+                      <p className="text-slate-600">Executive expansion and entrepreneurial milestones.</p>
                     </div>
                   </div>
                 </div>
@@ -839,21 +983,21 @@ export default function AstroAIPage() {
           {careerTab === 'best_fields' && (
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3 text-xs text-slate-600">
               <h4 className="font-black text-slate-900 text-sm">Deep Vocational Alignment</h4>
-              <p>Your Leo Midheaven suggests you are best suited for visible roles that allow creative sovereignty. Roles involving management, branding, architectural vision, or counseling give you maximum energy return.</p>
+              <p>Your elemental {userProfile.element} nature suggests you are best suited for visible roles that allow creative autonomy. Management, branding, strategic innovation, or consulting give you maximum fulfillment.</p>
             </div>
           )}
 
           {careerTab === 'timeline' && (
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3 text-xs text-slate-600">
               <h4 className="font-black text-slate-900 text-sm">Major Dasha Milestones</h4>
-              <p>During the upcoming Sun-Mercury sub-period, contractual opportunities and expansion in public communication reach their peak.</p>
+              <p>During the upcoming planetary transits, contractual stability and expansion in public communication reach their peak.</p>
             </div>
           )}
         </div>
       )}
 
       {/* ============================================================== */}
-      {/* 5. LOVE & RELATIONSHIPS SCREEN (Screen 5 in Reference) */}
+      {/* 5. LOVE & RELATIONSHIPS SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'love' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
@@ -883,7 +1027,6 @@ export default function AstroAIPage() {
             ))}
           </div>
 
-          {/* Artwork Banner (Romantic Sunset Couple) */}
           <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-pink-900 via-purple-900 to-amber-700 flex items-end p-4 shadow-sm">
             <div className="absolute top-4 right-4 text-3xl opacity-80">💑</div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -899,11 +1042,10 @@ export default function AstroAIPage() {
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-2">
               <h4 className="text-sm font-black text-slate-900">Love Outlook</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                You value emotional stability and loyalty in a relationship. You may take time before committing, but once you decide, you are devoted and supportive.
+                You value emotional stability and authentic loyalty. You may take time before committing, but once you decide, you are devoted and supportive.
               </p>
             </div>
 
-            {/* Potential Relationship Periods */}
             <div className="bg-pink-50/60 rounded-3xl p-5 border border-pink-200 shadow-xs space-y-2">
               <div className="flex items-center gap-2 text-pink-700 font-bold text-xs">
                 <Calendar className="w-4 h-4" />
@@ -914,11 +1056,10 @@ export default function AstroAIPage() {
                 <p className="font-extrabold text-slate-900">32 – 34 years</p>
               </div>
               <span className="text-[10px] text-slate-400 block pt-1">
-                (Date-based estimate, not a guarantee)
+                (Date-based estimate, calculated from birth frequency)
               </span>
             </div>
 
-            {/* Best Matches */}
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
               <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                 Best Matches
@@ -959,7 +1100,7 @@ export default function AstroAIPage() {
       )}
 
       {/* ============================================================== */}
-      {/* 6. MONEY & FINANCE SCREEN (Screen 6 in Reference) */}
+      {/* 6. MONEY & FINANCE SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'money' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
@@ -989,7 +1130,6 @@ export default function AstroAIPage() {
             ))}
           </div>
 
-          {/* Artwork Banner (Gold coins & growing sprout) */}
           <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-emerald-900 via-teal-800 to-amber-700 flex items-end p-4 shadow-sm">
             <div className="absolute top-4 right-4 text-3xl opacity-80">🌱💰</div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -1009,7 +1149,6 @@ export default function AstroAIPage() {
               </p>
             </div>
 
-            {/* Key Financial Periods */}
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
               <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                 Key Financial Periods
@@ -1032,7 +1171,6 @@ export default function AstroAIPage() {
               </div>
             </div>
 
-            {/* Lucky Elements */}
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
               <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                 Lucky Elements
@@ -1040,7 +1178,7 @@ export default function AstroAIPage() {
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
                 <div className="p-2.5 rounded-2xl bg-indigo-50 border border-indigo-100">
                   <span className="text-[10px] text-slate-400 block font-bold">Lucky Numbers</span>
-                  <p className="font-black text-indigo-700 mt-0.5">3, 6, 9</p>
+                  <p className="font-black text-indigo-700 mt-0.5">{userProfile.lifePathNumber}, {userProfile.birthNumber}, 9</p>
                 </div>
                 <div className="p-2.5 rounded-2xl bg-amber-50 border border-amber-100">
                   <span className="text-[10px] text-slate-400 block font-bold">Lucky Colors</span>
@@ -1053,7 +1191,6 @@ export default function AstroAIPage() {
               </div>
             </div>
 
-            {/* Finance Tips Box */}
             <div className="bg-amber-50/70 rounded-2xl p-4 border border-amber-200 flex items-start gap-3">
               <span className="text-xl">💡</span>
               <div className="text-xs">
@@ -1068,7 +1205,7 @@ export default function AstroAIPage() {
       )}
 
       {/* ============================================================== */}
-      {/* 7. HEALTH & WELLNESS SCREEN (Screen 7 in Reference) */}
+      {/* 7. HEALTH & WELLNESS SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'health' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
@@ -1098,13 +1235,12 @@ export default function AstroAIPage() {
             ))}
           </div>
 
-          {/* Artwork Banner (Meditating Silhouette with Chakra Radiance) */}
           <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-teal-900 via-cyan-800 to-amber-700 flex items-end p-4 shadow-sm">
             <div className="absolute top-4 right-4 text-3xl opacity-80">🧘✨</div>
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             <div className="relative z-10 text-white">
               <span className="text-[10px] uppercase font-bold tracking-wider text-teal-300">
-                Vitality &amp; Solar Prana
+                Vitality &amp; Prana • {userProfile.element} Alignment
               </span>
               <h3 className="text-base font-extrabold">Holistic Energy Alignment</h3>
             </div>
@@ -1114,11 +1250,10 @@ export default function AstroAIPage() {
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-2">
               <h4 className="text-sm font-black text-slate-900">Health Outlook</h4>
               <p className="text-xs text-slate-600 leading-relaxed">
-                You have good vitality and natural solar energy. You may be prone to stress and overthinking, so balance is important.
+                You have good vitality and natural {userProfile.element.toLowerCase()} prana. You may be prone to stress and overthinking, so mindful balance is essential.
               </p>
             </div>
 
-            {/* Focus Areas */}
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3">
               <h4 className="text-xs font-bold uppercase text-slate-400 tracking-wider">
                 Focus Areas
@@ -1143,30 +1278,21 @@ export default function AstroAIPage() {
               </div>
             </div>
 
-            {/* Wellness Tips */}
             <div className="bg-purple-50/70 rounded-2xl p-4 border border-purple-200 flex items-start gap-3">
               <span className="text-xl text-purple-600">⭐</span>
               <div className="text-xs">
                 <h5 className="font-bold text-purple-950">Wellness Tips</h5>
                 <p className="text-purple-900 text-[11px] mt-0.5">
-                  Practice mindfulness, stay hydrated, and maintain a consistent daily circadian routine.
+                  Practice mindfulness, stay hydrated, and maintain a consistent circadian rhythm.
                 </p>
               </div>
             </div>
-
-            <button
-              onClick={() => navigateTo('oracle_ai')}
-              className="w-full py-3.5 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-xs shadow-md hover:brightness-105 active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
-            >
-              <span>Start 7-Day Wellness Plan</span>
-              <ArrowRight className="w-4 h-4" />
-            </button>
           </div>
         </div>
       )}
 
       {/* ============================================================== */}
-      {/* 8. LIFE CYCLES SCREEN (Screen 8 in Reference) */}
+      {/* 8. LIFE CYCLES SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'cycles' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
@@ -1201,9 +1327,7 @@ export default function AstroAIPage() {
               Chronological Growth Cycles
             </h4>
 
-            {/* Vertical Timeline */}
             <div className="space-y-4 text-xs">
-              {/* 0 - 18 */}
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-2xl bg-amber-100 text-amber-800 font-extrabold flex items-center justify-center shrink-0 border border-amber-200 text-[11px]">
                   0-18
@@ -1216,7 +1340,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* 19 - 27 */}
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-2xl bg-sky-100 text-sky-800 font-extrabold flex items-center justify-center shrink-0 border border-sky-200 text-[11px]">
                   19-27
@@ -1229,7 +1352,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* 28 - 36 */}
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-2xl bg-emerald-100 text-emerald-800 font-extrabold flex items-center justify-center shrink-0 border border-emerald-200 text-[11px]">
                   28-36
@@ -1242,7 +1364,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* 37 - 45 */}
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-2xl bg-purple-100 text-purple-800 font-extrabold flex items-center justify-center shrink-0 border border-purple-200 text-[11px]">
                   37-45
@@ -1255,7 +1376,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* 46+ */}
               <div className="flex items-start gap-3">
                 <div className="w-9 h-9 rounded-2xl bg-rose-100 text-rose-800 font-extrabold flex items-center justify-center shrink-0 border border-rose-200 text-[11px]">
                   46+
@@ -1269,18 +1389,11 @@ export default function AstroAIPage() {
               </div>
             </div>
           </div>
-
-          <div className="bg-gradient-to-r from-indigo-900 to-purple-900 rounded-3xl p-5 text-white text-center shadow-sm space-y-1">
-            <h5 className="text-xs font-bold text-amber-300">Your journey is unique.</h5>
-            <p className="text-[11px] text-slate-200">
-              Every astrological phase brings fresh horizons and divine timing.
-            </p>
-          </div>
         </div>
       )}
 
       {/* ============================================================== */}
-      {/* 9. 2026 PREDICTION SCREEN (Screen 9 in Reference) */}
+      {/* 9. 2026 PREDICTION SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'prediction_2026' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
@@ -1310,7 +1423,6 @@ export default function AstroAIPage() {
             ))}
           </div>
 
-          {/* Artwork Banner (2026 Cosmic Typography) */}
           <div className="relative h-44 rounded-3xl overflow-hidden bg-gradient-to-r from-purple-950 via-indigo-900 to-slate-900 flex items-center justify-center p-4 shadow-sm text-center">
             <div className="absolute inset-0 opacity-40 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-indigo-500 via-transparent to-transparent" />
             <div className="relative z-10 text-white space-y-1">
@@ -1318,13 +1430,12 @@ export default function AstroAIPage() {
                 2026
               </span>
               <p className="text-[10px] uppercase font-bold text-slate-300 tracking-wider">
-                Vedic Year Planetary Forecast
+                {userProfile.sunSign} Year Planetary Forecast
               </p>
             </div>
           </div>
 
           <div className="space-y-4">
-            {/* Overall Theme */}
             <div className="bg-amber-50/70 rounded-3xl p-4 border border-amber-200/80 text-xs">
               <span className="text-[10px] uppercase font-bold text-amber-800 tracking-wider block mb-1">
                 Overall Theme
@@ -1334,9 +1445,7 @@ export default function AstroAIPage() {
               </p>
             </div>
 
-            {/* Categorized Forecast */}
             <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-3.5 text-xs">
-              {/* Career */}
               <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
                 <div className="w-8 h-8 rounded-xl bg-purple-100 text-purple-700 flex items-center justify-center shrink-0">
                   <Briefcase className="w-4 h-4" />
@@ -1349,7 +1458,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* Money */}
               <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
                 <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
                   <Coins className="w-4 h-4" />
@@ -1362,7 +1470,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* Love */}
               <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
                 <div className="w-8 h-8 rounded-xl bg-pink-100 text-pink-700 flex items-center justify-center shrink-0">
                   <Heart className="w-4 h-4" />
@@ -1375,20 +1482,6 @@ export default function AstroAIPage() {
                 </div>
               </div>
 
-              {/* Family */}
-              <div className="flex items-start gap-3 pb-3 border-b border-slate-100">
-                <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center shrink-0">
-                  <Users className="w-4 h-4" />
-                </div>
-                <div>
-                  <h5 className="font-extrabold text-slate-900 text-xs">Family</h5>
-                  <p className="text-slate-600 text-[11px] mt-0.5 leading-relaxed">
-                    Family responsibilities increase, rewarded by closer bonding through patient communication.
-                  </p>
-                </div>
-              </div>
-
-              {/* Health */}
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center shrink-0">
                   <Activity className="w-4 h-4" />
@@ -1406,7 +1499,7 @@ export default function AstroAIPage() {
       )}
 
       {/* ============================================================== */}
-      {/* 10. COMPATIBILITY SCREEN (Screen 10 in Reference) */}
+      {/* 10. COMPATIBILITY SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'compatibility' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
@@ -1443,7 +1536,6 @@ export default function AstroAIPage() {
             </button>
           </div>
 
-          {/* Sign Selectors Box */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -1476,18 +1568,11 @@ export default function AstroAIPage() {
                 </select>
               </div>
             </div>
-
-            <button
-              className="w-full py-3 rounded-xl bg-indigo-600 text-white text-xs font-bold shadow-sm hover:bg-indigo-700 transition-all"
-            >
-              Check Compatibility
-            </button>
           </div>
 
-          {/* Result Gauge Card */}
+          {/* Dynamic Calculated Gauge Card */}
           <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center gap-4">
-              {/* Circular Percentage Meter */}
               <div className="relative w-20 h-20 flex items-center justify-center shrink-0">
                 <svg className="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
                   <path
@@ -1499,7 +1584,7 @@ export default function AstroAIPage() {
                   />
                   <path
                     className="text-pink-500"
-                    strokeDasharray="78, 100"
+                    strokeDasharray={`${compatData.percent}, 100`}
                     strokeWidth="3.5"
                     strokeLinecap="round"
                     stroke="currentColor"
@@ -1507,18 +1592,17 @@ export default function AstroAIPage() {
                     d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                 </svg>
-                <span className="absolute text-base font-black text-slate-900">78%</span>
+                <span className="absolute text-base font-black text-slate-900">{compatData.percent}%</span>
               </div>
 
               <div>
-                <h4 className="text-sm font-black text-slate-900">Good Compatibility</h4>
+                <h4 className="text-sm font-black text-slate-900">{compatData.rating}</h4>
                 <p className="text-xs text-slate-600 mt-0.5 leading-relaxed">
-                  You both share enthusiasm, high vitality, adventure, and frank, direct communication.
+                  {compatData.text}
                 </p>
               </div>
             </div>
 
-            {/* Strengths Checklist */}
             <div className="space-y-2 pt-2 border-t border-slate-100 text-xs">
               <h5 className="font-bold text-slate-700 text-[11px] uppercase tracking-wider">Strengths</h5>
               <div className="space-y-1.5 text-slate-600">
@@ -1535,14 +1619,6 @@ export default function AstroAIPage() {
                   <span>Loyal emotional support through challenges</span>
                 </div>
               </div>
-            </div>
-
-            {/* Upsell Banner */}
-            <div className="bg-amber-50/70 rounded-2xl p-3.5 border border-amber-200 flex items-start gap-2.5 text-xs">
-              <Crown className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-              <p className="text-amber-900 text-[11px]">
-                For a 36-Guna detailed Ashtakoota Vedic Kundli Milan matching report, add your partner&apos;s full birth details.
-              </p>
             </div>
           </div>
         </div>
@@ -1570,19 +1646,15 @@ export default function AstroAIPage() {
               Clear your mind, take a deep breath, and tap one card for your personal oracle reading.
             </p>
 
-            {/* 3 Tarot Cards */}
             <div className="grid grid-cols-3 gap-3 pt-2">
               {[
-                { title: 'The Sun', symbol: '☀️', meaning: 'Joy, Success & Vitality' },
-                { title: 'The Star', symbol: '⭐', meaning: 'Hope, Guidance & Faith' },
-                { title: 'The Magician', symbol: '🔮', meaning: 'Creation, Willpower & Resourcefulness' },
+                { title: 'The Sun', symbol: '☀️' },
+                { title: 'The Star', symbol: '⭐' },
+                { title: 'The Magician', symbol: '🔮' },
               ].map((card, idx) => (
                 <button
                   key={idx}
-                  onClick={() => {
-                    setSelectedTarot(idx);
-                    setTarotFlipped(true);
-                  }}
+                  onClick={() => setSelectedTarot(idx)}
                   className={`h-36 rounded-2xl border-2 transition-all p-2 flex flex-col items-center justify-between ${
                     selectedTarot === idx
                       ? 'border-amber-400 bg-purple-900/80 scale-105 shadow-lg'
@@ -1639,36 +1711,35 @@ export default function AstroAIPage() {
           <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
             <div className="flex items-center gap-3.5">
               <div className="w-14 h-14 rounded-2xl bg-indigo-600 text-white font-black text-2xl flex items-center justify-center shadow-md">
-                2
+                {userProfile.lifePathNumber}
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-slate-400">Core Frequency</span>
-                <h3 className="text-base font-black text-slate-900">Life Path 2: The Diplomat</h3>
-                <p className="text-xs text-slate-500">Born on 15 August 1995 (1+5+8+1+9+9+5 = 38 $\rightarrow$ 11 $\rightarrow$ 2)</p>
+                <h3 className="text-base font-black text-slate-900">Life Path {userProfile.lifePathNumber}: {userProfile.lifePathMeaning}</h3>
+                <p className="text-xs text-slate-500">Based on DOB: {userProfile.birthDate}</p>
               </div>
             </div>
 
             <div className="space-y-3 pt-2 text-xs text-slate-600 leading-relaxed border-t border-slate-100">
               <p>
-                As a <strong>Life Path 2</strong>, you are naturally empathetic, diplomatic, and intuitive. You bring people together, create harmony, and possess a gentle yet potent influence on everyone around you.
+                As a <strong>Life Path {userProfile.lifePathNumber}</strong>, your life lesson involves {userProfile.lifePathMeaning.toLowerCase()}. You bring people together, create harmony, and possess a gentle yet potent influence on your surroundings.
               </p>
             </div>
 
-            {/* Core Numbers Breakdown */}
             <div className="grid grid-cols-3 gap-2 text-center text-xs pt-1">
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <span className="text-[9px] text-slate-400 font-bold uppercase">Destiny No</span>
-                <p className="text-base font-black text-purple-600 mt-0.5">8</p>
+                <p className="text-base font-black text-purple-600 mt-0.5">{((userProfile.lifePathNumber * 3) % 9) || 9}</p>
                 <span className="text-[9px] text-slate-500">(Abundance)</span>
               </div>
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <span className="text-[9px] text-slate-400 font-bold uppercase">Soul Urge</span>
-                <p className="text-base font-black text-indigo-600 mt-0.5">6</p>
+                <p className="text-base font-black text-indigo-600 mt-0.5">{userProfile.birthNumber}</p>
                 <span className="text-[9px] text-slate-500">(Nurturing)</span>
               </div>
               <div className="p-3 rounded-2xl bg-slate-50 border border-slate-100">
                 <span className="text-[9px] text-slate-400 font-bold uppercase">Personality</span>
-                <p className="text-base font-black text-emerald-600 mt-0.5">4</p>
+                <p className="text-base font-black text-emerald-600 mt-0.5">{((userProfile.birthNumber + 2) % 9) || 1}</p>
                 <span className="text-[9px] text-slate-500">(Reliability)</span>
               </div>
             </div>
@@ -1681,7 +1752,6 @@ export default function AstroAIPage() {
       {/* ============================================================== */}
       {currentScreen === 'oracle_ai' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 flex flex-col h-[85vh]">
-          {/* Header */}
           <div className="flex items-center justify-between pb-3 border-b border-slate-200">
             <div className="flex items-center gap-3">
               <button
@@ -1695,15 +1765,14 @@ export default function AstroAIPage() {
                   <span>AstroGuru (AI)</span>
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 </h2>
-                <p className="text-[10px] text-slate-400">Vedic Chart Intelligence Engine</p>
+                <p className="text-[10px] text-slate-400">Offline &amp; Online Vedic Intelligence</p>
               </div>
             </div>
             <span className="text-xs px-2.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 font-bold">
-              Leo ♌
+              {userProfile.sunSign} {userProfile.sunSignSymbol}
             </span>
           </div>
 
-          {/* Chat Messages */}
           <div className="flex-1 overflow-y-auto py-4 space-y-3.5">
             {chatMessages.map((msg, i) => (
               <div
@@ -1731,16 +1800,15 @@ export default function AstroAIPage() {
               <div className="flex justify-start">
                 <div className="bg-white border border-slate-200 rounded-2xl px-4 py-3 text-xs text-slate-400 flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5 text-indigo-500 animate-spin" />
-                  <span>Consulting your celestial chart...</span>
+                  <span>Computing Vedic alignments...</span>
                 </div>
               </div>
             )}
             <div ref={chatEndRef} />
           </div>
 
-          {/* Suggested Prompts */}
           <div className="flex gap-2 overflow-x-auto pb-2 text-[11px]">
-            {['❤️ Love Timing', '💼 Career 2026', '💰 Wealth & Assets', '🔮 Rahu-Ketu'].map((prompt) => (
+            {['❤️ Love Timing', '💼 Career 2026', '💰 Wealth & Assets', '🔮 Numerology'].map((prompt) => (
               <button
                 key={prompt}
                 onClick={() => setQueryInput(`What does my chart indicate for ${prompt}?`)}
@@ -1751,7 +1819,6 @@ export default function AstroAIPage() {
             ))}
           </div>
 
-          {/* Input Box */}
           <div className="flex items-center gap-2 pt-2">
             <input
               type="text"
@@ -1773,7 +1840,7 @@ export default function AstroAIPage() {
       )}
 
       {/* ============================================================== */}
-      {/* 14. SAVE & SHARE MODAL SCREEN */}
+      {/* 14. SAVE & SHARE SCREEN */}
       {/* ============================================================== */}
       {currentScreen === 'share' && (
         <div className="max-w-md mx-auto w-full px-4 pt-4 pb-12 space-y-4">
@@ -1798,15 +1865,14 @@ export default function AstroAIPage() {
               </span>
               <h3 className="text-base font-black text-slate-900 mt-2">Save &amp; Share Your Cosmic Report</h3>
               <p className="text-xs text-slate-500 mt-1">
-                Share your Leo ♌ snapshot, 2026 forecast, and astrological insights with friends and family.
+                Share your {userProfile.sunSign} {userProfile.sunSignSymbol} snapshot, Life Path {userProfile.lifePathNumber}, and 2026 forecast.
               </p>
             </div>
 
-            {/* Social Icons Row */}
             <div className="flex items-center justify-center gap-3 pt-2">
               <button
                 onClick={() => {
-                  window.open(`https://wa.me/?text=Check%20out%20my%20Astrological%20Snapshot%20on%20Jyoti%20AI:%20Leo%20Sun,%20Life%20Path%202!%20https://kuthiyengpham.in/astroai`, '_blank');
+                  window.open(`https://wa.me/?text=Check%20out%20my%20Astrological%20Snapshot%20on%20Jyoti%20AI:%20${userProfile.sunSign}%20Sun,%20Life%20Path%20${userProfile.lifePathNumber}!%20https://kuthiyengpham.in/astroai`, '_blank');
                 }}
                 className="w-12 h-12 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-xl shadow-sm hover:scale-105 transition-all"
                 title="WhatsApp"
