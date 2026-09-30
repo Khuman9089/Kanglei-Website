@@ -1,25 +1,27 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'Jyoti AI — Your Personal Celestial Intelligence | Global AI Astrology Platform',
+  title: 'AstroVista — Your Life • Your Stars • Your Future | Personalized Astrology Insights',
   description:
-    'Autonomous Astrological Intelligence Platform offering high-precision Sidereal Kundali calculations, Vimshottari Dashas, daily celestial weather, and AI Oracle synthesis.',
+    'Discover insights, make better decisions, and unlock your true potential with AstroVista. Personalized astrology insights powered by your birth details.',
   keywords: [
-    'Jyoti AI',
+    'AstroVista',
+    'AstroAI',
     'AI astrology',
-    'Sidereal Kundali',
-    'Vimshottari Dasha',
-    'celestial intelligence',
-    'astrology AI oracle',
+    'Quick Astrology',
+    'Detailed Birth Chart',
+    'Horoscope',
+    'Numerology',
+    'Compatibility'
   ],
   alternates: {
     canonical: 'https://kuthiyengpham.in/astroai',
   },
   openGraph: {
-    title: 'Jyoti AI — Your Personal Celestial Intelligence',
-    description: 'High-precision autonomous astrological intelligence platform.',
+    title: 'AstroVista — Your Life • Your Stars • Your Future',
+    description: 'Personalized astrology insights powered by your birth details.',
     url: 'https://kuthiyengpham.in/astroai',
-    siteName: 'Jyoti AI',
+    siteName: 'AstroVista',
     type: 'website',
   },
 };

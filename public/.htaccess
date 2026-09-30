@@ -15,6 +15,10 @@
   RewriteRule ^ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
   # 2. Prioritize Next.js App Router dynamic routes
+  RewriteRule ^app(/.*)?$ http://127.0.0.1:3000/app$1 [P,L]
+  RewriteRule ^daily-rashifal(/.*)?$ http://127.0.0.1:3000/daily-rashifal$1 [P,L]
+  RewriteRule ^panchang(/.*)?$ http://127.0.0.1:3000/panchang$1 [P,L]
+  RewriteRule ^consultation(/.*)?$ http://127.0.0.1:3000/consultation$1 [P,L]
   RewriteRule ^blog(/.*)?$ http://127.0.0.1:3000/blog$1 [P,L]
   RewriteRule ^api(/.*)?$ http://127.0.0.1:3000/api$1 [P,L]
 

@@ -48,8 +48,8 @@ const DEFAULT_NAVBAR_CONFIG: NavbarConfig = {
   items: [
     {
       id: 'nav-1',
-      title: 'Horoscopes',
-      href: '/horoscope',
+      title: 'Daily Rashifal',
+      href: '/daily-rashifal',
       type: 'link',
       active: true,
       order: 1,

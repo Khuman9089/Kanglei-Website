@@ -60,6 +60,7 @@ import ManipuriPanchangWorkstation from '@/components/dashboard/ManipuriPanchang
 import LeipungFeedView from '@/components/mobile-app/LeipungFeedView';
 import AppSplashScreen from '@/components/mobile-app/AppSplashScreen';
 import InAppAccountView from '@/components/mobile-app/InAppAccountView';
+import { DEFAULT_USEFUL_TOPICS } from '@/data/defaultUsefulTopics';
 
 type ScriptMode = 'bengali' | 'meetei';
 
@@ -368,8 +369,8 @@ export default function AndroidAppHomeView({
   const [horoscopeTab, setHoroscopeTab] = useState<'overview' | 'career' | 'love' | 'health'>('overview');
   const [currentTime, setCurrentTime] = useState<string>('');
 
-  // Dynamic Useful Topics & App Control State
-  const [usefulTopics, setUsefulTopics] = useState<any[]>([]);
+  // Dynamic Useful Topics & App Control State (Pre-seeded with offline-ready default topics)
+  const [usefulTopics, setUsefulTopics] = useState<any[]>(DEFAULT_USEFUL_TOPICS);
   const [selectedUsefulTopicId, setSelectedUsefulTopicId] = useState<string | null>(null);
   const [usefulSearchQuery, setUsefulSearchQuery] = useState<string>('');
   const [usefulCategoryFilter, setUsefulCategoryFilter] = useState<string>('All');
@@ -391,21 +392,31 @@ export default function AndroidAppHomeView({
     },
   });
 
-  // Fetch Useful Topics and App Settings
+  // Fetch Useful Topics and App Settings (Works online & offline)
   useEffect(() => {
-    fetch('/api/useful')
+    const getEndpointUrl = (path: string) => {
+      if (typeof window !== 'undefined') {
+        const origin = window.location.origin;
+        if (origin.includes('localhost') || origin.startsWith('file:') || origin.startsWith('capacitor:')) {
+          return `https://kuthiyengpham.in${path}`;
+        }
+      }
+      return path;
+    };
+
+    fetch(getEndpointUrl('/api/useful'))
       .then((r) => r.json())
       .then((d) => {
-        if (d && d.topics) setUsefulTopics(d.topics);
+        if (d && d.topics && d.topics.length > 0) setUsefulTopics(d.topics);
       })
-      .catch((e) => console.error('Error fetching useful topics in app:', e));
+      .catch((e) => console.log('Offline/Network notice: using local useful topics.'));
 
-    fetch('/api/app-settings')
+    fetch(getEndpointUrl('/api/app-settings'))
       .then((r) => r.json())
       .then((d) => {
         if (d && d.settings) setAppSettings(d.settings);
       })
-      .catch((e) => console.error('Error fetching app settings:', e));
+      .catch((e) => console.log('Offline/Network notice: using local app settings.'));
   }, []);
 
   // Kuthi Eba (Janma Patrika) In-App Form State

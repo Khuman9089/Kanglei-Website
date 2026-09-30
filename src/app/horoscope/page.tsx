@@ -38,6 +38,18 @@ export default function HoroscopeDirectoryPage() {
           <p className="text-base sm:text-lg text-gray-700 leading-relaxed font-normal">
             Select your Vedic Moon Sign (Rashi) to explore detailed planetary transit predictions for career, love, health, wealth, and prescribed remedies.
           </p>
+
+          {/* New Live Daily Rashifal Banner */}
+          <div className="pt-2">
+            <Link
+              href="/daily-rashifal"
+              className="inline-flex items-center gap-3 px-5 py-3 rounded-2xl bg-gradient-to-r from-[#d97706] to-[#b45309] text-white font-bold text-sm sm:text-base shadow-md hover:scale-[1.02] transition-all group"
+            >
+              <Sparkles className="w-5 h-5 text-amber-200 animate-pulse" />
+              <span>View Today's Complete Rashifal (Serial 1 to 12 in Manipuri)</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </div>
         </div>
 
         {/* Global Period Selector Ribbon (Daily, Weekly, Monthly, Yearly) */}

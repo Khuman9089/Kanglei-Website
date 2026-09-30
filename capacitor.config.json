@@ -3,12 +3,8 @@
   "appName": "Manipuri Calendar by KangleiAstro",
   "webDir": "out",
   "bundledWebRuntime": false,
-  "server": {
-    "url": "https://kuthiyengpham.in/app",
-    "cleartext": false
-  },
   "android": {
-    "allowMixedContent": false,
+    "allowMixedContent": true,
     "captureInput": true,
     "backgroundColor": "#0d1322"
   }
