@@ -18,7 +18,18 @@ function copyRecursiveSync(src, dest) {
     if (!fs.existsSync(parentDir)) {
       fs.mkdirSync(parentDir, { recursive: true });
     }
-    fs.copyFileSync(src, dest);
+    try {
+      if (fs.existsSync(dest)) {
+        try { fs.chmodSync(dest, 0o666); } catch (e) {}
+        fs.unlinkSync(dest);
+      }
+    } catch (e) {}
+    try {
+      fs.copyFileSync(src, dest);
+    } catch (err) {
+      // If locked/busy, warn and continue
+      console.warn(`[WARN] Could not overwrite file ${dest}: ${err.message}`);
+    }
   }
 }
 
