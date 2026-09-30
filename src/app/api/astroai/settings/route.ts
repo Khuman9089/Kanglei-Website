@@ -4,9 +4,6 @@ import { AstroAIConfig, DEFAULT_ASTROAI_CONFIG } from '@/app/astroai/types/confi
 
 export const dynamic = 'force-dynamic';
 
-export type { AstroAIConfig };
-export { DEFAULT_ASTROAI_CONFIG };
-
 const CONFIG_KEY = 'astroai_config';
 
 export async function GET() {

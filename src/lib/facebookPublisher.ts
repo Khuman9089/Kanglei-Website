@@ -113,7 +113,7 @@ export async function publishDailyRashifalToFacebook(data: DailyRashifalData): P
   }
 
   try {
-    let postId: string | null = null;
+    let postId: string | undefined = undefined;
     let photoUploadSucceeded = false;
 
     // 1. Try uploading as a native Photo Post with clean generated "Ngasi gi Rashifal & Date" image
