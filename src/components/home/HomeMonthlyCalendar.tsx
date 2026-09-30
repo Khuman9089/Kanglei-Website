@@ -263,7 +263,8 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
             }
 
             const isSunday = dayItem.weekday === 0;
-            const isHoliday = isSunday || dayItem.isGeneralHoliday;
+            const isGeneralHoliday = dayItem.isGeneralHoliday || !!(dayItem.festival && dayItem.festival.isGeneralHoliday);
+            const isHoliday = isSunday || isGeneralHoliday;
             const isSelected = dayItem.dateStr === selectedDateStr;
             const isToday = dayItem.isToday;
 
@@ -324,20 +325,20 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
                     : dayItem.nakshatraDisplayBengali
                 }${eventBadgeLabel ? ` • ${eventBadgeLabel}` : ''}`}
                 onClick={() => handleDayClick(dayItem)}
-                className={`relative min-h-[72px] md:min-h-[115px] p-1 md:p-2 flex flex-col justify-center md:justify-between items-center md:items-stretch text-center md:text-left overflow-hidden cursor-pointer transition-all select-none rounded-[10px] md:rounded-none border md:border-0 ${
+                className={`relative min-h-[74px] md:min-h-[115px] p-1 md:p-2 flex flex-col justify-center md:justify-between items-center md:items-stretch text-center md:text-left overflow-hidden cursor-pointer transition-all select-none rounded-[10px] md:rounded-none border md:border-0 ${
                   isToday
                     ? 'bg-[#FFFBEB] ring-2 ring-inset ring-amber-500 border-amber-500 rounded-lg z-10'
                     : isSelected
                     ? 'bg-[#FFFBEB] ring-2 ring-inset ring-amber-600 border-amber-600 shadow-xs z-10'
-                    : isSunday
-                    ? 'bg-[#FFF8F8] border-[#F1F5F9] hover:bg-rose-100/50'
+                    : isHoliday
+                    ? 'bg-[#FFF5F5] border-red-200/90 hover:bg-rose-100/60'
                     : 'bg-white border-[#F1F5F9] hover:bg-slate-50'
                 }`}
               >
                 {/* ── MOBILE TOP-LEFT: Nakshatra Number ONLY ── */}
                 <span
                   className={`md:hidden absolute top-1 left-1.5 text-[10px] font-semibold leading-none ${
-                    isToday ? 'text-[#B45309]' : 'text-slate-400'
+                    isToday ? 'text-[#B45309]' : isHoliday ? 'text-red-400' : 'text-slate-400'
                   }`}
                 >
                   {nakshatraNum}
@@ -347,7 +348,7 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
                 <div className="flex items-start justify-center md:justify-between w-full gap-1">
                   <span
                     className={`text-lg md:text-xl font-extrabold tracking-tight leading-none font-sans ${
-                      isSunday
+                      isHoliday
                         ? 'text-[#DC2626]'
                         : isToday
                         ? 'text-[#B45309]'
@@ -374,9 +375,9 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
                   )}
 
                   {/* Mobile: 5px Colored Indicator Dot */}
-                  {(dayItem.isGeneralHoliday || dayItem.festival || dayItem.isPurnima || dayItem.isAmavasya || dayItem.isEkadashi) && (
+                  {(isHoliday || dayItem.festival || dayItem.isPurnima || dayItem.isAmavasya || dayItem.isEkadashi) && (
                     <div className="md:hidden absolute top-1.5 right-1.5 flex items-center gap-0.5">
-                      {dayItem.isGeneralHoliday || dayItem.isPurnima || isSunday ? (
+                      {isHoliday || dayItem.isPurnima ? (
                         <span className="w-[5px] h-[5px] rounded-full bg-red-500 shrink-0" />
                       ) : (
                         <span className="w-[5px] h-[5px] rounded-full bg-amber-500 shrink-0" />
@@ -391,7 +392,7 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
                   <div className="hidden md:flex flex-col items-center justify-center">
                     <span
                       className={`text-[13px] font-bold tracking-wide leading-tight truncate block ${
-                        isSunday ? 'text-[#991B1B]' : 'text-[#334155]'
+                        isHoliday ? 'text-[#991B1B]' : 'text-[#334155]'
                       }`}
                     >
                       {monthName}
@@ -401,8 +402,8 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
                   {/* Mobile Layout: Month Name below Date */}
                   <div className="md:hidden flex flex-col items-center leading-tight">
                     <span
-                      className={`text-[10.5px] font-medium truncate max-w-full block ${
-                        isSunday ? 'text-[#DC2626]' : isToday ? 'text-[#92400E]' : 'text-slate-600'
+                      className={`text-[10px] font-medium truncate max-w-full block ${
+                        isHoliday ? 'text-[#DC2626]' : isToday ? 'text-[#92400E]' : 'text-slate-600'
                       }`}
                     >
                       {monthName}
@@ -423,7 +424,7 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
                   {/* Tithi at bottom right hand side */}
                   <span
                     className={`text-[12px] font-bold tracking-tight text-right shrink-0 px-1.5 py-0.5 rounded ${
-                      isSunday
+                      isHoliday
                         ? 'text-[#991B1B] bg-rose-50/80'
                         : isToday
                         ? 'text-[#B45309] bg-amber-100/60'
@@ -436,16 +437,73 @@ export default function HomeMonthlyCalendar({ onDateSelect }: HomeMonthlyCalenda
                 </div>
 
                 {/* Mobile: Tithi Number at bottom */}
-                <div className="md:hidden text-[11px] font-bold leading-none mt-0.5 truncate w-full block text-center">
-                  <span className={isSunday ? 'text-[#DC2626]' : isToday ? 'text-[#92400E]' : 'text-slate-800'}>
+                <div className="md:hidden text-[10.5px] font-bold leading-none mt-0.5 truncate w-full block text-center">
+                  <span className={isHoliday ? 'text-[#DC2626]' : isToday ? 'text-[#92400E]' : 'text-slate-800'}>
                     {tithiNumStr}
                   </span>
                 </div>
+
+                {/* Mobile: Holiday / Event Name directly mentioned in cell */}
+                {eventBadgeLabel && (
+                  <span
+                    className="md:hidden text-[7.5px] font-bold text-red-700 bg-red-100/95 border border-red-200/80 px-1 py-0.2 rounded leading-none truncate max-w-[95%] block mt-0.5"
+                    title={eventBadgeLabel}
+                  >
+                    {eventBadgeLabel}
+                  </span>
+                )}
               </button>
             );
           })
         )}
       </div>
+
+      {/* ───── 3.5 ACTIVE SELECTED DAY RESULT BANNER ───── */}
+      {(() => {
+        const activeItem = calendarData.weeks.flatMap((w) => w).find((d) => d && d.dateStr === selectedDateStr);
+        if (!activeItem) return null;
+        const isSelSunday = activeItem.weekday === 0;
+        const isSelHoliday = isSelSunday || activeItem.isGeneralHoliday || !!(activeItem.festival && activeItem.festival.isGeneralHoliday);
+
+        return (
+          <div className="p-3 bg-white border-t border-[#E5E7EB]">
+            {isSelHoliday ? (
+              <div className="p-2.5 rounded-xl bg-gradient-to-r from-red-50 to-rose-50 border border-red-200 text-red-950 flex items-center justify-between gap-2 shadow-2xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-red-600 shrink-0" />
+                  <div className="truncate">
+                    <span className="text-[10px] font-black uppercase tracking-wider text-white bg-red-600 px-2 py-0.5 rounded-full mr-1.5 shadow-2xs">
+                      🔴 ছুতিগী নুমিৎ (HOLIDAY)
+                    </span>
+                    <strong className="text-xs text-red-950 font-bold">
+                      {activeItem.festival
+                        ? (scriptMode === 'meetei' ? activeItem.festival.nameMeetei : activeItem.festival.nameBengali)
+                        : isSelSunday
+                        ? (scriptMode === 'meetei' ? 'ꯅꯣꯡꯃꯥꯏꯖꯤꯡ (Sunday Weekly Off)' : 'রবিবার (Sunday Weekly Off)')
+                        : 'ছুতিগী নুমিৎ (Holiday)'}
+                    </strong>
+                  </div>
+                </div>
+                <span className="text-[11px] font-bold text-red-700 font-mono shrink-0">
+                  {activeItem.dateStr}
+                </span>
+              </div>
+            ) : (
+              <div className="p-2.5 rounded-xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-950 flex items-center justify-between gap-2 shadow-2xs">
+                <div className="flex items-center gap-2 min-w-0">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0" />
+                  <span className="text-xs font-bold text-emerald-900 truncate">
+                    {scriptMode === 'meetei' ? '🟢 ꯊꯕꯛ ꯁꯨꯕ ꯅꯨꯃꯤꯠ (Normal Working Day)' : '🟢 কারবারগী নুমিৎ (Working Day / Normal Day)'}
+                  </span>
+                </div>
+                <span className="text-[11px] font-bold text-emerald-700 font-mono shrink-0">
+                  {activeItem.dateStr}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ───── 4. BOTTOM BAR: LEGEND & LINK ───── */}
       <div className="p-2 sm:p-2.5 bg-gray-50 flex flex-wrap items-center justify-between gap-2 text-xs text-gray-700 font-medium border-t border-[#E5E7EB]">

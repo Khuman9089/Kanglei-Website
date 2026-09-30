@@ -1206,6 +1206,9 @@ export default function AndroidAppHomeView({
                 const isSelected = day.dateStr === calSelectedDateStr;
                 const isToday = day.dateStr === todayStr;
                 const isSunday = dIdx === 0;
+                const isGeneralHoliday = day.isGeneralHoliday || !!(day.festival && day.festival.isGeneralHoliday);
+                const isHoliday = isSunday || isGeneralHoliday;
+
                 const monthName = scriptMode === 'meetei' ? day.manipuriMonth.nameMeetei : day.manipuriMonth.nameBengali;
                 const tithiStr = scriptMode === 'meetei'
                   ? (day.isDualTithi ? `${toMeeteiNumerals(day.tithiNumber)}, ${toMeeteiNumerals(day.tithiNumber + 1)}` : toMeeteiNumerals(day.tithiNumber))
@@ -1216,27 +1219,27 @@ export default function AndroidAppHomeView({
                   : day.nakshatraDisplayNumBengali;
 
                 const hasEvent = !!(day.festival || day.isGeneralHoliday || day.isPurnima || day.isAmavasya || day.isEkadashi);
-                const isHolidayOrPurnima = !!(day.isGeneralHoliday || day.isPurnima || isSunday);
+                const isHolidayOrPurnima = !!(isHoliday || day.isPurnima);
 
                 return (
                   <button
                     key={day.dateStr}
                     type="button"
                     onClick={() => setCalSelectedDateStr(day.dateStr)}
-                    className={`relative min-h-[72px] p-[4px_2px] flex flex-col items-center justify-center text-center rounded-[10px] transition-all cursor-pointer select-none border ${
+                    className={`relative min-h-[76px] p-[4px_2px] flex flex-col items-center justify-center text-center rounded-[10px] transition-all cursor-pointer select-none border ${
                       isSelected
                         ? 'bg-[#FFFBEB] ring-2 ring-[#D97706] border-[#D97706] z-10'
                         : isToday
                         ? 'bg-[#FFFBEB] ring-2 ring-[#D97706] border-[#D97706] z-10'
-                        : isSunday
-                        ? 'bg-[#FFF8F8] border-[#F1F5F9] hover:bg-[#FEE2E2]/60'
+                        : isHoliday
+                        ? 'bg-[#FFF5F5] border-red-200/90 hover:bg-[#FEE2E2]/70'
                         : 'bg-white border-[#F1F5F9] hover:bg-[#F8FAFC]'
                     }`}
                   >
                     {/* 1. Top-Left Corner — Nakshatra Number ONLY */}
                     <span
                       className={`absolute top-1 left-1.5 text-[10px] font-semibold leading-none ${
-                        isToday ? 'text-[#B45309]' : 'text-slate-400'
+                        isToday ? 'text-[#B45309]' : isHoliday ? 'text-red-400' : 'text-slate-400'
                       }`}
                     >
                       {nakshatraNum}
@@ -1252,10 +1255,10 @@ export default function AndroidAppHomeView({
                       />
                     )}
 
-                    {/* 3. Center — Prominent Gregorian Date */}
+                    {/* 3. Center — Prominent Gregorian Date (RED if Holiday) */}
                     <span
                       className={`text-lg font-extrabold tracking-tight leading-none font-sans ${
-                        isSunday
+                        isHoliday
                           ? 'text-[#DC2626]'
                           : isToday
                           ? 'text-[#B45309]'
@@ -1267,8 +1270,8 @@ export default function AndroidAppHomeView({
 
                     {/* 4. Below Date — Manipuri Month Name */}
                     <span
-                      className={`text-[10.5px] font-medium leading-tight mt-0.5 truncate max-w-full block ${
-                        isSunday
+                      className={`text-[10px] font-medium leading-tight mt-0.5 truncate max-w-full block ${
+                        isHoliday
                           ? 'text-[#DC2626]'
                           : isToday
                           ? 'text-[#92400E]'
@@ -1280,8 +1283,8 @@ export default function AndroidAppHomeView({
 
                     {/* 5. Bottom — Tithi Number */}
                     <span
-                      className={`text-[11px] font-bold leading-none mt-0.5 ${
-                        isSunday
+                      className={`text-[10.5px] font-bold leading-none mt-0.5 ${
+                        isHoliday
                           ? 'text-[#DC2626]'
                           : isToday
                           ? 'text-[#92400E]'
@@ -1290,77 +1293,154 @@ export default function AndroidAppHomeView({
                     >
                       {tithiStr}
                     </span>
+
+                    {/* 6. Mention Result / Festival Name Directly inside Cell */}
+                    {day.festival ? (
+                      <span
+                        className="text-[7.5px] font-bold text-red-700 bg-red-100/95 border border-red-200 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5 shadow-2xs"
+                        title={day.festival.nameBengali}
+                      >
+                        {scriptMode === 'meetei' ? day.festival.nameMeetei : day.festival.nameBengali}
+                      </span>
+                    ) : isSunday ? (
+                      <span className="text-[7.5px] font-semibold text-red-500 leading-none truncate max-w-[95%] block mt-0.5">
+                        {scriptMode === 'meetei' ? 'ꯅꯣꯡꯃꯥꯏꯖꯤꯡ' : 'রবিবার'}
+                      </span>
+                    ) : day.isPurnima ? (
+                      <span className="text-[7.5px] font-bold text-purple-700 bg-purple-100/90 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5">
+                        {scriptMode === 'meetei' ? 'ꯄꯨꯔꯅꯤꯃꯥ' : 'পূর্ণিমা'}
+                      </span>
+                    ) : day.isAmavasya ? (
+                      <span className="text-[7.5px] font-bold text-gray-800 bg-gray-200/90 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5">
+                        {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ' : 'থাশী'}
+                      </span>
+                    ) : day.isEkadashi ? (
+                      <span className="text-[7.5px] font-bold text-amber-800 bg-amber-100/90 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5">
+                        {scriptMode === 'meetei' ? 'ꯑꯦꯀꯥꯗꯁꯤ' : 'একাদশী'}
+                      </span>
+                    ) : null}
                   </button>
                 );
               })
             )}
           </div>
 
-          {/* Active Selected Day Full Details Card */}
-          {activeCalendarDay && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2.5">
-              <div className="flex items-center justify-between border-b border-gray-100 pb-2">
-                <div>
-                  <h3 className="text-sm font-bold text-[#1e1b18] leading-tight">
-                    {activeCalendarDay.dateStr === todayStr ? '✨ ' : ''}
-                    {activeCalendarDay.dateStr}
-                  </h3>
-                  <span className="text-xs text-amber-600 font-semibold block mt-0.5">
-                    {scriptMode === 'meetei'
-                      ? `${activeCalendarDay.tithiDisplayMeetei} • ${activeCalendarDay.weekdayName.meetei}`
-                      : `${activeCalendarDay.tithiDisplayBengali} • ${activeCalendarDay.weekdayName.bengali}`}
-                  </span>
+          {/* Active Selected Day Full Details & Result Card */}
+          {activeCalendarDay && (() => {
+            const isActiveDaySunday = activeCalendarDay.weekday === 0;
+            const isActiveDayHoliday = isActiveDaySunday || activeCalendarDay.isGeneralHoliday || !!(activeCalendarDay.festival && activeCalendarDay.festival.isGeneralHoliday);
+
+            return (
+              <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-3">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                  <div>
+                    <h3 className="text-sm font-bold text-[#1e1b18] leading-tight flex items-center gap-1.5">
+                      {activeCalendarDay.dateStr === todayStr && <span>✨</span>}
+                      <span>{activeCalendarDay.dateStr}</span>
+                      {isActiveDayHoliday && (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-700 border border-red-200">
+                          Holiday
+                        </span>
+                      )}
+                    </h3>
+                    <span className="text-xs text-amber-600 font-semibold block mt-0.5">
+                      {scriptMode === 'meetei'
+                        ? `${activeCalendarDay.tithiDisplayMeetei} • ${activeCalendarDay.weekdayName.meetei}`
+                        : `${activeCalendarDay.tithiDisplayBengali} • ${activeCalendarDay.weekdayName.bengali}`}
+                    </span>
+                  </div>
+
+                  <div className="text-right">
+                    <span className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-200 block">
+                      {activeCalendarDay.solarMonth.bengali} {toBengaliNumerals(activeCalendarDay.souraDate)}, {toBengaliNumerals(activeCalendarDay.sakaYear)}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="text-right">
-                  <span className="text-xs px-2.5 py-1 rounded-full bg-gray-100 text-gray-700 font-semibold border border-gray-200 block">
-                    {activeCalendarDay.solarMonth.bengali} {toBengaliNumerals(activeCalendarDay.souraDate)}, {toBengaliNumerals(activeCalendarDay.sakaYear)}
-                  </span>
+                {/* ── PROMINENT HOLIDAY & DAY RESULT BANNER ── */}
+                {isActiveDayHoliday ? (
+                  <div className="p-3 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 border-2 border-red-300 text-red-950 flex items-start gap-3 shadow-xs">
+                    <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold shadow-xs">
+                      <CalendarIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-2xs">
+                          🔴 ছুতিগী নুমিৎ (HOLIDAY RESULT)
+                        </span>
+                        {activeCalendarDay.isGeneralHoliday && (
+                          <span className="text-[10px] font-bold text-red-800 bg-red-100 border border-red-200 px-2 py-0.5 rounded-full">
+                            General Holiday of Manipur
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-sm font-extrabold text-red-950 mt-1 leading-snug">
+                        {activeCalendarDay.festival
+                          ? (scriptMode === 'meetei' ? activeCalendarDay.festival.nameMeetei : activeCalendarDay.festival.nameBengali)
+                          : isActiveDaySunday
+                          ? (scriptMode === 'meetei' ? 'ꯅꯣꯡꯃꯥꯏꯖꯤꯡ (Sunday Weekly Holiday)' : 'রবিবার (Sunday — সাপ্তাহিক ছুটি)')
+                          : 'ছুতিগী নুমিৎ (Holiday)'}
+                      </h4>
+                      {activeCalendarDay.festival ? (
+                        <p className="text-xs text-red-800 mt-0.5 font-medium">
+                          {activeCalendarDay.festival.nameEn} • {activeCalendarDay.festival.category === 'traditional' ? 'Traditional Festival' : activeCalendarDay.festival.category === 'state' ? 'State Holiday' : 'National Holiday'}
+                        </p>
+                      ) : isActiveDaySunday ? (
+                        <p className="text-xs text-red-700 mt-0.5 font-medium">
+                          Sunday Weekly Holiday (সাপ্তাহিক ছুটিগী নুমিৎ)
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-2.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-950 flex items-center justify-between text-xs font-semibold shadow-xs">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0" />
+                      <span className="font-bold text-emerald-900">
+                        {scriptMode === 'meetei' ? '🟢 ꯊꯕꯛ ꯁꯨꯕ ꯅꯨꯃꯤꯠ (Normal Working Day)' : '🟢 কারবারগী নুমিৎ (Working Day / Normal Day)'}
+                      </span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                      Open
+                    </span>
+                  </div>
+                )}
+
+                {/* Day Metrics Grid */}
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 space-y-0.5">
+                    <span className="text-xs text-gray-500 font-medium block">থাবান (Tithi Details):</span>
+                    <strong className="text-sm text-[#111827] font-bold block">
+                      {activeCalendarDay.tithiDisplayBengali}
+                    </strong>
+                    <span className="text-xs text-gray-500 font-normal block">
+                      Ending: {activeCalendarDay.tithiEndingStandard || 'Sunrise'}
+                    </span>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 space-y-0.5">
+                    <span className="text-xs text-gray-500 font-medium block">নক্ষত্র (Nakshatra):</span>
+                    <strong className="text-sm text-[#111827] font-bold block truncate">
+                      {scriptMode === 'meetei'
+                        ? `ꯅꯛ:${activeCalendarDay.nakshatraDisplayNumMeetei} (${activeCalendarDay.nakshatraNameMeetei})`
+                        : `নক্ষঃ ${activeCalendarDay.nakshatraDisplayNumBengali} (${activeCalendarDay.nakshatraNameBengali})`}
+                    </strong>
+                    <span className="text-xs text-gray-500 font-normal block">
+                      Lord: {activeCalendarDay.panchang.fiveAngas.nakshatra.lord}
+                    </span>
+                  </div>
                 </div>
+
+                {/* Tatnaba Numit Alert */}
+                {activeCalendarDay.isEeKhudengLeitaba && (
+                  <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>তৎনবা নুমিৎ (ই-খুদেং লৈতাবা • Inauspicious)</span>
+                  </div>
+                )}
               </div>
-
-              {/* Day Metrics Grid */}
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 space-y-0.5">
-                  <span className="text-xs text-gray-500 font-medium block">থাবান (Tithi Details):</span>
-                  <strong className="text-sm text-[#111827] font-bold block">
-                    {activeCalendarDay.tithiDisplayBengali}
-                  </strong>
-                  <span className="text-xs text-gray-500 font-normal block">
-                    Ending: {activeCalendarDay.tithiEndingStandard || 'Sunrise'}
-                  </span>
-                </div>
-
-                <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200 space-y-0.5">
-                  <span className="text-xs text-gray-500 font-medium block">নক্ষত্র (Nakshatra):</span>
-                  <strong className="text-sm text-[#111827] font-bold block truncate">
-                    {scriptMode === 'meetei'
-                      ? `ꯅꯛ:${activeCalendarDay.nakshatraDisplayNumMeetei} (${activeCalendarDay.nakshatraNameMeetei})`
-                      : `নক্ষঃ ${activeCalendarDay.nakshatraDisplayNumBengali} (${activeCalendarDay.nakshatraNameBengali})`}
-                  </strong>
-                  <span className="text-xs text-gray-500 font-normal block">
-                    Lord: {activeCalendarDay.panchang.fiveAngas.nakshatra.lord}
-                  </span>
-                </div>
-              </div>
-
-              {/* Festival / Holiday Alert */}
-              {activeCalendarDay.festival && (
-                <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0" />
-                  <span>উৎসব ও ছুটি: {scriptMode === 'meetei' ? activeCalendarDay.festival.nameMeetei : activeCalendarDay.festival.nameBengali}</span>
-                </div>
-              )}
-
-              {/* Tatnaba Numit Alert */}
-              {activeCalendarDay.isEeKhudengLeitaba && (
-                <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>তৎনবা নুমিৎ (ই-খুদেং লৈতাবা • Inauspicious)</span>
-                </div>
-              )}
-            </div>
-          )}
+            );
+          })()}
 
           {/* Month Attributes Accordion */}
           <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2 text-xs">

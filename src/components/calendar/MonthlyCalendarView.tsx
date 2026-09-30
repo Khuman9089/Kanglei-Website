@@ -436,7 +436,8 @@ export default function MonthlyCalendarView() {
                 }
 
                 const isSunday = dayItem.weekday === 0;
-                const isHoliday = isSunday || dayItem.isGeneralHoliday;
+                const isGeneralHoliday = dayItem.isGeneralHoliday || !!(dayItem.festival && dayItem.festival.isGeneralHoliday);
+                const isHoliday = isSunday || isGeneralHoliday;
                 const isSelected = dayItem.dateStr === selectedDateStr;
 
                 return (
@@ -633,6 +634,61 @@ export default function MonthlyCalendarView() {
                   </span>
                 </div>
               )}
+
+              {/* ── Active Day Holiday / Working Day Result Banner ── */}
+              {(() => {
+                const isActiveSunday = activeDay.weekday === 0;
+                const isActiveGeneralHoliday = activeDay.isGeneralHoliday || !!(activeDay.festival && activeDay.festival.isGeneralHoliday);
+                const isActiveHoliday = isActiveSunday || isActiveGeneralHoliday;
+
+                return isActiveHoliday ? (
+                  <div className="mt-3 p-3 rounded-2xl bg-gradient-to-r from-red-50 via-rose-50 to-orange-50 border-2 border-red-300 text-red-950 flex items-start gap-3 shadow-xs">
+                    <div className="w-8 h-8 rounded-xl bg-red-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold shadow-xs">
+                      <CalendarIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[11px] font-black uppercase tracking-wider text-white bg-red-600 px-2.5 py-0.5 rounded-full shadow-2xs">
+                          🔴 ছুতিগী নুমিৎ (HOLIDAY RESULT)
+                        </span>
+                        {activeDay.isGeneralHoliday && (
+                          <span className="text-[10.5px] font-bold text-red-800 bg-red-100 border border-red-200 px-2 py-0.5 rounded-full">
+                            General Holiday of Manipur
+                          </span>
+                        )}
+                      </div>
+                      <h4 className="text-sm font-extrabold text-red-950 mt-1 leading-snug">
+                        {activeDay.festival
+                          ? (scriptMode === 'meetei' ? activeDay.festival.nameMeetei : activeDay.festival.nameBengali)
+                          : isActiveSunday
+                          ? (scriptMode === 'meetei' ? 'ꯅꯣꯡꯃꯥꯏꯖꯤꯡ (Sunday Weekly Holiday)' : 'রবিবার (Sunday — সাপ্তাহিক ছুটি)')
+                          : 'ছুতিগী নুমিৎ (Holiday)'}
+                      </h4>
+                      {activeDay.festival ? (
+                        <p className="text-xs text-red-800 mt-0.5 font-medium">
+                          {activeDay.festival.nameEn} • {activeDay.festival.category === 'traditional' ? 'Traditional Festival' : activeDay.festival.category === 'state' ? 'State Holiday' : 'National Holiday'}
+                        </p>
+                      ) : isActiveSunday ? (
+                        <p className="text-xs text-red-700 mt-0.5 font-medium">
+                          Sunday Weekly Holiday (সাপ্তাহিক ছুটিগী নুমিৎ)
+                        </p>
+                      ) : null}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="mt-3 p-2.5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 text-emerald-950 flex items-center justify-between text-xs font-semibold shadow-xs">
+                    <span className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0" />
+                      <span className="font-bold text-emerald-900">
+                        {scriptMode === 'meetei' ? '🟢 ꯊꯕꯛ ꯁꯨꯕ ꯅꯨꯃꯤꯠ (Normal Working Day)' : '🟢 কারবারগী নুমিৎ (Working Day / Normal Day)'}
+                      </span>
+                    </span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-800 bg-emerald-100 border border-emerald-200 px-2.5 py-0.5 rounded-full">
+                      Working Day
+                    </span>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="flex items-center gap-2">
