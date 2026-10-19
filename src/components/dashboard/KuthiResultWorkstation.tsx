@@ -52,14 +52,14 @@ interface KuthiResultWorkstationProps {
 // 3 Tabs matching user request: Meitei Mayek, Sanamahi, Hinduism
 export type ResultTabType = 'Meitei Mayek' | 'Sanamahi' | 'Hinduism';
 
-const SHEET_MAP: Record<ResultTabType, string> = {
+export const SHEET_MAP: Record<ResultTabType, string> = {
   'Meitei Mayek': 'MM_Result_M',
   'Sanamahi': 'Meetei_Result',
   'Hinduism': 'Result',
 };
 
 // Manipuri Weekdays in English, Bengali, Meetei Mayek
-const WEEKDAY_MAP: Record<number, { en: string; bn: string; mm: string }> = {
+export const WEEKDAY_MAP: Record<number, { en: string; bn: string; mm: string }> = {
   0: { en: 'Sunday', bn: 'রবিবার', mm: 'noZmaIjiz' },
   1: { en: 'Monday', bn: 'সোমবার', mm: 'niZHoUkaba' },
   2: { en: 'Tuesday', bn: 'মঙ্গলবার', mm: 'lEpaKpa' },
@@ -70,7 +70,7 @@ const WEEKDAY_MAP: Record<number, { en: string; bn: string; mm: string }> = {
 };
 
 // Rashi Names mapped to Meetei Mayek / Budha font and Bengali
-const RASHI_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
+export const RASHI_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
   1: { en: 'Aries', mm: 'mes (mE taI|)', blipi: 'EmF ╠E~m tah~|²' },
   2: { en: 'Taurus', mm: 'bis (mE taI|)', blipi: 'b<F ╠E~m tah~|²' },
   3: { en: 'Gemini', mm: 'miTun (mE taI|)', blipi: 'imTun ╠E~m tah~|²' },
@@ -81,12 +81,12 @@ const RASHI_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> =
   8: { en: 'Scorpio', mm: 'brsic (mE taI|)', blipi: 'b<iSc ╠E~m tah~|²' },
   9: { en: 'Sagittarius', mm: 'dnu (mE taI|)', blipi: 'dnu ╠E~m tah~|²' },
   10: { en: 'Capricorn', mm: 'mkr (mE taI|)', blipi: 'mkr ╠E~m tah~|²' },
-  11: { en: 'Aquarius', mm: 'kuMv (mE taI|)', blipi: 'k<m\f ╠E~m tah~|²' },
+  11: { en: 'Aquarius', mm: 'kuMv (mE taI|)', blipi: 'k<m\\f ╠E~m tah~|²' },
   12: { en: 'Pisces', mm: 'min (mE taI|)', blipi: 'mIn ╠E~m tah~|²' },
 };
 
 // Lagna Names
-const LAGNA_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
+export const LAGNA_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
   1: { en: 'Aries', mm: 'mes', blipi: 'EmF' },
   2: { en: 'Taurus', mm: 'bis', blipi: 'b<F' },
   3: { en: 'Gemini', mm: 'miTun', blipi: 'imTun' },
@@ -97,12 +97,12 @@ const LAGNA_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> =
   8: { en: 'Scorpio', mm: 'brsic', blipi: 'b<iSc' },
   9: { en: 'Sagittarius', mm: 'dnu', blipi: 'dnu' },
   10: { en: 'Capricorn', mm: 'mkr', blipi: 'mkr' },
-  11: { en: 'Aquarius', mm: 'kuMv', blipi: 'k<m\f' },
+  11: { en: 'Aquarius', mm: 'kuMv', blipi: 'k<m\\f' },
   12: { en: 'Pisces', mm: 'min', blipi: 'mIn' },
 };
 
 // Nakshatras 1 to 27
-const NAKSHATRA_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
+export const NAKSHATRA_DISPLAY: Record<number, { en: string; mm: string; blipi: string }> = {
   1: { en: 'Ashwini', mm: '1-Asini', blipi: '1-AiSinI' },
   2: { en: 'Bharani', mm: '2-vrni (Yba)', blipi: '2-vrnI ╠Tba²' },
   3: { en: 'Krittika', mm: '3-k_ritika', blipi: '3-k<ito_ka' },

@@ -11,7 +11,7 @@
     overflow: hidden;
     background-color: #0B0F19;
     color: #0F172A;
-    font-family: 'Outfit', sans-serif;
+    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
 
@@ -34,17 +34,28 @@
 
 @layer utilities {
   .card-elevated {
-    background-color: #FFFFFF;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    box-shadow: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+    background-color: #131B2E;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  }
+
+  .card-glass {
+    background: rgba(19, 27, 46, 0.75);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 
   .solar-gradient {
-    background: linear-gradient(135deg, #FF6B4A 0%, #FFA133 100%);
+    background: linear-gradient(135deg, #EA580C 0%, #F59E0B 100%);
   }
 
   .lunar-gradient {
     background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  }
+
+  .gold-gradient {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
   }
 }
 

@@ -1,5 +1,5 @@
 // App.tsx - SuryaSiddha: Vedic Calendar Master Coordinator
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { UserBirthProfile, KundliData } from './types/astronomy';
 import { AdminAppConfig } from './types/admin';
 import { loadAdminConfig, saveAdminConfig } from './utils/adminStorage';
@@ -14,6 +14,8 @@ import { SplashScreen } from './components/splash/SplashScreen';
 import { NotificationCenterModal } from './components/notifications/NotificationCenterModal';
 import { InterstitialPromoModal } from './components/ads/InterstitialPromoModal';
 
+const PROFILE_STORAGE_KEY = 'suryasiddha_user_profile_v1';
+
 export const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<MainTabType>('panchang');
 
@@ -27,17 +29,94 @@ export const App: React.FC = () => {
     new Date().toISOString().split('T')[0]
   );
 
-  // User Profile & Geographic Coordinates (defaults to New Delhi)
-  const [profile, setProfile] = useState<UserBirthProfile>({
-    name: 'Rajesh Kumar',
-    gender: 'Male',
-    dob: currentDate,
-    tob: '06:00:00', // Sunrise epoch
-    place: 'New Delhi, Delhi, India',
-    lat: 28.6139,
-    lng: 77.2090,
-    timezone: 5.5,
+  // User Profile & Geographic Coordinates (defaults to New Delhi, persisted locally)
+  const [profile, setProfile] = useState<UserBirthProfile>(() => {
+    try {
+      const saved = localStorage.getItem(PROFILE_STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.place && typeof parsed.lat === 'number') {
+          return parsed;
+        }
+      }
+    } catch (e) {
+      // Local storage unreadable or unavailable
+    }
+    return {
+      name: 'Rajesh Kumar',
+      gender: 'Male',
+      dob: new Date().toISOString().split('T')[0],
+      tob: '06:00:00', // Sunrise epoch
+      place: 'New Delhi, Delhi, India',
+      lat: 28.6139,
+      lng: 77.2090,
+      timezone: 5.5,
+    };
   });
+
+  // Persist profile to localStorage whenever it changes for offline continuity
+  useEffect(() => {
+    try {
+      localStorage.setItem(PROFILE_STORAGE_KEY, JSON.stringify(profile));
+    } catch (e) {
+      // Storage quota or sandboxed
+    }
+  }, [profile]);
+
+  // Synchronize activeTab with browser history to enable native Android Back button navigation
+  const handleTabChange = useCallback((newTab: MainTabType) => {
+    setActiveTab((currentTab) => {
+      if (newTab === currentTab) return currentTab;
+      try {
+        window.history.pushState({ tab: newTab }, '', `#${newTab}`);
+      } catch (e) {}
+      return newTab;
+    });
+  }, []);
+
+  // Listen to popstate event (Hardware Back button / Gesture navigation)
+  useEffect(() => {
+    // Ensure initial history state is established
+    try {
+      if (!window.history.state || !window.history.state.tab) {
+        window.history.replaceState({ tab: 'panchang' }, '', '#panchang');
+      }
+    } catch (e) {}
+
+    const handlePopState = (event: PopStateEvent) => {
+      // 1. If notification modal is open, close it on back press
+      if (isNotificationsOpen) {
+        setIsNotificationsOpen(false);
+        return;
+      }
+
+      // 2. Return to previous tab if state exists, or fallback to panchang
+      if (event.state && event.state.tab) {
+        setActiveTab(event.state.tab);
+      } else {
+        setActiveTab('panchang');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [isNotificationsOpen]);
+
+  const handleOpenNotifications = () => {
+    try {
+      window.history.pushState({ modal: 'notifications', tab: activeTab }, '', '#notifications');
+    } catch (e) {}
+    setIsNotificationsOpen(true);
+  };
+
+  const handleCloseNotifications = () => {
+    setIsNotificationsOpen(false);
+    try {
+      if (window.location.hash === '#notifications') {
+        window.history.back();
+      }
+    } catch (e) {}
+  };
 
   // Master Astronomical Engine: Calculate Daily Panchang and Kundli Data
   const calendarData: KundliData = useMemo(() => {
@@ -111,13 +190,13 @@ export const App: React.FC = () => {
         />
       )}
 
-      {/* 1. Top Navigation Header (Anchored at top, cannot overlap content) */}
+      {/* 1. Top Navigation Header (Anchored at top, safe area padding) */}
       <StickyHeader
         profile={profile}
         panchang={calendarData.panchang}
         onLocationChange={handleLocationChange}
-        onOpenKundliTab={() => setActiveTab('kundli')}
-        onOpenNotifications={() => setIsNotificationsOpen(true)}
+        onOpenKundliTab={() => handleTabChange('kundli')}
+        onOpenNotifications={handleOpenNotifications}
         unreadNotificationsCount={unreadNotificationsCount}
       />
 
@@ -131,7 +210,7 @@ export const App: React.FC = () => {
               calendarData={calendarData}
               adminConfig={adminConfig}
               onDateChange={setCurrentDate}
-              onOpenKundli={() => setActiveTab('kundli')}
+              onOpenKundli={() => handleTabChange('kundli')}
             />
           )}
 
@@ -165,13 +244,13 @@ export const App: React.FC = () => {
       {/* 3. Bottom Navigation Dock (Anchored at bottom, cannot move on scroll) */}
       <BottomNavigation
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
 
       {/* Notification Center Modal */}
       <NotificationCenterModal
         isOpen={isNotificationsOpen}
-        onClose={() => setIsNotificationsOpen(false)}
+        onClose={handleCloseNotifications}
         notifications={adminConfig.notifications.items}
         onMarkAllRead={handleMarkAllRead}
         onClearAll={handleClearAllNotifications}
@@ -186,3 +265,4 @@ export const App: React.FC = () => {
 };
 
 export default App;
+

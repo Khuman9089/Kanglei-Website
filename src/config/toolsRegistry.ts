@@ -31,6 +31,15 @@ export const ACTIVE_TOOLS_REGISTRY: ToolDefinition[] = [
     description: 'Advanced BNN predictive system analyzing Jiva (Jupiter), Karma (Saturn), Directional elements, and year-by-year age progressions.',
   },
   {
+    id: 'kp-astrology',
+    title: 'KP Astrology (Krishnamurti Paddhati) Workstation',
+    subtitle: 'Placidus 1-12 Cusps • Planet & Cusp Sub Lords • 4-Fold Significators • Ruling Planets • Horary 1-249 • Cuspal Interlinks.',
+    category: 'astrology',
+    iconName: 'Sparkles',
+    color: 'text-amber-500',
+    description: 'Full Krishnamurti Paddhati (KP) workstation with Nirayana Placidus house cusps, Planet & Cusp Sub Lords (SL/SSL), 4-Grade Planetary & House Significators (A-B-C-D), Live Ruling Planets (RP), 1-249 Horary Prashna Engine, and Cuspal Interlink event predictions.',
+  },
+  {
     id: 'kuthi-generator',
     title: 'Kuthi Generator',
     subtitle: 'Generate accurate D1 Rashi & D9 Navamsha birth charts with planetary positions & house analysis.',

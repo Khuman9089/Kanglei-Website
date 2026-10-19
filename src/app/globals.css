@@ -5,21 +5,28 @@
    ========================================================================== */
 
 :root {
-  /* Primary Midnight Blue & Deep Indigo */
-  --midnight-950: #090d16;
-  --midnight-900: #0f172a;
-  --midnight-850: #141e33;
-  --midnight-800: #1e293b;
-  --midnight-700: #334155;
-  --midnight-600: #475569;
+  /* Primary Midnight Blue & Deep Cosmic Indigo */
+  --midnight-950: #070a12;
+  --midnight-900: #0b0f19;
+  --midnight-850: #101728;
+  --midnight-800: #162035;
+  --midnight-700: #1e293b;
+  --midnight-600: #334155;
 
-  /* Royal Gold & Warm Amber Accents */
+  /* Royal Gold & Warm Radiant Amber Accents */
   --gold-700: #b45309;
   --gold-600: #d97706;
   --gold-500: #f59e0b;
   --gold-400: #fbbf24;
+  --gold-300: #fcd34d;
   --gold-100: #fef3c7;
-  --gold-50: #fffbeb;
+  --gold-50: #fffdf5;
+
+  /* Spiritual & Astrological Accents */
+  --saffron-500: #ea580c;
+  --saffron-400: #f97316;
+  --emerald-500: #10b981;
+  --crimson-500: #ef4444;
 
   /* Surfaces & Backgrounds */
   --surface-bg: #f8fafc;
@@ -34,8 +41,8 @@
   --sal: env(safe-area-inset-left, 0px);
   --sar: env(safe-area-inset-right, 0px);
 
-  --font-inter: 'Inter', 'Noto Sans Bengali', 'Noto Serif Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  --font-cormorant: 'Cormorant Garamond', 'Noto Serif Bengali', 'Noto Sans Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', Georgia, Cambria, 'Times New Roman', Times, serif;
+  --font-inter: 'Outfit', 'Inter', 'Noto Sans Bengali', 'Noto Serif Bengali', 'SolaimanLipi', 'Vrinda', 'Nirmala UI', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-cormorant: 'Cinzel', 'Cormorant Garamond', 'Noto Serif Bengali', Georgia, Cambria, 'Times New Roman', Times, serif;
 }
 
 * {

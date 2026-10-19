@@ -37,6 +37,7 @@ import VastuWorkstation from '@/components/dashboard/VastuWorkstation';
 import SakaToBirthWorkstation from '@/components/dashboard/SakaToBirthWorkstation';
 import KuthiResultWorkstation from '@/components/dashboard/KuthiResultWorkstation';
 import ManipuriPanchangWorkstation from '@/components/dashboard/ManipuriPanchangWorkstation';
+import KPWorkstation from '@/components/dashboard/KPWorkstation';
 import LiveConsultationRoom from '@/components/consultation/LiveConsultationRoom';
 import { calculateVimshottariDasha, getCurrentDasha } from '@/engine/dashas';
 import { calculateDetailedVimshottari, calculateRemainingDashaTime } from '@/engine/vedicWorkstationEngine';
@@ -2410,6 +2411,31 @@ Question: ${details.question || 'N/A'}`;
                                 <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                                 <span>BNN Nadi</span>
                               </button>
+                              <button
+                                onClick={() => {
+                                  setCalcForm((prev) => ({
+                                    ...prev,
+                                    name: order.clientName || 'Client',
+                                    dob: order.clientDetails?.dob || '2004-06-28',
+                                    tob: order.clientDetails?.tob || '12:00',
+                                    pob: order.clientDetails?.pob || 'Imphal, Manipur',
+                                    sex: order.clientDetails?.sex || 'Male',
+                                    lat: 24.8170,
+                                    lng: 93.9368,
+                                    timezone: 5.5,
+                                    ayanamsa: 'KP',
+                                  }));
+                                  setActiveToolModal({
+                                    id: 'kp-astrology',
+                                    title: 'KP Astrology (Krishnamurti Paddhati) Workstation',
+                                  });
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-colors cursor-pointer"
+                                title="Open Client in KP Astrology Workstation"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>KP Astro</span>
+                              </button>
                               {order.status !== 'COMPLETED' ? (
                                 <button
                                   onClick={() => setUploadingOrder(order)}
@@ -2569,6 +2595,31 @@ Question: ${details.question || 'N/A'}`;
                               >
                                 <Sparkles className="w-3.5 h-3.5 text-indigo-600 dark:text-indigo-400" />
                                 <span>BNN Nadi</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  setCalcForm((prev) => ({
+                                    ...prev,
+                                    name: order.clientName || 'Client',
+                                    dob: order.clientDetails?.dob || '2004-06-28',
+                                    tob: order.clientDetails?.tob || '12:00',
+                                    pob: order.clientDetails?.pob || 'Imphal, Manipur',
+                                    sex: order.clientDetails?.sex || 'Male',
+                                    lat: 24.8170,
+                                    lng: 93.9368,
+                                    timezone: 5.5,
+                                    ayanamsa: 'KP',
+                                  }));
+                                  setActiveToolModal({
+                                    id: 'kp-astrology',
+                                    title: 'KP Astrology (Krishnamurti Paddhati) Workstation',
+                                  });
+                                }}
+                                className="px-2.5 py-1.5 rounded-xl font-bold text-[11px] flex items-center gap-1 bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-colors cursor-pointer"
+                                title="Open Client in KP Astrology Workstation"
+                              >
+                                <Sparkles className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
+                                <span>KP Astro</span>
                               </button>
                               <button
                                 onClick={() => setUploadingOrder(order)}
@@ -4058,6 +4109,7 @@ Question: ${details.question || 'N/A'}`;
                       }`}>
                         {t.id === 'vedic-workstation' ? '🪐' :
                          t.id === 'bnn-workstation' ? '✨' :
+                         t.id === 'kp-astrology' ? '⭐' :
                          t.id === 'manipuri-book-panchang' ? '📅' :
                          t.id === 'saka-to-birth' ? '📜' :
                          t.id === 'kuthi-result-sheets' ? '🪶' :
@@ -4093,6 +4145,7 @@ Question: ${details.question || 'N/A'}`;
                         if (
                           t.id !== 'vedic-workstation' &&
                           t.id !== 'bnn-workstation' &&
+                          t.id !== 'kp-astrology' &&
                           t.id !== 'numerology-workstation' &&
                           t.id !== 'vastu-workstation' &&
                           t.id !== 'saka-to-birth' &&
@@ -4753,9 +4806,28 @@ Question: ${details.question || 'N/A'}`;
                 }}
               />
             </div>
-          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && (calcResult?.type === 'workstation-ready' || calcResult?.isNumerologyReport) ? (
+          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'kp-astrology' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && (calcResult?.type === 'workstation-ready' || calcResult?.isNumerologyReport) ? (
             /* ── WORKSTATION: show after calculation is ready ── */
-            activeToolModal.id === 'vedic-workstation' ? (
+            activeToolModal.id === 'kp-astrology' ? (
+              <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
+                <KPWorkstation
+                  initialBirthData={{
+                    name: calcForm.name || 'Sanatomba Meitei',
+                    dob: calcForm.dob || '2004-06-28',
+                    tob: calcForm.tob || '06:00',
+                    pob: calcForm.pob || 'Imphal, Manipur',
+                    lat: Number(calcForm.lat) || 24.8170,
+                    lng: Number(calcForm.lng) || 93.9368,
+                    timezone: Number(calcForm.timezone) || 5.5,
+                    sex: calcForm.sex || 'Male',
+                  }}
+                  onClose={() => {
+                    setActiveToolModal(null);
+                    setCalcResult(null);
+                  }}
+                />
+              </div>
+            ) : activeToolModal.id === 'vedic-workstation' ? (
               <div className="w-full max-w-7xl max-h-[96vh] overflow-y-auto rounded-3xl shadow-2xl">
                 <VedicWorkstation
                   initialBirthData={{
@@ -4826,7 +4898,7 @@ Question: ${details.question || 'N/A'}`;
                 />
               </div>
             )
-          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && !calcResult ? (
+          ) : (activeToolModal.id === 'vedic-workstation' || activeToolModal.id === 'bnn-workstation' || activeToolModal.id === 'kp-astrology' || activeToolModal.id === 'numerology-workstation' || activeToolModal.id === 'vastu-workstation') && !calcResult ? (
             /* ── BIRTH DETAILS FORM for workstation tools ── */
             <div className={`w-full max-w-2xl max-h-[90vh] max-h-[90dvh] overflow-y-auto rounded-3xl border shadow-2xl p-5 sm:p-8 space-y-5 transition-colors ${
               theme === 'dark'

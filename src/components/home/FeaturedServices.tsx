@@ -100,11 +100,14 @@ export default function FeaturedServices() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: idx * 0.1 }}
-                className="bg-white p-6 rounded-2xl border border-[#f3e8d2] shadow-[0_4px_20px_rgba(217,119,6,0.04)] hover:border-[#d97706] transition-all hover:-translate-y-1 flex flex-col justify-between relative overflow-hidden"
+                className="bg-white p-6 rounded-2xl border border-amber-100/80 shadow-[0_4px_24px_-4px_rgba(15,23,42,0.06)] hover:border-amber-400 hover:shadow-[0_12px_32px_-4px_rgba(217,119,6,0.15)] transition-all duration-300 hover:-translate-y-1 flex flex-col justify-between relative group overflow-hidden"
               >
+                {/* Subtle cosmic accent gradient on top of card */}
+                <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-amber-500 via-orange-500 to-amber-400 opacity-80 group-hover:opacity-100 transition-opacity" />
+
                 <div>
                   <div className="flex justify-between items-start mb-4">
-                    <div className="w-12 h-12 rounded-xl bg-[#fef3c7] border border-[#fde68a] flex items-center justify-center text-[#d97706] shadow-xs overflow-hidden p-1 shrink-0">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200/60 flex items-center justify-center text-amber-600 shadow-xs overflow-hidden p-1 shrink-0 group-hover:scale-105 transition-transform">
                       {logoImage ? (
                         <img src={logoImage} alt={service.title} className="w-full h-full object-contain rounded-lg" />
                       ) : (
@@ -112,24 +115,29 @@ export default function FeaturedServices() {
                       )}
                     </div>
                     {service.badge && (
-                      <span className="px-2.5 py-1 rounded-md bg-[#fef3c7] text-[#b45309] text-[10px] font-extrabold uppercase tracking-wider border border-[#fde68a]">
+                      <span className="px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 text-[10px] font-extrabold uppercase tracking-wider border border-amber-200">
                         {service.badge}
                       </span>
                     )}
                   </div>
 
-                  <h3 className="font-serif font-bold text-base md:text-lg text-[#0f172a] mb-4 leading-snug">{service.title}</h3>
+                  <h3 className="font-serif font-bold text-base md:text-lg text-slate-900 mb-2 leading-snug group-hover:text-amber-800 transition-colors">{service.title}</h3>
+                  {service.description && (
+                    <p className="text-xs text-slate-500 line-clamp-2 mb-3 leading-relaxed">
+                      {service.description}
+                    </p>
+                  )}
                 </div>
 
-                <div className="pt-4 border-t border-[#f3e8d2] flex items-center justify-between mt-3">
+                <div className="pt-4 border-t border-slate-100 flex items-center justify-between mt-3">
                   <div>
-                    <span className="text-[10px] text-gray-500 uppercase tracking-wider block font-bold">Price</span>
-                    <span className="text-lg font-extrabold text-[#b45309]">{service.price}</span>
+                    <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Price</span>
+                    <span className="text-lg font-black text-amber-600">{service.price}</span>
                   </div>
 
                   <Link
                     href={service.link || '/booking'}
-                    className="py-2 px-3.5 rounded-xl bg-[#0f172a] text-[#fbbf24] font-bold text-xs hover:bg-[#1e293b] transition-colors flex items-center gap-1.5 shadow-xs shrink-0"
+                    className="py-2.5 px-4 rounded-xl bg-gradient-to-r from-slate-900 to-slate-800 text-amber-400 font-bold text-xs hover:from-amber-600 hover:to-orange-600 hover:text-white transition-all duration-200 flex items-center gap-1.5 shadow-sm shrink-0 cursor-pointer"
                   >
                     <span>{service.cta || 'Book Now'}</span>
                     <ArrowRight className="w-3.5 h-3.5" />

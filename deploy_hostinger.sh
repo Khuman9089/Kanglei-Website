@@ -66,6 +66,17 @@ if [ -d "public/suryasiddha" ]; then
     chmod -R 755 public/suryasiddha 2>/dev/null || true
 fi
 
+# 6b2. Sync app-ads.txt & ads.txt to root for immediate IAB verification
+if [ -f "public/app-ads.txt" ]; then
+    cp public/app-ads.txt ./app-ads.txt 2>/dev/null || true
+    chmod 644 ./app-ads.txt 2>/dev/null || true
+fi
+if [ -f "public/ads.txt" ]; then
+    cp public/ads.txt ./ads.txt 2>/dev/null || true
+    chmod 644 ./ads.txt 2>/dev/null || true
+fi
+
+
 # 6c. Remove leftover physical "blog" directory in root if present (prevents Apache directory redirect loops)
 if [ -d "blog" ]; then
     echo "🧹 Removing conflicting physical 'blog' directory in root..."

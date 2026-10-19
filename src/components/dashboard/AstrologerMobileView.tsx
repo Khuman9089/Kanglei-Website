@@ -68,6 +68,7 @@ import { calculatePlanetaryPositions } from '@/engine/ephemeris';
 import SakaToBirthWorkstation from '@/components/dashboard/SakaToBirthWorkstation';
 import KuthiResultWorkstation from '@/components/dashboard/KuthiResultWorkstation';
 import ManipuriPanchangWorkstation from '@/components/dashboard/ManipuriPanchangWorkstation';
+import KPWorkstation from '@/components/dashboard/KPWorkstation';
 import { ACTIVE_TOOLS_REGISTRY, ToolDefinition } from '@/config/toolsRegistry';
 
 // ==========================================
@@ -2072,6 +2073,7 @@ export default function AstrologerMobileDashboard({ customConfig, initialTab }: 
                       }
                       if (tool.id === 'kuthi-result-sheets') setActiveToolModal('kuthi-result-sheets');
                       else if (tool.id === 'saka-to-birth') setActiveToolModal('saka-to-birth');
+                      else if (tool.id === 'kp-astrology') setActiveToolModal('kp-astrology');
                       else if (tool.id === 'vedic-workstation') setActiveToolModal('vedic-workstation');
                       else if (tool.id === 'bnn-workstation') setActiveToolModal('bnn-workstation');
                       else if (tool.id === 'numerology-workstation' || tool.id === 'vedic-numerology') setActiveToolModal('vedic-numerology');
@@ -2103,6 +2105,7 @@ export default function AstrologerMobileDashboard({ customConfig, initialTab }: 
                       }`}>
                         {tool.id === 'kuthi-result-sheets' && '🪶'}
                         {tool.id === 'saka-to-birth' && '📜'}
+                        {tool.id === 'kp-astrology' && '⭐'}
                         {tool.id === 'manipuri-book-panchang' && '📅'}
                         {tool.id === 'vedic-workstation' && '🧭'}
                         {tool.id === 'bnn-workstation' && '✨'}
@@ -2905,7 +2908,31 @@ export default function AstrologerMobileDashboard({ customConfig, initialTab }: 
               exit={{ opacity: 0 }}
               className="fixed inset-0 z-50 bg-black/70 backdrop-blur-md flex items-end sm:items-center justify-center p-0 sm:p-4"
             >
-              {activeToolModal === 'saka-to-birth' ? (
+              {activeToolModal === 'kp-astrology' ? (
+                <motion.div
+                  initial={{ y: 50 }}
+                  animate={{ y: 0 }}
+                  exit={{ y: 50 }}
+                  className="w-full max-w-4xl max-h-[94vh] overflow-y-auto rounded-t-3xl sm:rounded-3xl shadow-2xl"
+                >
+                  <KPWorkstation
+                    initialBirthData={{
+                      name: mobileBirthForm.name || 'Native Client',
+                      dob: mobileBirthForm.dob || '2004-06-28',
+                      tob: mobileBirthForm.tob || '06:00',
+                      pob: mobileBirthForm.pob || 'Imphal, Manipur',
+                      lat: Number(mobileBirthForm.lat) || 24.8170,
+                      lng: Number(mobileBirthForm.lng) || 93.9368,
+                      timezone: Number(mobileBirthForm.timezone) || 5.5,
+                      sex: mobileBirthForm.gender || 'Male',
+                    }}
+                    onClose={() => {
+                      setActiveToolModal(null);
+                      setMobileToolResult(null);
+                    }}
+                  />
+                </motion.div>
+              ) : activeToolModal === 'saka-to-birth' ? (
                 <motion.div
                   initial={{ y: 50 }}
                   animate={{ y: 0 }}

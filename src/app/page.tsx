@@ -1,11 +1,13 @@
 import type { Metadata } from 'next';
 import HeroSection from '@/components/home/HeroSection';
+import ManipuriCulturalHub from '@/components/home/ManipuriCulturalHub';
+import KPShowcaseSection from '@/components/home/KPShowcaseSection';
+import FreeToolsSection from '@/components/home/FreeToolsSection';
 import TrustPillars from '@/components/home/TrustPillars';
 import TopAstrologersSection from '@/components/home/TopAstrologersSection';
 import FeaturedServices from '@/components/home/FeaturedServices';
 import FeaturedShopSection from '@/components/home/FeaturedShopSection';
 import ZodiacGrid from '@/components/home/ZodiacGrid';
-import FreeToolsSection from '@/components/home/FreeToolsSection';
 import TestimonialsCarousel from '@/components/home/TestimonialsCarousel';
 import FAQAccordion from '@/components/home/FAQAccordion';
 
@@ -64,29 +66,47 @@ export const metadata: Metadata = {
 export default function HomePage() {
   return (
     <>
+      {/* 1. Main Calendar, Live Panjika & Fast Access Category Cards */}
       <HeroSection />
-      <TrustPillars />
-      <TopAstrologersSection />
-      <FeaturedServices />
-      
-      {/* Featured E-Store Section */}
-      <section id="e-store" className="relative">
-        <FeaturedShopSection />
+
+      {/* 2. Authentic Manipuri Cultural Astrology Hub (Thaban Tatpa, Luhongba, Yumsharol, Numit Leppa) */}
+      <section id="cultural-panjika" className="relative">
+        <ManipuriCulturalHub />
       </section>
 
-      <ZodiacGrid />
+      {/* 3. KP Astrology & qw.xlsm Result Sheets Showcase */}
+      <section id="kp-astrology" className="relative">
+        <KPShowcaseSection />
+      </section>
 
-      {/* Free Tools Section */}
+      {/* 4. Free Astrology Tools Suite */}
       <section id="free-tools" className="relative">
         <FreeToolsSection />
       </section>
 
-      {/* Testimonials Section */}
+      {/* 5. Verified Top Astrologers of Manipur */}
+      <TopAstrologersSection />
+
+      {/* 6. Featured Personalized Services & Manual Reports */}
+      <FeaturedServices />
+
+      {/* 7. Daily Rashiphal / Horoscope (12 Zodiac Signs) */}
+      <ZodiacGrid />
+
+      {/* 8. Featured E-Store Section (Gemstones, Rudraksha & Yantras) */}
+      <section id="e-store" className="relative">
+        <FeaturedShopSection />
+      </section>
+
+      {/* 9. Trust Pillars & Credibility */}
+      <TrustPillars />
+
+      {/* 10. Client Testimonials */}
       <section id="testimonials" className="relative">
         <TestimonialsCarousel />
       </section>
 
-      {/* FAQ Section */}
+      {/* 11. Frequently Asked Questions */}
       <section id="faq" className="relative">
         <FAQAccordion />
       </section>
