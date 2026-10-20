@@ -234,25 +234,26 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
         <TopBannerAd config={adminConfig.ads.topBanner} />
       )}
 
+
       {/* 1. Month Navigation & Samvat Indicators */}
-      <div className="bg-white rounded-2xl p-4 border border-slate-300 shadow-sm flex flex-wrap items-center justify-between gap-2.5">
+      <div className="bg-white rounded-2xl p-4 border border-[#e6d5b8] shadow-card flex flex-wrap items-center justify-between gap-2.5">
         <div>
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="rounded-md bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-black text-[#78350F] border border-[#F59E0B]">
+            <span className="rounded-md bg-[#fef3c7] px-2 py-0.5 text-[10px] font-bold text-[#904d00] border border-[#d97706]/40">
               Vikram Samvat {hinduMonthHeader.vikram}
             </span>
-            <span className="rounded-md bg-slate-100 px-2 py-0.5 text-[10px] font-black text-[#1E293B] border border-slate-300">
+            <span className="rounded-md bg-[#faf2ed] px-2 py-0.5 text-[10px] font-bold text-[#59413e] border border-[#e6d5b8]">
               Shaka {hinduMonthHeader.shaka}
             </span>
-            <span className="rounded-md bg-emerald-50 px-2 py-0.5 text-[10px] font-black text-[#065F46] border border-emerald-300">
+            <span className="rounded-md bg-[#dcfce7] px-2 py-0.5 text-[10px] font-bold text-[#15803d] border border-emerald-300">
               {hinduMonthHeader.ritu}
             </span>
           </div>
           <div className="mt-1 flex items-baseline gap-2">
-            <h2 className="font-serif text-lg sm:text-xl font-black text-[#020617]">
+            <h2 className="font-serif text-lg sm:text-xl font-bold text-[#1e1b18]">
               {hinduMonthHeader.title}
             </h2>
-            <span className="text-xs font-bold text-[#78350F]">
+            <span className="text-xs font-semibold text-[#904d00]">
               ({hinduMonthHeader.purnimanta} / {hinduMonthHeader.amanta})
             </span>
           </div>
@@ -261,24 +262,24 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
         <div className="flex items-center gap-1.5">
           <button
             onClick={() => onDateChange(todayStr)}
-            className="rounded-xl border border-slate-300 bg-slate-100 px-3 py-1.5 text-xs font-black text-[#020617] hover:bg-slate-200 transition active:scale-95 shadow-2xs cursor-pointer"
+            className="rounded-xl border border-[#e6d5b8] bg-[#faf2ed] px-3 py-1.5 text-xs font-bold text-[#1e1b18] hover:bg-[#f4ece7] transition active:scale-95 shadow-xs cursor-pointer"
           >
             Today
           </button>
           <button
             onClick={() => setIsMonthExpanded(!isMonthExpanded)}
-            className="flex items-center gap-1 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-xs font-black text-[#020617] hover:bg-slate-50 transition shadow-2xs cursor-pointer"
+            className="flex items-center gap-1 rounded-xl border border-[#e6d5b8] bg-white px-3 py-1.5 text-xs font-bold text-[#1e1b18] hover:bg-[#faf2ed] transition shadow-xs cursor-pointer"
           >
-            <CalendarIcon className="w-3.5 h-3.5 text-[#EA580C] stroke-[2.5]" />
+            <CalendarIcon className="w-3.5 h-3.5 text-[#9c1b1b] stroke-[2.2]" />
             <span>{isMonthExpanded ? 'Carousel' : 'Month View'}</span>
-            {isMonthExpanded ? <ChevronUp className="w-3.5 h-3.5 stroke-[2.5]" /> : <ChevronDown className="w-3.5 h-3.5 stroke-[2.5]" />}
+            {isMonthExpanded ? <ChevronUp className="w-3.5 h-3.5 stroke-[2]" /> : <ChevronDown className="w-3.5 h-3.5 stroke-[2]" />}
           </button>
         </div>
       </div>
 
       {/* 2. Horizontal Date Strip with 5 Spacious Days */}
       {!isMonthExpanded ? (
-        <div className="bg-white rounded-2xl p-3 border border-slate-300 shadow-sm">
+        <div className="bg-white rounded-2xl p-3 border border-[#e6d5b8] shadow-card">
           <div className="grid grid-cols-5 gap-2 sm:gap-2.5">
             {carouselDays.map((d) => {
               const isSelected = currentDate === d.fullDate;
@@ -288,22 +289,22 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
                   onClick={() => onDateChange(d.fullDate)}
                   className={`relative flex flex-col items-center py-2.5 px-1 rounded-xl text-center transition-all cursor-pointer ${
                     isSelected
-                      ? 'bg-[#FEF3C7] border-2 border-[#B45309] shadow-sm scale-[1.02]'
-                      : 'bg-white hover:bg-slate-50 border border-slate-200 text-slate-800'
+                      ? 'bg-[#fef3c7] border-2 border-[#d97706] shadow-sm scale-[1.02]'
+                      : 'bg-white hover:bg-[#faf2ed] border border-[#e6d5b8] text-[#1e1b18]'
                   }`}
                 >
-                  {/* Weekday Label in Terracotta Ochre #7C2D12 font-black */}
-                  <span className="text-[11px] sm:text-xs font-black uppercase text-[#7C2D12]">
+                  {/* Weekday Label in Auspicious Marigold font-bold */}
+                  <span className="text-[11px] sm:text-xs font-bold uppercase text-[#904d00]">
                     {d.marker}
                   </span>
 
-                  {/* Solar Date Number in True Deep Ink #020617 font-black */}
-                  <span className="text-base sm:text-lg font-black font-serif my-0.5 text-[#020617]">
+                  {/* Solar Date Number in Neutral Slate font-serif */}
+                  <span className="text-base sm:text-lg font-bold font-serif my-0.5 text-[#1e1b18]">
                     {d.dateNumber}
                   </span>
 
-                  {/* Tithi Name in Saturated Dark Slate font-bold */}
-                  <span className="text-[10px] sm:text-[11px] font-bold truncate max-w-full px-0.5 text-[#1E293B]">
+                  {/* Tithi Name */}
+                  <span className="text-[10px] sm:text-[11px] font-medium truncate max-w-full px-0.5 text-[#59413e]">
                     {d.tithi}
                   </span>
 
@@ -428,147 +429,155 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
         </div>
       </div>
 
-      {/* 4. Four Pillars of Panchang (Strict High-Contrast Saturated Tokens) */}
+      {/* 4. Four Pillars of Panchang (Vedic & Bengali Panjika Design System) */}
       <div>
         <div className="flex items-center justify-between mb-2.5">
           <div className="flex items-center gap-2">
-            <Sparkles className="h-4 w-4 text-[#EA580C] stroke-[2.5]" />
-            <h3 className="font-serif font-black text-base text-[#020617]">
-              The Four Pillars of Panchang (चतुरङ्गम्)
+            <Sparkles className="h-4 w-4 text-[#9c1b1b] stroke-[2.2]" />
+            <h3 className="font-serif font-bold text-base text-[#1e1b18]">
+              The Four Pillars of Panchang (চতুরঙ্গ)
             </h3>
           </div>
-          <span className="text-xs font-bold text-[#334155]">
-            Ayanamsa: <strong className="text-[#020617] font-mono">{calendarData.panchang.ayanamsa.formatted}</strong>
+          <span className="text-xs font-semibold text-[#59413e]">
+            Ayanamsa: <strong className="text-[#1e1b18] font-mono">{calendarData.panchang.ayanamsa.formatted}</strong>
           </span>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
-          {/* A. Tithi Card: Background #FFFBEB, Border #F59E0B (1.6px), Label #78350F, Main #451A03, Timing #78350F */}
-          <div className="rounded-2xl border-[1.6px] border-[#F59E0B] bg-[#FFFBEB] p-4 shadow-sm relative overflow-hidden">
-            <div className="text-[10px] font-black uppercase tracking-wider text-[#78350F] flex items-center justify-between">
-              <span>Tithi (तिथि)</span>
-              <span className="text-[#78350F] font-black">{calendarData.panchang.tithi.paksha}</span>
-            </div>
-            <div className="mt-1 text-base sm:text-lg font-black text-[#451A03] truncate">
-              {calendarData.panchang.tithi.name}
-            </div>
-            <div className="mt-0.5 text-xs text-[#78350F] font-black">
-              {calendarData.panchang.tithi.endsAt}
-            </div>
-            <div className="mt-2 text-[10px] text-[#78350F] font-bold">
-              Deity: {calendarData.panchang.tithi.deity}
-            </div>
-            <div className="absolute top-0 right-0 h-2 w-16 bg-[#F59E0B] rounded-bl-full" />
-          </div>
-
-          {/* B. Nakshatra Card: Background #F0F9FF, Border #38BDF8 (1.6px), Label #075985, Main #082F49, Timing #0369A1 */}
-          <div className="rounded-2xl border-[1.6px] border-[#38BDF8] bg-[#F0F9FF] p-4 shadow-sm relative overflow-hidden">
-            <div className="text-[10px] font-black uppercase tracking-wider text-[#075985] flex items-center justify-between">
-              <span>Nakshatra (नक्षत्रम्)</span>
-              <span className="text-[#0369A1] font-black">Pada {calendarData.panchang.nakshatra.pada}</span>
-            </div>
-            <div className="mt-1 text-base sm:text-lg font-black text-[#082F49] truncate">
-              {calendarData.panchang.nakshatra.name}
-            </div>
-            <div className="mt-0.5 text-xs text-[#0369A1] font-black">
-              {calendarData.panchang.nakshatra.endsAt}
-            </div>
-            <div className="mt-2 text-[10px] text-[#075985] font-bold">
-              Lord: {calendarData.panchang.nakshatra.lord} • Deity: {calendarData.panchang.nakshatra.deity}
-            </div>
-            <div className="absolute top-0 right-0 h-2 w-16 bg-[#0284C7] rounded-bl-full" />
-          </div>
-
-          {/* C. Yoga Card: Background #ECFDF5, Border #34D399 (1.6px), Label #065F46, Main #022C22, Timing #065F46 */}
-          <div className="rounded-2xl border-[1.6px] border-[#34D399] bg-[#ECFDF5] p-4 shadow-sm relative overflow-hidden">
-            <div className="text-[10px] font-black uppercase tracking-wider text-[#065F46] flex items-center justify-between">
-              <span>Yoga (योग)</span>
-              <span className={calendarData.panchang.yoga.isAuspicious ? 'text-[#065F46] font-black' : 'text-[#991B1B] font-black'}>
-                {calendarData.panchang.yoga.isAuspicious ? 'Auspicious' : 'Inauspicious'}
+          {/* A. Tithi Card */}
+          <div className="rounded-2xl border border-[#e6d5b8] bg-[#fff8f4] p-4 shadow-card relative overflow-hidden">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#904d00] flex items-center justify-between font-sans">
+              <span>Tithi (তিথি)</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-[#fef3c7] text-[#904d00] text-[9px] font-bold">
+                {calendarData.panchang.tithi.paksha}
               </span>
             </div>
-            <div className="mt-1 text-base sm:text-lg font-black text-[#022C22] truncate">
-              {calendarData.panchang.yoga.name} ({calendarData.panchang.yoga.sanskritName})
+            <div className="mt-1 font-serif text-base sm:text-lg font-bold text-[#1e1b18] truncate">
+              {calendarData.panchang.tithi.name}
             </div>
-            <div className="mt-0.5 text-xs text-[#065F46] font-black">
-              {calendarData.panchang.yoga.endsAt}
+            <div className="mt-0.5 text-xs text-[#904d00] font-medium font-sans">
+              Ends: {calendarData.panchang.tithi.endsAt}
             </div>
-            <div className="mt-2 text-[10px] text-[#065F46] font-bold line-clamp-1">
-              {calendarData.panchang.yoga.meaning}
+            <div className="mt-2 text-[10px] text-[#59413e] font-sans">
+              Deity: {calendarData.panchang.tithi.deity}
             </div>
-            <div className="absolute top-0 right-0 h-2 w-16 bg-[#10B981] rounded-bl-full" />
+            <div className="absolute top-0 right-0 h-1.5 w-12 bg-[#d97706] rounded-bl-full" />
           </div>
 
-          {/* D. Karana Card: Background #FAF5FF, Border #C084FC (1.6px), Label #6B21A8, Main #3B0764, Timing #581C87 */}
-          <div className="rounded-2xl border-[1.6px] border-[#C084FC] bg-[#FAF5FF] p-4 shadow-sm relative overflow-hidden">
-            <div className="text-[10px] font-black uppercase tracking-wider text-[#6B21A8] flex items-center justify-between">
-              <span>Karana (करणम्)</span>
-              <span className="text-[#581C87] font-black">{calendarData.panchang.karana.type}</span>
+          {/* B. Nakshatra Card */}
+          <div className="rounded-2xl border border-[#e6d5b8] bg-[#fff8f4] p-4 shadow-card relative overflow-hidden">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#9c1b1b] flex items-center justify-between font-sans">
+              <span>Nakshatra (নক্ষত্র)</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-[#ffdad6] text-[#9c1b1b] text-[9px] font-bold">
+                Pada {calendarData.panchang.nakshatra.pada}
+              </span>
             </div>
-            <div className="mt-1 text-base sm:text-lg font-black text-[#3B0764] truncate">
-              {calendarData.panchang.karana.name} ({calendarData.panchang.karana.sanskritName})
+            <div className="mt-1 font-serif text-base sm:text-lg font-bold text-[#1e1b18] truncate">
+              {calendarData.panchang.nakshatra.name}
             </div>
-            <div className="mt-0.5 text-xs text-[#581C87] font-black">
+            <div className="mt-0.5 text-xs text-[#9c1b1b] font-medium font-sans">
+              Ends: {calendarData.panchang.nakshatra.endsAt}
+            </div>
+            <div className="mt-2 text-[10px] text-[#59413e] font-sans">
+              Lord: {calendarData.panchang.nakshatra.lord} • Deity: {calendarData.panchang.nakshatra.deity}
+            </div>
+            <div className="absolute top-0 right-0 h-1.5 w-12 bg-[#9c1b1b] rounded-bl-full" />
+          </div>
+
+          {/* C. Yoga Card */}
+          <div className="rounded-2xl border border-[#e6d5b8] bg-[#fff8f4] p-4 shadow-card relative overflow-hidden">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#15803d] flex items-center justify-between font-sans">
+              <span>Yoga (যোগ)</span>
+              <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-bold ${
+                calendarData.panchang.yoga.isAuspicious ? 'bg-[#dcfce7] text-[#15803d]' : 'bg-[#fee2e2] text-[#9c1b1b]'
+              }`}>
+                {calendarData.panchang.yoga.isAuspicious ? 'Shubha' : 'Ashubha'}
+              </span>
+            </div>
+            <div className="mt-1 font-serif text-base sm:text-lg font-bold text-[#1e1b18] truncate">
+              {calendarData.panchang.yoga.name}
+            </div>
+            <div className="mt-0.5 text-xs text-[#15803d] font-medium font-sans">
+              Ends: {calendarData.panchang.yoga.endsAt}
+            </div>
+            <div className="mt-2 text-[10px] text-[#59413e] font-sans line-clamp-1">
+              {calendarData.panchang.yoga.meaning}
+            </div>
+            <div className="absolute top-0 right-0 h-1.5 w-12 bg-[#15803d] rounded-bl-full" />
+          </div>
+
+          {/* D. Karana Card */}
+          <div className="rounded-2xl border border-[#e6d5b8] bg-[#fff8f4] p-4 shadow-card relative overflow-hidden">
+            <div className="text-[10px] font-bold uppercase tracking-wider text-[#59413e] flex items-center justify-between font-sans">
+              <span>Karana (করণ)</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-[#faf2ed] text-[#59413e] text-[9px] font-bold">
+                {calendarData.panchang.karana.type}
+              </span>
+            </div>
+            <div className="mt-1 font-serif text-base sm:text-lg font-bold text-[#1e1b18] truncate">
+              {calendarData.panchang.karana.name}
+            </div>
+            <div className="mt-0.5 text-xs text-[#59413e] font-medium font-sans">
               Lord: {calendarData.panchang.karana.lord}
             </div>
-            <div className="mt-2 text-[10px] text-[#6B21A8] font-bold">
+            <div className="mt-2 text-[10px] text-[#59413e] font-sans">
               Deity: {calendarData.panchang.karana.deity}
             </div>
-            <div className="absolute top-0 right-0 h-2 w-16 bg-[#9333EA] rounded-bl-full" />
+            <div className="absolute top-0 right-0 h-1.5 w-12 bg-[#59413e] rounded-bl-full" />
           </div>
         </div>
       </div>
 
       {/* 5. Muhurta & Daytime Choghadiya Matrix */}
-      <div className="rounded-2xl border border-slate-300 bg-white p-4 shadow-sm space-y-3.5">
-        <div className="flex items-center justify-between border-b border-slate-200 pb-2.5">
+      <div className="rounded-2xl border border-[#e6d5b8] bg-[#fff8f4] p-4 shadow-card space-y-3.5">
+        <div className="flex items-center justify-between border-b border-[#e6d5b8] pb-2.5">
           <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4 text-[#EA580C] stroke-[2.5]" />
-            <h3 className="font-serif font-black text-base text-[#020617]">
+            <Clock className="h-4 w-4 text-[#9c1b1b] stroke-[2.2]" />
+            <h3 className="font-serif font-bold text-base text-[#1e1b18]">
               Key Muhurtas & Daytime Choghadiya
             </h3>
           </div>
-          <span className="text-[10px] font-black uppercase text-[#020617] bg-slate-100 px-2 py-0.5 rounded border border-slate-300">
+          <span className="text-[10px] font-bold uppercase text-[#59413e] bg-[#faf2ed] px-2 py-0.5 rounded border border-[#e6d5b8]">
             Real-time Telemetry
           </span>
         </div>
 
         {/* Abhijit Muhurta & Rahu Kaal Alert Banners */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {/* Abhijit Muhurta (Auspicious): Background #F0FDF4, Border #22C55E, Text #052E16 (font-black) */}
-          <div className="rounded-2xl border-[1.6px] border-[#22C55E] bg-[#F0FDF4] p-3.5 shadow-xs">
+          {/* Abhijit Muhurta (Auspicious) */}
+          <div className="rounded-2xl border border-emerald-300 bg-[#dcfce7]/70 p-3.5 shadow-card">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-black text-[#052E16] flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[#15803D] stroke-[2.5]" />
+              <div className="text-xs font-bold text-[#15803d] flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#15803d] stroke-[2.2]" />
                 <span>Abhijit Muhurta</span>
               </div>
-              <span className="text-[10px] font-black uppercase bg-[#DCFCE7] text-[#052E16] px-2 py-0.5 rounded-full border border-[#86EFAC]">
+              <span className="text-[10px] font-bold uppercase bg-emerald-100 text-[#15803d] px-2 py-0.5 rounded-full border border-emerald-300">
                 Highly Auspicious
               </span>
             </div>
-            <div className="mt-2 text-sm sm:text-base font-black text-[#052E16] font-mono">
+            <div className="mt-2 text-sm sm:text-base font-bold text-emerald-950 font-mono">
               {calendarData.muhurta.abhijitMuhurta.start} – {calendarData.muhurta.abhijitMuhurta.end}
             </div>
-            <div className="text-[11px] text-[#052E16] font-bold mt-0.5">
+            <div className="text-[11px] text-[#15803d] font-medium mt-0.5">
               Lord Vishnu’s auspicious window destroys doshas
             </div>
           </div>
 
-          {/* Rahu Kaal (Inauspicious): Background #FFF1F2, Border #F43F5E, Text #4C0519 (font-black) */}
-          <div className="rounded-2xl border-[1.6px] border-[#F43F5E] bg-[#FFF1F2] p-3.5 shadow-xs">
+          {/* Rahu Kaal (Inauspicious) */}
+          <div className="rounded-2xl border border-rose-300 bg-[#fee2e2]/70 p-3.5 shadow-card">
             <div className="flex items-center justify-between">
-              <div className="text-xs font-black text-[#4C0519] flex items-center gap-1.5">
-                <AlertTriangle className="w-4 h-4 text-[#E11D48] stroke-[2.5]" />
+              <div className="text-xs font-bold text-[#9c1b1b] flex items-center gap-1.5">
+                <AlertTriangle className="w-4 h-4 text-[#9c1b1b] stroke-[2.2]" />
                 <span>Rahu Kaal</span>
               </div>
-              <span className="text-[10px] font-black uppercase bg-[#FFE4E6] text-[#4C0519] px-2 py-0.5 rounded-full border border-[#FDA4AF]">
+              <span className="text-[10px] font-bold uppercase bg-rose-100 text-[#9c1b1b] px-2 py-0.5 rounded-full border border-rose-300">
                 Inauspicious
               </span>
             </div>
-            <div className="mt-2 text-sm sm:text-base font-black text-[#4C0519] font-mono">
+            <div className="mt-2 text-sm sm:text-base font-bold text-rose-950 font-mono">
               {calendarData.muhurta.rahuKaal.start} – {calendarData.muhurta.rahuKaal.end}
             </div>
-            <div className="text-[11px] text-[#4C0519] font-bold mt-0.5">
+            <div className="text-[11px] text-[#9c1b1b] font-medium mt-0.5">
               Avoid starting critical works, journeys, or contracts
             </div>
           </div>
@@ -576,12 +585,12 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
 
         {/* 4-Slot Daytime Choghadiya Ribbon */}
         <div>
-          <div className="text-xs font-black text-[#020617] mb-2 flex items-center justify-between">
+          <div className="text-xs font-bold text-[#1e1b18] mb-2 flex items-center justify-between">
             <span className="flex items-center gap-1">
-              <Hourglass className="w-3.5 h-3.5 text-[#EA580C] stroke-[2.5]" />
+              <Hourglass className="w-3.5 h-3.5 text-[#9c1b1b] stroke-[2.2]" />
               Daytime Choghadiya Segments
             </span>
-            <span className="text-[10px] text-[#334155] font-bold">8 total slots</span>
+            <span className="text-[10px] text-[#59413e] font-medium">8 total slots</span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -592,28 +601,28 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
                   key={idx}
                   className={`p-2.5 rounded-xl border transition-all ${
                     isCurrent
-                      ? 'border-2 border-[#16A34A] bg-[#DCFCE7] text-[#052E16] shadow-sm'
-                      : 'border-slate-300 bg-slate-50'
+                      ? 'border-2 border-[#15803d] bg-[#dcfce7] text-[#15803d] shadow-sm'
+                      : 'border-[#e6d5b8] bg-white text-[#1e1b18]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-black text-[#020617]">{slot.name}</span>
+                    <span className="text-xs font-bold text-[#1e1b18]">{slot.name}</span>
                     <span
-                      className={`text-[9px] font-black px-1.5 py-0.2 rounded uppercase ${
+                      className={`text-[9px] font-bold px-1.5 py-0.2 rounded uppercase ${
                         slot.quality === 'Good'
-                          ? 'bg-emerald-200 text-[#064E3B]'
+                          ? 'bg-[#dcfce7] text-[#15803d]'
                           : slot.quality === 'Bad'
-                          ? 'bg-rose-200 text-[#881337]'
-                          : 'bg-amber-200 text-[#78350F]'
+                          ? 'bg-[#fee2e2] text-[#9c1b1b]'
+                          : 'bg-[#fef3c7] text-[#b45309]'
                       }`}
                     >
                       {slot.quality}
                     </span>
                   </div>
-                  <div className="text-[10px] text-[#020617] font-mono mt-1 font-black">
+                  <div className="text-[10px] text-[#1e1b18] font-mono mt-1 font-bold">
                     {slot.start} – {slot.end}
                   </div>
-                  <div className="text-[9px] text-[#334155] font-bold mt-0.5">
+                  <div className="text-[9px] text-[#59413e] font-medium mt-0.5">
                     Lord: {slot.ruler} ({slot.nature})
                   </div>
                 </div>

@@ -94,10 +94,30 @@ public class MainActivity extends AppCompatActivity {
         webView.setLayerType(View.LAYER_TYPE_HARDWARE, null);
         webView.setBackgroundColor(ContextCompat.getColor(this, R.color.backgroundColor));
 
+        // Android Javascript Interface for Web-to-Native Ad & App Controls
+        webView.addJavascriptInterface(new Object() {
+            @android.webkit.JavascriptInterface
+            public void showAdMobBanner(boolean show, String adUnitId) {
+                android.util.Log.d("SuryaSiddhaAdMob", "showAdMobBanner: " + show + ", unit: " + adUnitId);
+            }
+
+            @android.webkit.JavascriptInterface
+            public void showAdMobInterstitial(String adUnitId) {
+                android.util.Log.d("SuryaSiddhaAdMob", "showAdMobInterstitial: " + adUnitId);
+            }
+        }, "AndroidBridge");
+
         webView.setWebViewClient(new WebViewClient() {
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 Uri uri = request.getUrl();
+                String host = uri.getHost();
+
+                // Allow external network API, ads, and CDN image requests to bypass local asset interceptor
+                if (host != null && !host.equals("appassets.androidplatform.net")) {
+                    return super.shouldInterceptRequest(view, request);
+                }
+
                 String path = uri.getPath();
 
                 // 1. Intercept root/directory request and serve local index.html

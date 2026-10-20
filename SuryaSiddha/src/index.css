@@ -9,13 +9,13 @@
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background-color: #0B0F19;
-    color: #0F172A;
-    font-family: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #fff8f4;
+    color: #1e1b18;
+    font-family: 'Work Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* Custom Light Slate Scrollbar */
+  /* Custom Parchment Scrollbar */
   ::-webkit-scrollbar {
     width: 4px;
     height: 4px;
@@ -24,38 +24,102 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
+    background: #e6d5b8;
     border-radius: 9999px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #94A3B8;
+    background: #8d706d;
   }
 }
 
 @layer utilities {
-  .card-elevated {
-    background-color: #131B2E;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.35);
+  /* Design System Typography */
+  .display-lg {
+    font-family: 'Noto Serif', serif;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 40px;
+    letter-spacing: -0.01em;
   }
 
-  .card-glass {
-    background: rgba(19, 27, 46, 0.75);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+  .headline-lg {
+    font-family: 'Noto Serif', serif;
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 34px;
+    letter-spacing: -0.01em;
   }
 
-  .solar-gradient {
-    background: linear-gradient(135deg, #EA580C 0%, #F59E0B 100%);
+  .headline-md {
+    font-family: 'Noto Serif', serif;
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 28px;
   }
 
-  .lunar-gradient {
-    background: linear-gradient(135deg, #6366F1 0%, #8B5CF6 100%);
+  .headline-sm {
+    font-family: 'Noto Serif', serif;
+    font-size: 18px;
+    font-weight: 600;
+    line-height: 24px;
   }
 
-  .gold-gradient {
-    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  .body-lg {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 24px;
+  }
+
+  .body-md {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 20px;
+  }
+
+  .body-sm {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 16px;
+  }
+
+  .label-lg {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 18px;
+    letter-spacing: 0.02em;
+  }
+
+  .label-md {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 16px;
+    letter-spacing: 0.04em;
+  }
+
+  .label-sm {
+    font-family: 'Work Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 14px;
+    letter-spacing: 0.06em;
+  }
+
+  .font-bengali {
+    font-family: 'Hind Siliguri', 'Noto Serif Bengali', sans-serif;
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 

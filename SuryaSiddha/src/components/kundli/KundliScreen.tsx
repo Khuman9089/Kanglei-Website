@@ -31,14 +31,22 @@ interface KundliScreenProps {
   profile: UserBirthProfile;
   kundliData: KundliData;
   onUpdateProfile: (profile: UserBirthProfile) => void;
+  initialSubTab?: 'chart' | 'planets' | 'dasha' | 'doshas' | 'matching';
 }
 
 export const KundliScreen: React.FC<KundliScreenProps> = ({
   profile,
   kundliData,
   onUpdateProfile,
+  initialSubTab = 'chart',
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<'chart' | 'planets' | 'dasha' | 'doshas' | 'matching'>('chart');
+  const [activeSubTab, setActiveSubTab] = useState<'chart' | 'planets' | 'dasha' | 'doshas' | 'matching'>(initialSubTab);
+
+  React.useEffect(() => {
+    if (initialSubTab) {
+      setActiveSubTab(initialSubTab);
+    }
+  }, [initialSubTab]);
   const [chartStyle, setChartStyle] = useState<'north' | 'south'>('north');
   const [activeDivisional, setActiveDivisional] = useState<string>('D1');
 
@@ -56,26 +64,26 @@ export const KundliScreen: React.FC<KundliScreenProps> = ({
   return (
     <div className="space-y-4 pb-20 sm:pb-24 animate-in fade-in duration-150">
       {/* 1. Birth Details Form & PDF Export Header */}
-      <div className="rounded-2xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-sm">
-        <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+      <div className="rounded-2xl border border-[#e6d5b8] bg-[#fff8f4] p-4 sm:p-5 shadow-card">
+        <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 border-b border-[#e6d5b8] pb-2.5">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-[#FF6B4A] to-[#FFA133] text-white shadow-2xs">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-gradient-to-tr from-[#9c1b1b] to-[#790009] text-white shadow-xs">
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <h2 className="font-serif text-base sm:text-lg font-bold text-slate-900">
+              <h2 className="font-serif text-base sm:text-lg font-bold text-[#1e1b18]">
                 Natal Horoscope & Astronomical Telemetry
               </h2>
-              <p className="text-xs text-stone-500">
+              <p className="text-xs text-[#59413e]">
                 Precision Swiss Ephemeris • Lahiri Standard
               </p>
             </div>
           </div>
           <button
             onClick={handlePrint}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-slate-100 transition active:scale-95 shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 rounded-xl border border-[#e6d5b8] bg-white px-3 py-1.5 text-xs font-bold text-[#1e1b18] hover:bg-[#faf2ed] transition active:scale-95 shadow-xs cursor-pointer"
           >
-            <Printer className="h-3.5 w-3.5 text-amber-600" />
+            <Printer className="h-3.5 w-3.5 text-[#9c1b1b]" />
             <span>Export Chart PDF</span>
           </button>
         </div>
@@ -247,13 +255,13 @@ export const KundliScreen: React.FC<KundliScreenProps> = ({
       </div>
 
       {/* 3. Sub-Navigation Tabs */}
-      <div className="flex border-b border-slate-200 gap-1.5 pb-1 overflow-x-auto custom-scrollbar">
+      <div className="flex border-b border-[#e6d5b8] gap-1.5 pb-1 overflow-x-auto custom-scrollbar">
         <button
           onClick={() => setActiveSubTab('chart')}
           className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-t-xl transition cursor-pointer whitespace-nowrap ${
             activeSubTab === 'chart'
-              ? 'bg-gradient-to-r from-[#FF6B4A] to-[#FFA133] text-white shadow-xs'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-gradient-to-r from-[#9c1b1b] to-[#790009] text-white shadow-xs'
+              : 'text-[#59413e] hover:text-[#1e1b18] hover:bg-[#faf2ed]'
           }`}
         >
           <Compass className="h-3.5 w-3.5" />
@@ -264,8 +272,8 @@ export const KundliScreen: React.FC<KundliScreenProps> = ({
           onClick={() => setActiveSubTab('planets')}
           className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-t-xl transition cursor-pointer whitespace-nowrap ${
             activeSubTab === 'planets'
-              ? 'bg-gradient-to-r from-[#FF6B4A] to-[#FFA133] text-white shadow-xs'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-gradient-to-r from-[#9c1b1b] to-[#790009] text-white shadow-xs'
+              : 'text-[#59413e] hover:text-[#1e1b18] hover:bg-[#faf2ed]'
           }`}
         >
           <Table className="h-3.5 w-3.5" />
@@ -276,8 +284,8 @@ export const KundliScreen: React.FC<KundliScreenProps> = ({
           onClick={() => setActiveSubTab('dasha')}
           className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-t-xl transition cursor-pointer whitespace-nowrap ${
             activeSubTab === 'dasha'
-              ? 'bg-gradient-to-r from-[#FF6B4A] to-[#FFA133] text-white shadow-xs'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-gradient-to-r from-[#9c1b1b] to-[#790009] text-white shadow-xs'
+              : 'text-[#59413e] hover:text-[#1e1b18] hover:bg-[#faf2ed]'
           }`}
         >
           <Clock className="h-3.5 w-3.5" />
@@ -288,8 +296,8 @@ export const KundliScreen: React.FC<KundliScreenProps> = ({
           onClick={() => setActiveSubTab('doshas')}
           className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-t-xl transition cursor-pointer whitespace-nowrap ${
             activeSubTab === 'doshas'
-              ? 'bg-gradient-to-r from-[#FF6B4A] to-[#FFA133] text-white shadow-xs'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-gradient-to-r from-[#9c1b1b] to-[#790009] text-white shadow-xs'
+              : 'text-[#59413e] hover:text-[#1e1b18] hover:bg-[#faf2ed]'
           }`}
         >
           <Flame className="h-3.5 w-3.5" />
@@ -300,8 +308,8 @@ export const KundliScreen: React.FC<KundliScreenProps> = ({
           onClick={() => setActiveSubTab('matching')}
           className={`flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold rounded-t-xl transition cursor-pointer whitespace-nowrap ${
             activeSubTab === 'matching'
-              ? 'bg-gradient-to-r from-[#FF6B4A] to-[#FFA133] text-white shadow-xs'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100'
+              ? 'bg-gradient-to-r from-[#9c1b1b] to-[#790009] text-white shadow-xs'
+              : 'text-[#59413e] hover:text-[#1e1b18] hover:bg-[#faf2ed]'
           }`}
         >
           <Heart className="h-3.5 w-3.5" />

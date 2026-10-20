@@ -87,6 +87,17 @@ export const DEFAULT_ADMIN_CONFIG: AdminAppConfig = {
   },
 };
 
+export function getApiUrl(): string {
+  if (typeof window === 'undefined') return 'https://kuthiyengpham.in/api/suryasiddha/config';
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    return '/api/suryasiddha/config';
+  }
+  if (window.location.origin.includes('androidplatform.net') || window.location.protocol === 'file:') {
+    return 'https://kuthiyengpham.in/api/suryasiddha/config';
+  }
+  return '/api/suryasiddha/config';
+}
+
 export function loadAdminConfig(): AdminAppConfig {
   if (typeof window === 'undefined') return DEFAULT_ADMIN_CONFIG;
   try {
@@ -105,11 +116,71 @@ export function loadAdminConfig(): AdminAppConfig {
   }
 }
 
-export function saveAdminConfig(config: AdminAppConfig): void {
-  if (typeof window === 'undefined') return;
+/**
+ * Fetches the live configuration from the central server API, updates localStorage, and notifies listeners.
+ */
+export async function fetchRemoteAdminConfig(): Promise<AdminAppConfig | null> {
+  if (typeof window === 'undefined') return null;
+  try {
+    const url = `${getApiUrl()}?t=${Date.now()}`;
+    const res = await fetch(url, {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success && data.config) {
+        const merged: AdminAppConfig = {
+          ...DEFAULT_ADMIN_CONFIG,
+          ...data.config,
+          ads: { ...DEFAULT_ADMIN_CONFIG.ads, ...(data.config.ads || {}) },
+          notifications: { ...DEFAULT_ADMIN_CONFIG.notifications, ...(data.config.notifications || {}) },
+          mobile: { ...DEFAULT_ADMIN_CONFIG.mobile, ...(data.config.mobile || {}) },
+        };
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+        } catch (_) {}
+        window.dispatchEvent(new CustomEvent('suryasiddha_config_updated', { detail: merged }));
+        return merged;
+      }
+    }
+  } catch (err) {
+    console.warn('Could not fetch remote SuryaSiddha config (operating in offline cache mode):', err);
+  }
+  return null;
+}
+
+/**
+ * Persists config to both local storage and the central cloud server API.
+ */
+export async function saveAdminConfig(config: AdminAppConfig): Promise<boolean> {
+  if (typeof window === 'undefined') return false;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
+    window.dispatchEvent(new CustomEvent('suryasiddha_config_updated', { detail: config }));
   } catch (err) {
-    console.error('Failed to save admin configuration:', err);
+    console.error('Failed to save to localStorage:', err);
   }
+
+  // Push to server API so mobile app users receive it immediately
+  try {
+    const url = getApiUrl();
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        pin: config.pin || 'admin123',
+        config,
+      }),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return Boolean(data.success);
+    }
+  } catch (err) {
+    console.error('Failed to sync admin config to remote server:', err);
+  }
+  return false;
 }

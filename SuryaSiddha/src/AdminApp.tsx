@@ -19,9 +19,15 @@ import {
   Sliders,
   DollarSign,
   AlertTriangle,
+  Loader2,
 } from 'lucide-react';
 import { AdminAppConfig, AppNotification } from './types/admin';
-import { loadAdminConfig, saveAdminConfig, DEFAULT_ADMIN_CONFIG } from './utils/adminStorage';
+import {
+  loadAdminConfig,
+  saveAdminConfig,
+  fetchRemoteAdminConfig,
+  DEFAULT_ADMIN_CONFIG,
+} from './utils/adminStorage';
 
 export const AdminApp: React.FC = () => {
   const [config, setConfig] = useState<AdminAppConfig>(() => loadAdminConfig());
@@ -32,6 +38,18 @@ export const AdminApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'admob' | 'webads' | 'notifications' | 'mobile' | 'security'>('admob');
   const [formConfig, setFormConfig] = useState<AdminAppConfig>(config);
   const [savedToast, setSavedToast] = useState<boolean>(false);
+  const [isSaving, setIsSaving] = useState<boolean>(false);
+  const [saveStatusMsg, setSaveStatusMsg] = useState<string>('Saved to Cloud & Mobile Apps!');
+
+  // Sync latest remote config from server on mount
+  React.useEffect(() => {
+    fetchRemoteAdminConfig().then((remote) => {
+      if (remote) {
+        setConfig(remote);
+        setFormConfig(remote);
+      }
+    });
+  }, []);
 
   // Broadcaster state
   const [notifTitle, setNotifTitle] = useState('');
@@ -49,18 +67,28 @@ export const AdminApp: React.FC = () => {
     }
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
+    setIsSaving(true);
     setConfig(formConfig);
-    saveAdminConfig(formConfig);
+    const synced = await saveAdminConfig(formConfig);
+    setIsSaving(false);
+    if (synced) {
+      setSaveStatusMsg('✅ Live on Cloud! Mobile App & Web will reflect changes automatically.');
+    } else {
+      setSaveStatusMsg('Saved locally. Connect online to sync live to all mobile app users.');
+    }
     setSavedToast(true);
-    setTimeout(() => setSavedToast(false), 3500);
+    setTimeout(() => setSavedToast(false), 4000);
   };
 
-  const handleResetDefaults = () => {
+  const handleResetDefaults = async () => {
     if (window.confirm('Reset all configurations, ads, and notification settings to factory defaults?')) {
+      setIsSaving(true);
       setFormConfig(DEFAULT_ADMIN_CONFIG);
       setConfig(DEFAULT_ADMIN_CONFIG);
-      saveAdminConfig(DEFAULT_ADMIN_CONFIG);
+      const synced = await saveAdminConfig(DEFAULT_ADMIN_CONFIG);
+      setIsSaving(false);
+      setSaveStatusMsg(synced ? '✅ Reset and synced to cloud!' : 'Reset locally.');
       setSavedToast(true);
       setTimeout(() => setSavedToast(false), 3000);
     }
@@ -337,6 +365,7 @@ export const AdminApp: React.FC = () => {
                               ...formConfig.ads,
                               admob: {
                                 ...formConfig.ads.admob,
+                                enabled: e.target.checked ? true : formConfig.ads.admob?.enabled,
                                 testMode: e.target.checked,
                               },
                             },
@@ -1054,18 +1083,28 @@ export const AdminApp: React.FC = () => {
               <div className="flex items-center gap-3">
                 {savedToast && (
                   <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 animate-in fade-in">
-                    <CheckCircle className="w-4 h-4" />
-                    <span>Settings Saved Successfully!</span>
+                    <CheckCircle className="w-4 h-4 shrink-0" />
+                    <span>{saveStatusMsg}</span>
                   </span>
                 )}
 
                 <button
                   type="button"
+                  disabled={isSaving}
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black text-xs shadow-lg shadow-orange-500/20 hover:opacity-90 transition cursor-pointer"
+                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black text-xs shadow-lg shadow-orange-500/20 hover:opacity-90 transition cursor-pointer disabled:opacity-60"
                 >
-                  <Save className="w-4 h-4" />
-                  <span>Save All Changes</span>
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Syncing to Cloud...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Save All Changes</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

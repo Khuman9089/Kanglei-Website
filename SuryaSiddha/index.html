@@ -8,9 +8,18 @@
     <meta name="description" content="SuryaSiddha: Vedic Calendar — High-precision Hindu Astronomical Calendar, Vedic Panchang, Kundli Engine, Vimshottari Dasha, Shani Sade Sati, Manglik Dosha, and Dynamic Choghadiya using Swiss Ephemeris and Lahiri Ayanamsa." />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;800;900&family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700;800&family=Hind+Siliguri:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@400;600;700&family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <script>
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(regs) {
+            for (var r of regs) r.unregister();
+          });
+        }
+      }
+    </script>
   </head>
-  <body class="bg-[#FAF7F2] text-slate-900 font-sans antialiased min-h-screen selection:bg-amber-200 selection:text-amber-950">
+  <body class="bg-[#fff8f4] text-[#1e1b18] font-sans antialiased min-h-screen selection:bg-[#9c1b1b] selection:text-white">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
