@@ -346,6 +346,13 @@ export default function AdminAppControlPage() {
 
           <div className="flex items-center gap-2.5">
             <Link
+              href="/admin/events"
+              className="px-3 py-1.5 rounded-xl border border-rose-800/60 bg-[#2e1d1d] hover:bg-[#3d2626] text-rose-300 text-xs font-semibold flex items-center gap-1.5 transition"
+            >
+              <Calendar className="w-3.5 h-3.5 text-rose-400" />
+              <span>Events & Approvals</span>
+            </Link>
+            <Link
               href="/admin/useful"
               className="px-3 py-1.5 rounded-xl border border-amber-800/60 bg-[#2b241d] hover:bg-[#382f26] text-amber-300 text-xs font-semibold flex items-center gap-1.5 transition"
             >

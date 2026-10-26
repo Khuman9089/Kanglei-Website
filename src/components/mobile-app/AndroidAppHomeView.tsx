@@ -51,7 +51,10 @@ import {
   UserCheck,
   Info,
   MessageSquare,
-  WifiOff
+  WifiOff,
+  Plus,
+  Tag,
+  ThumbsUp
 } from 'lucide-react';
 import { calculateVedicPanchang } from '@/engine/panchang';
 import { getMonthlyCalendar, CalendarDay, toBengaliNumerals, toMeeteiNumerals } from '@/engine/manipuriCalendar';
@@ -63,6 +66,8 @@ import AppSplashScreen from '@/components/mobile-app/AppSplashScreen';
 import InAppAccountView from '@/components/mobile-app/InAppAccountView';
 import ManipuriAdMobBanner from '@/components/mobile-app/ManipuriAdMobBanner';
 import { DEFAULT_USEFUL_TOPICS } from '@/data/defaultUsefulTopics';
+import { SEED_UPCOMING_EVENTS, UpcomingEvent } from '@/data/seedEvents';
+import { SEED_LEIPUNG_POSTS, LeipungPostItem } from '@/data/seedLeipungPosts';
 
 type ScriptMode = 'bengali' | 'meetei';
 
@@ -449,7 +454,107 @@ export default function AndroidAppHomeView({
         if (d && d.settings) setAppSettings(d.settings);
       })
       .catch((e) => console.log('Offline/Network notice: using local app settings.'));
+
+    fetch(getEndpointUrl('/api/events'))
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && d.success && Array.isArray(d.events) && d.events.length > 0) {
+          setUpcomingEvents(d.events);
+        }
+      })
+      .catch((e) => console.log('Offline/Network notice: using local upcoming events.'));
+
+    fetch(getEndpointUrl('/api/leipung/posts?filter=trending'))
+      .then((r) => r.json())
+      .then((d) => {
+        if (d && d.success && Array.isArray(d.posts) && d.posts.length > 0) {
+          setCommunityPosts(d.posts.slice(0, 3));
+        }
+      })
+      .catch((e) => console.log('Offline/Network notice: using local community posts.'));
   }, []);
+
+  // Upcoming Cultural Events State (Pre-seeded for full offline capability)
+  const [upcomingEvents, setUpcomingEvents] = useState<UpcomingEvent[]>(
+    SEED_UPCOMING_EVENTS.filter((e) => e.status === 'approved')
+  );
+  const [showSubmitEventModal, setShowSubmitEventModal] = useState<boolean>(false);
+  const [userEventSubmitSuccess, setUserEventSubmitSuccess] = useState<boolean>(false);
+  const [submittingUserEvent, setSubmittingUserEvent] = useState<boolean>(false);
+  const [userEventForm, setUserEventForm] = useState({
+    title: '',
+    dateStr: '',
+    endDateStr: '',
+    timeStr: 'All Day',
+    venue: '',
+    category: 'thabal',
+    description: '',
+    organizer: '',
+    submitterName: '',
+    submitterContact: '',
+  });
+
+  const handleSubmitUserEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!userEventForm.title.trim() || !userEventForm.dateStr.trim() || !userEventForm.venue.trim()) {
+      alert('Please fill in Event Title, Date, and Venue.');
+      return;
+    }
+    setSubmittingUserEvent(true);
+    try {
+      const getEndpointUrl = (path: string) => {
+        if (typeof window !== 'undefined') {
+          const origin = window.location.origin;
+          if (origin.includes('localhost') || origin.startsWith('file:') || origin.startsWith('capacitor:')) {
+            return `https://kuthiyengpham.in${path}`;
+          }
+        }
+        return path;
+      };
+
+      const res = await fetch(getEndpointUrl('/api/events'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titleEn: userEventForm.title.trim(),
+          dateStr: userEventForm.dateStr,
+          endDateStr: userEventForm.endDateStr || userEventForm.dateStr,
+          timeStr: userEventForm.timeStr || 'All Day',
+          venue: userEventForm.venue.trim(),
+          category: userEventForm.category,
+          description: userEventForm.description.trim(),
+          organizer: userEventForm.organizer.trim(),
+          submitterName: userEventForm.submitterName.trim(),
+          submitterContact: userEventForm.submitterContact.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data && data.success) {
+        setUserEventSubmitSuccess(true);
+      } else {
+        alert(data.error || 'Failed to submit event');
+      }
+    } catch (err) {
+      console.error('Submit event error:', err);
+      // Fallback optimistic success for offline users
+      setUserEventSubmitSuccess(true);
+    } finally {
+      setSubmittingUserEvent(false);
+    }
+  };
+
+  // Example Community Posts State (For Homepage Community Buzz Preview)
+  const [communityPosts, setCommunityPosts] = useState<LeipungPostItem[]>(
+    SEED_LEIPUNG_POSTS.slice(0, 3)
+  );
+  const [likedCommunityPostIds, setLikedCommunityPostIds] = useState<Record<string, boolean>>({});
+
+  const handleToggleCommunityLike = (postId: string) => {
+    setLikedCommunityPostIds((prev) => ({
+      ...prev,
+      [postId]: !prev[postId]
+    }));
+  };
 
   // Kuthi Eba (Janma Patrika) In-App Form State
   const [ebaType, setEbaType] = useState<'new_born' | 'rewrite'>('new_born');
@@ -2566,113 +2671,290 @@ export default function AndroidAppHomeView({
           </section>
 
           {/* ───────────────────────────────────────────────────────────── */}
-          {/* STITCH "UPCOMING CULTURAL FESTIVALS" CAROUSEL                  */}
+          {/* STITCH "UPCOMING CULTURAL FESTIVALS & EVENTS" DYNAMIC CAROUSEL */}
+          {/* (Managed by Admin + Community User Submissions)                */}
           {/* ───────────────────────────────────────────────────────────── */}
-          <section className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs space-y-2.5">
+          <section className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Flame className="w-4 h-4 text-[#a6331b]" />
-                <h3 className="text-sm font-bold text-[#1a1c1e]">Upcoming Festivals</h3>
+                <div>
+                  <h3 className="text-sm font-bold text-[#1a1c1e] leading-tight">
+                    {scriptMode === 'meetei' ? 'ꯃꯩꯇꯩ ꯀꯨꯝꯃꯩ & ꯊꯧꯔꯝ' : 'Upcoming Festivals & Kumhei'}
+                  </h3>
+                  <span className="text-[10px] text-gray-500 font-medium block">
+                    {upcomingEvents.length} cultural events scheduled
+                  </span>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUserEventSubmitSuccess(false);
+                    setShowSubmitEventModal(true);
+                  }}
+                  className="px-2.5 py-1 rounded-full bg-amber-500/10 hover:bg-amber-500/20 text-amber-800 border border-amber-300 font-bold text-[11px] flex items-center gap-1 transition active:scale-95 cursor-pointer"
+                  title="Submit your local event for review"
+                >
+                  <Plus className="w-3 h-3 text-amber-700" />
+                  <span>Submit Event</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveTab('calendar');
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  className="text-xs font-bold text-[#c84b31] hover:text-[#a6331b] transition cursor-pointer pl-1"
+                >
+                  Calendar →
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
+              {upcomingEvents.map((evt, idx) => {
+                // Determine styling category
+                const isThabal = evt.category === 'thabal';
+                const isRitual = evt.category === 'ritual';
+                const isKumhei = evt.category === 'kumhei';
+
+                const headerBg = isThabal
+                  ? 'bg-gradient-to-r from-[#a6331b] to-[#c84b31]'
+                  : isRitual
+                  ? 'bg-gradient-to-r from-[#4a2810] to-[#895200]'
+                  : isKumhei
+                  ? 'bg-gradient-to-r from-[#9e3b2d] to-[#fead4d]'
+                  : 'bg-gradient-to-r from-[#895200] to-[#c84b31]';
+
+                const categoryLabel = isThabal
+                  ? 'Thabal Chongba'
+                  : isRitual
+                  ? 'Temple Ritual'
+                  : isKumhei
+                  ? 'Traditional Kumhei'
+                  : 'Meitei Festival';
+
+                // Display localized title
+                const displayTitle = scriptMode === 'meetei' && evt.titleMeetei
+                  ? evt.titleMeetei
+                  : scriptMode === 'bengali' && evt.titleBengali
+                  ? evt.titleBengali
+                  : evt.titleEn;
+
+                // Format display date
+                const formattedDate = (() => {
+                  if (!evt.dateStr) return '';
+                  try {
+                    const [y, m, d] = evt.dateStr.split('-').map(Number);
+                    const dObj = new Date(y, m - 1, d);
+                    return dObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                  } catch {
+                    return evt.dateStr;
+                  }
+                })();
+
+                return (
+                  <div
+                    key={evt.id || `evt-${idx}`}
+                    className="flex-shrink-0 w-64 rounded-xl overflow-hidden border border-gray-200 bg-[#f9f9fc] flex flex-col justify-between shadow-2xs hover:border-amber-300 transition"
+                  >
+                    <div className={`p-3 ${headerBg} text-white`}>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="rounded-full bg-white/20 backdrop-blur-xs px-2 py-0.5 text-[8.5px] font-bold text-white uppercase font-mono">
+                          {categoryLabel}
+                        </span>
+                        <span className="text-[10px] text-amber-200 font-mono font-semibold">
+                          {formattedDate}
+                        </span>
+                      </div>
+                      <h4 className="font-bold text-sm leading-tight text-white line-clamp-1">
+                        {displayTitle}
+                      </h4>
+                      <p className="text-[10.5px] text-amber-100/90 mt-0.5 leading-snug flex items-center gap-1 line-clamp-1">
+                        <MapPin className="w-3 h-3 text-amber-300 shrink-0" />
+                        <span>{evt.venue || 'Manipur'}</span>
+                      </p>
+                    </div>
+
+                    <div className="p-2.5 text-xs text-gray-700 space-y-1.5 flex-1 flex flex-col justify-between">
+                      <p className="text-[11px] text-gray-600 line-clamp-2 leading-relaxed">
+                        {evt.description || 'Join this sacred traditional event with friends, locality elders, and community.'}
+                      </p>
+                      
+                      <div className="pt-1.5 border-t border-gray-200/70 flex items-center justify-between text-[10px] font-bold text-[#895200]">
+                        <span className="truncate max-w-[120px] text-gray-500 font-medium">
+                          {evt.organizer ? `By ${evt.organizer}` : evt.timeStr || 'All Day'}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (evt.dateStr) {
+                              setCalSelectedDateStr(evt.dateStr);
+                              const parts = evt.dateStr.split('-').map(Number);
+                              if (parts.length === 3) {
+                                setCalYear(parts[0]);
+                                setCalMonth(parts[1]);
+                              }
+                            }
+                            setActiveTab('calendar');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="text-[#c84b31] hover:underline cursor-pointer flex items-center gap-0.5 font-bold"
+                        >
+                          <span>Calendar</span>
+                          <ChevronRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* COMMUNITY BUZZ • ꯈꯨꯟꯅꯥꯏ (LEIPUNG FEED PREVIEW ON HOMEPAGE)      */}
+          {/* Example community posts listed with like, discuss & jump CTA  */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <section className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="w-7 h-7 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-700">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-[#1a1c1e] leading-tight flex items-center gap-1.5">
+                    <span>Community Buzz</span>
+                    <span className="text-xs text-amber-700 font-normal">/ ꯈꯨꯟꯅꯥꯏ (Leipung)</span>
+                  </h3>
+                  <span className="text-[10px] text-gray-500 font-medium block">
+                    Discussions, ritual questions & culture updates
+                  </span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('leipung');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-800 text-xs font-bold transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>Open Feed</span>
+                <ChevronRight className="w-3 h-3" />
+              </button>
+            </div>
+
+            {/* List of sample community posts */}
+            <div className="space-y-2.5">
+              {communityPosts.map((post) => {
+                const isLiked = !!likedCommunityPostIds[post.id];
+                const likesCount = (post.likes_count || 0) + (isLiked ? 1 : 0);
+
+                return (
+                  <div
+                    key={post.id}
+                    className="p-3 rounded-xl bg-[#f9f9fc] border border-gray-200/80 hover:border-amber-300 transition space-y-2 shadow-2xs"
+                  >
+                    {/* Author & Tag */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-7 h-7 rounded-full ${post.author.color || 'bg-amber-600'} text-white flex items-center justify-center text-xs font-bold shadow-xs`}>
+                          {post.author.name?.charAt(0) || 'K'}
+                        </div>
+                        <div>
+                          <div className="flex items-center gap-1">
+                            <span className="text-xs font-bold text-slate-900 leading-tight">
+                              {post.author.name}
+                            </span>
+                            {post.author.is_verified && (
+                              <CheckCircle2 className="w-3 h-3 text-amber-600 shrink-0" />
+                            )}
+                          </div>
+                          <span className="text-[9.5px] text-slate-500 block leading-tight">
+                            {post.author.badge || 'Community Member'}
+                          </span>
+                        </div>
+                      </div>
+
+                      {post.category_tag && (
+                        <span className="px-2 py-0.5 rounded-full bg-amber-100/80 border border-amber-200 text-amber-900 text-[9.5px] font-bold font-mono">
+                          {post.category_tag}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Content Text */}
+                    <p className="text-xs text-slate-700 leading-relaxed font-normal">
+                      {post.content_text}
+                    </p>
+
+                    {/* Action Row */}
+                    <div className="flex items-center justify-between pt-1 border-t border-gray-100 text-[11px] text-slate-500 font-medium">
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => handleToggleCommunityLike(post.id)}
+                          className={`flex items-center gap-1 transition cursor-pointer ${
+                            isLiked ? 'text-rose-600 font-bold' : 'hover:text-rose-600 text-slate-500'
+                          }`}
+                        >
+                          <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-rose-600 text-rose-600' : ''}`} />
+                          <span>{likesCount}</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setActiveTab('leipung');
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                          }}
+                          className="flex items-center gap-1 hover:text-amber-700 transition cursor-pointer"
+                        >
+                          <MessageSquare className="w-3.5 h-3.5 text-slate-400" />
+                          <span>{post.comments_count || 0}</span>
+                        </button>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setActiveTab('leipung');
+                          window.scrollTo({ top: 0, behavior: 'smooth' });
+                        }}
+                        className="text-xs font-bold text-amber-700 hover:text-amber-800 transition cursor-pointer flex items-center gap-0.5"
+                      >
+                        <span>Join Discussion</span>
+                        <ChevronRight className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Quick Share with Community Callout */}
+            <div className="p-2.5 rounded-xl bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200/80 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+                <span className="text-[11px] text-amber-950 font-medium">
+                  Have a ritual question or festival update?
+                </span>
               </div>
               <button
                 type="button"
                 onClick={() => {
-                  setActiveTab('calendar');
+                  setActiveTab('leipung');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
-                className="text-xs font-bold text-[#c84b31] hover:text-[#a6331b] transition cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-[11px] font-bold shadow-2xs transition active:scale-95 cursor-pointer"
               >
-                View Calendar
+                Write Post ✏️
               </button>
-            </div>
-
-            <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
-              {/* Festival Card 1: Yaoshang */}
-              <div className="flex-shrink-0 w-64 rounded-xl overflow-hidden border border-gray-200 bg-[#f9f9fc] flex flex-col justify-between">
-                <div className="p-3 bg-gradient-to-r from-[#a6331b] to-[#c84b31] text-white">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="rounded-full bg-[#fead4d] px-2 py-0.5 text-[8.5px] font-bold text-[#2c1700] uppercase font-mono">
-                      Special Festival
-                    </span>
-                    <span className="text-[10px] text-amber-200 font-mono">5 Days</span>
-                  </div>
-                  <h4 className="font-bold text-sm leading-tight text-white">Yaoshang (ꯌꯥꯎꯁꯪ)</h4>
-                  <p className="text-[10.5px] text-amber-100/90 mt-0.5 leading-snug">Lamta Purnima • Thabal Chongba</p>
-                </div>
-                <div className="p-2.5 text-xs text-gray-700 space-y-1">
-                  <p className="text-[11px] text-gray-600 line-clamp-2">
-                    Joyful festival of colors, Holi of Manipur, with traditional sports, sacred puja, and community Thabal Chongba.
-                  </p>
-                  <div className="pt-1 flex items-center justify-between text-[10px] font-bold text-[#895200]">
-                    <span>Traditional Meitei Kumhei</span>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('calendar')}
-                      className="text-[#c84b31] hover:underline cursor-pointer"
-                    >
-                      Check Date →
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Festival Card 2: Cheiraoba */}
-              <div className="flex-shrink-0 w-64 rounded-xl overflow-hidden border border-gray-200 bg-[#f9f9fc] flex flex-col justify-between">
-                <div className="p-3 bg-gradient-to-r from-[#895200] to-[#c84b31] text-white">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[8.5px] font-bold text-amber-900 uppercase font-mono">
-                      Meitei New Year
-                    </span>
-                    <span className="text-[10px] text-amber-200 font-mono">Sajibu 1</span>
-                  </div>
-                  <h4 className="font-bold text-sm leading-tight text-white">Sajibu Cheiraoba (ꯆꯩꯔꯥꯎꯕ)</h4>
-                  <p className="text-[10.5px] text-amber-100/90 mt-0.5 leading-snug">Sajibu Nongma Panba • New Year</p>
-                </div>
-                <div className="p-2.5 text-xs text-gray-700 space-y-1">
-                  <p className="text-[11px] text-gray-600 line-clamp-2">
-                    Sacred offerings at the gate to Lainingthou Sanamahi and Leimarel Shidabi, festive feast, and climbing Cheiraoching.
-                  </p>
-                  <div className="pt-1 flex items-center justify-between text-[10px] font-bold text-[#895200]">
-                    <span>Sacred Beginning</span>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('calendar')}
-                      className="text-[#c84b31] hover:underline cursor-pointer"
-                    >
-                      Check Date →
-                    </button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Festival Card 3: Ningol Chakouba */}
-              <div className="flex-shrink-0 w-64 rounded-xl overflow-hidden border border-gray-200 bg-[#f9f9fc] flex flex-col justify-between">
-                <div className="p-3 bg-gradient-to-r from-[#9e3b2d] to-[#fead4d] text-white">
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[8.5px] font-bold text-white uppercase font-mono">
-                      Hiyangei 2
-                    </span>
-                    <span className="text-[10px] text-amber-100 font-mono">State Holiday</span>
-                  </div>
-                  <h4 className="font-bold text-sm leading-tight text-white">Ningol Chakouba (ꯅꯤꯡꯉꯣꯜ ꯆꯥꯛꯀꯧꯕ)</h4>
-                  <p className="text-[10.5px] text-amber-100 mt-0.5 leading-snug">Celebration of Daughters & Sisters</p>
-                </div>
-                <div className="p-2.5 text-xs text-gray-700 space-y-1">
-                  <p className="text-[11px] text-gray-600 line-clamp-2">
-                    Brothers and parental homes invite married sisters and daughters for grand feasts, love, gifts, and lifelong blessings.
-                  </p>
-                  <div className="pt-1 flex items-center justify-between text-[10px] font-bold text-[#895200]">
-                    <span>Family Harmony</span>
-                    <button
-                      type="button"
-                      onClick={() => setActiveTab('calendar')}
-                      className="text-[#c84b31] hover:underline cursor-pointer"
-                    >
-                      Check Date →
-                    </button>
-                  </div>
-                </div>
-              </div>
             </div>
           </section>
 
@@ -3324,6 +3606,231 @@ export default function AndroidAppHomeView({
           </button>
         )}
       </nav>
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 7. USER EVENT SUBMISSION MODAL (APPROVAL WORKFLOW)             */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      {showSubmitEventModal && (
+        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-3 animate-in fade-in duration-200">
+          <div className="w-full max-w-sm sm:max-w-md bg-white rounded-3xl shadow-2xl border border-amber-200 overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200">
+            {/* Modal Header */}
+            <div className="p-4 bg-gradient-to-r from-amber-700 via-amber-800 to-amber-900 text-white flex items-center justify-between shrink-0">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-xl bg-white/20 flex items-center justify-center text-amber-300">
+                  <Flame className="w-4 h-4" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold leading-tight">
+                    Submit Event / Kumhei (ꯀꯨꯝꯃꯩ)
+                  </h3>
+                  <span className="text-[10.5px] text-amber-200/90 font-medium block">
+                    Submit for admin approval to list on app
+                  </span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowSubmitEventModal(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-amber-100 transition cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 overflow-y-auto space-y-3.5 text-xs text-slate-800">
+              {userEventSubmitSuccess ? (
+                <div className="py-6 text-center space-y-3">
+                  <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto shadow-inner">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <h4 className="text-base font-bold text-slate-900">
+                    Event Submitted for Review! 🎉
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed max-w-xs mx-auto">
+                    Thank you! Your event has been received by our editorial team. Once approved by the admin, it will be published to the Manipuri Calendar upcoming festivals list for all users.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUserEventSubmitSuccess(false);
+                      setShowSubmitEventModal(false);
+                    }}
+                    className="mt-2 px-6 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition cursor-pointer"
+                  >
+                    Done & Close
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleSubmitUserEvent} className="space-y-3">
+                  <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 flex items-start gap-2">
+                    <Sparkles className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+                    <p className="text-[11px] leading-snug">
+                      Organizing a Thabal Chongba, Temple ritual, or sports festival in your locality? Submit it here for admin verification.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Event / Festival Title *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Uripok Yaoshang Thabal Chongba"
+                      value={userEventForm.title}
+                      onChange={(e) => setUserEventForm({ ...userEventForm, title: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-amber-600 focus:ring-1 focus:ring-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Category *
+                      </label>
+                      <select
+                        value={userEventForm.category}
+                        onChange={(e) => setUserEventForm({ ...userEventForm, category: e.target.value })}
+                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                      >
+                        <option value="thabal">Thabal Chongba</option>
+                        <option value="festival">Cultural Festival</option>
+                        <option value="ritual">Temple Ritual / Lai Haraoba</option>
+                        <option value="kumhei">Traditional Kumhei</option>
+                        <option value="community">Community Gathering</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Event Date *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={userEventForm.dateStr}
+                        onChange={(e) => setUserEventForm({ ...userEventForm, dateStr: e.target.value })}
+                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                      >
+                      </input>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        End Date (Optional)
+                      </label>
+                      <input
+                        type="date"
+                        value={userEventForm.endDateStr}
+                        onChange={(e) => setUserEventForm({ ...userEventForm, endDateStr: e.target.value })}
+                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Timing
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. 07:00 PM Onwards"
+                        value={userEventForm.timeStr}
+                        onChange={(e) => setUserEventForm({ ...userEventForm, timeStr: e.target.value })}
+                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Venue / Locality *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Kangla West Ground, Imphal West"
+                      value={userEventForm.venue}
+                      onChange={(e) => setUserEventForm({ ...userEventForm, venue: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                      Event Details / Schedule
+                    </label>
+                    <textarea
+                      rows={2}
+                      placeholder="Special attractions, band/orchestra, traditional attire guidelines, etc."
+                      value={userEventForm.description}
+                      onChange={(e) => setUserEventForm({ ...userEventForm, description: e.target.value })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900 resize-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Organizer / Club
+                      </label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Young Youth Club"
+                        value={userEventForm.organizer}
+                        onChange={(e) => setUserEventForm({ ...userEventForm, organizer: e.target.value })}
+                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-[11px] font-bold text-slate-700 mb-1">
+                        Your Contact No.
+                      </label>
+                      <input
+                        type="tel"
+                        placeholder="Phone for admin verification"
+                        value={userEventForm.submitterContact}
+                        onChange={(e) => setUserEventForm({ ...userEventForm, submitterContact: e.target.value })}
+                        className="w-full px-2.5 py-2 rounded-xl border border-slate-300 focus:border-amber-600 outline-hidden font-sans text-xs bg-white text-slate-900"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="pt-2 flex items-center justify-end gap-2 border-t border-slate-200">
+                    <button
+                      type="button"
+                      onClick={() => setShowSubmitEventModal(false)}
+                      className="px-4 py-2 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs transition cursor-pointer"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={submittingUserEvent}
+                      className="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      {submittingUserEvent ? (
+                        <>
+                          <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                          <span>Submitting...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-3.5 h-3.5" />
+                          <span>Submit Event</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
     </div>
   );

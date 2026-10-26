@@ -4381,6 +4381,20 @@ Questions: ${order.question || 'General Kuthi Yengba & Remedies'}`;
                   </span>
                 </Link>
 
+                {/* Upcoming Events & Kumhei Approvals */}
+                <Link
+                  href="/admin/events"
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs transition-all cursor-pointer text-slate-600 hover:bg-slate-100/80 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800/80 dark:hover:text-white rounded-lg"
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Calendar className="w-4 h-4 text-rose-600 shrink-0" />
+                    <span>Upcoming Events CMS</span>
+                  </div>
+                  <span className="shrink-0 px-2 py-0.5 rounded-full text-[10px] font-bold border bg-rose-50 text-rose-800 border-rose-200 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/40">
+                    Kumhei
+                  </span>
+                </Link>
+
                 {/* Consolidated Site Settings, UPI & Security */}
                 <button
                   onClick={() => setActiveTab('settings')}
