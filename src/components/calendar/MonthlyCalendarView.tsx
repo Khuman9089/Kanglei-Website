@@ -536,28 +536,17 @@ export default function MonthlyCalendarView() {
 
                     </div>
 
-                    {/* BOTTOM: MANIPURI LUNAR MONTH (Line 1) & TITHI (Line 2) & NAKSHATRA (Line 3) - LINE BY LINE */}
+                    {/* BOTTOM: TITHI WITH MANIPURI DAY/MONTH NAME & NAKSHATRA */}
                     <div className="pt-1 border-t border-[#c5dceb] flex flex-col items-center justify-center text-center px-0.5 leading-tight gap-0.5 w-full">
-                      {/* Line 1: Manipuri Month Name */}
+                      {/* Tithi with Manipuri Month/Day Name */}
                       <span
                         className={`font-serif font-black text-[9px] sm:text-[11px] md:text-xs block w-full text-center leading-tight whitespace-normal break-words ${
-                          isHoliday ? 'text-red-700' : 'text-gray-950'
-                        }`}
-                      >
-                        {scriptMode === 'meetei'
-                          ? dayItem.manipuriMonth.nameMeetei
-                          : dayItem.manipuriMonth.nameBengali}
-                      </span>
-
-                      {/* Line 2: Tithi Number */}
-                      <span
-                        className={`font-serif font-black text-[8.5px] sm:text-[10.5px] md:text-xs block w-full text-center leading-tight whitespace-normal break-words ${
                           isHoliday ? 'text-red-700' : 'text-amber-950'
                         }`}
                       >
                         {scriptMode === 'meetei'
-                          ? (dayItem.isDualTithi ? `${toMeeteiNumerals(dayItem.tithiNumber)}, ${toMeeteiNumerals(dayItem.tithiNumber + 1)}` : toMeeteiNumerals(dayItem.tithiNumber))
-                          : (dayItem.isDualTithi ? `${toBengaliNumerals(dayItem.tithiNumber)}, ${toBengaliNumerals(dayItem.tithiNumber + 1)}` : toBengaliNumerals(dayItem.tithiNumber))}
+                          ? `${dayItem.manipuriMonth.nameMeetei} ${dayItem.isDualTithi ? `${toMeeteiNumerals(dayItem.tithiNumber)}, ${toMeeteiNumerals(dayItem.tithiNumber + 1)}` : toMeeteiNumerals(dayItem.tithiNumber)}`
+                          : `${dayItem.manipuriMonth.nameBengali} ${dayItem.isDualTithi ? `${toBengaliNumerals(dayItem.tithiNumber)}, ${toBengaliNumerals(dayItem.tithiNumber + 1)}` : toBengaliNumerals(dayItem.tithiNumber)}`}
                       </span>
 
                       {/* Line 3: Nakshatra Badge */}

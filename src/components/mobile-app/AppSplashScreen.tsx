@@ -139,7 +139,7 @@ export default function AppSplashScreen({
               <Moon className="w-5 h-5 text-amber-200 absolute -bottom-1 -right-1 drop-shadow" />
             </div>
             <span className="text-[9px] font-black tracking-widest text-amber-300 uppercase mt-1 font-mono">
-              KANGLEI
+              MANIPUR
             </span>
           </div>
         </div>
@@ -147,15 +147,15 @@ export default function AppSplashScreen({
         {/* Brand Names & Manipuri Script Typography */}
         <div className="space-y-2 max-w-xs">
           <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-amber-500/10 border border-amber-500/20 text-[11px] font-semibold text-amber-300">
-            <span>কাংলৈ এস্ট্রো • ꯀꯨꯊꯤ ꯌꯦꯡꯐꯝ</span>
+            <span>মণিপুরী ক্যালেন্ডার • ꯃꯅꯤꯄꯨꯔꯤ ꯀꯦꯂꯦꯟꯗꯔ</span>
           </div>
 
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-100 via-amber-300 to-amber-500">
-            KANGLEI ASTRO
+            MANIPURI CALENDAR
           </h1>
 
           <p className="text-xs text-zinc-400 font-medium tracking-wide">
-            Manipuri Calendar • Vedic Panchang • Kuthi Analysis
+            Vedic Panchang • Cheichat Almanac • Daily Horoscope
           </p>
         </div>
       </div>

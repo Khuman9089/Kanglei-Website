@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import {
   Sparkles,
@@ -371,6 +371,18 @@ export default function AndroidAppHomeView({
   const [horoscopeTab, setHoroscopeTab] = useState<'overview' | 'career' | 'love' | 'health'>('overview');
   const [currentTime, setCurrentTime] = useState<string>('');
 
+  // Scroll Container Ref to ensure page opens from top when switching tabs
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    }
+  }, [activeTab]);
+
   // Dynamic Useful Topics & App Control State (Pre-seeded with offline-ready default topics)
   const [usefulTopics, setUsefulTopics] = useState<any[]>(DEFAULT_USEFUL_TOPICS);
   const [selectedUsefulTopicId, setSelectedUsefulTopicId] = useState<string | null>(null);
@@ -485,7 +497,7 @@ export default function AndroidAppHomeView({
   const handleEbaWhatsAppOrder = () => {
     const pkgName = ebaPackage === 'standard' ? 'Standard Sacred Parchment (₹899)' : 'Deluxe Gold Scroll (₹1,499)';
     const text = encodeURIComponent(
-      `*New Sacred Kuthi Eba Order (Kanglei Astro App)*\n\n` +
+      `*New Sacred Kuthi Eba Order (Manipuri Calendar App)*\n\n` +
       `*Category:* ${ebaType === 'new_born' ? 'New Born Janma Patrika' : 'Rewrite Old Kuthi'}\n` +
       `*Name:* ${ebaName || 'Not provided'}\n` +
       `*Father:* ${ebaFather || 'Not provided'}\n` +
@@ -511,7 +523,7 @@ export default function AndroidAppHomeView({
       marriage: 'Marriage & Compatibility Reading (₹699)'
     };
     const text = encodeURIComponent(
-      `*Kuthi Yengba Consultation Request (Kanglei Astro App)*\n\n` +
+      `*Kuthi Yengba Consultation Request (Manipuri Calendar App)*\n\n` +
       `*Service:* ${svcMap[yengbaService] || 'Sacred Horoscope Reading'}\n` +
       `*Name:* ${yengbaName || 'Not provided'}\n` +
       `*Contact:* ${yengbaPhone || 'Not provided'}\n` +
@@ -540,6 +552,13 @@ export default function AndroidAppHomeView({
     return calculateVedicPanchang(todayStr);
   }, [todayStr]);
 
+  // Dynamic Home Selected Date (When clicked in the 7-day strip, updates panchang details without redirecting)
+  const [homeSelectedDateStr, setHomeSelectedDateStr] = useState<string>(todayStr);
+
+  const homePanchang = useMemo(() => {
+    return calculateVedicPanchang(homeSelectedDateStr || todayStr);
+  }, [homeSelectedDateStr, todayStr]);
+
   // Today's Monthly Calendar snapshot (for Home view)
   const monthlyData = useMemo(() => {
     return getMonthlyCalendar(now.getFullYear(), now.getMonth() + 1);
@@ -556,6 +575,28 @@ export default function AndroidAppHomeView({
     }
     return monthlyData.weeks[0]?.find(Boolean) || null;
   }, [monthlyData, todayStr]);
+
+  // Dynamic Calendar Day for Home View
+  const homeCalendarDay = useMemo(() => {
+    const targetStr = homeSelectedDateStr || todayStr;
+    for (const week of monthlyData.weeks) {
+      for (const day of week) {
+        if (day && day.dateStr === targetStr) {
+          return day;
+        }
+      }
+    }
+    const parts = targetStr.split('-').map(Number);
+    if (parts.length === 3) {
+      const mData = getMonthlyCalendar(parts[0], parts[1]);
+      for (const week of mData.weeks) {
+        for (const day of week) {
+          if (day && day.dateStr === targetStr) return day;
+        }
+      }
+    }
+    return todayCalendarDay;
+  }, [homeSelectedDateStr, todayStr, monthlyData, todayCalendarDay]);
 
   // Calendar Data for current selected year & month
   const currentCalendarData = useMemo(() => {
@@ -676,7 +717,7 @@ export default function AndroidAppHomeView({
                 <div className="flex items-center gap-1.5">
                   <h1 className="text-[15px] font-sans font-bold tracking-tight leading-none text-slate-50">
                     {activeTab === 'home'
-                      ? 'Kanglei Panjika'
+                      ? 'Manipuri Calendar'
                       : activeTab === 'calendar'
                       ? 'Manipuri Calendar'
                       : activeTab === 'kuthi_eba'
@@ -689,7 +730,7 @@ export default function AndroidAppHomeView({
                       ? (scriptMode === 'meetei' ? 'ꯂꯩꯄꯨꯡ (Leipung Feed)' : 'লৈপুং (Leipung Community)')
                       : activeTab === 'account'
                       ? (scriptMode === 'meetei' ? 'ꯑꯦꯀꯥꯎꯟꯠ & ꯄ꯭ꯔꯣꯐꯥꯏꯜ (Account)' : 'একাউন্ট ও প্রোফাইল (Account)')
-                      : 'Kanglei Panjika'}
+                      : 'Manipuri Calendar'}
                   </h1>
                   {activeTab === 'home' && (
                     <span className="px-1.5 py-0.2 rounded-full bg-[#c84b31]/40 border border-[#c84b31]/60 text-amber-200 font-mono text-[9px] font-bold">
@@ -705,7 +746,7 @@ export default function AndroidAppHomeView({
                 </div>
                 <span className="text-[11px] text-amber-400/90 font-medium leading-none block mt-1">
                   {activeTab === 'home'
-                    ? (scriptMode === 'meetei' ? 'ꯀꯪꯂꯩ ꯄꯥꯟꯖꯤꯀꯥ • Imphal (IST)' : 'মণিপুরী পঞ্জিকা • Imphal (IST)')
+                    ? (scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯀꯦꯂꯦꯟꯗꯔ • Imphal (IST)' : 'মণিপুরী ক্যালেন্ডার • Imphal (IST)')
                     : activeTab === 'calendar'
                     ? `${currentCalendarData.monthNameEn} ${calYear}`
                     : activeTab === 'kuthi_eba'
@@ -800,9 +841,9 @@ export default function AndroidAppHomeView({
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <h2 className="text-base font-serif font-black text-amber-100">Kanglei Astro App</h2>
+              <h2 className="text-base font-serif font-black text-amber-100">Manipuri Calendar</h2>
               <p className="text-xs text-amber-300/80 font-serif">
-                Manipur Astrological Portal & Daily Calendar
+                {scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯀꯦꯂꯦꯟꯗꯔ ꯑꯃꯁꯨꯡ ꯄꯥꯟꯆꯥꯡ' : 'মণিপুরী ক্যালেন্ডার ও পঞ্জিকা'}
               </p>
             </div>
 
@@ -1042,15 +1083,15 @@ export default function AndroidAppHomeView({
                   type="button"
                   onClick={() => {
                     const shareData = {
-                      title: 'Kanglei Astro',
-                      text: appSettings?.side_menu?.share_message || 'Explore Manipuri Calendar, Panchang & Janma Patrika on Kanglei Astro',
+                      title: 'Manipuri Calendar',
+                      text: appSettings?.side_menu?.share_message || 'Explore Manipuri Calendar, Panchang & Janma Patrika on Manipuri Calendar',
                       url: appSettings?.side_menu?.share_url || window.location.origin,
                     };
                     if (typeof navigator !== 'undefined' && navigator.share) {
                       navigator.share(shareData);
                     } else if (typeof navigator !== 'undefined') {
                       navigator.clipboard.writeText(shareData.url);
-                      alert('Kanglei Astro App link copied to clipboard!');
+                      alert('Manipuri Calendar App link copied to clipboard!');
                     }
                   }}
                   className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-left font-bold text-amber-200 hover:bg-amber-900/30 transition border border-amber-800/40 mt-3 bg-amber-950/30 cursor-pointer font-sans"
@@ -1135,7 +1176,7 @@ export default function AndroidAppHomeView({
                 {appSettings?.side_menu?.app_version || 'v1.2.0'} • Vishuddha Siddhanta Manipur
               </div>
               <div className="text-[11px] font-bold tracking-wide text-amber-300 font-serif border-t border-amber-800/20 pt-1">
-                {appSettings?.side_menu?.bottom_branding_text || 'Manipuri Calender by KangleiAstro'}
+                {appSettings?.side_menu?.bottom_branding_text || 'Manipuri Calendar by KangleiAstro'}
               </div>
             </div>
           </div>
@@ -1145,7 +1186,7 @@ export default function AndroidAppHomeView({
       {/* ───────────────────────────────────────────────────────────── */}
       {/* SCROLLABLE MIDDLE WORKSPACE CONTAINER                         */}
       {/* ───────────────────────────────────────────────────────────── */}
-      <div className="flex-1 overflow-y-auto overscroll-contain">
+      <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overscroll-contain">
         {/* 4. DEDICATED CALENDAR SECTION IN MOBILE APP                   */}
         {/* When activeTab === 'calendar', show ONLY the calendar section!*/}
         {/* ───────────────────────────────────────────────────────────── */}
@@ -1380,65 +1421,31 @@ export default function AndroidAppHomeView({
                       />
                     )}
 
-                    {/* 3. Center — Prominent Date based on Perspective */}
-                    {calendarPerspective === 'cheichat' ? (
-                      <>
-                        <span
-                          className={`text-lg font-extrabold tracking-tight leading-none ${
-                            isHoliday
-                              ? 'text-[#DC2626]'
-                              : isToday
-                              ? 'text-[#c84b31]'
-                              : 'text-[#1e1b18]'
-                          }`}
-                        >
-                          {tithiStr}
-                        </span>
-                        <span
-                          className={`text-[10px] font-semibold leading-tight mt-0.5 truncate max-w-full block ${
-                            isHoliday ? 'text-[#DC2626]' : isToday ? 'text-[#a6331b]' : 'text-slate-500'
-                          }`}
-                        >
-                          {monthName} • {day.day}
-                        </span>
-                      </>
-                    ) : (
-                      <>
-                        <span
-                          className={`text-lg font-extrabold tracking-tight leading-none font-sans ${
-                            isHoliday
-                              ? 'text-[#DC2626]'
-                              : isToday
-                              ? 'text-[#B45309]'
-                              : 'text-[#0F172A]'
-                          }`}
-                        >
-                          {day.day}
-                        </span>
-                        <span
-                          className={`text-[10px] font-medium leading-tight mt-0.5 truncate max-w-full block ${
-                            isHoliday
-                              ? 'text-[#DC2626]'
-                              : isToday
-                              ? 'text-[#92400E]'
-                              : 'text-slate-600'
-                          }`}
-                        >
-                          {monthName}
-                        </span>
-                        <span
-                          className={`text-[10.5px] font-bold leading-none mt-0.5 ${
-                            isHoliday
-                              ? 'text-[#DC2626]'
-                              : isToday
-                              ? 'text-[#92400E]'
-                              : 'text-slate-800'
-                          }`}
-                        >
-                          {tithiStr}
-                        </span>
-                      </>
-                    )}
+                    {/* 3. Center — Prominent Centered Date & Tithi with Manipuri Day/Month Name */}
+                    <div className="flex-1 flex flex-col items-center justify-center my-auto py-0.5 w-full text-center">
+                      <span
+                        className={`text-xl sm:text-2xl font-black tracking-tight leading-none font-sans text-center ${
+                          isHoliday
+                            ? 'text-[#DC2626]'
+                            : isToday
+                            ? 'text-[#c84b31]'
+                            : 'text-[#1e1b18]'
+                        }`}
+                      >
+                        {day.day}
+                      </span>
+                      <span
+                        className={`text-[9.5px] sm:text-[10px] font-bold leading-tight mt-1 text-center truncate max-w-[96%] block ${
+                          isHoliday
+                            ? 'text-[#DC2626]'
+                            : isToday
+                            ? 'text-[#a6331b]'
+                            : 'text-[#895200]'
+                        }`}
+                      >
+                        {monthName} {tithiStr}
+                      </span>
+                    </div>
 
                     {/* 6. Mention Result / Festival Name Directly inside Cell */}
                     {day.festival ? (
@@ -2183,7 +2190,7 @@ export default function AndroidAppHomeView({
         <main className="flex-1 p-3.5 space-y-3.5">
 
           {/* ───────────────────────────────────────────────────────────── */}
-          {/* STITCH "KANGLEI PANJIKA" TOP DATE & LUNAR PHASE HERO BANNER   */}
+          {/* STITCH "MANIPURI CALENDAR" TOP DATE & LUNAR PHASE HERO BANNER */}
           {/* ───────────────────────────────────────────────────────────── */}
           <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#a6331b] via-[#c84b31] to-[#9e3b2d] p-4 text-white shadow-[0_8px_24px_-6px_rgba(166,51,27,0.35)] select-none">
             {/* Decorative Celestial Radial Glow & Orbit Circles */}
@@ -2208,7 +2215,7 @@ export default function AndroidAppHomeView({
                 <div>
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <span className="inline-flex items-center rounded-full bg-amber-500/25 px-2 py-0.5 font-mono text-[9.5px] font-bold tracking-wider text-amber-200 border border-amber-400/30">
-                      {todayCalendarDay?.sakaYear || 1948} SAKABDA
+                      {homeCalendarDay?.sakaYear || 1948} SAKABDA
                     </span>
                     <span className="text-amber-200/60">•</span>
                     <span className="text-[11px] font-semibold text-amber-200">
@@ -2217,17 +2224,21 @@ export default function AndroidAppHomeView({
                   </div>
 
                   <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-1">
-                    {todayCalendarDay?.manipuriMonth?.nameEn || 'Lamta'}{' '}
+                    {homeCalendarDay?.manipuriMonth?.nameEn || 'Lamta'}{' '}
                     {scriptMode === 'meetei'
-                      ? toMeeteiNumerals(todayCalendarDay?.tithiNumber || 1)
-                      : toBengaliNumerals(todayCalendarDay?.tithiNumber || 1)}{' '}
+                      ? toMeeteiNumerals(homeCalendarDay?.tithiNumber || 1)
+                      : toBengaliNumerals(homeCalendarDay?.tithiNumber || 1)}{' '}
                     <span className="text-base font-normal text-amber-200">
-                      / {scriptMode === 'meetei' ? todayCalendarDay?.manipuriMonth?.nameMeetei || 'ꯂꯝꯇꯥ' : todayCalendarDay?.manipuriMonth?.nameBengali || 'লমতা'}
+                      / {scriptMode === 'meetei' ? homeCalendarDay?.manipuriMonth?.nameMeetei || 'ꯂꯝꯇꯥ' : homeCalendarDay?.manipuriMonth?.nameBengali || 'লমতা'}
                     </span>
                   </h2>
 
                   <p className="text-xs text-amber-100/90 font-medium">
-                    {now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                    {(() => {
+                      const [y, m, d] = (homeSelectedDateStr || todayStr).split('-').map(Number);
+                      const dObj = new Date(y, m - 1, d);
+                      return dObj.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    })()}
                   </p>
                 </div>
 
@@ -2236,7 +2247,7 @@ export default function AndroidAppHomeView({
                   <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-amber-400/20 shadow-inner">
                     <svg className="h-7 w-7 text-amber-300" fill="none" viewBox="0 0 100 100">
                       <circle cx="50" cy="50" opacity="0.8" r="45" stroke="#fead4d" strokeDasharray="4 3" strokeWidth="3" />
-                      {todayCalendarDay?.isAmavasya ? (
+                      {homeCalendarDay?.isAmavasya ? (
                         <circle cx="50" cy="50" fill="#1e1b18" r="32" />
                       ) : (
                         <>
@@ -2248,18 +2259,18 @@ export default function AndroidAppHomeView({
                     </svg>
                   </div>
                   <span className="mt-1 text-[11px] font-bold text-white line-clamp-1">
-                    {todayCalendarDay?.isPurnima
+                    {homeCalendarDay?.isPurnima
                       ? 'Purnima'
-                      : todayCalendarDay?.isAmavasya
+                      : homeCalendarDay?.isAmavasya
                       ? 'Amavasya'
-                      : todayCalendarDay?.tithiDisplayBengali?.split(' ')[0] || 'Tithi'}
+                      : homeCalendarDay?.tithiDisplayBengali?.split(' ')[0] || 'Tithi'}
                   </span>
                   <span className="text-[9.5px] font-medium text-amber-200">
-                    {todayCalendarDay?.isPurnima
+                    {homeCalendarDay?.isPurnima
                       ? 'ꯊꯥꯁꯤ ꯄꯨꯔꯅꯤꯃꯥ'
-                      : todayCalendarDay?.isAmavasya
+                      : homeCalendarDay?.isAmavasya
                       ? 'ꯊꯥ-ꯑꯁꯤ'
-                      : (scriptMode === 'meetei' ? todayCalendarDay?.tithiDisplayMeetei : todayCalendarDay?.tithiDisplayBengali)}
+                      : (scriptMode === 'meetei' ? homeCalendarDay?.tithiDisplayMeetei : homeCalendarDay?.tithiDisplayBengali)}
                   </span>
                 </div>
               </div>
@@ -2273,7 +2284,7 @@ export default function AndroidAppHomeView({
                       Sunrise (Imphal)
                     </span>
                     <span className="text-xs font-bold font-mono text-white">
-                      {panchang.sunMoonTimings.sunrise}
+                      {homePanchang.sunMoonTimings.sunrise}
                     </span>
                   </div>
                 </div>
@@ -2284,7 +2295,7 @@ export default function AndroidAppHomeView({
                       Sunset (Imphal)
                     </span>
                     <span className="text-xs font-bold font-mono text-white">
-                      {panchang.sunMoonTimings.sunset}
+                      {homePanchang.sunMoonTimings.sunset}
                     </span>
                   </div>
                 </div>
@@ -2302,7 +2313,7 @@ export default function AndroidAppHomeView({
                   </span>
                 </div>
                 <span className="text-[10px] font-mono font-bold tracking-wider text-amber-200">
-                  {panchang.muhurtas?.abhijit?.start || '11:36 AM'} – {panchang.muhurtas?.abhijit?.end || '12:24 PM'}
+                  {homePanchang.muhurtas?.abhijit?.start || '11:36 AM'} – {homePanchang.muhurtas?.abhijit?.end || '12:24 PM'}
                 </span>
               </div>
             </div>
@@ -2310,6 +2321,7 @@ export default function AndroidAppHomeView({
 
           {/* ───────────────────────────────────────────────────────────── */}
           {/* STITCH "CHEIRAAK / LUNAR DAYS" 7-DAY QUICK STRIP              */}
+          {/* (Clicking date updates panchang in-place, NO REDIRECT)        */}
           {/* ───────────────────────────────────────────────────────────── */}
           <section className="bg-white rounded-2xl border border-gray-200 p-3 shadow-xs space-y-2">
             <div className="flex items-center justify-between">
@@ -2318,12 +2330,13 @@ export default function AndroidAppHomeView({
                   Cheiraak / Lunar Days
                 </span>
                 <span className="rounded-full bg-amber-100/80 px-2 py-0.5 text-[9px] font-bold text-amber-800 font-mono uppercase">
-                  {todayCalendarDay?.manipuriMonth?.nameEn || 'Month'} {todayCalendarDay?.sakaYear || 1948}
+                  {homeCalendarDay?.manipuriMonth?.nameEn || 'Month'} {homeCalendarDay?.sakaYear || 1948}
                 </span>
               </div>
               <button
                 type="button"
                 onClick={() => {
+                  setCalSelectedDateStr(homeSelectedDateStr || todayStr);
                   setActiveTab('calendar');
                   window.scrollTo({ top: 0, behavior: 'smooth' });
                 }}
@@ -2338,40 +2351,328 @@ export default function AndroidAppHomeView({
             <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
               {(() => {
                 const allDays = currentCalendarData.weeks.flat().filter(Boolean) as CalendarDay[];
-                const todayIdx = allDays.findIndex((d) => d.dateStr === todayStr);
-                const startIdx = Math.max(0, Math.min(todayIdx >= 0 ? todayIdx - 2 : 0, Math.max(0, allDays.length - 7)));
+                const activeIdx = allDays.findIndex((d) => d.dateStr === (homeSelectedDateStr || todayStr));
+                const startIdx = Math.max(0, Math.min(activeIdx >= 0 ? activeIdx - 3 : 0, Math.max(0, allDays.length - 7)));
                 const sevenDays = allDays.slice(startIdx, startIdx + 7);
 
                 return sevenDays.map((d) => {
-                  const isCurrent = d.dateStr === todayStr;
+                  const isSelected = d.dateStr === (homeSelectedDateStr || todayStr);
+                  const isActualToday = d.dateStr === todayStr;
                   return (
                     <button
                       key={d.dateStr}
                       type="button"
                       onClick={() => {
-                        setCalSelectedDateStr(d.dateStr);
-                        setActiveTab('calendar');
-                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                        setHomeSelectedDateStr(d.dateStr);
                       }}
-                      className={`flex-shrink-0 w-14 py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-between cursor-pointer border ${
-                        isCurrent
-                          ? 'bg-[#c84b31] border-[#a6331b] text-white shadow-sm'
-                          : 'bg-gray-50/80 border-gray-200 text-gray-700 hover:bg-amber-50/50'
+                      className={`relative flex-shrink-0 w-14 py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-between cursor-pointer border ${
+                        isSelected
+                          ? 'bg-[#c84b31] border-[#a6331b] text-white shadow-md ring-2 ring-[#fead4d]'
+                          : 'bg-[#f9f9fc] border-gray-200 text-gray-700 hover:bg-amber-50/50'
                       }`}
                     >
-                      <span className={`text-[9.5px] font-bold uppercase ${isCurrent ? 'text-amber-200' : 'text-gray-500'}`}>
+                      {isActualToday && (
+                        <span className={`text-[7.5px] font-bold uppercase rounded-full px-1 leading-tight ${
+                          isSelected ? 'bg-[#fead4d] text-[#2c1700]' : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          Today
+                        </span>
+                      )}
+                      <span className={`text-[9.5px] font-bold uppercase ${isSelected ? 'text-amber-200' : 'text-gray-500'}`}>
                         {d.weekdayName.shortEn}
                       </span>
                       <span className="text-base font-bold my-0.5 leading-none">
                         {d.day}
                       </span>
-                      <span className={`text-[9px] font-semibold truncate max-w-full ${isCurrent ? 'text-amber-100' : 'text-amber-700'}`}>
+                      <span className={`text-[9px] font-semibold truncate max-w-full ${isSelected ? 'text-amber-100' : 'text-amber-700'}`}>
                         {scriptMode === 'meetei' ? toMeeteiNumerals(d.tithiNumber) : toBengaliNumerals(d.tithiNumber)}
                       </span>
                     </button>
                   );
                 });
               })()}
+            </div>
+          </section>
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* STITCH QUICK ACTION FEATURE CARDS (2X2 GRID)                  */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <section className="grid grid-cols-2 gap-2.5">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('panchang');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2.5 rounded-2xl bg-white p-3 border border-gray-200 shadow-xs active:scale-95 transition-all text-left cursor-pointer hover:border-[#c84b31]/40"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ffdad3] text-[#a6331b]">
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-[#1a1c1e] leading-tight truncate">Daily Panjika</h4>
+                <span className="text-[10px] font-semibold text-[#895200]">
+                  {scriptMode === 'meetei' ? 'ꯄꯥꯟꯖꯤꯀꯥ ꯊꯤꯕ' : 'দৈনিক পঞ্জিকা'}
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('today-rashifall-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2.5 rounded-2xl bg-white p-3 border border-gray-200 shadow-xs active:scale-95 transition-all text-left cursor-pointer hover:border-amber-400/40"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ffdcbc] text-[#895200]">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-[#1a1c1e] leading-tight truncate">Rashi Phala</h4>
+                <span className="text-[10px] font-semibold text-[#895200]">
+                  {scriptMode === 'meetei' ? 'ꯔꯥꯁꯤ ꯐꯜ' : 'রাশিফল'}
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                const el = document.getElementById('daily-cosmic-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2.5 rounded-2xl bg-white p-3 border border-gray-200 shadow-xs active:scale-95 transition-all text-left cursor-pointer hover:border-rose-300"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#eeeef0] text-[#9e3b2d]">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-[#1a1c1e] leading-tight truncate">Thouram Matam</h4>
+                <span className="text-[10px] font-semibold text-[#895200]">
+                  {scriptMode === 'meetei' ? 'ꯊꯧꯔꯝ ꯃꯇꯝ' : 'শুভ মুহূর্ত ও সময়'}
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setActiveTab('calendar');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="flex items-center gap-2.5 rounded-2xl bg-white p-3 border border-gray-200 shadow-xs active:scale-95 transition-all text-left cursor-pointer hover:border-red-300"
+            >
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ffdad6] text-[#a6331b]">
+                <Flame className="w-5 h-5" />
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-xs font-bold text-[#1a1c1e] leading-tight truncate">Festivals</h4>
+                <span className="text-[10px] font-semibold text-[#895200]">
+                  {scriptMode === 'meetei' ? 'ꯃꯩꯇꯩ ꯀꯨꯝꯃꯩ' : 'উৎসব ও ছুটির দিন'}
+                </span>
+              </div>
+            </button>
+          </section>
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* STITCH "DAILY COSMIC ATTRIBUTES" CARD (DYNAMIC TO DATE)      */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <section id="daily-cosmic-section" className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-1 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <Compass className="w-4 h-4 text-[#a6331b]" />
+                <h3 className="text-sm font-bold text-[#1a1c1e]">Daily Cosmic Attributes</h3>
+              </div>
+              <span className="rounded-full bg-[#ffdcbc]/70 px-2 py-0.5 text-[9px] font-bold text-[#895200] font-mono">
+                IMPHAL GEO (IST)
+              </span>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="rounded-xl bg-[#f9f9fc] p-2.5 border border-gray-100 space-y-0.5">
+                <span className="text-[9.5px] uppercase font-bold text-gray-500 block">Tithi (থাবান)</span>
+                <p className="font-bold text-sm text-[#1a1c1e] truncate">
+                  {homeCalendarDay
+                    ? (scriptMode === 'meetei' ? homeCalendarDay.tithiDisplayMeetei : homeCalendarDay.tithiDisplayBengali)
+                    : homePanchang.fiveAngas.tithi.name}
+                </p>
+                <span className="text-[10px] text-[#a6331b] font-medium block truncate">
+                  Ends: {homeCalendarDay?.tithiEndingStandard || '07:44 AM'}
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-[#f9f9fc] p-2.5 border border-gray-100 space-y-0.5">
+                <span className="text-[9.5px] uppercase font-bold text-gray-500 block">Nakshatra (নক্ষত্র)</span>
+                <p className="font-bold text-sm text-[#1a1c1e] truncate">
+                  {scriptMode === 'meetei'
+                    ? (homeCalendarDay?.nakshatraNameMeetei || NAKSHATRA_NAMES_MEETEI[homePanchang.fiveAngas.nakshatra.index - 1])
+                    : (homeCalendarDay?.nakshatraNameBengali || NAKSHATRA_NAMES_BENGALI[homePanchang.fiveAngas.nakshatra.index - 1])}
+                </p>
+                <span className="text-[10px] text-[#895200] font-medium block">
+                  Pada {homePanchang.fiveAngas.nakshatra.pada} • Lord {homePanchang.fiveAngas.nakshatra.lord}
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-[#f9f9fc] p-2.5 border border-gray-100 space-y-0.5">
+                <span className="text-[9.5px] uppercase font-bold text-gray-500 block">Yoga & Karana</span>
+                <p className="font-bold text-sm text-[#1a1c1e] truncate">
+                  {homePanchang.fiveAngas.yoga.name} • {homePanchang.fiveAngas.karana.name}
+                </p>
+                <span className="text-[10px] text-gray-500 font-medium block">
+                  {homePanchang.fiveAngas.yoga.isAuspicious ? 'Auspicious balance' : 'Standard balance'}
+                </span>
+              </div>
+
+              <div className="rounded-xl bg-[#f9f9fc] p-2.5 border border-gray-100 space-y-0.5">
+                <span className="text-[9.5px] uppercase font-bold text-gray-500 block">Paksha (পক্ষ)</span>
+                <p className="font-bold text-sm text-[#1a1c1e] truncate">
+                  {homePanchang.fiveAngas.tithi.paksha} Paksha
+                </p>
+                <span className="text-[10px] text-[#895200] font-semibold block">
+                  {scriptMode === 'meetei' ? 'ꯊꯥ ꯊꯥꯒꯠꯄ' : 'শুক্ল / কৃষ্ণ পক্ষ'}
+                </span>
+              </div>
+            </div>
+
+            {/* Muhurat Split: Auspicious vs Rahu Kaal */}
+            <div className="space-y-1.5 pt-1">
+              <div className="flex items-center justify-between rounded-xl bg-amber-50 border border-amber-200/80 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-amber-700 shrink-0" />
+                  <div>
+                    <span className="text-xs font-bold text-amber-950 block leading-tight">Abhijit Muhurat</span>
+                    <span className="text-[9.5px] text-amber-700 block leading-none">Most Auspicious Window</span>
+                  </div>
+                </div>
+                <span className="text-xs font-bold font-mono text-amber-900">
+                  {homePanchang.muhurtas.abhijit.start} – {homePanchang.muhurtas.abhijit.end}
+                </span>
+              </div>
+
+              <div className="flex items-center justify-between rounded-xl bg-rose-50 border border-rose-200 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-rose-700 shrink-0" />
+                  <div>
+                    <span className="text-xs font-bold text-rose-950 block leading-tight">Rahu Kaal</span>
+                    <span className="text-[9.5px] text-rose-700 block leading-none">Inauspicious Period</span>
+                  </div>
+                </div>
+                <span className="text-xs font-bold font-mono text-rose-900">
+                  {homePanchang.muhurtas.rahuKaal.start} – {homePanchang.muhurtas.rahuKaal.end}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* STITCH "UPCOMING CULTURAL FESTIVALS" CAROUSEL                  */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <section className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-xs space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Flame className="w-4 h-4 text-[#a6331b]" />
+                <h3 className="text-sm font-bold text-[#1a1c1e]">Upcoming Festivals</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('calendar');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="text-xs font-bold text-[#c84b31] hover:text-[#a6331b] transition cursor-pointer"
+              >
+                View Calendar
+              </button>
+            </div>
+
+            <div className="flex gap-3 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
+              {/* Festival Card 1: Yaoshang */}
+              <div className="flex-shrink-0 w-64 rounded-xl overflow-hidden border border-gray-200 bg-[#f9f9fc] flex flex-col justify-between">
+                <div className="p-3 bg-gradient-to-r from-[#a6331b] to-[#c84b31] text-white">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="rounded-full bg-[#fead4d] px-2 py-0.5 text-[8.5px] font-bold text-[#2c1700] uppercase font-mono">
+                      Special Festival
+                    </span>
+                    <span className="text-[10px] text-amber-200 font-mono">5 Days</span>
+                  </div>
+                  <h4 className="font-bold text-sm leading-tight text-white">Yaoshang (ꯌꯥꯎꯁꯪ)</h4>
+                  <p className="text-[10.5px] text-amber-100/90 mt-0.5 leading-snug">Lamta Purnima • Thabal Chongba</p>
+                </div>
+                <div className="p-2.5 text-xs text-gray-700 space-y-1">
+                  <p className="text-[11px] text-gray-600 line-clamp-2">
+                    Joyful festival of colors, Holi of Manipur, with traditional sports, sacred puja, and community Thabal Chongba.
+                  </p>
+                  <div className="pt-1 flex items-center justify-between text-[10px] font-bold text-[#895200]">
+                    <span>Traditional Meitei Kumhei</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('calendar')}
+                      className="text-[#c84b31] hover:underline cursor-pointer"
+                    >
+                      Check Date →
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Festival Card 2: Cheiraoba */}
+              <div className="flex-shrink-0 w-64 rounded-xl overflow-hidden border border-gray-200 bg-[#f9f9fc] flex flex-col justify-between">
+                <div className="p-3 bg-gradient-to-r from-[#895200] to-[#c84b31] text-white">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[8.5px] font-bold text-amber-900 uppercase font-mono">
+                      Meitei New Year
+                    </span>
+                    <span className="text-[10px] text-amber-200 font-mono">Sajibu 1</span>
+                  </div>
+                  <h4 className="font-bold text-sm leading-tight text-white">Sajibu Cheiraoba (ꯆꯩꯔꯥꯎꯕ)</h4>
+                  <p className="text-[10.5px] text-amber-100/90 mt-0.5 leading-snug">Sajibu Nongma Panba • New Year</p>
+                </div>
+                <div className="p-2.5 text-xs text-gray-700 space-y-1">
+                  <p className="text-[11px] text-gray-600 line-clamp-2">
+                    Sacred offerings at the gate to Lainingthou Sanamahi and Leimarel Shidabi, festive feast, and climbing Cheiraoching.
+                  </p>
+                  <div className="pt-1 flex items-center justify-between text-[10px] font-bold text-[#895200]">
+                    <span>Sacred Beginning</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('calendar')}
+                      className="text-[#c84b31] hover:underline cursor-pointer"
+                    >
+                      Check Date →
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* Festival Card 3: Ningol Chakouba */}
+              <div className="flex-shrink-0 w-64 rounded-xl overflow-hidden border border-gray-200 bg-[#f9f9fc] flex flex-col justify-between">
+                <div className="p-3 bg-gradient-to-r from-[#9e3b2d] to-[#fead4d] text-white">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="rounded-full bg-white/20 px-2 py-0.5 text-[8.5px] font-bold text-white uppercase font-mono">
+                      Hiyangei 2
+                    </span>
+                    <span className="text-[10px] text-amber-100 font-mono">State Holiday</span>
+                  </div>
+                  <h4 className="font-bold text-sm leading-tight text-white">Ningol Chakouba (ꯅꯤꯡꯉꯣꯜ ꯆꯥꯛꯀꯧꯕ)</h4>
+                  <p className="text-[10.5px] text-amber-100 mt-0.5 leading-snug">Celebration of Daughters & Sisters</p>
+                </div>
+                <div className="p-2.5 text-xs text-gray-700 space-y-1">
+                  <p className="text-[11px] text-gray-600 line-clamp-2">
+                    Brothers and parental homes invite married sisters and daughters for grand feasts, love, gifts, and lifelong blessings.
+                  </p>
+                  <div className="pt-1 flex items-center justify-between text-[10px] font-bold text-[#895200]">
+                    <span>Family Harmony</span>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab('calendar')}
+                      className="text-[#c84b31] hover:underline cursor-pointer"
+                    >
+                      Check Date →
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -2651,7 +2952,7 @@ export default function AndroidAppHomeView({
             </div>
           </section>
 
-          {/* TODAY PANCHANG SECTION - HIGH CONTRAST & CLEAR VISIBILITY */}
+          {/* TODAY / SELECTED PANCHANG SECTION - HIGH CONTRAST & CLEAR VISIBILITY */}
           <section className="bg-white rounded-2xl border-2 border-slate-300 p-3.5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -2660,10 +2961,12 @@ export default function AndroidAppHomeView({
                 </div>
                 <div>
                   <h2 className="text-sm font-black text-slate-950 leading-tight">
-                    Today Panchang (দৈনিক পঞ্জিকা)
+                    {homeSelectedDateStr === todayStr
+                      ? 'Today Panchang'
+                      : `Panchang (${new Date(homeSelectedDateStr + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`} ({scriptMode === 'meetei' ? 'ꯄꯥꯟꯆꯥꯡ' : 'দৈনিক পঞ্জিকা'})
                   </h2>
                   <span className="text-xs text-slate-800 font-bold block leading-tight">
-                    Surya Udaya: <span className="font-mono text-slate-950">{panchang.sunMoonTimings.sunrise}</span> • Surya Asta: <span className="font-mono text-slate-950">{panchang.sunMoonTimings.sunset}</span>
+                    Surya Udaya: <span className="font-mono text-slate-950">{homePanchang.sunMoonTimings.sunrise}</span> • Surya Asta: <span className="font-mono text-slate-950">{homePanchang.sunMoonTimings.sunset}</span>
                   </span>
                 </div>
               </div>
@@ -2676,12 +2979,12 @@ export default function AndroidAppHomeView({
                   থাবান (Tithi):
                 </span>
                 <strong className="text-[15px] text-slate-950 font-black block truncate">
-                  {todayCalendarDay
-                    ? (scriptMode === 'meetei' ? todayCalendarDay.tithiDisplayMeetei : todayCalendarDay.tithiDisplayBengali)
-                    : panchang.fiveAngas.tithi.name}
+                  {homeCalendarDay
+                    ? (scriptMode === 'meetei' ? homeCalendarDay.tithiDisplayMeetei : homeCalendarDay.tithiDisplayBengali)
+                    : homePanchang.fiveAngas.tithi.name}
                 </strong>
                 <span className="text-xs text-slate-800 font-semibold block">
-                  Ending: {todayCalendarDay?.tithiEndingStandard || '07:44 AM'}
+                  Ending: {homeCalendarDay?.tithiEndingStandard || '07:44 AM'}
                 </span>
               </div>
 
@@ -2691,11 +2994,11 @@ export default function AndroidAppHomeView({
                 </span>
                 <strong className="text-[15px] text-slate-950 font-black block truncate">
                   {scriptMode === 'meetei'
-                    ? `ꯅꯛ:${todayCalendarDay?.nakshatraDisplayNumMeetei || toMeeteiNumerals(panchang.fiveAngas.nakshatra.index)} (${todayCalendarDay?.nakshatraNameMeetei || NAKSHATRA_NAMES_MEETEI[panchang.fiveAngas.nakshatra.index - 1]})`
-                    : `নক্ষঃ ${todayCalendarDay?.nakshatraDisplayNumBengali || toBengaliNumerals(panchang.fiveAngas.nakshatra.index)} (${todayCalendarDay?.nakshatraNameBengali || NAKSHATRA_NAMES_BENGALI[panchang.fiveAngas.nakshatra.index - 1]})`}
+                    ? `ꯅꯛ:${homeCalendarDay?.nakshatraDisplayNumMeetei || toMeeteiNumerals(homePanchang.fiveAngas.nakshatra.index)} (${homeCalendarDay?.nakshatraNameMeetei || NAKSHATRA_NAMES_MEETEI[homePanchang.fiveAngas.nakshatra.index - 1]})`
+                    : `নক্ষঃ ${homeCalendarDay?.nakshatraDisplayNumBengali || toBengaliNumerals(homePanchang.fiveAngas.nakshatra.index)} (${homeCalendarDay?.nakshatraNameBengali || NAKSHATRA_NAMES_BENGALI[homePanchang.fiveAngas.nakshatra.index - 1]})`}
                 </strong>
                 <span className="text-xs text-slate-800 font-semibold block">
-                  Pada {panchang.fiveAngas.nakshatra.pada} • Lord {panchang.fiveAngas.nakshatra.lord}
+                  Pada {homePanchang.fiveAngas.nakshatra.pada} • Lord {homePanchang.fiveAngas.nakshatra.lord}
                 </span>
               </div>
 
@@ -2704,12 +3007,12 @@ export default function AndroidAppHomeView({
                   সৌর তারিখ (Soura Date):
                 </span>
                 <strong className="text-[15px] text-slate-950 font-black block truncate">
-                  {todayCalendarDay
-                    ? `${todayCalendarDay.solarMonth.bengali} ${toBengaliNumerals(todayCalendarDay.souraDate)}, শকাব্দ ${toBengaliNumerals(todayCalendarDay.sakaYear)}`
+                  {homeCalendarDay
+                    ? `${homeCalendarDay.solarMonth.bengali} ${toBengaliNumerals(homeCalendarDay.souraDate)}, শকাব্দ ${toBengaliNumerals(homeCalendarDay.sakaYear)}`
                     : `ভাদ্র ২৮, শকাব্দ ১৯৪৮`}
                 </strong>
                 <span className="text-xs text-slate-800 font-semibold block">
-                  Ritu: {panchang.planetaryState.ritu}
+                  Ritu: {homePanchang.planetaryState.ritu}
                 </span>
               </div>
 
@@ -2719,7 +3022,7 @@ export default function AndroidAppHomeView({
                   রাহু কাল (Rahu Kaal):
                 </span>
                 <strong className="text-[15px] text-rose-950 font-mono font-black block">
-                  {panchang.muhurtas.rahuKaal.start} – {panchang.muhurtas.rahuKaal.end}
+                  {homePanchang.muhurtas.rahuKaal.start} – {homePanchang.muhurtas.rahuKaal.end}
                 </strong>
                 <span className="text-xs text-rose-900 font-bold block">
                   Avoid auspicious works
@@ -2743,42 +3046,42 @@ export default function AndroidAppHomeView({
                   <div className="grid grid-cols-2 gap-2 text-xs">
                     <div className="p-2.5 rounded-xl bg-white border border-slate-300">
                       <span className="text-slate-700 font-bold block text-xs">যোগ (Yoga):</span>
-                      <strong className="text-slate-950 font-black block">{panchang.fiveAngas.yoga.name}</strong>
-                      <span className="text-slate-800 text-[11px] font-semibold">{panchang.fiveAngas.yoga.isAuspicious ? 'শুভ যোগ (Auspicious)' : 'সাধারণ যোগ'}</span>
+                      <strong className="text-slate-950 font-black block">{homePanchang.fiveAngas.yoga.name}</strong>
+                      <span className="text-slate-800 text-[11px] font-semibold">{homePanchang.fiveAngas.yoga.isAuspicious ? 'শুভ যোগ (Auspicious)' : 'সাধারণ যোগ'}</span>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-white border border-slate-300">
                       <span className="text-slate-700 font-bold block text-xs">করণ (Karana):</span>
-                      <strong className="text-slate-950 font-black block">{panchang.fiveAngas.karana.name}</strong>
-                      <span className="text-slate-800 text-[11px] font-semibold">Type: {panchang.fiveAngas.karana.type}</span>
+                      <strong className="text-slate-950 font-black block">{homePanchang.fiveAngas.karana.name}</strong>
+                      <span className="text-slate-800 text-[11px] font-semibold">Type: {homePanchang.fiveAngas.karana.type}</span>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-emerald-50 border-2 border-emerald-300">
                       <span className="text-emerald-950 font-black block text-xs">অভিজিৎ মুহূর্ত (Abhijit):</span>
-                      <strong className="text-emerald-950 font-black block">{panchang.muhurtas.abhijit.start} – {panchang.muhurtas.abhijit.end}</strong>
+                      <strong className="text-emerald-950 font-black block">{homePanchang.muhurtas.abhijit.start} – {homePanchang.muhurtas.abhijit.end}</strong>
                       <span className="text-emerald-900 text-[11px] font-bold">Best for good works</span>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-white border border-slate-300">
                       <span className="text-slate-700 font-bold block text-xs">চন্দ্র রাশি (Moon Sign):</span>
-                      <strong className="text-slate-950 font-black block">{panchang.planetaryState.moonSign}</strong>
-                      <span className="text-slate-800 text-[11px] font-semibold">Sun Sign: {panchang.planetaryState.sunSign}</span>
+                      <strong className="text-slate-950 font-black block">{homePanchang.planetaryState.moonSign}</strong>
+                      <span className="text-slate-800 text-[11px] font-semibold">Sun Sign: {homePanchang.planetaryState.sunSign}</span>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-rose-50 border-2 border-rose-300">
                       <span className="text-rose-950 font-black block text-xs">যমগণ্ড কাল (Yamaganda):</span>
-                      <strong className="text-rose-950 font-mono font-black block">{panchang.muhurtas.yamaganda.start} – {panchang.muhurtas.yamaganda.end}</strong>
+                      <strong className="text-rose-950 font-mono font-black block">{homePanchang.muhurtas.yamaganda.start} – {homePanchang.muhurtas.yamaganda.end}</strong>
                     </div>
 
                     <div className="p-2.5 rounded-xl bg-rose-50 border-2 border-rose-300">
                       <span className="text-rose-950 font-black block text-xs">গুলিক কাল (Gulika):</span>
-                      <strong className="text-rose-950 font-mono font-black block">{panchang.muhurtas.gulikaKaal.start} – {panchang.muhurtas.gulikaKaal.end}</strong>
+                      <strong className="text-rose-950 font-mono font-black block">{homePanchang.muhurtas.gulikaKaal.start} – {homePanchang.muhurtas.gulikaKaal.end}</strong>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between pt-1 text-xs text-slate-950 font-bold">
-                    <span>Day Length: {panchang.sunMoonTimings.dayLength}</span>
-                    <span>Ayana: {panchang.planetaryState.ayana}</span>
+                    <span>Day Length: {homePanchang.sunMoonTimings.dayLength}</span>
+                    <span>Ayana: {homePanchang.planetaryState.ayana}</span>
                   </div>
                 </div>
               )}
