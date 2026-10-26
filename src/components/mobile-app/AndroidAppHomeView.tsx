@@ -769,8 +769,8 @@ export default function AndroidAppHomeView({
       {showSplash && <AppSplashScreen onFinish={() => setShowSplash(false)} />}
       
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 1. FIXED NATIVE ANDROID TOP APP BAR (STITCH MIDNIGHT ESPRESSO) */}
-      <div className="flex-shrink-0 z-40 bg-[#1e1b18] shadow-mobile-appbar border-b border-[#352f2a] select-none-mobile pt-safe">
+      {/* 1. FIXED NATIVE ANDROID TOP APP BAR (STITCH SACRED PARCHMENT & TERRACOTTA) */}
+      <div className="flex-shrink-0 z-40 bg-[#fdfbf7]/95 backdrop-blur-xl shadow-[0_2px_12px_rgba(200,75,49,0.06)] border-b border-[#ebdcd3] select-none-mobile pt-safe">
         {/* Native Android App Bar (Material You / Stitch Kanglei Panjika Header) */}
         <header className="px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -784,7 +784,7 @@ export default function AndroidAppHomeView({
                     setActiveTab('home');
                   }
                 }}
-                className="w-9 h-9 rounded-full bg-[#2c2724] hover:bg-[#38322e] active:bg-[#433b37] flex items-center justify-center text-[#fead4d] transition app-active-press cursor-pointer border border-[#3f3730]"
+                className="w-9 h-9 rounded-full bg-[#f3ede8] hover:bg-[#ebdcd3] active:bg-[#e0d4cc] flex items-center justify-center text-[#c84b31] transition app-active-press cursor-pointer border border-[#ebdcd3] shadow-xs"
                 aria-label="Back to home"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -793,7 +793,7 @@ export default function AndroidAppHomeView({
               <button
                 type="button"
                 onClick={() => setShowDrawer(true)}
-                className="w-9 h-9 rounded-full bg-[#2c2724] hover:bg-[#38322e] active:bg-[#433b37] flex items-center justify-center text-[#fead4d] transition app-active-press cursor-pointer border border-[#3f3730]"
+                className="w-9 h-9 rounded-full bg-[#f3ede8] hover:bg-[#ebdcd3] active:bg-[#e0d4cc] flex items-center justify-center text-[#c84b31] transition app-active-press cursor-pointer border border-[#ebdcd3] shadow-xs"
                 aria-label="Open navigation drawer"
               >
                 <Menu className="w-5 h-5" />
@@ -820,7 +820,7 @@ export default function AndroidAppHomeView({
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-[15px] font-sans font-bold tracking-tight leading-none text-[#f9f5f0]">
+                  <h1 className="text-[15px] font-sans font-extrabold tracking-tight leading-none text-[#2c1810]">
                     {activeTab === 'home'
                       ? 'Manipuri Calendar'
                       : activeTab === 'calendar'
@@ -838,18 +838,18 @@ export default function AndroidAppHomeView({
                       : 'Manipuri Calendar'}
                   </h1>
                   {activeTab === 'home' && (
-                    <span className="px-1.5 py-0.2 rounded-full bg-[#c84b31]/40 border border-[#c84b31]/60 text-amber-200 font-mono text-[9px] font-bold">
+                    <span className="px-1.5 py-0.2 rounded-full bg-[#ffdcbc] border border-[#f0c4a4] text-[#891e07] font-mono text-[9px] font-bold">
                       MEITEI
                     </span>
                   )}
                   {!isOnline && (
-                    <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-mono text-[8px] font-bold flex items-center gap-0.5">
+                    <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-700 font-mono text-[8px] font-bold flex items-center gap-0.5">
                       <WifiOff className="w-2.5 h-2.5" />
                       <span>OFFLINE</span>
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-[#fead4d]/90 font-medium leading-none block mt-1">
+                <span className="text-[11px] text-[#895200] font-semibold leading-none block mt-1">
                   {activeTab === 'home'
                     ? (scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯀꯦꯂꯦꯟꯗꯔ • Imphal (IST)' : 'মণিপুরী ক্যালেন্ডার • Imphal (IST)')
                     : activeTab === 'calendar'
@@ -872,14 +872,14 @@ export default function AndroidAppHomeView({
 
           {/* Script Switcher & Action Icons */}
           <div className="flex items-center gap-1.5">
-            <div className="inline-flex rounded-full border border-[#3e3630] p-0.5 bg-[#141210] text-[10px] font-bold shadow-inner">
+            <div className="inline-flex rounded-full border border-[#ebdcd3] p-0.5 bg-[#f3ede8] text-[10px] font-bold shadow-xs">
               <button
                 type="button"
                 onClick={() => setScriptMode('bengali')}
                 className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                   scriptMode === 'bengali'
                     ? 'bg-[#c84b31] text-white shadow-xs font-black'
-                    : 'text-[#a89f91] hover:text-white'
+                    : 'text-[#705c53] hover:text-[#2c1810]'
                 }`}
               >
                 বাংলা
@@ -890,7 +890,7 @@ export default function AndroidAppHomeView({
                 className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                   scriptMode === 'meetei'
                     ? 'bg-[#c84b31] text-white shadow-xs font-black'
-                    : 'text-[#a89f91] hover:text-white'
+                    : 'text-[#705c53] hover:text-[#2c1810]'
                 }`}
               >
                 ꯃꯤꯇꯩ
@@ -901,7 +901,7 @@ export default function AndroidAppHomeView({
               type="button"
               onClick={() => setActiveTab(activeTab === 'calendar' ? 'home' : 'calendar')}
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition app-active-press cursor-pointer border ${
-                activeTab === 'calendar' ? 'bg-[#c84b31] text-white border-[#c84b31] shadow-xs' : 'bg-[#2c2724] hover:bg-[#38322e] text-[#fead4d] border-[#3f3730]'
+                activeTab === 'calendar' ? 'bg-[#c84b31] text-white border-[#c84b31] shadow-xs' : 'bg-[#f3ede8] hover:bg-[#ebdcd3] text-[#c84b31] border-[#ebdcd3]'
               }`}
               title="Toggle Calendar"
             >
@@ -912,7 +912,7 @@ export default function AndroidAppHomeView({
               type="button"
               onClick={() => setActiveTab(activeTab === 'account' ? 'home' : 'account')}
               className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition app-active-press cursor-pointer border ${
-                activeTab === 'account' ? 'bg-[#c84b31] text-white border-[#c84b31] shadow-xs' : 'bg-[#2c2724] hover:bg-[#38322e] text-[#fead4d] border-[#3f3730]'
+                activeTab === 'account' ? 'bg-[#c84b31] text-white border-[#c84b31] shadow-xs' : 'bg-[#f3ede8] hover:bg-[#ebdcd3] text-[#c84b31] border-[#ebdcd3]'
               }`}
               title="Account & Profile"
             >
@@ -931,23 +931,23 @@ export default function AndroidAppHomeView({
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={() => setShowDrawer(false)}
           />
-          <div className="relative w-4/5 max-w-xs bg-[#1e1b18] text-[#f9f5f0] h-full shadow-2xl flex flex-col z-10 border-r border-[#352f2a] animate-in slide-in-from-left duration-200 pt-safe pb-safe">
+          <div className="relative w-4/5 max-w-xs bg-[#fdfbf7] text-[#2c1810] h-full shadow-2xl flex flex-col z-10 border-r border-[#ebdcd3] animate-in slide-in-from-left duration-200 pt-safe pb-safe">
             {/* Drawer Header */}
-            <div className="p-4 border-b border-[#352f2a] bg-gradient-to-b from-[#2c2724] to-transparent">
+            <div className="p-4 border-b border-[#ebdcd3] bg-gradient-to-br from-[#c84b31] via-[#b33d25] to-[#891e07] text-white">
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#c84b31] to-[#fead4d] flex items-center justify-center text-white font-black shadow-md">
+                <div className="w-10 h-10 rounded-2xl bg-white/20 backdrop-blur-xs flex items-center justify-center text-white font-black shadow-md">
                   <Sun className="w-6 h-6" />
                 </div>
                 <button
                   type="button"
                   onClick={() => setShowDrawer(false)}
-                  className="w-8 h-8 rounded-full hover:bg-white/10 flex items-center justify-center text-amber-300"
+                  className="w-8 h-8 rounded-full hover:bg-white/20 flex items-center justify-center text-white/90"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
-              <h2 className="text-base font-serif font-black text-amber-100">Manipuri Calendar</h2>
-              <p className="text-xs text-amber-300/80 font-serif">
+              <h2 className="text-base font-serif font-black text-white">Manipuri Calendar</h2>
+              <p className="text-xs text-[#ffdad3] font-serif">
                 {scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯀꯦꯂꯦꯟꯗꯔ ꯑꯃꯁꯨꯡ ꯄꯥꯟꯆꯥꯡ' : 'মণিপুরী ক্যালেন্ডার ও পঞ্জিকা'}
               </p>
             </div>
@@ -963,22 +963,22 @@ export default function AndroidAppHomeView({
                     setActiveTab('account');
                     setShowDrawer(false);
                   }}
-                  className="w-full text-left p-3 mb-2 rounded-2xl bg-[#2a221b] border border-amber-800/40 flex items-center justify-between hover:bg-[#382d24] transition block cursor-pointer"
+                  className="w-full text-left p-3 mb-2 rounded-2xl bg-[#f3ede8] border border-[#ebdcd3] flex items-center justify-between hover:bg-[#ebdcd3] transition block cursor-pointer shadow-xs"
                 >
                   <div className="flex items-center gap-2.5">
-                    <div className="w-8 h-8 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center border border-amber-500/30 shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-[#c84b31]/15 text-[#c84b31] flex items-center justify-center border border-[#c84b31]/30 shrink-0">
                       <User className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
-                      <span className="text-xs font-bold text-amber-100 block leading-tight truncate font-sans">
+                      <span className="text-xs font-bold text-[#2c1810] block leading-tight truncate font-sans">
                         {appSettings?.side_menu?.account_title || 'Sign In / My Account'}
                       </span>
-                      <span className="text-[10px] text-amber-400/80 block leading-none mt-0.5 truncate font-sans">
+                      <span className="text-[10px] text-[#895200] block leading-none mt-0.5 truncate font-sans font-medium">
                         {appSettings?.side_menu?.account_subtitle || 'Sign in, register & manage profile'}
                       </span>
                     </div>
                   </div>
-                  <ChevronRight className="w-4 h-4 text-amber-400/60 shrink-0" />
+                  <ChevronRight className="w-4 h-4 text-[#895200]/60 shrink-0" />
                 </button>
               )}
 
@@ -989,10 +989,10 @@ export default function AndroidAppHomeView({
                   setShowDrawer(false);
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-bold transition cursor-pointer ${
-                  activeTab === 'home' ? 'bg-amber-600 text-white shadow-xs' : 'hover:bg-amber-900/30 text-amber-100'
+                  activeTab === 'home' ? 'bg-[#c84b31] text-white shadow-xs' : 'hover:bg-[#f3ede8] text-[#4a3f39]'
                 }`}
               >
-                <Sun className="w-4 h-4 text-amber-400 shrink-0" />
+                <Sun className={`w-4 h-4 shrink-0 ${activeTab === 'home' ? 'text-white' : 'text-[#c84b31]'}`} />
                 <span>Home (মূল পৃষ্ঠা)</span>
               </button>
 
@@ -1003,10 +1003,10 @@ export default function AndroidAppHomeView({
                   setShowDrawer(false);
                 }}
                 className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left font-bold transition cursor-pointer ${
-                  activeTab === 'calendar' ? 'bg-amber-600 text-white shadow-xs' : 'hover:bg-amber-900/30 text-amber-100'
+                  activeTab === 'calendar' ? 'bg-[#c84b31] text-white shadow-xs' : 'hover:bg-[#f3ede8] text-[#4a3f39]'
                 }`}
               >
-                <CalendarIcon className="w-4 h-4 text-amber-400 shrink-0" />
+                <CalendarIcon className={`w-4 h-4 shrink-0 ${activeTab === 'calendar' ? 'text-white' : 'text-[#c84b31]'}`} />
                 <span>Manipuri Calendar (থাগী ক্যালেন্ডার)</span>
               </button>
 
@@ -3774,9 +3774,9 @@ export default function AndroidAppHomeView({
       <ManipuriAdMobBanner appSettings={appSettings} isOnline={isOnline} />
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 6. NATIVE PINNED BOTTOM NAVIGATION BAR (STITCH MIDNIGHT ESPRESSO) */}
+      {/* 6. NATIVE PINNED BOTTOM NAVIGATION BAR (STITCH SACRED PARCHMENT & TERRACOTTA) */}
       <nav 
-        className="flex-shrink-0 z-40 w-full max-w-md mx-auto bg-[#1e1b18]/95 backdrop-blur-xl border-t border-[#352f2a] safe-bottom-nav pt-2 px-3 flex items-center justify-around shadow-mobile-nav select-none-mobile text-[#a89f91]"
+        className="flex-shrink-0 z-40 w-full max-w-md mx-auto bg-[#fdfbf7]/95 backdrop-blur-xl border-t border-[#ebdcd3] safe-bottom-nav pt-1.5 pb-1 px-3 flex items-center justify-around shadow-[0_-4px_20px_rgba(200,75,49,0.08)] select-none-mobile text-[#705c53]"
         aria-label="Bottom Navigation"
       >
         {/* Tab 1: Home */}
@@ -3786,14 +3786,14 @@ export default function AndroidAppHomeView({
             setActiveTab('home');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'home' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
+          className={`flex flex-col items-center justify-center gap-0.5 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
+            activeTab === 'home' ? 'text-[#c84b31] font-bold' : 'text-[#705c53] hover:text-[#c84b31]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'home' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'home' ? 'bg-[#c84b31]/15 text-[#c84b31] ring-1 ring-[#c84b31]/30 scale-105 shadow-xs' : 'text-[#705c53]'}`}>
             <Sun className="w-5 h-5" />
           </div>
-          <span className="text-[10px] tracking-tight">Home</span>
+          <span className="text-[10px] tracking-tight font-medium">Home</span>
         </button>
 
         {/* Tab 2: Calendar */}
@@ -3803,14 +3803,14 @@ export default function AndroidAppHomeView({
             setActiveTab('calendar');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'calendar' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
+          className={`flex flex-col items-center justify-center gap-0.5 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
+            activeTab === 'calendar' ? 'text-[#c84b31] font-bold' : 'text-[#705c53] hover:text-[#c84b31]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'calendar' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'calendar' ? 'bg-[#c84b31]/15 text-[#c84b31] ring-1 ring-[#c84b31]/30 scale-105 shadow-xs' : 'text-[#705c53]'}`}>
             <CalendarIcon className="w-5 h-5" />
           </div>
-          <span className="text-[10px] tracking-tight">Calendar</span>
+          <span className="text-[10px] tracking-tight font-medium">Calendar</span>
         </button>
 
         {/* Tab 3: Leipung */}
@@ -3820,14 +3820,14 @@ export default function AndroidAppHomeView({
             setActiveTab('leipung');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'leipung' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
+          className={`flex flex-col items-center justify-center gap-0.5 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
+            activeTab === 'leipung' ? 'text-[#c84b31] font-bold' : 'text-[#705c53] hover:text-[#c84b31]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'leipung' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'leipung' ? 'bg-[#c84b31]/15 text-[#c84b31] ring-1 ring-[#c84b31]/30 scale-105 shadow-xs' : 'text-[#705c53]'}`}>
             <MessageSquare className="w-5 h-5" />
           </div>
-          <span className="text-[10px] tracking-tight">Leipung</span>
+          <span className="text-[10px] tracking-tight font-medium">Leipung</span>
         </button>
 
         {/* Tab 4: Panchang */}
@@ -3837,14 +3837,14 @@ export default function AndroidAppHomeView({
             setActiveTab('panchang');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
-          className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'panchang' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
+          className={`flex flex-col items-center justify-center gap-0.5 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
+            activeTab === 'panchang' ? 'text-[#c84b31] font-bold' : 'text-[#705c53] hover:text-[#c84b31]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'panchang' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'panchang' ? 'bg-[#c84b31]/15 text-[#c84b31] ring-1 ring-[#c84b31]/30 scale-105 shadow-xs' : 'text-[#705c53]'}`}>
             <Clock className="w-5 h-5" />
           </div>
-          <span className="text-[10px] tracking-tight">Panchang</span>
+          <span className="text-[10px] tracking-tight font-medium">Panchang</span>
         </button>
 
         {/* Tab 5: Useful */}
@@ -3856,14 +3856,14 @@ export default function AndroidAppHomeView({
               setSelectedUsefulTopicId(null);
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
-            className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-              activeTab === 'useful' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
+            className={`flex flex-col items-center justify-center gap-0.5 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
+              activeTab === 'useful' ? 'text-[#c84b31] font-bold' : 'text-[#705c53] hover:text-[#c84b31]'
             }`}
           >
-            <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'useful' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
+            <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'useful' ? 'bg-[#c84b31]/15 text-[#c84b31] ring-1 ring-[#c84b31]/30 scale-105 shadow-xs' : 'text-[#705c53]'}`}>
               <BookOpen className="w-5 h-5" />
             </div>
-            <span className="text-[10px] tracking-tight">Useful</span>
+            <span className="text-[10px] tracking-tight font-medium">Useful</span>
           </button>
         )}
       </nav>
