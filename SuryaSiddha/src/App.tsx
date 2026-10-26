@@ -358,10 +358,18 @@ export const App: React.FC = () => {
       </main>
 
       {/* 2c. AdMob Ad Unit (Anchored just above the bottom menu) */}
-      {(adminConfig.ads?.admob?.enabled || adminConfig.ads?.admob?.testMode) && (
+      {Boolean(
+        adminConfig.ads?.admob &&
+        (adminConfig.ads.admob.testMode ||
+          (adminConfig.ads.admob.enabled && Boolean(adminConfig.ads.topBanner?.enabled || adminConfig.ads.inlineCard?.enabled)))
+      ) && (
         <div className="w-full shrink-0 z-30 bg-[#fff8f4]/95 backdrop-blur-md border-t border-[#e6d5b8]/70 px-2 sm:px-4 py-1">
           <div className="max-w-md mx-auto">
-            <AdMobBannerAd config={adminConfig.ads.admob} placement="bottom" />
+            <AdMobBannerAd
+              config={adminConfig.ads.admob}
+              placement="bottom"
+              allowCustomFallback={Boolean(adminConfig.ads?.topBanner?.enabled || adminConfig.ads?.inlineCard?.enabled)}
+            />
           </div>
         </div>
       )}

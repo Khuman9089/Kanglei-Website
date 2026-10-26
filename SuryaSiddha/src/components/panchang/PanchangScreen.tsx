@@ -230,7 +230,7 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
       )}
 
       {/* Top Banner Promo Ad */}
-      {adminConfig?.ads?.topBanner && (
+      {adminConfig?.ads?.topBanner?.enabled && (
         <TopBannerAd config={adminConfig.ads.topBanner} />
       )}
 
@@ -632,7 +632,7 @@ export const PanchangScreen: React.FC<PanchangScreenProps> = ({
         </div>
 
         {/* Inline Promotional Card */}
-        {adminConfig?.ads?.inlineCard && (
+        {adminConfig?.ads?.inlineCard?.enabled && (
           <InlineAdCard config={adminConfig.ads.inlineCard} />
         )}
       </div>

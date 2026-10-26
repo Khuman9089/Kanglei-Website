@@ -7,7 +7,7 @@ export const DEFAULT_ADMIN_CONFIG: AdminAppConfig = {
   pin: 'admin123',
   ads: {
     topBanner: {
-      enabled: true,
+      enabled: false,
       title: '🌟 Vedic Astro Consultation',
       subtitle: 'Get Personalized Kundli & Dosha Analysis by Expert Gurus',
       imageUrl: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=80',
@@ -16,7 +16,7 @@ export const DEFAULT_ADMIN_CONFIG: AdminAppConfig = {
       badge: 'PROMO',
     },
     inlineCard: {
-      enabled: true,
+      enabled: false,
       type: 'custom',
       title: 'KuthiYengpham Consecrated Yantras & Gemstones',
       body: '100% Certified Astrological Gemstones and Energized Vedic Kavach for Graha Shanti.',
@@ -107,7 +107,14 @@ export function loadAdminConfig(): AdminAppConfig {
     return {
       ...DEFAULT_ADMIN_CONFIG,
       ...parsed,
-      ads: { ...DEFAULT_ADMIN_CONFIG.ads, ...(parsed.ads || {}) },
+      ads: {
+        ...DEFAULT_ADMIN_CONFIG.ads,
+        ...(parsed.ads || {}),
+        topBanner: { ...DEFAULT_ADMIN_CONFIG.ads.topBanner, ...(parsed.ads?.topBanner || {}) },
+        inlineCard: { ...DEFAULT_ADMIN_CONFIG.ads.inlineCard, ...(parsed.ads?.inlineCard || {}) },
+        interstitial: { ...DEFAULT_ADMIN_CONFIG.ads.interstitial, ...(parsed.ads?.interstitial || {}) },
+        admob: { ...DEFAULT_ADMIN_CONFIG.ads.admob, ...(parsed.ads?.admob || {}) },
+      },
       notifications: { ...DEFAULT_ADMIN_CONFIG.notifications, ...(parsed.notifications || {}) },
       mobile: { ...DEFAULT_ADMIN_CONFIG.mobile, ...(parsed.mobile || {}) },
     };
@@ -133,7 +140,14 @@ export async function fetchRemoteAdminConfig(): Promise<AdminAppConfig | null> {
         const merged: AdminAppConfig = {
           ...DEFAULT_ADMIN_CONFIG,
           ...data.config,
-          ads: { ...DEFAULT_ADMIN_CONFIG.ads, ...(data.config.ads || {}) },
+          ads: {
+            ...DEFAULT_ADMIN_CONFIG.ads,
+            ...(data.config.ads || {}),
+            topBanner: { ...DEFAULT_ADMIN_CONFIG.ads.topBanner, ...(data.config.ads?.topBanner || {}) },
+            inlineCard: { ...DEFAULT_ADMIN_CONFIG.ads.inlineCard, ...(data.config.ads?.inlineCard || {}) },
+            interstitial: { ...DEFAULT_ADMIN_CONFIG.ads.interstitial, ...(data.config.ads?.interstitial || {}) },
+            admob: { ...DEFAULT_ADMIN_CONFIG.ads.admob, ...(data.config.ads?.admob || {}) },
+          },
           notifications: { ...DEFAULT_ADMIN_CONFIG.notifications, ...(data.config.notifications || {}) },
           mobile: { ...DEFAULT_ADMIN_CONFIG.mobile, ...(data.config.mobile || {}) },
         };

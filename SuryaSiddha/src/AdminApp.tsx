@@ -176,12 +176,28 @@ export const AdminApp: React.FC = () => {
             </a>
 
             {isAuthenticated && (
-              <button
-                onClick={() => setIsAuthenticated(false)}
-                className="px-3 py-1.5 rounded-xl border border-rose-900/50 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-bold transition"
-              >
-                Lock Portal
-              </button>
+              <>
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={handleSave}
+                  className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-slate-950 font-black text-xs shadow-md shadow-orange-500/20 hover:opacity-90 transition cursor-pointer disabled:opacity-60"
+                >
+                  {isSaving ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Save className="w-3.5 h-3.5" />
+                  )}
+                  <span>{isSaving ? 'Syncing...' : 'Save All Changes'}</span>
+                </button>
+
+                <button
+                  onClick={() => setIsAuthenticated(false)}
+                  className="px-3 py-1.5 rounded-xl border border-rose-900/50 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 text-xs font-bold transition"
+                >
+                  Lock Portal
+                </button>
+              </>
             )}
           </div>
         </div>

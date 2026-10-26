@@ -7,12 +7,14 @@ interface AdMobBannerAdProps {
   config?: AdMobConfig;
   placement?: 'home' | 'panchang' | 'bottom';
   className?: string;
+  allowCustomFallback?: boolean;
 }
 
 export const AdMobBannerAd: React.FC<AdMobBannerAdProps> = ({
   config,
   placement = 'bottom',
   className = '',
+  allowCustomFallback = false,
 }) => {
   const [dismissed, setDismissed] = useState(false);
   const [testClickCount, setTestClickCount] = useState(0);
@@ -120,6 +122,11 @@ export const AdMobBannerAd: React.FC<AdMobBannerAdProps> = ({
   }
 
   // RENDER PRODUCTION LIVE AD
+  // If custom ads are disabled by admin and not running in test mode, do not render a custom promo card
+  if (!allowCustomFallback) {
+    return null;
+  }
+
   return (
     <div
       className={`${

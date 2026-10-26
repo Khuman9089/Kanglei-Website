@@ -646,7 +646,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({
       </section>
 
       {/* 8. Bottom In-Feed Ad Banner (Google AdMob / AdSense) */}
-      {adminConfig.ads?.inlineCard && (
+      {adminConfig.ads?.inlineCard?.enabled && (
         <InlineAdCard config={adminConfig.ads.inlineCard} />
       )}
 

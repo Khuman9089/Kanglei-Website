@@ -10,7 +10,7 @@ const DEFAULT_CONFIG = {
   pin: 'admin123',
   ads: {
     topBanner: {
-      enabled: true,
+      enabled: false,
       title: '🌟 Vedic Astro Consultation',
       subtitle: 'Get Personalized Kundli & Dosha Analysis by Expert Gurus',
       imageUrl: 'https://images.unsplash.com/photo-1532012197267-da84d127e765?auto=format&fit=crop&w=600&q=80',
@@ -19,7 +19,7 @@ const DEFAULT_CONFIG = {
       badge: 'PROMO',
     },
     inlineCard: {
-      enabled: true,
+      enabled: false,
       type: 'custom',
       title: 'KuthiYengpham Consecrated Yantras & Gemstones',
       body: '100% Certified Astrological Gemstones and Energized Vedic Kavach for Graha Shanti.',
