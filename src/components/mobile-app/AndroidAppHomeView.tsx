@@ -50,7 +50,8 @@ import {
   ShoppingBag,
   UserCheck,
   Info,
-  MessageSquare
+  MessageSquare,
+  WifiOff
 } from 'lucide-react';
 import { calculateVedicPanchang } from '@/engine/panchang';
 import { getMonthlyCalendar, CalendarDay, toBengaliNumerals, toMeeteiNumerals } from '@/engine/manipuriCalendar';
@@ -60,6 +61,7 @@ import ManipuriPanchangWorkstation from '@/components/dashboard/ManipuriPanchang
 import LeipungFeedView from '@/components/mobile-app/LeipungFeedView';
 import AppSplashScreen from '@/components/mobile-app/AppSplashScreen';
 import InAppAccountView from '@/components/mobile-app/InAppAccountView';
+import ManipuriAdMobBanner from '@/components/mobile-app/ManipuriAdMobBanner';
 import { DEFAULT_USEFUL_TOPICS } from '@/data/defaultUsefulTopics';
 
 type ScriptMode = 'bengali' | 'meetei';
@@ -392,6 +394,24 @@ export default function AndroidAppHomeView({
     },
   });
 
+  const [isOnline, setIsOnline] = useState<boolean>(true);
+  const [calendarPerspective, setCalendarPerspective] = useState<'cheichat' | 'gregorian'>('cheichat');
+
+  // Network Online / Offline Detection
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsOnline(window.navigator.onLine);
+      const handleOnline = () => setIsOnline(true);
+      const handleOffline = () => setIsOnline(false);
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+      };
+    }
+  }, []);
+
   // Fetch Useful Topics and App Settings (Works online & offline)
   useEffect(() => {
     const getEndpointUrl = (path: string) => {
@@ -653,23 +673,40 @@ export default function AndroidAppHomeView({
                 )}
               </div>
               <div>
-                <h1 className="text-[15px] font-sans font-bold tracking-tight leading-none text-slate-50">
-                  {activeTab === 'calendar'
-                    ? 'Manipuri Calendar'
-                    : activeTab === 'kuthi_eba'
-                    ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯏꯕ (Kuthi Eba)' : 'কুথি ইবা (Kuthi Eba)')
-                    : activeTab === 'kuthi_yengba'
-                    ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯌꯦꯡꯕ (Kuthi Yengba)' : 'কুথি য়েংবা (Kuthi Yengba)')
-                    : activeTab === 'panchang'
-                    ? (scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯄꯥꯟꯆꯥꯡ (Panchang)' : 'মণিপুরী পাঞ্জিকা (Manipuri Panchang)')
-                    : activeTab === 'leipung'
-                    ? (scriptMode === 'meetei' ? 'ꯂꯩꯄꯨꯡ (Leipung Feed)' : 'লৈপুং (Leipung Community)')
-                    : activeTab === 'account'
-                    ? (scriptMode === 'meetei' ? 'ꯑꯦꯀꯥꯎꯟꯠ & ꯄ꯭ꯔꯣꯐꯥꯏꯜ (Account)' : 'একাউন্ট ও প্রোফাইল (Account)')
-                    : 'Kanglei Astro'}
-                </h1>
+                <div className="flex items-center gap-1.5">
+                  <h1 className="text-[15px] font-sans font-bold tracking-tight leading-none text-slate-50">
+                    {activeTab === 'home'
+                      ? 'Kanglei Panjika'
+                      : activeTab === 'calendar'
+                      ? 'Manipuri Calendar'
+                      : activeTab === 'kuthi_eba'
+                      ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯏꯕ (Kuthi Eba)' : 'কুথি ইবা (Kuthi Eba)')
+                      : activeTab === 'kuthi_yengba'
+                      ? (scriptMode === 'meetei' ? 'ꯀꯨꯊꯤ ꯌꯦꯡꯕ (Kuthi Yengba)' : 'কুথি য়েংবা (Kuthi Yengba)')
+                      : activeTab === 'panchang'
+                      ? (scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯄꯥꯟꯆꯥꯡ (Panchang)' : 'মণিপুরী পাঞ্জিকা (Manipuri Panchang)')
+                      : activeTab === 'leipung'
+                      ? (scriptMode === 'meetei' ? 'ꯂꯩꯄꯨꯡ (Leipung Feed)' : 'লৈপুং (Leipung Community)')
+                      : activeTab === 'account'
+                      ? (scriptMode === 'meetei' ? 'ꯑꯦꯀꯥꯎꯟꯠ & ꯄ꯭ꯔꯣꯐꯥꯏꯜ (Account)' : 'একাউন্ট ও প্রোফাইল (Account)')
+                      : 'Kanglei Panjika'}
+                  </h1>
+                  {activeTab === 'home' && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-[#c84b31]/40 border border-[#c84b31]/60 text-amber-200 font-mono text-[9px] font-bold">
+                      MEITEI
+                    </span>
+                  )}
+                  {!isOnline && (
+                    <span className="px-1.5 py-0.2 rounded-full bg-amber-500/20 border border-amber-400/40 text-amber-300 font-mono text-[8px] font-bold flex items-center gap-0.5">
+                      <WifiOff className="w-2.5 h-2.5" />
+                      <span>OFFLINE</span>
+                    </span>
+                  )}
+                </div>
                 <span className="text-[11px] text-amber-400/90 font-medium leading-none block mt-1">
-                  {activeTab === 'calendar'
+                  {activeTab === 'home'
+                    ? (scriptMode === 'meetei' ? 'ꯀꯪꯂꯩ ꯄꯥꯟꯖꯤꯀꯥ • Imphal (IST)' : 'মণিপুরী পঞ্জিকা • Imphal (IST)')
+                    : activeTab === 'calendar'
                     ? `${currentCalendarData.monthNameEn} ${calYear}`
                     : activeTab === 'kuthi_eba'
                     ? (scriptMode === 'meetei' ? 'ꯑꯍꯣꯡꯕ ꯂꯥꯏꯔꯤꯛ ꯏꯕ' : 'অনলাইন জন্ম পত্রিকা ইবা')
@@ -1165,6 +1202,94 @@ export default function AndroidAppHomeView({
             </div>
           </div>
 
+          {/* Dual Calendar Perspective Switcher (Stitch Kanglei Sacred Rhythm) */}
+          <div className="grid grid-cols-2 p-1 bg-white rounded-2xl border border-gray-200 shadow-xs">
+            <button
+              type="button"
+              onClick={() => setCalendarPerspective('cheichat')}
+              className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                calendarPerspective === 'cheichat'
+                  ? 'bg-[#c84b31] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <Moon className="w-3.5 h-3.5" />
+              <span>Cheichat View (ꯆꯩꯆꯠ)</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setCalendarPerspective('gregorian')}
+              className={`py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                calendarPerspective === 'gregorian'
+                  ? 'bg-[#c84b31] text-white shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              <CalendarIcon className="w-3.5 h-3.5" />
+              <span>Gregorian View</span>
+            </button>
+          </div>
+
+          {/* Key Sacred Events Carousel: Thaban Thasi Highlights (Stitch Design) */}
+          <section className="space-y-1.5">
+            <div className="flex items-center justify-between px-1">
+              <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#c84b31]"></span>
+                <span>Thaban Thasi Highlights (ꯊꯥꯁꯤ ꯄꯨꯡꯐꯝ)</span>
+              </span>
+              <span className="text-[10px] text-amber-700 font-bold font-mono">
+                {currentCalendarData.monthNameEn}
+              </span>
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+              {(() => {
+                const highlights = (currentCalendarData.weeks.flat().filter(Boolean) as CalendarDay[])
+                  .filter((d) => d.isPurnima || d.isAmavasya || d.festival || d.isEkadashi)
+                  .slice(0, 5);
+
+                if (highlights.length === 0) return null;
+
+                return highlights.map((hd) => {
+                  const isSelected = hd.dateStr === calSelectedDateStr;
+                  return (
+                    <button
+                      key={`hl-${hd.dateStr}`}
+                      type="button"
+                      onClick={() => setCalSelectedDateStr(hd.dateStr)}
+                      className={`flex-shrink-0 w-36 p-2.5 rounded-2xl bg-white border text-left transition flex flex-col justify-between cursor-pointer ${
+                        isSelected
+                          ? 'border-[#c84b31] ring-2 ring-[#c84b31]/40 shadow-xs'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between w-full">
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
+                          hd.isPurnima
+                            ? 'bg-purple-100 text-purple-800'
+                            : hd.isAmavasya
+                            ? 'bg-slate-200 text-slate-800'
+                            : 'bg-amber-100 text-amber-800'
+                        }`}>
+                          {hd.isPurnima ? 'ꯄꯨꯔꯅꯤꯃꯥ' : hd.isAmavasya ? 'ꯊꯥ-ꯑꯁꯤ' : 'ꯊꯧꯔꯝ'}
+                        </span>
+                        <Moon className="w-3.5 h-3.5 text-amber-600" />
+                      </div>
+                      <div className="mt-1.5">
+                        <p className="text-xs font-bold text-slate-900 truncate">
+                          {hd.festival ? (scriptMode === 'meetei' ? hd.festival.nameMeetei : hd.festival.nameBengali) : (scriptMode === 'meetei' ? hd.tithiDisplayMeetei : hd.tithiDisplayBengali)}
+                        </p>
+                        <p className="text-[10px] text-slate-500 font-mono mt-0.5">
+                          {hd.manipuriMonth.nameEn} {hd.tithiNumber} • {hd.day} {currentCalendarData.monthNameEn.slice(0, 3)}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+          </section>
+
           {/* 7-Column Structured Month Grid Table */}
           <div className="bg-[#E5E7EB] border border-[#E5E7EB] rounded-2xl overflow-hidden shadow-sm grid grid-cols-7 gap-[1px]">
             {/* Weekday Headers: Light slate fill (#F8FAFC), 11px uppercase bold labels, Sunday in red */}
@@ -1255,44 +1380,65 @@ export default function AndroidAppHomeView({
                       />
                     )}
 
-                    {/* 3. Center — Prominent Gregorian Date (RED if Holiday) */}
-                    <span
-                      className={`text-lg font-extrabold tracking-tight leading-none font-sans ${
-                        isHoliday
-                          ? 'text-[#DC2626]'
-                          : isToday
-                          ? 'text-[#B45309]'
-                          : 'text-[#0F172A]'
-                      }`}
-                    >
-                      {day.day}
-                    </span>
-
-                    {/* 4. Below Date — Manipuri Month Name */}
-                    <span
-                      className={`text-[10px] font-medium leading-tight mt-0.5 truncate max-w-full block ${
-                        isHoliday
-                          ? 'text-[#DC2626]'
-                          : isToday
-                          ? 'text-[#92400E]'
-                          : 'text-slate-600'
-                      }`}
-                    >
-                      {monthName}
-                    </span>
-
-                    {/* 5. Bottom — Tithi Number */}
-                    <span
-                      className={`text-[10.5px] font-bold leading-none mt-0.5 ${
-                        isHoliday
-                          ? 'text-[#DC2626]'
-                          : isToday
-                          ? 'text-[#92400E]'
-                          : 'text-slate-800'
-                      }`}
-                    >
-                      {tithiStr}
-                    </span>
+                    {/* 3. Center — Prominent Date based on Perspective */}
+                    {calendarPerspective === 'cheichat' ? (
+                      <>
+                        <span
+                          className={`text-lg font-extrabold tracking-tight leading-none ${
+                            isHoliday
+                              ? 'text-[#DC2626]'
+                              : isToday
+                              ? 'text-[#c84b31]'
+                              : 'text-[#1e1b18]'
+                          }`}
+                        >
+                          {tithiStr}
+                        </span>
+                        <span
+                          className={`text-[10px] font-semibold leading-tight mt-0.5 truncate max-w-full block ${
+                            isHoliday ? 'text-[#DC2626]' : isToday ? 'text-[#a6331b]' : 'text-slate-500'
+                          }`}
+                        >
+                          {monthName} • {day.day}
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <span
+                          className={`text-lg font-extrabold tracking-tight leading-none font-sans ${
+                            isHoliday
+                              ? 'text-[#DC2626]'
+                              : isToday
+                              ? 'text-[#B45309]'
+                              : 'text-[#0F172A]'
+                          }`}
+                        >
+                          {day.day}
+                        </span>
+                        <span
+                          className={`text-[10px] font-medium leading-tight mt-0.5 truncate max-w-full block ${
+                            isHoliday
+                              ? 'text-[#DC2626]'
+                              : isToday
+                              ? 'text-[#92400E]'
+                              : 'text-slate-600'
+                          }`}
+                        >
+                          {monthName}
+                        </span>
+                        <span
+                          className={`text-[10.5px] font-bold leading-none mt-0.5 ${
+                            isHoliday
+                              ? 'text-[#DC2626]'
+                              : isToday
+                              ? 'text-[#92400E]'
+                              : 'text-slate-800'
+                          }`}
+                        >
+                          {tithiStr}
+                        </span>
+                      </>
+                    )}
 
                     {/* 6. Mention Result / Festival Name Directly inside Cell */}
                     {day.festival ? (
@@ -2035,7 +2181,200 @@ export default function AndroidAppHomeView({
         /* 5. MAIN HOME APP BODY (When activeTab === 'home')             */
         /* ───────────────────────────────────────────────────────────── */
         <main className="flex-1 p-3.5 space-y-3.5">
-          
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* STITCH "KANGLEI PANJIKA" TOP DATE & LUNAR PHASE HERO BANNER   */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-[#a6331b] via-[#c84b31] to-[#9e3b2d] p-4 text-white shadow-[0_8px_24px_-6px_rgba(166,51,27,0.35)] select-none">
+            {/* Decorative Celestial Radial Glow & Orbit Circles */}
+            <div
+              className="pointer-events-none absolute -right-12 -top-12 h-48 w-48 rounded-full opacity-25"
+              style={{ background: 'radial-gradient(circle, rgba(254,173,77,0.85) 0%, rgba(254,173,77,0) 70%)' }}
+            />
+            <svg
+              className="pointer-events-none absolute -right-6 -top-6 h-40 w-40 opacity-20"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 100 100"
+            >
+              <circle cx="50" cy="50" r="42" stroke="#ffdcbc" strokeDasharray="3 3" strokeWidth="1.2" />
+              <circle cx="50" cy="50" r="28" stroke="#ffdcbc" strokeWidth="1" />
+              <path d="M 50,8 L 50,92 M 8,50 L 92,50" stroke="#ffdcbc" strokeDasharray="2 4" strokeWidth="0.8" />
+            </svg>
+
+            <div className="relative z-10 flex flex-col gap-3">
+              {/* Date Meta & Manipuri Cheichat Month */}
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="inline-flex items-center rounded-full bg-amber-500/25 px-2 py-0.5 font-mono text-[9.5px] font-bold tracking-wider text-amber-200 border border-amber-400/30">
+                      {todayCalendarDay?.sakaYear || 1948} SAKABDA
+                    </span>
+                    <span className="text-amber-200/60">•</span>
+                    <span className="text-[11px] font-semibold text-amber-200">
+                      Meitei Cheichat
+                    </span>
+                  </div>
+
+                  <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-white mt-1">
+                    {todayCalendarDay?.manipuriMonth?.nameEn || 'Lamta'}{' '}
+                    {scriptMode === 'meetei'
+                      ? toMeeteiNumerals(todayCalendarDay?.tithiNumber || 1)
+                      : toBengaliNumerals(todayCalendarDay?.tithiNumber || 1)}{' '}
+                    <span className="text-base font-normal text-amber-200">
+                      / {scriptMode === 'meetei' ? todayCalendarDay?.manipuriMonth?.nameMeetei || 'ꯂꯝꯇꯥ' : todayCalendarDay?.manipuriMonth?.nameBengali || 'লমতা'}
+                    </span>
+                  </h2>
+
+                  <p className="text-xs text-amber-100/90 font-medium">
+                    {now.toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                  </p>
+                </div>
+
+                {/* Moon Phase Emblem */}
+                <div className="flex flex-col items-center justify-center rounded-2xl bg-black/20 backdrop-blur-md p-2.5 text-center min-w-[76px] border border-white/10 shrink-0">
+                  <div className="relative flex h-9 w-9 items-center justify-center rounded-full bg-amber-400/20 shadow-inner">
+                    <svg className="h-7 w-7 text-amber-300" fill="none" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" opacity="0.8" r="45" stroke="#fead4d" strokeDasharray="4 3" strokeWidth="3" />
+                      {todayCalendarDay?.isAmavasya ? (
+                        <circle cx="50" cy="50" fill="#1e1b18" r="32" />
+                      ) : (
+                        <>
+                          <path d="M 50 14 A 36 36 0 0 0 50 86 A 26 26 0 0 1 50 14 Z" fill="#fff" opacity="0.95" />
+                          <circle cx="58" cy="50" fill="#fead4d" r="14" />
+                          <circle cx="58" cy="50" fill="#fffbff" r="8" />
+                        </>
+                      )}
+                    </svg>
+                  </div>
+                  <span className="mt-1 text-[11px] font-bold text-white line-clamp-1">
+                    {todayCalendarDay?.isPurnima
+                      ? 'Purnima'
+                      : todayCalendarDay?.isAmavasya
+                      ? 'Amavasya'
+                      : todayCalendarDay?.tithiDisplayBengali?.split(' ')[0] || 'Tithi'}
+                  </span>
+                  <span className="text-[9.5px] font-medium text-amber-200">
+                    {todayCalendarDay?.isPurnima
+                      ? 'ꯊꯥꯁꯤ ꯄꯨꯔꯅꯤꯃꯥ'
+                      : todayCalendarDay?.isAmavasya
+                      ? 'ꯊꯥ-ꯑꯁꯤ'
+                      : (scriptMode === 'meetei' ? todayCalendarDay?.tithiDisplayMeetei : todayCalendarDay?.tithiDisplayBengali)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Sun Times & Sunrise/Sunset Tracker */}
+              <div className="grid grid-cols-2 gap-2 rounded-xl bg-black/25 p-2 backdrop-blur-xs border border-white/10">
+                <div className="flex items-center gap-2">
+                  <Sun className="w-4 h-4 text-amber-300 shrink-0" />
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-[9px] uppercase tracking-wider text-amber-200/80 font-mono">
+                      Sunrise (Imphal)
+                    </span>
+                    <span className="text-xs font-bold font-mono text-white">
+                      {panchang.sunMoonTimings.sunrise}
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Moon className="w-4 h-4 text-amber-200 shrink-0" />
+                  <div className="flex flex-col leading-tight">
+                    <span className="text-[9px] uppercase tracking-wider text-amber-200/80 font-mono">
+                      Sunset (Imphal)
+                    </span>
+                    <span className="text-xs font-bold font-mono text-white">
+                      {panchang.sunMoonTimings.sunset}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Real-time Auspicious Muhurat Live Pill */}
+              <div className="flex items-center justify-between rounded-xl bg-white/10 px-3 py-1.5 text-white backdrop-blur-xs border border-white/15">
+                <div className="flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75"></span>
+                    <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-300"></span>
+                  </span>
+                  <span className="text-[11px] font-medium">
+                    Shubha Muhurat: <strong className="text-amber-200">Abhijit Muhurat</strong>
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono font-bold tracking-wider text-amber-200">
+                  {panchang.muhurtas?.abhijit?.start || '11:36 AM'} – {panchang.muhurtas?.abhijit?.end || '12:24 PM'}
+                </span>
+              </div>
+            </div>
+          </section>
+
+          {/* ───────────────────────────────────────────────────────────── */}
+          {/* STITCH "CHEIRAAK / LUNAR DAYS" 7-DAY QUICK STRIP              */}
+          {/* ───────────────────────────────────────────────────────────── */}
+          <section className="bg-white rounded-2xl border border-gray-200 p-3 shadow-xs space-y-2">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <span className="text-xs font-bold text-[#1e1b18]">
+                  Cheiraak / Lunar Days
+                </span>
+                <span className="rounded-full bg-amber-100/80 px-2 py-0.5 text-[9px] font-bold text-amber-800 font-mono uppercase">
+                  {todayCalendarDay?.manipuriMonth?.nameEn || 'Month'} {todayCalendarDay?.sakaYear || 1948}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveTab('calendar');
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="flex items-center text-[#c84b31] hover:text-[#a6331b] text-xs font-bold transition cursor-pointer"
+              >
+                <span>Full Month</span>
+                <ChevronRight className="w-3.5 h-3.5 ml-0.5" />
+              </button>
+            </div>
+
+            {/* Scrollable 7-day strip */}
+            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar scroll-smooth">
+              {(() => {
+                const allDays = currentCalendarData.weeks.flat().filter(Boolean) as CalendarDay[];
+                const todayIdx = allDays.findIndex((d) => d.dateStr === todayStr);
+                const startIdx = Math.max(0, Math.min(todayIdx >= 0 ? todayIdx - 2 : 0, Math.max(0, allDays.length - 7)));
+                const sevenDays = allDays.slice(startIdx, startIdx + 7);
+
+                return sevenDays.map((d) => {
+                  const isCurrent = d.dateStr === todayStr;
+                  return (
+                    <button
+                      key={d.dateStr}
+                      type="button"
+                      onClick={() => {
+                        setCalSelectedDateStr(d.dateStr);
+                        setActiveTab('calendar');
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      }}
+                      className={`flex-shrink-0 w-14 py-2 px-1 rounded-xl text-center transition flex flex-col items-center justify-between cursor-pointer border ${
+                        isCurrent
+                          ? 'bg-[#c84b31] border-[#a6331b] text-white shadow-sm'
+                          : 'bg-gray-50/80 border-gray-200 text-gray-700 hover:bg-amber-50/50'
+                      }`}
+                    >
+                      <span className={`text-[9.5px] font-bold uppercase ${isCurrent ? 'text-amber-200' : 'text-gray-500'}`}>
+                        {d.weekdayName.shortEn}
+                      </span>
+                      <span className="text-base font-bold my-0.5 leading-none">
+                        {d.day}
+                      </span>
+                      <span className={`text-[9px] font-semibold truncate max-w-full ${isCurrent ? 'text-amber-100' : 'text-amber-700'}`}>
+                        {scriptMode === 'meetei' ? toMeeteiNumerals(d.tithiNumber) : toBengaliNumerals(d.tithiNumber)}
+                      </span>
+                    </button>
+                  );
+                });
+              })()}
+            </div>
+          </section>
+
           {/* Top Advertisement Banner (Controlled via /admin/app-control) */}
           {!adDismissed && appSettings?.ads?.global_enabled !== false && (
             (() => {
@@ -2582,6 +2921,11 @@ export default function AndroidAppHomeView({
         </main>
       )}
       </div>
+
+      {/* ───────────────────────────────────────────────────────────── */}
+      {/* 5.5 ADMOB BANNER UNIT (DOCKED DIRECTLY ABOVE BOTTOM NAV)     */}
+      {/* ───────────────────────────────────────────────────────────── */}
+      <ManipuriAdMobBanner appSettings={appSettings} isOnline={isOnline} />
 
       {/* ───────────────────────────────────────────────────────────── */}
       {/* 6. NATIVE PINNED BOTTOM NAVIGATION BAR */}

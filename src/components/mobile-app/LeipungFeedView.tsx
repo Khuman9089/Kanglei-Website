@@ -209,11 +209,27 @@ export default function LeipungFeedView() {
       }
       const res = await fetch(url);
       const data = await res.json();
-      if (data.success) {
-        setPosts(data.posts || []);
+      if (data.success && Array.isArray(data.posts)) {
+        setPosts(data.posts);
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('leipung_cached_posts', JSON.stringify(data.posts));
+          } catch (e) {}
+        }
       }
     } catch (err) {
-      console.error('Error fetching Leipung posts:', err);
+      console.warn('Network offline or error fetching Leipung posts, attempting cache fallback:', err);
+      if (typeof window !== 'undefined') {
+        const cached = localStorage.getItem('leipung_cached_posts');
+        if (cached) {
+          try {
+            const parsed = JSON.parse(cached);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setPosts(parsed);
+            }
+          } catch (e) {}
+        }
+      }
     } finally {
       setLoading(false);
     }
