@@ -145,9 +145,17 @@ export default function ManipuriPanchangWorkstation({
   const isBengali = script === 'bengali';
   const isMeetei = script === 'meetei';
 
-  const monthAttr = bookPanchang
-    ? MANIPURI_MONTH_ATTRIBUTES.find((m) => m.monthCode === bookPanchang.header.manipuriMonthCode)
-    : null;
+  const monthAttr = useMemo(() => {
+    if (!bookPanchang) return null;
+    const mCode = Number(bookPanchang.header.manipuriMonthCode);
+    return (
+      MANIPURI_MONTH_ATTRIBUTES.find((m) => m.monthCode === mCode) ||
+      MANIPURI_MONTH_ATTRIBUTES.find((m) => m.nameBengali === bookPanchang.header.manipuriMonthBengali) ||
+      MANIPURI_MONTH_ATTRIBUTES.find((m) => m.nameMeetei === bookPanchang.header.manipuriMonthMeetei) ||
+      MANIPURI_MONTH_ATTRIBUTES.find((m) => m.nameEn.toLowerCase() === (bookPanchang.header.manipuriMonthEn || '').toLowerCase()) ||
+      MANIPURI_MONTH_ATTRIBUTES[0]
+    );
+  }, [bookPanchang]);
 
   // Format localized display text
   const getMonthName = () => {
@@ -172,15 +180,15 @@ export default function ManipuriPanchangWorkstation({
   };
 
   const getThasiMaikei = () => {
-    if (!monthAttr) return 'চিঙ্খৈ (North-East)';
-    if (isMeetei) return monthAttr.tasiMahei.meetei;
-    return monthAttr.tasiMahei.bengali;
+    if (!monthAttr) return isMeetei ? 'ꯅꯣꯡꯆꯨꯞ' : 'নোংচুপ';
+    if (isMeetei) return monthAttr.tasiMahei?.meetei || monthAttr.meetei?.thasiMaigei || 'ꯅꯣꯡꯆꯨꯞ';
+    return monthAttr.tasiMahei?.bengali || monthAttr.bengali?.thasiMaigei || 'নোংচুপ';
   };
 
   const getTatnabaNumit = () => {
-    if (!monthAttr) return 'নোংমাইজিং, নিংথৌকাবা';
-    if (isMeetei) return monthAttr.tatnabaNumit.meetei;
-    return monthAttr.tatnabaNumit.bengali;
+    if (!monthAttr) return isMeetei ? 'ꯂꯩꯄꯥꯛꯄꯣꯛꯄ' : 'লৈবাকপোকপা';
+    if (isMeetei) return monthAttr.tatnabaNumit?.meetei || monthAttr.meetei?.tatnaba || 'ꯂꯩꯄꯥꯛꯄꯣꯛꯄ';
+    return monthAttr.tatnabaNumit?.bengali || monthAttr.bengali?.tatnaba || 'লৈবাকপোকপা';
   };
 
   const isToday = selectedDate === new Date().toISOString().split('T')[0];
@@ -437,26 +445,66 @@ export default function ManipuriPanchangWorkstation({
               </div>
             </div>
 
-            {/* Sun & Moon Timings Ribbon */}
-            <div className="relative z-10 grid grid-cols-2 gap-2 pt-2 border-t border-white/15 text-xs">
-              <div className="flex items-center gap-2 p-2 rounded-xl bg-white/10 border border-white/15">
-                <Sun className="w-4 h-4 text-amber-300 shrink-0" />
-                <div className="min-w-0 leading-tight">
-                  <span className="text-[11px] text-amber-200 font-bold block truncate">Sunrise / Sunset</span>
-                  <strong className="text-xs text-white font-mono font-black block truncate">
-                    {bookPanchang.astronomical.sunriseTimeStr} – {bookPanchang.astronomical.sunsetTimeStr}
-                  </strong>
+            {/* Sun & Moon Timings Ribbon - Clean, Full, Never Cut Off */}
+            <div className="relative z-10 pt-2 border-t border-white/15 space-y-2">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                {/* Sunrise */}
+                <div className="p-2 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+                  <Sun className="w-4 h-4 text-amber-300 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-amber-200 font-bold block uppercase tracking-wider">
+                      {isMeetei ? 'ꯅꯨꯃꯤꯠ ꯊꯣꯛꯄ' : 'সূর্যোদয় (Sunrise)'}
+                    </span>
+                    <strong className="text-xs text-white font-mono font-black block whitespace-nowrap">
+                      {bookPanchang.astronomical.sunriseTimeStr || bookPanchang.rawPanchang.sunMoonTimings.sunrise}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Sunset */}
+                <div className="p-2 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+                  <Sun className="w-4 h-4 text-orange-300 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-amber-200 font-bold block uppercase tracking-wider">
+                      {isMeetei ? 'ꯅꯨꯃꯤꯠ ꯇꯥꯕ' : 'সূর্যাস্ত (Sunset)'}
+                    </span>
+                    <strong className="text-xs text-white font-mono font-black block whitespace-nowrap">
+                      {bookPanchang.astronomical.sunsetTimeStr || bookPanchang.rawPanchang.sunMoonTimings.sunset}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Moonrise */}
+                <div className="p-2 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+                  <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-indigo-200 font-bold block uppercase tracking-wider">
+                      {isMeetei ? 'ꯊꯥ ꯊꯣꯛꯄ' : 'চন্দ্রোদয় (Moonrise)'}
+                    </span>
+                    <strong className="text-xs text-white font-mono font-black block whitespace-nowrap">
+                      {bookPanchang.rawPanchang.sunMoonTimings.moonrise || '02:51 PM'}
+                    </strong>
+                  </div>
+                </div>
+
+                {/* Moonset */}
+                <div className="p-2 rounded-xl bg-white/10 border border-white/15 flex items-center gap-2">
+                  <Moon className="w-4 h-4 text-slate-300 shrink-0" />
+                  <div className="min-w-0">
+                    <span className="text-[10px] text-slate-200 font-bold block uppercase tracking-wider">
+                      {isMeetei ? 'ꯊꯥ ꯇꯥꯕ' : 'চন্দ্রাস্ত (Moonset)'}
+                    </span>
+                    <strong className="text-xs text-white font-mono font-black block whitespace-nowrap">
+                      {bookPanchang.rawPanchang.sunMoonTimings.moonset || '02:04 AM'}
+                    </strong>
+                  </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 p-2 rounded-xl bg-white/10 border border-white/15">
-                <Moon className="w-4 h-4 text-indigo-300 shrink-0" />
-                <div className="min-w-0 leading-tight">
-                  <span className="text-[11px] text-amber-200 font-bold block truncate">Moonrise / Moonset</span>
-                  <strong className="text-xs text-white font-mono font-black block truncate">
-                    {bookPanchang.rawPanchang.sunMoonTimings.moonrise} – {bookPanchang.rawPanchang.sunMoonTimings.moonset}
-                  </strong>
-                </div>
+              {/* Day Length & Traditional Duration in Danda Pal Bipal */}
+              <div className="flex items-center justify-between text-[11px] font-mono text-amber-200/90 px-1">
+                <span>Day Length: <strong className="text-white font-bold">{bookPanchang.rawPanchang.sunMoonTimings.dayLength}</strong></span>
+                <span>{isMeetei ? bookPanchang.astronomical.dayDurationMeetei : bookPanchang.astronomical.dayDurationBengali}</span>
               </div>
             </div>
           </div>

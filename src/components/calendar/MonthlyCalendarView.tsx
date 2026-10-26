@@ -463,7 +463,7 @@ export default function MonthlyCalendarView() {
                       {/* Festival or Special Event Name */}
                       {dayItem.festival ? (
                         <span
-                          className={`text-[8.5px] sm:text-[10px] font-bold leading-tight block truncate max-w-[80%] ${
+                          className={`text-[8px] sm:text-[9.5px] font-bold leading-tight block line-clamp-2 break-words max-w-[85%] ${
                             isHoliday ? 'text-red-600' : 'text-amber-800'
                           }`}
                           title={`${dayItem.festival.nameEn} (${dayItem.festival.category})`}

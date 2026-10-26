@@ -1,0 +1,90 @@
+[
+  {
+    "id": "post-1",
+    "author": {
+      "id": "user-official",
+      "name": "Kanglei Astro Official",
+      "avatar_url": "",
+      "badge": "Official Astrologer",
+      "is_verified": true,
+      "color": "bg-amber-600"
+    },
+    "content_text": "লাংবন তর্পণ হৌরবা! পঞ্জিকাগী মতুং ইন্না ঙসিদগী হৌদুনা লাংবন অমাবস্যা ফাওবা পিতৃ তর্পণ কৎপগী নিয়মশিং অমসুং মহাত্মশিং 'Useful' সেক্সন্দা পুন্না পীনজরে। থাজবগা লোয়ননা তর্পণ তৌবীয়ু।",
+    "media_urls": [
+      "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?q=80&w=800&auto=format&fit=crop"
+    ],
+    "category_tag": "#লাংবন_তর্পণ",
+    "likes_count": 86,
+    "khurumjari_count": 54,
+    "comments_count": 14,
+    "shares_count": 18,
+    "is_pinned": true,
+    "is_hidden": false,
+    "created_at": "2026-09-16T06:30:00.000Z"
+  },
+  {
+    "id": "post-2",
+    "author": {
+      "id": "user-romen",
+      "name": "Romen Singh",
+      "avatar_url": "",
+      "badge": "Community Member",
+      "is_verified": false,
+      "color": "bg-emerald-600"
+    },
+    "content_text": "ঙসি লাংবন ৫ নি পনবা অসিদা লাই খুরুম্বা চৎলুবা মতমদা লোইরকপা দৃশ্য অসি য়াম্না ফৈ। থাজবগী শক্তিদা নুংঙাইবা ফংই। মনিপুরগী লাইনিং-লাইশোল চাউখৎলকপদা হরাওই।",
+    "media_urls": [
+      "https://images.unsplash.com/photo-1609342122563-a43ac8917a3a?q=80&w=800&auto=format&fit=crop"
+    ],
+    "category_tag": "#থৱান_পুর্নিমা",
+    "likes_count": 42,
+    "khurumjari_count": 28,
+    "comments_count": 12,
+    "shares_count": 5,
+    "is_pinned": false,
+    "is_hidden": false,
+    "created_at": "2026-09-16T08:15:00.000Z"
+  },
+  {
+    "id": "post-3",
+    "author": {
+      "id": "user-shanti",
+      "name": "Shantirani Devi",
+      "avatar_url": "",
+      "badge": "Culture Enthusiast",
+      "is_verified": false,
+      "color": "bg-purple-600"
+    },
+    "content_text": "হৌজিক চহিদা শাগৈগী কুথি অনৌবা য়াওরবা অঙাংগী জন্ম পত্রিকা ইবগী মতম লোইশিল্লকপা অসিদা Kanglei Astro গী কুথি ইবগী সর্ভিস্না য়াম্না লাইহল্লে। য়োকখৎপীরিবা পুম্নমকপু থাগৎচরি। 🙏",
+    "media_urls": [],
+    "category_tag": "#কুথি_ইবা",
+    "likes_count": 29,
+    "khurumjari_count": 19,
+    "comments_count": 6,
+    "shares_count": 2,
+    "is_pinned": false,
+    "is_hidden": false,
+    "created_at": "2026-09-15T16:45:00.000Z"
+  },
+  {
+    "id": "post-4",
+    "author": {
+      "id": "user-tomba",
+      "name": "Tomba Meitei",
+      "avatar_url": "",
+      "badge": "Rituals Practitioner",
+      "is_verified": false,
+      "color": "bg-blue-600"
+    },
+    "content_text": "ꯍꯩꯔꯨ ꯍꯤꯗꯣꯡꯕꯥ ꯊꯧꯔꯝꯒꯤ ꯄꯟꯆꯥꯡ ꯑꯃꯁꯨꯡ ꯊꯥꯕꯥꯟ ꯅꯨꯃꯤꯠ ꯈꯪꯕ ꯌꯥꯅꯕ ꯑꯦꯞ ꯑꯁꯤꯗ ꯃꯄꯨꯡ ꯐꯥꯅ ꯌꯦꯡꯕ ꯐꯪꯂꯦ। ꯂꯩꯕꯥꯛ ꯃꯤꯌꯥꯝꯅ ꯀꯥꯟꯅꯅ ꯁꯤꯖꯤꯟꯅꯔꯁꯤ।",
+    "media_urls": [],
+    "category_tag": "#ꯍꯩꯔꯨ_ꯍꯤꯗꯣꯡꯕꯥ",
+    "likes_count": 35,
+    "khurumjari_count": 22,
+    "comments_count": 4,
+    "shares_count": 7,
+    "is_pinned": false,
+    "is_hidden": false,
+    "created_at": "2026-09-15T12:00:00.000Z"
+  }
+]

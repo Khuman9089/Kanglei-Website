@@ -42,9 +42,31 @@ next-env.d.ts
 urlMObile.txt
 
 # local runtime data & cache
+!src/data/**
+!data/app_settings.json
+!data/upcoming_events.json
+!data/suryasiddha_config.json
+!data/navbar_config.json
+!data/blog_posts.json
+!data/useful_topics.json
+!data/announcements.json
+!data/services.json
+!data/leipung_posts.json
+!data/leipung_comments.json
+!data/astrologers.json
+!data/astrologer_settings.json
+!data/astroai_config.json
+!data/banner.json
+!data/mobile_customizer_config.json
+!data/mobile_layout_sections.json
+!data/shop_categories.json
+!data/shop_commission.json
+!data/shop_coupons.json
+!data/shop_products.json
+!data/shop_sliders.json
+!data/ticker.json
 /data/
 /scratch/
-!src/data/**
 
 # Android & IDE
 .idea/

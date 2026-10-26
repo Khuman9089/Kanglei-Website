@@ -33,17 +33,17 @@ const DEFAULT_SETTINGS = {
     },
     top_banner: {
       enabled: true,
-      unit_id: 'ca-app-pub-3940256099942544/6300978111',
+      unit_id: process.env.ADMOB_TOP_BANNER_ID || process.env.NEXT_PUBLIC_ADMOB_BANNER_ID || 'ca-app-pub-4792033344842475/3591335537',
       type: 'native_card',
     },
     middle_feed: {
       enabled: true,
-      unit_id: 'ca-app-pub-3940256099942544/6300978112',
+      unit_id: process.env.ADMOB_MIDDLE_BANNER_ID || process.env.NEXT_PUBLIC_ADMOB_BANNER_ID || 'ca-app-pub-4792033344842475/3591335537',
       type: 'banner',
     },
     bottom_sticky: {
       enabled: false,
-      unit_id: 'ca-app-pub-3940256099942544/6300978113',
+      unit_id: process.env.ADMOB_BOTTOM_BANNER_ID || process.env.NEXT_PUBLIC_ADMOB_BANNER_ID || 'ca-app-pub-4792033344842475/3591335537',
       type: 'banner',
     },
     interstitial_enabled: false,

@@ -404,9 +404,9 @@ export default function AndroidAppHomeView({
     },
     ads: {
       global_enabled: true,
-      top_banner: { enabled: true, unit_id: 'ca-app-pub-3940256099942544/6300978111', type: 'native_card' },
-      middle_feed: { enabled: true, unit_id: 'ca-app-pub-3940256099942544/6300978112', type: 'banner' },
-      bottom_sticky: { enabled: false, unit_id: 'ca-app-pub-3940256099942544/6300978113', type: 'banner' },
+      top_banner: { enabled: true, unit_id: process.env.NEXT_PUBLIC_ADMOB_BANNER_ID || 'ca-app-pub-4792033344842475/3591335537', type: 'native_card' },
+      middle_feed: { enabled: true, unit_id: process.env.NEXT_PUBLIC_ADMOB_BANNER_ID || 'ca-app-pub-4792033344842475/3591335537', type: 'banner' },
+      bottom_sticky: { enabled: false, unit_id: process.env.NEXT_PUBLIC_ADMOB_BANNER_ID || 'ca-app-pub-4792033344842475/3591335537', type: 'banner' },
       interstitial_enabled: false,
     },
   });
@@ -769,9 +769,9 @@ export default function AndroidAppHomeView({
       {showSplash && <AppSplashScreen onFinish={() => setShowSplash(false)} />}
       
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 1. FIXED NATIVE ANDROID TOP APP BAR */}
-      <div className="flex-shrink-0 z-40 bg-[#0f172a] shadow-mobile-appbar border-b border-slate-800 select-none-mobile pt-safe">
-        {/* Native Android App Bar (Material You / Midnight Gold Header) */}
+      {/* 1. FIXED NATIVE ANDROID TOP APP BAR (STITCH MIDNIGHT ESPRESSO) */}
+      <div className="flex-shrink-0 z-40 bg-[#1e1b18] shadow-mobile-appbar border-b border-[#352f2a] select-none-mobile pt-safe">
+        {/* Native Android App Bar (Material You / Stitch Kanglei Panjika Header) */}
         <header className="px-4 py-2.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {activeTab !== 'home' ? (
@@ -784,7 +784,7 @@ export default function AndroidAppHomeView({
                     setActiveTab('home');
                   }
                 }}
-                className="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 active:bg-slate-600 flex items-center justify-center text-amber-300 transition app-active-press cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#2c2724] hover:bg-[#38322e] active:bg-[#433b37] flex items-center justify-center text-[#fead4d] transition app-active-press cursor-pointer border border-[#3f3730]"
                 aria-label="Back to home"
               >
                 <ArrowLeft className="w-5 h-5" />
@@ -793,7 +793,7 @@ export default function AndroidAppHomeView({
               <button
                 type="button"
                 onClick={() => setShowDrawer(true)}
-                className="w-9 h-9 rounded-full bg-slate-800/80 hover:bg-slate-700 active:bg-slate-600 flex items-center justify-center text-amber-200 transition app-active-press cursor-pointer"
+                className="w-9 h-9 rounded-full bg-[#2c2724] hover:bg-[#38322e] active:bg-[#433b37] flex items-center justify-center text-[#fead4d] transition app-active-press cursor-pointer border border-[#3f3730]"
                 aria-label="Open navigation drawer"
               >
                 <Menu className="w-5 h-5" />
@@ -801,26 +801,26 @@ export default function AndroidAppHomeView({
             )}
             
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center text-slate-950 font-black shadow-sm shrink-0">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-[#c84b31] to-[#fead4d] flex items-center justify-center text-white font-black shadow-sm shrink-0">
                 {activeTab === 'calendar' ? (
-                  <CalendarIcon className="w-4.5 h-4.5 text-slate-950" />
+                  <CalendarIcon className="w-4.5 h-4.5 text-white" />
                 ) : activeTab === 'kuthi_eba' ? (
-                  <BookOpen className="w-4.5 h-4.5 text-slate-950" />
+                  <BookOpen className="w-4.5 h-4.5 text-white" />
                 ) : activeTab === 'kuthi_yengba' ? (
-                  <Eye className="w-4.5 h-4.5 text-slate-950" />
+                  <Eye className="w-4.5 h-4.5 text-white" />
                 ) : activeTab === 'panchang' ? (
-                  <Clock className="w-4.5 h-4.5 text-slate-950" />
+                  <Clock className="w-4.5 h-4.5 text-white" />
                 ) : activeTab === 'leipung' ? (
-                  <MessageSquare className="w-4.5 h-4.5 text-slate-950" />
+                  <MessageSquare className="w-4.5 h-4.5 text-white" />
                 ) : activeTab === 'account' ? (
-                  <User className="w-4.5 h-4.5 text-slate-950" />
+                  <User className="w-4.5 h-4.5 text-white" />
                 ) : (
-                  <Sun className="w-4.5 h-4.5 text-slate-950" />
+                  <Sun className="w-4.5 h-4.5 text-white" />
                 )}
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h1 className="text-[15px] font-sans font-bold tracking-tight leading-none text-slate-50">
+                  <h1 className="text-[15px] font-sans font-bold tracking-tight leading-none text-[#f9f5f0]">
                     {activeTab === 'home'
                       ? 'Manipuri Calendar'
                       : activeTab === 'calendar'
@@ -849,7 +849,7 @@ export default function AndroidAppHomeView({
                     </span>
                   )}
                 </div>
-                <span className="text-[11px] text-amber-400/90 font-medium leading-none block mt-1">
+                <span className="text-[11px] text-[#fead4d]/90 font-medium leading-none block mt-1">
                   {activeTab === 'home'
                     ? (scriptMode === 'meetei' ? 'ꯃꯅꯤꯄꯨꯔꯤ ꯀꯦꯂꯦꯟꯗꯔ • Imphal (IST)' : 'মণিপুরী ক্যালেন্ডার • Imphal (IST)')
                     : activeTab === 'calendar'
@@ -872,14 +872,14 @@ export default function AndroidAppHomeView({
 
           {/* Script Switcher & Action Icons */}
           <div className="flex items-center gap-1.5">
-            <div className="inline-flex rounded-full border border-slate-700/80 p-0.5 bg-slate-900 text-[10px] font-bold shadow-inner">
+            <div className="inline-flex rounded-full border border-[#3e3630] p-0.5 bg-[#141210] text-[10px] font-bold shadow-inner">
               <button
                 type="button"
                 onClick={() => setScriptMode('bengali')}
                 className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                   scriptMode === 'bengali'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'bg-[#c84b31] text-white shadow-xs font-black'
+                    : 'text-[#a89f91] hover:text-white'
                 }`}
               >
                 বাংলা
@@ -889,8 +889,8 @@ export default function AndroidAppHomeView({
                 onClick={() => setScriptMode('meetei')}
                 className={`px-2.5 py-1 rounded-full transition-all cursor-pointer ${
                   scriptMode === 'meetei'
-                    ? 'bg-amber-500 text-slate-950 shadow-xs font-black'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'bg-[#c84b31] text-white shadow-xs font-black'
+                    : 'text-[#a89f91] hover:text-white'
                 }`}
               >
                 ꯃꯤꯇꯩ
@@ -900,8 +900,8 @@ export default function AndroidAppHomeView({
             <button
               type="button"
               onClick={() => setActiveTab(activeTab === 'calendar' ? 'home' : 'calendar')}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition app-active-press cursor-pointer ${
-                activeTab === 'calendar' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'bg-slate-800/80 hover:bg-slate-700 text-amber-300'
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition app-active-press cursor-pointer border ${
+                activeTab === 'calendar' ? 'bg-[#c84b31] text-white border-[#c84b31] shadow-xs' : 'bg-[#2c2724] hover:bg-[#38322e] text-[#fead4d] border-[#3f3730]'
               }`}
               title="Toggle Calendar"
             >
@@ -911,8 +911,8 @@ export default function AndroidAppHomeView({
             <button
               type="button"
               onClick={() => setActiveTab(activeTab === 'account' ? 'home' : 'account')}
-              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition app-active-press cursor-pointer ${
-                activeTab === 'account' ? 'bg-amber-500 text-slate-950 shadow-xs' : 'bg-slate-800/80 hover:bg-slate-700 text-amber-300'
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold transition app-active-press cursor-pointer border ${
+                activeTab === 'account' ? 'bg-[#c84b31] text-white border-[#c84b31] shadow-xs' : 'bg-[#2c2724] hover:bg-[#38322e] text-[#fead4d] border-[#3f3730]'
               }`}
               title="Account & Profile"
             >
@@ -931,11 +931,11 @@ export default function AndroidAppHomeView({
             className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
             onClick={() => setShowDrawer(false)}
           />
-          <div className="relative w-4/5 max-w-xs bg-[#0f172a] text-slate-50 h-full shadow-2xl flex flex-col z-10 border-r border-slate-800 animate-in slide-in-from-left duration-200 pt-safe pb-safe">
+          <div className="relative w-4/5 max-w-xs bg-[#1e1b18] text-[#f9f5f0] h-full shadow-2xl flex flex-col z-10 border-r border-[#352f2a] animate-in slide-in-from-left duration-200 pt-safe pb-safe">
             {/* Drawer Header */}
-            <div className="p-4 border-b border-slate-800 bg-gradient-to-b from-slate-900 to-transparent">
+            <div className="p-4 border-b border-[#352f2a] bg-gradient-to-b from-[#2c2724] to-transparent">
               <div className="flex items-center justify-between mb-3">
-                <div className="w-10 h-10 rounded-2xl bg-amber-500 flex items-center justify-center text-amber-950 font-black shadow-md">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-[#c84b31] to-[#fead4d] flex items-center justify-center text-white font-black shadow-md">
                   <Sun className="w-6 h-6" />
                 </div>
                 <button
@@ -1297,7 +1297,138 @@ export default function AndroidAppHomeView({
         {/* ───────────────────────────────────────────────────────────── */}
         {activeTab === 'calendar' ? (
         <main className="flex-1 p-3.5 space-y-3.5">
-          
+          {/* ── A. DATE SELECTOR SECTION (DAY, MONTH, YEAR & JUMP) ── */}
+          <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2.5">
+            <div className="flex items-center justify-between pb-1.5 border-b border-gray-100">
+              <span className="text-xs font-bold text-[#1e1b18] flex items-center gap-1.5">
+                <CalendarIcon className="w-3.5 h-3.5 text-[#c84b31]" />
+                <span>Jump to Date (তারিখ খনব • Select Date)</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleJumpCalToToday}
+                className="px-2.5 py-1 rounded-full bg-[#c84b31]/15 hover:bg-[#c84b31]/25 text-[#a6331b] font-bold text-[11px] transition cursor-pointer"
+              >
+                Today
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2">
+              {/* Day Selector (1 - 31) */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                  Day (নুমিৎ)
+                </label>
+                <select
+                  value={Number(calSelectedDateStr.split('-')[2]) || 1}
+                  onChange={(e) => {
+                    const newDay = Number(e.target.value);
+                    const parts = calSelectedDateStr.split('-');
+                    const y = Number(parts[0]) || calYear;
+                    const m = Number(parts[1]) || calMonth;
+                    const maxDays = new Date(y, m, 0).getDate();
+                    const clampedDay = Math.min(newDay, maxDays);
+                    setCalSelectedDateStr(`${y}-${String(m).padStart(2, '0')}-${String(clampedDay).padStart(2, '0')}`);
+                  }}
+                  className="w-full px-2 py-1.5 rounded-xl border border-gray-300 text-xs font-bold text-gray-900 bg-gray-50 focus:bg-white focus:border-[#c84b31] outline-hidden cursor-pointer"
+                >
+                  {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
+                    <option key={`day-sel-${d}`} value={d}>
+                      {d} {scriptMode === 'meetei' ? `(${toMeeteiNumerals(d)})` : `(${toBengaliNumerals(d)})`}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Month Selector (1 - 12) */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                  Month (থা)
+                </label>
+                <select
+                  value={calMonth}
+                  onChange={(e) => {
+                    const newM = Number(e.target.value);
+                    const parts = calSelectedDateStr.split('-');
+                    const y = Number(parts[0]) || calYear;
+                    const d = Number(parts[2]) || 1;
+                    const maxDays = new Date(y, newM, 0).getDate();
+                    const clampedDay = Math.min(d, maxDays);
+                    setCalMonth(newM);
+                    setCalSelectedDateStr(`${y}-${String(newM).padStart(2, '0')}-${String(clampedDay).padStart(2, '0')}`);
+                  }}
+                  className="w-full px-2 py-1.5 rounded-xl border border-gray-300 text-xs font-bold text-gray-900 bg-gray-50 focus:bg-white focus:border-[#c84b31] outline-hidden cursor-pointer"
+                >
+                  {[
+                    { m: 1, en: 'Jan', manipuri: 'Wakching' },
+                    { m: 2, en: 'Feb', manipuri: 'Fairen' },
+                    { m: 3, en: 'Mar', manipuri: 'Lamta' },
+                    { m: 4, en: 'Apr', manipuri: 'Sajibu' },
+                    { m: 5, en: 'May', manipuri: 'Kalen' },
+                    { m: 6, en: 'Jun', manipuri: 'Inga' },
+                    { m: 7, en: 'Jul', manipuri: 'Ingen' },
+                    { m: 8, en: 'Aug', manipuri: 'Thawan' },
+                    { m: 9, en: 'Sep', manipuri: 'Langban' },
+                    { m: 10, en: 'Oct', manipuri: 'Mera' },
+                    { m: 11, en: 'Nov', manipuri: 'Hiyangei' },
+                    { m: 12, en: 'Dec', manipuri: 'Poinu' },
+                  ].map(({ m, en, manipuri }) => (
+                    <option key={`month-sel-${m}`} value={m}>
+                      {m} - {en} ({manipuri})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Year Selector */}
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-500 mb-1">
+                  Year (চহী)
+                </label>
+                <select
+                  value={calYear}
+                  onChange={(e) => {
+                    const newY = Number(e.target.value);
+                    const parts = calSelectedDateStr.split('-');
+                    const m = Number(parts[1]) || calMonth;
+                    const d = Number(parts[2]) || 1;
+                    const maxDays = new Date(newY, m, 0).getDate();
+                    const clampedDay = Math.min(d, maxDays);
+                    setCalYear(newY);
+                    setCalSelectedDateStr(`${newY}-${String(m).padStart(2, '0')}-${String(clampedDay).padStart(2, '0')}`);
+                  }}
+                  className="w-full px-2 py-1.5 rounded-xl border border-gray-300 text-xs font-bold text-gray-900 bg-gray-50 focus:bg-white focus:border-[#c84b31] outline-hidden cursor-pointer"
+                >
+                  {Array.from({ length: 126 }, (_, i) => 1925 + i).map((y) => (
+                    <option key={`year-sel-${y}`} value={y}>
+                      {y}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Quick Native Date Picker Row */}
+            <div className="flex items-center gap-2 pt-1.5 border-t border-gray-100 text-xs">
+              <span className="text-[11px] font-medium text-gray-500 shrink-0">Native Date Picker:</span>
+              <input
+                type="date"
+                value={calSelectedDateStr}
+                onChange={(e) => {
+                  if (e.target.value) {
+                    const parts = e.target.value.split('-').map(Number);
+                    if (parts.length === 3) {
+                      setCalYear(parts[0]);
+                      setCalMonth(parts[1]);
+                      setCalSelectedDateStr(e.target.value);
+                    }
+                  }
+                }}
+                className="flex-1 px-2.5 py-1 rounded-xl text-xs font-mono font-bold border border-gray-300 bg-gray-50 focus:bg-white focus:border-[#c84b31] outline-hidden cursor-pointer"
+              />
+            </div>
+          </div>
+
           {/* Calendar Month Navigation Header */}
           <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2.5">
             <div className="flex items-center justify-between">
@@ -1552,28 +1683,28 @@ export default function AndroidAppHomeView({
                       </span>
                     </div>
 
-                    {/* 6. Mention Result / Festival Name Directly inside Cell */}
+                    {/* 6. Mention Result / Festival Name Directly inside Cell - Readable & Multi-line */}
                     {day.festival ? (
                       <span
-                        className="text-[7.5px] font-bold text-red-700 bg-red-100/95 border border-red-200 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5 shadow-2xs"
+                        className="text-[7.5px] font-bold text-red-700 bg-red-100/95 border border-red-200 px-1 py-0.5 rounded leading-tight line-clamp-2 break-words max-w-[96%] block mt-0.5 shadow-2xs text-center"
                         title={day.festival.nameBengali}
                       >
                         {scriptMode === 'meetei' ? day.festival.nameMeetei : day.festival.nameBengali}
                       </span>
                     ) : isSunday ? (
-                      <span className="text-[7.5px] font-semibold text-red-500 leading-none truncate max-w-[95%] block mt-0.5">
+                      <span className="text-[7.5px] font-semibold text-red-500 leading-tight block mt-0.5 text-center">
                         {scriptMode === 'meetei' ? 'ꯅꯣꯡꯃꯥꯏꯖꯤꯡ' : 'রবিবার'}
                       </span>
                     ) : day.isPurnima ? (
-                      <span className="text-[7.5px] font-bold text-purple-700 bg-purple-100/90 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5">
+                      <span className="text-[7.5px] font-bold text-purple-700 bg-purple-100/90 px-1 py-0.5 rounded leading-tight block mt-0.5 text-center">
                         {scriptMode === 'meetei' ? 'ꯄꯨꯔꯅꯤꯃꯥ' : 'পূর্ণিমা'}
                       </span>
                     ) : day.isAmavasya ? (
-                      <span className="text-[7.5px] font-bold text-gray-800 bg-gray-200/90 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5">
+                      <span className="text-[7.5px] font-bold text-gray-800 bg-gray-200/90 px-1 py-0.5 rounded leading-tight block mt-0.5 text-center">
                         {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ' : 'থাশী'}
                       </span>
                     ) : day.isEkadashi ? (
-                      <span className="text-[7.5px] font-bold text-amber-800 bg-amber-100/90 px-1 py-0.5 rounded leading-none truncate max-w-[95%] block mt-0.5">
+                      <span className="text-[7.5px] font-bold text-amber-800 bg-amber-100/90 px-1 py-0.5 rounded leading-tight block mt-0.5 text-center">
                         {scriptMode === 'meetei' ? 'ꯑꯦꯀꯥꯗꯁꯤ' : 'একাদশী'}
                       </span>
                     ) : null}
@@ -1689,6 +1820,51 @@ export default function AndroidAppHomeView({
                   </div>
                 </div>
 
+                {/* Sun & Moon Timings Ribbon (Sunrise, Sunset, Moonrise, Moonset - Full, Never Cut Off) */}
+                <div className="pt-2 border-t border-gray-100 space-y-2">
+                  <span className="text-[11px] font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <Sun className="w-3.5 h-3.5 text-amber-600" />
+                    <span>Solar & Lunar Timings (Imphal IST)</span>
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+                    <div className="p-2 rounded-xl bg-amber-50/80 border border-amber-200">
+                      <span className="text-[10px] text-amber-900 font-bold block uppercase tracking-wider">
+                        {scriptMode === 'meetei' ? 'ꯅꯨꯃꯤꯠ ꯊꯣꯛꯄ' : 'সূর্যোদয় (Sunrise)'}
+                      </span>
+                      <strong className="text-xs text-slate-900 font-mono font-bold block mt-0.5 whitespace-nowrap">
+                        {activeCalendarDay.panchang.sunMoonTimings.sunrise}
+                      </strong>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-orange-50/80 border border-orange-200">
+                      <span className="text-[10px] text-orange-900 font-bold block uppercase tracking-wider">
+                        {scriptMode === 'meetei' ? 'ꯅꯨꯃꯤꯠ ꯇꯥꯕ' : 'সূর্যাস্ত (Sunset)'}
+                      </span>
+                      <strong className="text-xs text-slate-900 font-mono font-bold block mt-0.5 whitespace-nowrap">
+                        {activeCalendarDay.panchang.sunMoonTimings.sunset}
+                      </strong>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-indigo-50/80 border border-indigo-200">
+                      <span className="text-[10px] text-indigo-900 font-bold block uppercase tracking-wider">
+                        {scriptMode === 'meetei' ? 'ꯊꯥ ꯊꯣꯛꯄ' : 'চন্দ্রোদয় (Moonrise)'}
+                      </span>
+                      <strong className="text-xs text-slate-900 font-mono font-bold block mt-0.5 whitespace-nowrap">
+                        {activeCalendarDay.panchang.sunMoonTimings.moonrise || '02:51 PM'}
+                      </strong>
+                    </div>
+
+                    <div className="p-2 rounded-xl bg-slate-100 border border-slate-300">
+                      <span className="text-[10px] text-slate-800 font-bold block uppercase tracking-wider">
+                        {scriptMode === 'meetei' ? 'ꯊꯥ ꯇꯥꯕ' : 'চন্দ্রাস্ত (Moonset)'}
+                      </span>
+                      <strong className="text-xs text-slate-900 font-mono font-bold block mt-0.5 whitespace-nowrap">
+                        {activeCalendarDay.panchang.sunMoonTimings.moonset || '02:04 AM'}
+                      </strong>
+                    </div>
+                  </div>
+                </div>
+
                 {/* Tatnaba Numit Alert */}
                 {activeCalendarDay.isEeKhudengLeitaba && (
                   <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs font-semibold flex items-center gap-2">
@@ -1700,37 +1876,122 @@ export default function AndroidAppHomeView({
             );
           })()}
 
-          {/* Month Attributes Accordion */}
-          <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2 text-xs">
-            <h4 className="font-bold text-[#1e1b18] border-b border-gray-100 pb-1.5 flex items-center gap-1.5">
-              <Compass className="w-4 h-4 text-amber-600" />
-              <span>Month Rules & Directions</span>
-            </h4>
+          {/* Month Festivals & Special Days List - Completely Readable, Never Cut Off */}
+          {(() => {
+            const allMonthDays = currentCalendarData.weeks.flat().filter(Boolean) as CalendarDay[];
+            const festivalsThisMonth = allMonthDays.filter((d) => d.festival || d.isGeneralHoliday || d.isPurnima || d.isAmavasya || d.isEkadashi);
 
-            <div className="grid grid-cols-2 gap-2 text-xs pt-1">
-              <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200">
-                <span className="text-gray-500 font-medium block text-xs">
-                  {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ ꯃꯥꯏꯒꯩ' : 'থাসী মাইকৈ (Thasi Maikei):'}
-                </span>
-                <strong className="text-[#1e1b18] font-bold block mt-0.5">
-                  {scriptMode === 'meetei'
-                    ? (currentCalendarData.activeMonthAttributes[0]?.tasiMahei?.meetei || 'ꯑꯋꯥꯡ')
-                    : (currentCalendarData.activeMonthAttributes[0]?.tasiMahei?.bengali || 'অৱাং')}
-                </strong>
-              </div>
+            if (festivalsThisMonth.length === 0) return null;
 
-              <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200">
-                <span className="text-gray-500 font-medium block text-xs">
-                  {scriptMode === 'meetei' ? 'ꯇꯠꯅꯕ ꯅꯨꯃꯤꯠ' : 'তৎনবা নুমিৎ (Tatnaba Days):'}
-                </span>
-                <strong className="text-[#1e1b18] font-bold block mt-0.5">
-                  {scriptMode === 'meetei'
-                    ? (currentCalendarData.activeMonthAttributes[0]?.tatnabaNumit?.meetei || 'ꯅꯣꯡꯃꯥꯏꯖꯤꯡ, ꯅꯤꯡꯊꯧꯀꯥꯕ')
-                    : (currentCalendarData.activeMonthAttributes[0]?.tatnabaNumit?.bengali || 'নোংমাইজিং, নিংথৌকাবা')}
-                </strong>
+            return (
+              <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2.5">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-2">
+                  <div className="flex items-center gap-2">
+                    <Flame className="w-4 h-4 text-[#c84b31]" />
+                    <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                      {scriptMode === 'meetei' ? 'ꯃꯁꯤꯒꯤ ꯊꯥꯒꯤ ꯀꯨꯝꯃꯩ & ꯊꯧꯔꯃꯁꯤꯡ' : 'এই মাসের উৎসব ও ছুটির দিন (Festivals of this Month)'}
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold text-[#c84b31] font-mono">
+                    {festivalsThisMonth.length} Events
+                  </span>
+                </div>
+
+                <div className="space-y-1.5 max-h-56 overflow-y-auto no-scrollbar pr-0.5">
+                  {festivalsThisMonth.map((fd) => {
+                    const isSelected = fd.dateStr === calSelectedDateStr;
+                    return (
+                      <button
+                        key={`fest-list-${fd.dateStr}`}
+                        type="button"
+                        onClick={() => setCalSelectedDateStr(fd.dateStr)}
+                        className={`w-full p-2 rounded-xl text-left transition flex items-center justify-between gap-2 border cursor-pointer ${
+                          isSelected
+                            ? 'bg-amber-50/80 border-[#c84b31] ring-1 ring-[#c84b31]/40'
+                            : 'bg-slate-50/70 border-slate-200/80 hover:bg-slate-100/80'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className={`w-8 h-8 rounded-lg flex flex-col items-center justify-center shrink-0 font-bold leading-none ${
+                            fd.isGeneralHoliday || fd.weekday === 0 ? 'bg-red-100 text-red-700' : 'bg-amber-100 text-amber-800'
+                          }`}>
+                            <span className="text-[9px] uppercase font-mono">{fd.weekdayName.shortEn}</span>
+                            <span className="text-xs">{fd.day}</span>
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-bold text-slate-900 leading-tight">
+                              {fd.festival ? (scriptMode === 'meetei' ? fd.festival.nameMeetei : fd.festival.nameBengali) : fd.isPurnima ? 'পূর্ণিমা (Purnima)' : fd.isAmavasya ? 'থাশী (Amavasya)' : 'একাদশী (Ekadashi)'}
+                            </h4>
+                            <span className="text-[10.5px] text-slate-600 block leading-tight mt-0.5">
+                              {fd.festival?.nameEn || (fd.isPurnima ? 'Full Moon' : fd.isAmavasya ? 'New Moon' : 'Ekadashi Fast')} • {scriptMode === 'meetei' ? fd.tithiDisplayMeetei : fd.tithiDisplayBengali}
+                            </span>
+                          </div>
+                        </div>
+
+                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full shrink-0 ${
+                          fd.isGeneralHoliday || (fd.festival && fd.festival.isGeneralHoliday)
+                            ? 'bg-red-100 text-red-700 border border-red-200'
+                            : 'bg-amber-100 text-amber-800 border border-amber-200'
+                        }`}>
+                          {fd.isGeneralHoliday ? 'Holiday' : 'Auspicious'}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          </div>
+            );
+          })()}
+
+          {/* Month Attributes Accordion - Synchronized with Active Day Month */}
+          {(() => {
+            const activeMonthCode = activeCalendarDay?.manipuriMonth?.code || currentCalendarData.activeMonthAttributes[0]?.monthCode || 1;
+            const monthAttr = MANIPURI_MONTH_ATTRIBUTES.find((m) => m.monthCode === activeMonthCode) ||
+              currentCalendarData.activeMonthAttributes[0] ||
+              MANIPURI_MONTH_ATTRIBUTES[0];
+
+            const thasiMaikeiStr = scriptMode === 'meetei'
+              ? (monthAttr.tasiMahei?.meetei || monthAttr.meetei?.thasiMaigei || 'ꯑꯋꯥꯡ')
+              : (monthAttr.tasiMahei?.bengali || monthAttr.bengali?.thasiMaigei || 'অৱাং');
+
+            const tatnabaNumitStr = scriptMode === 'meetei'
+              ? (monthAttr.tatnabaNumit?.meetei || monthAttr.meetei?.tatnaba || 'ꯂꯩꯄꯥꯛꯄꯣꯛꯄ')
+              : (monthAttr.tatnabaNumit?.bengali || monthAttr.bengali?.tatnaba || 'লৈবাকপোকপা');
+
+            return (
+              <div className="bg-white rounded-2xl border border-gray-200 p-3.5 shadow-sm space-y-2 text-xs">
+                <div className="flex items-center justify-between border-b border-gray-100 pb-1.5">
+                  <h4 className="font-bold text-[#1e1b18] flex items-center gap-1.5">
+                    <Compass className="w-4 h-4 text-amber-600" />
+                    <span>Month Rules & Directions (কাংলৈ থৌরম)</span>
+                  </h4>
+                  <span className="text-[11px] font-bold text-amber-800">
+                    {scriptMode === 'meetei' ? monthAttr.nameMeetei : monthAttr.nameBengali}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs pt-1">
+                  <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200">
+                    <span className="text-gray-500 font-medium block text-xs">
+                      {scriptMode === 'meetei' ? 'ꯊꯥꯁꯤ ꯃꯥꯏꯒꯩ' : 'থাসী মাইকৈ (Thasi Maikei):'}
+                    </span>
+                    <strong className="text-[#1e1b18] font-bold block mt-0.5">
+                      {thasiMaikeiStr}
+                    </strong>
+                  </div>
+
+                  <div className="p-2.5 rounded-xl bg-gray-50 border border-gray-200">
+                    <span className="text-gray-500 font-medium block text-xs">
+                      {scriptMode === 'meetei' ? 'ꯇꯠꯅꯕ ꯅꯨꯃꯤꯠ' : 'তৎনবা নুমিৎ (Tatnaba Days):'}
+                    </span>
+                    <strong className="text-[#1e1b18] font-bold block mt-0.5">
+                      {tatnabaNumitStr}
+                    </strong>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
         </main>
       ) : activeTab === 'kuthi_eba' ? (
@@ -3513,9 +3774,9 @@ export default function AndroidAppHomeView({
       <ManipuriAdMobBanner appSettings={appSettings} isOnline={isOnline} />
 
       {/* ───────────────────────────────────────────────────────────── */}
-      {/* 6. NATIVE PINNED BOTTOM NAVIGATION BAR */}
+      {/* 6. NATIVE PINNED BOTTOM NAVIGATION BAR (STITCH MIDNIGHT ESPRESSO) */}
       <nav 
-        className="flex-shrink-0 z-40 w-full max-w-md mx-auto bg-[#0f172a]/95 backdrop-blur-xl border-t border-slate-800/80 safe-bottom-nav pt-2 px-3 flex items-center justify-around shadow-mobile-nav select-none-mobile text-slate-400"
+        className="flex-shrink-0 z-40 w-full max-w-md mx-auto bg-[#1e1b18]/95 backdrop-blur-xl border-t border-[#352f2a] safe-bottom-nav pt-2 px-3 flex items-center justify-around shadow-mobile-nav select-none-mobile text-[#a89f91]"
         aria-label="Bottom Navigation"
       >
         {/* Tab 1: Home */}
@@ -3526,10 +3787,10 @@ export default function AndroidAppHomeView({
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'home' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            activeTab === 'home' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'home' ? 'bg-amber-500/20 text-amber-400 scale-105 shadow-xs' : 'text-slate-400'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'home' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
             <Sun className="w-5 h-5" />
           </div>
           <span className="text-[10px] tracking-tight">Home</span>
@@ -3543,10 +3804,10 @@ export default function AndroidAppHomeView({
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'calendar' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            activeTab === 'calendar' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'calendar' ? 'bg-amber-500/20 text-amber-400 scale-105 shadow-xs' : 'text-slate-400'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'calendar' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
             <CalendarIcon className="w-5 h-5" />
           </div>
           <span className="text-[10px] tracking-tight">Calendar</span>
@@ -3560,10 +3821,10 @@ export default function AndroidAppHomeView({
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'leipung' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            activeTab === 'leipung' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'leipung' ? 'bg-amber-500/20 text-amber-400 scale-105 shadow-xs' : 'text-slate-400'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'leipung' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
             <MessageSquare className="w-5 h-5" />
           </div>
           <span className="text-[10px] tracking-tight">Leipung</span>
@@ -3577,10 +3838,10 @@ export default function AndroidAppHomeView({
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-            activeTab === 'panchang' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+            activeTab === 'panchang' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
           }`}
         >
-          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'panchang' ? 'bg-amber-500/20 text-amber-400 scale-105 shadow-xs' : 'text-slate-400'}`}>
+          <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'panchang' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
             <Clock className="w-5 h-5" />
           </div>
           <span className="text-[10px] tracking-tight">Panchang</span>
@@ -3596,10 +3857,10 @@ export default function AndroidAppHomeView({
               window.scrollTo({ top: 0, behavior: 'smooth' });
             }}
             className={`flex flex-col items-center justify-center gap-1 min-w-[54px] min-h-[48px] py-1 px-2 rounded-2xl app-active-press transition-all cursor-pointer ${
-              activeTab === 'useful' ? 'text-amber-400 font-bold' : 'text-slate-400 hover:text-slate-200'
+              activeTab === 'useful' ? 'text-[#fead4d] font-bold' : 'text-[#a89f91] hover:text-[#f9f5f0]'
             }`}
           >
-            <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'useful' ? 'bg-amber-500/20 text-amber-400 scale-105 shadow-xs' : 'text-slate-400'}`}>
+            <div className={`px-3 py-1 rounded-full transition-all duration-200 ${activeTab === 'useful' ? 'bg-[#c84b31]/30 text-[#fead4d] ring-1 ring-[#c84b31]/50 scale-105 shadow-xs' : 'text-[#a89f91]'}`}>
               <BookOpen className="w-5 h-5" />
             </div>
             <span className="text-[10px] tracking-tight">Useful</span>

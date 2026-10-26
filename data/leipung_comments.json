@@ -1,0 +1,38 @@
+[
+  {
+    "id": "comment-1",
+    "post_id": "post-1",
+    "author": {
+      "id": "user-chaoba",
+      "name": "Chaoba Sharma",
+      "badge": "Purohit",
+      "color": "bg-amber-700"
+    },
+    "comment_text": "তর্পণ কৎপগী অশেংবা মন্ত্র অমসুং তিল-জল দান তৌবগী নিয়মশিং কুপ্না তাকপীরকপা অসি য়াম্না ফৈ।",
+    "created_at": "2026-09-16T07:10:00.000Z"
+  },
+  {
+    "id": "comment-2",
+    "post_id": "post-1",
+    "author": {
+      "id": "user-bembem",
+      "name": "Bembem Devi",
+      "badge": "Member",
+      "color": "bg-rose-600"
+    },
+    "comment_text": "Useful গাইড অসি য়াম্না কান্নরে, থাগৎচরি!",
+    "created_at": "2026-09-16T07:45:00.000Z"
+  },
+  {
+    "id": "comment-3",
+    "post_id": "post-2",
+    "author": {
+      "id": "user-ibomcha",
+      "name": "Ibomcha Meitei",
+      "badge": "Member",
+      "color": "bg-teal-600"
+    },
+    "comment_text": "লাইনিংথৌগী থৌজাল পুম্নমক্তা ফংবা ওইরসনু।",
+    "created_at": "2026-09-16T08:30:00.000Z"
+  }
+]
